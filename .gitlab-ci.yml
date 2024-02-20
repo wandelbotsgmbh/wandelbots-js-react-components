@@ -11,6 +11,5 @@ wandelui::build:
   rules:
     - <<: *changes
   script:
-    - cd packages/wandelui
     - npm ci
     - npm run build
