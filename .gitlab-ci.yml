@@ -1,15 +1,8 @@
 ---
 
-.changes: &changes
-  changes:
-    - packages/wandelui/**/*
-
-# Just check if wandelui still builds. No artifacts needed for now
 wandelui::build:
   image: container-registry.wabo.run/docker-hub/library/node:20.5-alpine
   stage: build
-  rules:
-    - <<: *changes
   script:
     - npm ci
     - npm run build
