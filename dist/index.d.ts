@@ -102,4 +102,46 @@ declare const defaultAxisConfig: AxisConfig;
 type RobotType = "ur5e" | "ur10e" | "ar1440" | "ar2010";
 declare function parseRobotType(input: string): RobotType;
 
-export { AR1440, AR2010, AnyRobot, AxisConfig, Button, FlatSurface, FlatSurfaceProps, PointCloud, PointCloudProps, RobotType, RotatingBox, UR10e, UR5e, defaultAxisConfig, parseRobotType };
+interface SidebarCategory {
+    label?: string;
+    items: (SidebarItem | SidebarCollapsibleItem)[];
+}
+interface SidebarItem {
+    label: string;
+    link: string;
+    icon: React.ReactNode;
+}
+interface SidebarCollapsibleItem {
+    label: string;
+    icon: React.ReactNode;
+    items: SidebarCollapsedItem[];
+}
+interface SidebarCollapsedItem {
+    label: string;
+    link: string;
+}
+type SidebarProps = {
+    items: SidebarCategory[];
+    expandedByDefault?: boolean;
+};
+declare const Sidebar: ({ items, expandedByDefault }: SidebarProps) => React.JSX.Element;
+
+declare function RunsOnWandelbotsOSLogo(): React.JSX.Element;
+
+declare function ArrowForwardFilledIcon(): React.JSX.Element;
+
+declare function ExpandFilledIcon(): React.JSX.Element;
+
+declare function HomeIcon(): React.JSX.Element;
+
+declare function InfoOutlinedIcon(): React.JSX.Element;
+
+declare function RobotIcon(): React.JSX.Element;
+
+type WBLogoProps = {
+    width?: number;
+    fillColor?: string;
+};
+declare function WBLogoIcon({ width, fillColor }: WBLogoProps): React.JSX.Element;
+
+export { AR1440, AR2010, AnyRobot, ArrowForwardFilledIcon, AxisConfig, Button, ExpandFilledIcon, FlatSurface, FlatSurfaceProps, HomeIcon, InfoOutlinedIcon, PointCloud, PointCloudProps, RobotIcon, RobotType, RotatingBox, RunsOnWandelbotsOSLogo, Sidebar, UR10e, UR5e, WBLogoIcon, defaultAxisConfig, parseRobotType };
