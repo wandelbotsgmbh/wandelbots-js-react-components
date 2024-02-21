@@ -36,7 +36,7 @@ export const Sidebar = ({ items, expandedByDefault = true }: SidebarProps) => {
   const [uncollapsedSection, setUncollapsedSection] = useState<number | undefined>(undefined);
 
   return (
-    <div
+    <aside
       // To animate, use `transition-width duration-300`, but this will make several opacity animations necessary
       className={`h-full fixed top-0 left-0 bg-[#010B23] ${isExpanded ? "w-64" : "w-16"} flex flex-col justify-between`}
     >
@@ -50,12 +50,16 @@ export const Sidebar = ({ items, expandedByDefault = true }: SidebarProps) => {
           </a>
           <ul className="list-none m-0 p-0">
             {items.map((category, index) => (
-              <li key={index} className="my-4">
+              <li key={index} className="">
                 {category.label && isExpanded && (
-                  <div className="text-white uppercase mx-1 mt-7" style={{ fontSize: "10px" }}>
+                  <div
+                    className={`text-white uppercase mx-1 ${index !== 0 ? "mt-12" : ""}`}
+                    style={{ fontSize: "10px" }}
+                  >
                     {category.label}
                   </div>
                 )}
+                {category.label && !isExpanded && <hr />}
                 {category.items.map((item, index) =>
                   item.hasOwnProperty("items") ? (
                     <SidebarCollapsibleItemComponent
@@ -93,7 +97,7 @@ export const Sidebar = ({ items, expandedByDefault = true }: SidebarProps) => {
           </button>
         </div>
       </div>
-    </div>
+    </aside>
   );
 };
 
@@ -101,7 +105,7 @@ function SidebarItemComponent({ item, sidebarIsExpanded }: { item: SidebarItem; 
   return (
     <li className="list-none mx-1 p-0 my-6">
       <a href={item.link} className="flex items-center text-white">
-        <span className="mr-6">{item.icon}</span>
+        <span className="mr-6 w-6">{item.icon}</span>
         {sidebarIsExpanded && item.label}
       </a>
     </li>
