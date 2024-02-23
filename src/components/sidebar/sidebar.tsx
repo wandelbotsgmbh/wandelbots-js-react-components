@@ -47,12 +47,18 @@ export const Sidebar = ({ items, setSelectedItemPath, expandedByDefault = true }
     >
       <div className="mx-4 my-6 flex flex-col justify-between h-full">
         <div className="flex-grow">
-          <a href="/">
-            <h1 className={`text-white text-xl mb-2 ${isExpanded ? "" : "hidden"}`}>
-              Developer <span className="text-[#FF0E65]">Portal</span>
-            </h1>
-            <div className="flex justify-center items-center mb-2">{!isExpanded && <WBLogoIcon />}</div>
-          </a>
+          <Link href="/">
+            <div
+              onClick={() => {
+                setSelectedItemPath("/");
+              }}
+            >
+              <h1 className={`text-white text-xl mb-2 ${isExpanded ? "" : "hidden"}`}>
+                Developer <span className="text-[#FF0E65]">Portal</span>
+              </h1>
+              <div className="flex justify-center items-center mb-2">{!isExpanded && <WBLogoIcon />}</div>
+            </div>
+          </Link>
           <ul className="list-none m-0 p-0">
             {items.map((category, index) => (
               <li key={index} className="">
