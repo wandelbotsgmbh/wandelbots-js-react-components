@@ -1,6 +1,6 @@
 {
   "name": "@wandelbots/wandelui",
-  "version": "0.1.16",
+  "version": "0.1.17",
   "description": "comprehensive UI toolkit for building applications on top the wandelbots platform",
   "main": "dist/cjs/index.js",
   "module": "dist/esm/index.js",
