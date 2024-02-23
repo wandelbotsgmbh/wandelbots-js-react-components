@@ -7,6 +7,7 @@ interface SidebarItem {
     label: string;
     link: string;
     icon: React.ReactNode;
+    isSelected: boolean;
 }
 interface SidebarCollapsibleItem {
     label: string;
@@ -16,10 +17,12 @@ interface SidebarCollapsibleItem {
 interface SidebarCollapsedItem {
     label: string;
     link: string;
+    isSelected: boolean;
 }
 type SidebarProps = {
     items: SidebarCategory[];
     expandedByDefault?: boolean;
+    setSelectedItemPath: (path: string) => void;
 };
-export declare const Sidebar: ({ items, expandedByDefault }: SidebarProps) => React.JSX.Element;
+export declare const Sidebar: ({ items, setSelectedItemPath, expandedByDefault }: SidebarProps) => React.JSX.Element;
 export {};

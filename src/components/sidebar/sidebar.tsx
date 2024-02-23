@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { ArrowForwardFilledIcon, ExpandFilledIcon, WBLogoIcon } from "../../icons";
 import { RunsOnWandelbotsOSLogo } from "../assets";
 
+import Link from "next/link";
+
 interface SidebarCategory {
   label?: string;
   items: (SidebarItem | SidebarCollapsibleItem)[];
@@ -11,6 +13,7 @@ interface SidebarItem {
   label: string;
   link: string;
   icon: React.ReactNode;
+  isSelected: boolean;
 }
 
 interface SidebarCollapsibleItem {
@@ -22,14 +25,16 @@ interface SidebarCollapsibleItem {
 interface SidebarCollapsedItem {
   label: string;
   link: string;
+  isSelected: boolean;
 }
 
 type SidebarProps = {
   items: SidebarCategory[];
   expandedByDefault?: boolean;
+  setSelectedItemPath: (path: string) => void;
 };
 
-export const Sidebar = ({ items, expandedByDefault = true }: SidebarProps) => {
+export const Sidebar = ({ items, setSelectedItemPath, expandedByDefault = true }: SidebarProps) => {
   const [isExpanded, setIsExpanded] = useState(expandedByDefault);
   const toggleSidebar = () => setIsExpanded(!isExpanded);
 
@@ -38,7 +43,7 @@ export const Sidebar = ({ items, expandedByDefault = true }: SidebarProps) => {
   return (
     <aside
       // To animate, use `transition-width duration-300`, but this will make several opacity animations necessary
-      className={`h-full fixed top-0 left-0 bg-[#010B23] ${isExpanded ? "w-64" : "w-16"} flex flex-col justify-between`}
+      className={`h-full top-0 left-0 bg-[#010B23] ${isExpanded ? "w-64" : "w-16"} flex flex-col justify-between`}
     >
       <div className="mx-4 my-6 flex flex-col justify-between h-full">
         <div className="flex-grow">
@@ -65,6 +70,7 @@ export const Sidebar = ({ items, expandedByDefault = true }: SidebarProps) => {
                     <SidebarCollapsibleItemComponent
                       key={index}
                       item={item as SidebarCollapsibleItem}
+                      setSelectedItemPath={setSelectedItemPath}
                       isCollapsed={uncollapsedSection !== index}
                       toggleIsCollapsed={() => {
                         setUncollapsedSection(uncollapsedSection === index ? undefined : index);
@@ -72,7 +78,12 @@ export const Sidebar = ({ items, expandedByDefault = true }: SidebarProps) => {
                       sidebarIsExpanded={isExpanded}
                     />
                   ) : (
-                    <SidebarItemComponent key={index} item={item as SidebarItem} sidebarIsExpanded={isExpanded} />
+                    <SidebarItemComponent
+                      key={index}
+                      item={item as SidebarItem}
+                      setSelectedItemPath={setSelectedItemPath}
+                      sidebarIsExpanded={isExpanded}
+                    />
                   )
                 )}
               </li>
@@ -101,24 +112,46 @@ export const Sidebar = ({ items, expandedByDefault = true }: SidebarProps) => {
   );
 };
 
-function SidebarItemComponent({ item, sidebarIsExpanded }: { item: SidebarItem; sidebarIsExpanded: boolean }) {
+function SidebarItemComponent({
+  item,
+  setSelectedItemPath,
+  sidebarIsExpanded,
+}: {
+  item: SidebarItem;
+  setSelectedItemPath: (path: string) => void;
+  sidebarIsExpanded: boolean;
+}) {
   return (
     <li className="list-none mx-1 p-0 my-6">
-      <a href={item.link} className="flex items-center text-white">
-        <span className="mr-6 w-6">{item.icon}</span>
-        {sidebarIsExpanded && item.label}
-      </a>
+      <Link href={item.link}>
+        <div
+          onClick={() => {
+            setSelectedItemPath(item.link);
+          }}
+          className="flex items-center text-white"
+        >
+          <span className="mr-6 w-6">{item.icon}</span>
+          {sidebarIsExpanded && item.label}
+        </div>
+      </Link>
+      {item.isSelected && (
+        <div className="relative">
+          <div className="absolute h-0.5 w-full bg-[#47D3FF] mt-2" />
+        </div>
+      )}
     </li>
   );
 }
 
 function SidebarCollapsibleItemComponent({
   item,
+  setSelectedItemPath,
   isCollapsed,
   toggleIsCollapsed,
   sidebarIsExpanded,
 }: {
   item: SidebarCollapsibleItem;
+  setSelectedItemPath: (path: string) => void;
   isCollapsed: boolean;
   toggleIsCollapsed: () => void;
   sidebarIsExpanded: boolean;
@@ -147,9 +180,21 @@ function SidebarCollapsibleItemComponent({
         <ul className="list-none">
           {item.items.map((collapsedItem, index) => (
             <li key={index} className="text-sm list-none ml-12 p-0 my-4">
-              <a href={collapsedItem.link} className="text-white">
-                {collapsedItem.label}
-              </a>
+              <Link href={collapsedItem.link} className="text-white">
+                <div
+                  onClick={() => {
+                    setSelectedItemPath(collapsedItem.link);
+                  }}
+                  className="flex items-center text-white"
+                >
+                  {collapsedItem.label}
+                </div>
+              </Link>
+              {collapsedItem.isSelected && (
+                <div className="relative">
+                  <div className="absolute h-0.5 w-full bg-[#47D3FF] mt-2" />
+                </div>
+              )}
             </li>
           ))}
         </ul>
