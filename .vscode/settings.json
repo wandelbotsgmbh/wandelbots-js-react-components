@@ -1,0 +1,19 @@
+{
+  // Configuration recommended by prettier-eslint
+  // https://github.com/idahogurl/vs-code-prettier-eslint?tab=readme-ov-file#project-settings
+  "editor.defaultFormatter": "rvest.vs-code-prettier-eslint",
+  "editor.formatOnType": false,
+  "editor.formatOnPaste": true,
+  "editor.formatOnSave": true,
+  "editor.formatOnSaveMode": "file",
+  "files.autoSave": "onFocusChange",
+  "vs-code-prettier-eslint.prettierLast": false,
+  "editor.tabSize": 2,
+  "editor.insertSpaces": true,
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "typescript.enablePromptUseWorkspaceTsdk": true,
+  "i18n-ally.localesPaths": [
+    "src/i18n/locales"
+  ],
+  "i18n-ally.keystyle": "nested"
+}
