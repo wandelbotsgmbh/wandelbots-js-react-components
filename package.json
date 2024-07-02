@@ -10,9 +10,9 @@
   ],
   "types": "dist/index.d.ts",
   "scripts": {
+    "dev": "storybook dev -p 6006",
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "rollup -c",
-    "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build"
   },
   "publishConfig": {
