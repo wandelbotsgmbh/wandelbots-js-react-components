@@ -14,10 +14,6 @@ const config: StorybookConfig = {
   },
   staticDirs: [
     '../public',
-    // Configuration files for the wandelscript editor
-    {from: '../src/components/WandelscriptEditor/language_configuration', to: 'language_configuration/'},
-    // Web worker scripts for the monaco editor
-    {from: '../node_modules/monaco-editor-workers/dist/workers', to: 'workers/'}
   ],
   docs: {
     autodocs: "tag",
