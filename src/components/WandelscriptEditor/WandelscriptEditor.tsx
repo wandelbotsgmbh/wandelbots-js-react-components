@@ -1,75 +1,107 @@
-/* --------------------------------------------------------------------------------------------
- * Copyright (c) 2018-2022 TypeFox GmbH (http://www.typefox.io). All rights reserved.
- * Licensed under the MIT License. See License.txt in the project root for license information.
- * ------------------------------------------------------------------------------------------ */
-import { editor } from 'monaco-editor/esm/vs/editor/editor.api.js';
-import React, { createRef, useEffect, useMemo, useRef } from 'react';
-import { createEditor, createUrl, createWebSocket, performInit } from './utils';
+import Editor, { useMonaco, type Monaco } from "@monaco-editor/react"
+import React, { useEffect } from "react"
+import { createHighlighter, type BundledTheme } from "shiki"
+import { shikiToMonaco } from "@shikijs/monaco"
 
-import { buildWorkerDefinition } from 'monaco-editor-workers';
-buildWorkerDefinition('workers', new URL('', window.location.href).href, false);
+import wandelscriptTextmateGrammar from "./wandelscript.tmLanguage"
+import { useTheme } from "@mui/material"
 
-let init = true;
-
-export type EditorProps = {
-    defaultCode: string;
-    hostname: string;
-    port: number;
-    path: string;
-    className?: string;
+type WandelscriptEditorProps = {
+  value: string
+  onChange: React.ComponentProps<typeof Editor>["onChange"]
+  onSave: (code: string) => void
+  monacoSetup?: (monaco: Monaco) => void
+  monacoOptions?: React.ComponentProps<typeof Editor>["options"]
 }
 
-export const WandelscriptEditor: React.FC<EditorProps> = ({
-    defaultCode,
-    hostname,
-    path,
-    port,
-    className
-}) => {
-    const editorRef = useRef<editor.IStandaloneCodeEditor>();
-    const ref = createRef<HTMLDivElement>();
-    const url = useMemo(() => createUrl(hostname, port, path), [hostname, port, path]);
-    let lspWebSocket: WebSocket;
+const shikiTheme: BundledTheme = "dark-plus"
 
-    useEffect(() => {
-        const currentEditor = editorRef.current;
+export const WandelscriptEditor = (props: WandelscriptEditorProps) => {
+  const monaco = useMonaco()
+  const theme = useTheme()
 
-        if (ref.current !== null) {
-            const divElement = ref.current;
-            (async () => {
-                if (init) { 
-                    await performInit() 
-                }
-                await createEditor({
-                    htmlElement: divElement,
-                    content: defaultCode,
-                });
-                if (init) {
-                    init = false;
-                }
-                lspWebSocket = createWebSocket(url);
-            })();
+  async function setupEditor(monaco: Monaco) {
+    // Register and configure the Wandelscript language
+    monaco.languages.register({ id: "wandelscript" })
 
-            return () => {
-                currentEditor?.dispose();
-            };
-        }
+    monaco.languages.setLanguageConfiguration("wandelscript", {
+      comments: {
+        lineComment: "#",
+      },
+      brackets: [
+        ["(", ")"],
+        ["[", "]"],
+      ],
+      autoClosingPairs: [
+        { open: "[", close: "]" },
+        { open: "(", close: ")" },
+      ],
+      surroundingPairs: [
+        { open: "[", close: "]" },
+        { open: "(", close: ")" },
+      ],
+    })
 
-        window.onbeforeunload = () => {
-            // On page reload/exit, close web socket connection
-            lspWebSocket?.close();
-        };
-        return () => {
-            // On component unmount, close web socket connection
-            lspWebSocket?.close();
-        };
-    }, []);
+    // Monaco doesn't support TextMate grammar config directly, so we
+    // use Shiki as an intermediary
 
-    return (
-        <div
-            ref={ref}
-            style={{ height: '150vh' }}
-            className={className}
-        />
-    );
-};
+    const highlighter = await createHighlighter({
+      // Our textmate grammar doesn't quite conform to the expected type
+      // here; I'm not sure what the missing properties mean exactly
+      langs: [wandelscriptTextmateGrammar as any],
+      themes: [shikiTheme],
+    })
+
+    shikiToMonaco(highlighter, monaco)
+
+    // Override the generated shiki theme to use shiki syntax highlighting
+    // but vscode colors
+    monaco.editor.defineTheme(shikiTheme, {
+      base: theme.palette.mode === "dark" ? "vs-dark" : "vs",
+      inherit: true,
+      rules: [],
+      colors: {
+        // "editor.background": colors.backgroundDefault,
+        // "editorLineNumber.foreground": "#797979",
+        // "editorLineNumber.activeForeground": "#e9e9e9",
+      },
+    })
+
+
+    // Define some custom keybindings
+      monaco.editor.addCommand({
+        id: "save",
+        run: () => props.onSave ? props.onSave(monaco.editor.getModels()[0]!.getValue()) : null,
+      })
+
+      monaco.editor.addKeybindingRule({
+        keybinding: monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS,
+        command: "save",
+      })
+  }
+
+  useEffect(() => {
+    if (monaco) {
+      setupEditor(monaco)
+    }
+  }, [monaco])
+
+  if (!monaco) {
+    return null
+  }
+
+  return (
+    <Editor
+      value={props.value}
+      onChange={props.onChange}
+      defaultLanguage="wandelscript"
+      theme={shikiTheme}
+      options={{
+        minimap: { enabled: false },
+        wordWrap: "on",
+        automaticLayout: true,
+        ...props.monacoOptions,
+      }}
+    />
+  )
+}

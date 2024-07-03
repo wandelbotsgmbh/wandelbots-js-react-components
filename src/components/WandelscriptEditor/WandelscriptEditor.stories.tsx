@@ -6,8 +6,7 @@ const meta: Meta<typeof WandelscriptEditor> = {
 };
 export default meta;
 
-const defaultCode = `
-start = [832, -452, 289]  # The start position of the edge
+const defaultCode = `start = [832, -452, 289]  # The start position of the edge
 end = [817, 168, 288]  # The end position of the edge
 point_a = [602, 163, -100]  # Any point on the left plane (looking from start to end)
 point_b = [1033, 173, -100]  # Any point on the right plane (looking from start to end)
@@ -34,10 +33,12 @@ for i = 0..<int(n / 2) - 1:
 
 export const Editor: StoryObj<typeof WandelscriptEditor> = {
     args: {
-        defaultCode,
-        hostname: "0.0.0.0",
-        port: 2087,
-        path: ""
+        value: defaultCode,
+    },
+    render: (props) => {
+        return <div style={{ height: "100vh" }}>
+            <WandelscriptEditor {...props} />
+        </div>
     }
 };
 
