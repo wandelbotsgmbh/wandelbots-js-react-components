@@ -13,12 +13,18 @@ const ColorPalette = () => {
       <ColorSection name="Palette">
         <Color name="Primary" color={sojkaTheme.palette.primary.main} />
         <Color name="Secondary" color={sojkaTheme.palette.secondary.main} />
-        <Color name="Background" color={sojkaTheme.palette.background.default} />
+        <Color
+          name="Background"
+          color={sojkaTheme.palette.background.default}
+        />
       </ColorSection>
       <ColorSection name="Text">
         <Color name="Primary" color={sojkaTheme.palette.text.primary} />
         <Color name="Secondary" color={sojkaTheme.palette.text.secondary} />
-        <Color name="Primary Dark" color={sojkaTheme.palette.text.primaryDark} />
+        <Color
+          name="Primary Dark"
+          color={sojkaTheme.palette.text.primaryDark}
+        />
       </ColorSection>
       <ColorSection name="Line">
         <Color name="Primary" color={sojkaTheme.palette.line.primary} />
@@ -33,7 +39,10 @@ const ColorPalette = () => {
       </ColorSection>
       <ColorSection name="Borders">
         <Color name="Active" color={sojkaTheme.borders.active} />
-        <Color name="Non Decorative" color={sojkaTheme.borders.non_decorative} />
+        <Color
+          name="Non Decorative"
+          color={sojkaTheme.borders.non_decorative}
+        />
       </ColorSection>
       <ColorSection name="Axes">
         <Color name="X" color={sojkaTheme.axes.x} />
@@ -42,7 +51,10 @@ const ColorPalette = () => {
       </ColorSection>
       <ColorSection name="Sidebar">
         <Color name="Background" color={sojkaTheme.sidebar.background} />
-        <Color name="Background Selected" color={sojkaTheme.sidebar.backgroundSelected} />
+        <Color
+          name="Background Selected"
+          color={sojkaTheme.sidebar.backgroundSelected}
+        />
         <Color name="Selected" color={sojkaTheme.sidebar.selected} />
       </ColorSection>
     </div>

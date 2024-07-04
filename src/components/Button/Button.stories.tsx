@@ -10,13 +10,13 @@ type Story = StoryObj<typeof Button>;
 
 export const Primary: Story = {
   args: {
-    label: "Click me!"
-  }
+    label: "Click me!",
+  },
 };
 
 export const Secondary: Story = {
   args: {
     label: "Click me!",
-    color: "secondary"
-  }
+    color: "secondary",
+  },
 };

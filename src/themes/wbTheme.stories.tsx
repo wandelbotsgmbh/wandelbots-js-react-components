@@ -24,9 +24,15 @@ const ColorPalette = () => {
         <Color name="Secondary" color={wbTheme.palette.line.secondary} />
       </ColorSection>
       <ColorSection name="Button">
-        <Color name="Primary Background" color={wbTheme.buttonPrimary.background} />
+        <Color
+          name="Primary Background"
+          color={wbTheme.buttonPrimary.background}
+        />
         <Color name="Primary Text" color={wbTheme.buttonPrimary.text} />
-        <Color name="Secondary Background" color={wbTheme.buttonSecondary.background} />
+        <Color
+          name="Secondary Background"
+          color={wbTheme.buttonSecondary.background}
+        />
         <Color name="Secondary Text" color={wbTheme.buttonSecondary.text} />
         <Color name="Back Background" color={wbTheme.buttonBack.background} />
         <Color name="Back Text" color={wbTheme.buttonBack.text} />
@@ -34,12 +40,18 @@ const ColorPalette = () => {
       <ColorSection name="Input Field">
         <Color name="Background" color={wbTheme.inputField.background} />
         <Color name="Text" color={wbTheme.inputField.text} />
-        <Color name="Unit Background" color={wbTheme.inputField.unitBackground} />
+        <Color
+          name="Unit Background"
+          color={wbTheme.inputField.unitBackground}
+        />
         <Color name="Unit Text" color={wbTheme.inputField.unitText} />
       </ColorSection>
       <ColorSection name="Sidebar">
         <Color name="Background" color={wbTheme.sidebar.background} />
-        <Color name="Background Selected" color={wbTheme.sidebar.backgroundSelected} />
+        <Color
+          name="Background Selected"
+          color={wbTheme.sidebar.backgroundSelected}
+        />
         <Color name="Selected" color={wbTheme.sidebar.selected} />
       </ColorSection>
     </div>

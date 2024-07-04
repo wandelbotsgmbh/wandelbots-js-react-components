@@ -2,7 +2,7 @@ import { Meta, StoryObj } from "@storybook/react";
 import { WandelscriptEditor } from "./WandelscriptEditor";
 
 const meta: Meta<typeof WandelscriptEditor> = {
-    component: WandelscriptEditor,
+  component: WandelscriptEditor,
 };
 export default meta;
 
@@ -29,16 +29,17 @@ for i = 0..<int(n / 2) - 1:
     move via arc(a) to b
     if i == 10:
         test_pose = planned_pose()
-`
+`;
 
 export const Editor: StoryObj<typeof WandelscriptEditor> = {
-    args: {
-        value: defaultCode,
-    },
-    render: (props) => {
-        return <div style={{ height: "100vh" }}>
-            <WandelscriptEditor {...props} />
-        </div>
-    }
+  args: {
+    value: defaultCode,
+  },
+  render: (props) => {
+    return (
+      <div style={{ height: "100vh" }}>
+        <WandelscriptEditor {...props} />
+      </div>
+    );
+  },
 };
-
