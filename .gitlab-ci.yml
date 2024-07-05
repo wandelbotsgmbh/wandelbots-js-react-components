@@ -1,8 +1,0 @@
----
-
-wandelui::build:
-  image: container-registry.wabo.run/docker-hub/library/node:20.5-alpine
-  stage: build
-  script:
-    - npm ci
-    - npm run build
