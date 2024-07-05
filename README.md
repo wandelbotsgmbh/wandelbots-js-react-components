@@ -58,18 +58,21 @@ The WandelscriptEditor provides an interface for editing snippets of Wandelscrip
 declare function createNovaMuiTheme(mode: 'dark'|'light' = 'dark'): Theme
 ```
 
-This function creates a [Material UI theme](https://mui.com/material-ui/customization/theming/) with the default Nova colors and typography etc.
+This function creates a [Material UI theme](https://mui.com/material-ui/customization/theming/) with the default Nova colors, typography, and MUI component configuration.
+
+Example use in a MUI application:
 
 ```tsx
-import { createTheme } from "@mui/material/styles";
-import { getNovaThemeOptionsForMui } from "@wandelbots/wandelui"
+import { ThemeProvider } from "@mui/system"
+import { createNovaMuiTheme } from "@wandelbots/wandelui"
 
-const novaDarkTheme = createTheme({
-  name: "nova-dark",
-  ...getNovaThemeOptionsForMui({
-    mode: 'dark'
-  })
-})
+const novaDarkTheme = createNovaMuiTheme('dark')
+
+export const Layout = ({ children }: { children: React.ReactNode }) => {
+  return <ThemeProvider theme={novaDarkTheme}>
+    {children}
+  </ThemeProvider>
+}
 ```
 
 ## Contributing
