@@ -1,6 +1,5 @@
 import { ThemeOptions } from '@mui/material/styles';
 import { wbTheme } from './wbTheme';
-import { sojkaTheme } from './sojkaTheme';
 
 // TODO: Is all of this theme name foo actually necessary?
 

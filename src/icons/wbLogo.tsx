@@ -1,5 +1,3 @@
-import React from "react"; // why is this necessary?
-
 type WBLogoProps = {
   width?: number;
   fillColor?: string;

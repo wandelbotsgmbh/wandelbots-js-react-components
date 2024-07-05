@@ -6,6 +6,14 @@ A growing collection of ready-made React UI components for use with the Wandelbo
 npm install @wandelbots/wandelui
 ```
 
+### Basic usage:
+
+Import your desired components or functions from the package:
+
+```jsx
+import { WandelscriptEditor, ... } from '@wandelbots/wandelui'
+```
+
 ### Index
 
 <table>
@@ -18,7 +26,7 @@ npm install @wandelbots/wandelui
         </ul>
         <li><a href="#materialui">Material UI</a></li>
         <ul>
-          <li><a href="#novatheme">Nova Theme</a></li>
+          <li><a href="#novatheme">getNovaThemeOptionsForMui</a></li>
         </ul>
       </ul>
     </td>
@@ -44,9 +52,25 @@ The WandelscriptEditor provides an interface for editing snippets of Wandelscrip
 
 # Material UI
 
-#### Nova Theme
+#### createNovaMuiTheme
 
-TODO
+```tsx
+declare function createNovaMuiTheme(mode: 'dark'|'light' = 'dark'): Theme
+```
+
+This function creates a [Material UI theme](https://mui.com/material-ui/customization/theming/) with the default Nova colors and typography etc.
+
+```tsx
+import { createTheme } from "@mui/material/styles";
+import { getNovaThemeOptionsForMui } from "@wandelbots/wandelui"
+
+const novaDarkTheme = createTheme({
+  name: "nova-dark",
+  ...getNovaThemeOptionsForMui({
+    mode: 'dark'
+  })
+})
+```
 
 ## Contributing
 
