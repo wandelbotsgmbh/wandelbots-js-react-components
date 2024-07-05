@@ -1,7 +1,7 @@
 {
   "name": "@wandelbots/wandelui",
   "version": "0.1.17",
-  "description": "comprehensive UI toolkit for building applications on top the wandelbots platform",
+  "description": "React UI toolkit for building applications on top of the Wandelbots platform",
   "main": "dist/cjs/index.js",
   "module": "dist/esm/index.js",
   "files": [
@@ -15,12 +15,9 @@
     "build": "rollup -c",
     "build-storybook": "storybook build"
   },
-  "publishConfig": {
-    "registry": "https://registry.wabo.run/repository/wandelbots"
-  },
   "repository": {
     "type": "git",
-    "url": "https://code.wabo.run/frontend/wandelui.git"
+    "url": "https://github.com/wandelbotsgmbh/wandelui.git"
   },
   "keywords": [
     "ui",
@@ -28,7 +25,7 @@
     "wandelbots"
   ],
   "author": "Wandelbots",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "devDependencies": {
     "@babel/preset-env": "^7.22.5",
     "@babel/preset-react": "^7.22.5",
