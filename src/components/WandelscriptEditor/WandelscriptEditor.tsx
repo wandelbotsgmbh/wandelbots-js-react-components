@@ -5,13 +5,15 @@ import { shikiToMonaco } from "@shikijs/monaco"
 
 import wandelscriptTextmateGrammar from "./wandelscript.tmLanguage"
 import { useTheme } from "@mui/material"
+import { editor } from "monaco-editor"
 
 type WandelscriptEditorProps = {
-  value: string
-  onChange: React.ComponentProps<typeof Editor>["onChange"]
-  onSave: (code: string) => void
+  /** The current Wandelscript content of the code editor (controlled component) */
+  code?: string
+  /** What to do when the user edits the code */
+  onChange?: (code: string|undefined, ev: editor.IModelContentChangedEvent) => void
+  /** Callback to further configure monaco on startup if needed */
   monacoSetup?: (monaco: Monaco) => void
-  monacoOptions?: React.ComponentProps<typeof Editor>["options"]
 }
 
 const shikiTheme: BundledTheme = "dark-plus"
@@ -67,17 +69,21 @@ export const WandelscriptEditor = (props: WandelscriptEditorProps) => {
       },
     })
 
+    if (props.monacoSetup) {
+      props.monacoSetup(monaco)
+    }
+
 
     // Define some custom keybindings
-      monaco.editor.addCommand({
-        id: "save",
-        run: () => props.onSave ? props.onSave(monaco.editor.getModels()[0]!.getValue()) : null,
-      })
+      // monaco.editor.addCommand({
+      //   id: "save",
+      //   run: () => props.onSave ? props.onSave(monaco.editor.getModels()[0]!.getValue()) : null,
+      // })
 
-      monaco.editor.addKeybindingRule({
-        keybinding: monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS,
-        command: "save",
-      })
+      // monaco.editor.addKeybindingRule({
+      //   keybinding: monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS,
+      //   command: "save",
+      // })
   }
 
   useEffect(() => {
@@ -92,7 +98,7 @@ export const WandelscriptEditor = (props: WandelscriptEditorProps) => {
 
   return (
     <Editor
-      value={props.value}
+      value={props.code}
       onChange={props.onChange}
       defaultLanguage="wandelscript"
       theme={shikiTheme}
@@ -100,7 +106,7 @@ export const WandelscriptEditor = (props: WandelscriptEditorProps) => {
         minimap: { enabled: false },
         wordWrap: "on",
         automaticLayout: true,
-        ...props.monacoOptions,
+        // ...props.monacoOptions,
       }}
     />
   )

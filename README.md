@@ -1,9 +1,63 @@
 # WandelUI
 
-A comprehensive UI toolkit for building applications on top the Wandelbots platform.
+A growing collection of ready-made React UI components for use with the Wandelbots Nova platform. 
 
-## Usage
+```bash
+npm install @wandelbots/wandelui
+```
 
-- `npm run dev` starts a storybook for showcasing all available components. 
-- `npm run build` builds the library for consumption in other projects.
+### Index
 
+<table>
+  <tr>
+    <td valign="top">
+      <ul>
+        <li><a href="#wandelscript">Wandelscript</a></li>
+        <ul>
+          <li><a href="#wandelscripteditor">WandelscriptEditor</a></li>
+        </ul>
+        <li><a href="#materialui">Material UI</a></li>
+        <ul>
+          <li><a href="#novatheme">Nova Theme</a></li>
+        </ul>
+      </ul>
+    </td>
+  </tr>
+</table>
+
+# Wandelscript
+
+#### WandelscriptEditor
+
+```tsx
+type WandelscriptEditorProps = {
+  /** The current Wandelscript content of the code editor (controlled component) */
+  code?: string
+  /** What to do when the user edits the code */
+  onChange?: (code: string|undefined, ev: editor.IModelContentChangedEvent) => void
+  /** Callback to further configure monaco on startup if needed */
+  monacoSetup?: (monaco: Monaco) => void
+}
+```
+
+The WandelscriptEditor provides an interface for editing snippets of Wandelscript code with the appropriate syntax highlighting. It uses the [Monaco](https://microsoft.github.io/monaco-editor/) editor under the hood.
+
+# Material UI
+
+#### Nova Theme
+
+TODO
+
+## Contributing
+
+To set up wandelui for development, first clone the repo and run:
+
+```bash
+npm install
+``` 
+
+Then you can run the storybook to develop the components:
+
+```bash
+npm run dev
+```
