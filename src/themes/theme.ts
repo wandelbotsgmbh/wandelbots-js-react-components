@@ -3,11 +3,10 @@ import { wbTheme } from './wbTheme';
 
 // TODO: Is all of this theme name foo actually necessary?
 
-type ThemeName = 'wandelbots' | 'sojka'
+type ThemeName = 'wandelbots'
 
 export const allThemes = {
   wb: wbTheme,
-  sojka: sojkaTheme,
 }
 
 export interface NamedThemeOptions extends ThemeOptions {

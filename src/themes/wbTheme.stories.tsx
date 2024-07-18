@@ -1,4 +1,3 @@
-import React from "react";
 import { wbTheme } from "./wbTheme";
 import { Meta, StoryObj } from "@storybook/react";
 import { Color, ColorSection } from "./color";
@@ -18,10 +17,6 @@ const ColorPalette = () => {
       <ColorSection name="Text">
         <Color name="Primary" color={wbTheme.palette.text.primary} />
         <Color name="Secondary" color={wbTheme.palette.text.secondary} />
-      </ColorSection>
-      <ColorSection name="Line">
-        <Color name="Primary" color={wbTheme.palette.line.primary} />
-        <Color name="Secondary" color={wbTheme.palette.line.secondary} />
       </ColorSection>
       <ColorSection name="Button">
         <Color
