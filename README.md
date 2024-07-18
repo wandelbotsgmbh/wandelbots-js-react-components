@@ -1,9 +1,9 @@
-# WandelUI
+# Wandelbots React Components
 
-A growing collection of ready-made React UI components for use with the Wandelbots Nova platform. 
+A growing collection of ready-made React UI components based on MaterialUI and React Three Fiber for use with the Wandelbots platform. 
 
 ```bash
-npm install @wandelbots/wandelui
+npm install @wandelbots/wandelbots-js-react-components
 ```
 
 ### Basic usage:
@@ -11,7 +11,7 @@ npm install @wandelbots/wandelui
 Import your desired components or functions from the package:
 
 ```jsx
-import { WandelscriptEditor, ... } from '@wandelbots/wandelui'
+import { WandelscriptEditor, ... } from '@wandelbots/wandelbots-js-react-components'
 ```
 
 ### Index
@@ -26,7 +26,7 @@ import { WandelscriptEditor, ... } from '@wandelbots/wandelui'
         </ul>
         <li><a href="#materialui">Material UI</a></li>
         <ul>
-          <li><a href="#novatheme">getNovaThemeOptionsForMui</a></li>
+          <li><a href="#defaulttheme">getDefaultThemeOptionsForMui</a></li>
         </ul>
       </ul>
     </td>
@@ -52,24 +52,24 @@ The WandelscriptEditor provides an interface for editing snippets of Wandelscrip
 
 # Material UI
 
-#### createNovaMuiTheme
+#### createDefaultMuiTheme
 
 ```tsx
-declare function createNovaMuiTheme(mode: 'dark'|'light' = 'dark'): Theme
+declare function createDefaultMuiTheme(mode: 'dark'|'light' = 'dark'): Theme
 ```
 
-This function creates a [Material UI theme](https://mui.com/material-ui/customization/theming/) with the default Nova colors, typography, and MUI component configuration.
+This function creates a [Material UI theme](https://mui.com/material-ui/customization/theming/) with the default colors, typography, and MUI component configuration.
 
 Example use in a MUI application:
 
 ```tsx
 import { ThemeProvider } from "@mui/system"
-import { createNovaMuiTheme } from "@wandelbots/wandelui"
+import { createDefaultMuiTheme } from "@wandelbots/wandelui"
 
-const novaDarkTheme = createNovaMuiTheme('dark')
+const defaultDarkTheme = createDefaultMuiTheme('dark')
 
 export const Layout = ({ children }: { children: React.ReactNode }) => {
-  return <ThemeProvider theme={novaDarkTheme}>
+  return <ThemeProvider theme={defaultDarkTheme}>
     {children}
   </ThemeProvider>
 }

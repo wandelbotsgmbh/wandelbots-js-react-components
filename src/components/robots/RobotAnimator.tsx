@@ -6,7 +6,7 @@ import {
   getAllJointsByName,
   type RobotSceneJoint,
 } from "../utils/robotTreeQuery"
-import type { ConnectedMotionGroup } from "@wandelbots/nova-js"
+import type { ConnectedMotionGroup } from "@wandelbots/wandelbots-js"
 import { useAutorun } from "../utils/hooks"
 
 type RobotAnimatorProps = {

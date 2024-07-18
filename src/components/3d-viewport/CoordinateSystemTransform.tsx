@@ -3,7 +3,7 @@ import type { ReactNode } from "react"
 import { Vector3, Quaternion } from "three"
 
 /**
- * Applies a Nova API coordinate system transformation to
+ * Applies a API coordinate system transformation to
  * all react-three child components.
  */
 export const CoordinateSystemTransform = ({
