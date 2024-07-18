@@ -31,10 +31,10 @@ export type RobotProps = {
 
 export type SupportedRobotProps = RobotProps & {
   connectedMotionGroup: ConnectedMotionGroup
-  getModel?: (modelFromController: string) => Promise<string>;
+  getModel?: (modelFromController: string) => string;
 }
 
-const defaultGetModel = async (modelFromController: string): Promise<string> => {
+const defaultGetModel = (modelFromController: string): string => {
   const cdnUrl = `https://cdn.jsdelivr.net/gh/wandelbotsgmbh/wandelbots-js-react-components/public/models/${modelFromController}.glb`;
   return cdnUrl;
 };
