@@ -1,9 +1,6 @@
 # @wandelbots/wandelbots-js-react-components
 
 [![NPM version](https://img.shields.io/npm/v/@wandelbots/wandelbots-js-react-components.svg)](https://npmjs.org/package/@wandelbots/wandelbots-js-react-components) [![npm bundle size](https://img.shields.io/bundlephobia/minzip/@wandelbots/wandelbots-js-react-components)](https://bundlephobia.com/package/@wandelbots/wandelbots-js-react-components)
-# @wandelbots/wandelbots-js-react-components
-
-[![NPM version](https://img.shields.io/npm/v/@wandelbots/wandelbots-js-react-components.svg)](https://npmjs.org/package/@wandelbots/wandelbots-js-react-components) [![npm bundle size](https://img.shields.io/bundlephobia/minzip/@wandelbots/wandelbots-js-react-components)](https://bundlephobia.com/package/@wandelbots/wandelbots-js-react-components)
 
 A growing collection of ready-made React UI components based on MaterialUI and React Three Fiber for use with the Wandelbots platform. 
 
@@ -43,7 +40,7 @@ import { WandelscriptEditor, ... } from '@wandelbots/wandelbots-js-react-compone
   </tr>
 </table>
 
-# Wandelscript
+### Wandelscript
 
 #### WandelscriptEditor
 
@@ -62,7 +59,7 @@ type WandelscriptEditorProps = {
 }
 ```
 
-# MaterialUI
+### MaterialUI
 
 #### defaulttheme
 
@@ -87,7 +84,7 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
 }
 ```
 
-# viewport
+### Viewport
 
 #### Robots
 
