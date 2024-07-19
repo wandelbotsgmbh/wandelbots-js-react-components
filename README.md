@@ -46,8 +46,6 @@ import { WandelscriptEditor, ... } from '@wandelbots/wandelbots-js-react-compone
 
 The WandelscriptEditor provides an interface for editing snippets of Wandelscript code with the appropriate syntax highlighting. It uses the [Monaco](https://microsoft.github.io/monaco-editor/) editor under the hood.
 
-The WandelscriptEditor provides an interface for editing snippets of Wandelscript code with the appropriate syntax highlighting. It uses the [Monaco](https://microsoft.github.io/monaco-editor/) editor under the hood.
-
 ```tsx
 type WandelscriptEditorProps = {
   /** The current Wandelscript content of the code editor (controlled component) */
@@ -118,7 +116,7 @@ The `PresetEnvironment` component adds a default lighting setup to the 3D viewpo
 
 ## Contributing
 
-To set up wandelui for development, first clone the repo and run:
+To set up wandelbots-js-react-components for development, first clone the repo and run:
 
 ```bash
 npm install
