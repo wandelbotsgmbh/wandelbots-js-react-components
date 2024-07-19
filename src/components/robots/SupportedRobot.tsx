@@ -34,9 +34,8 @@ export type SupportedRobotProps = RobotProps & {
   getModel?: (modelFromController: string) => string;
 }
 
-const defaultGetModel = (modelFromController: string): string => {
-  const cdnUrl = `https://cdn.jsdelivr.net/gh/wandelbotsgmbh/wandelbots-js-react-components/public/models/${modelFromController}.glb`;
-  return cdnUrl;
+function defaultGetModel(modelFromController: string): string {
+  return `https://cdn.jsdelivr.net/gh/wandelbotsgmbh/wandelbots-js-react-components/public/models/${modelFromController}.glb`;
 };
 
 export function SupportedRobot({ getModel = defaultGetModel, ...props }: SupportedRobotProps) {
