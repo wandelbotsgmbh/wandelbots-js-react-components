@@ -82,6 +82,7 @@
   },
   "dependencies": {
     "@monaco-editor/react": "^4.6.0",
+    "@mui/icons-material": "^5.16.5",
     "@mui/lab": "^5.0.0-alpha.172",
     "@shikijs/monaco": "^1.10.1",
     "lodash-es": "^4.17.21",

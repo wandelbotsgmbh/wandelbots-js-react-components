@@ -8,9 +8,6 @@ export const LoadingButton = forwardRef<HTMLButtonElement, LoadingButtonProps>(
     return (
       <MUILoadingButton
         sx={{
-          "& .MuiButton-icon": {
-            marginLeft: "0px",
-          },
           ...sx,
         }}
         ref={ref}
