@@ -1,8 +1,7 @@
 import { keyBy } from "lodash-es"
 import { autorun, makeAutoObservable, type IReactionDisposer } from "mobx"
-import type { ActiveRobot } from "./ActiveRobot"
-import type { CoordinateSystem, RobotTcp } from "@wandelbots/wandelbots-js"
-import { tryParseJson } from "@/util/converters"
+import type { CoordinateSystem, JoggerConnection, RobotTcp } from "@wandelbots/wandelbots-js"
+import { tryParseJson } from "@wandelbots/wandelbots-js"
 
 const discreteIncrementOptions = [
   { id: "0.1", mm: 0.1, degrees: 0.05 },
@@ -22,6 +21,9 @@ export type IncrementOptionId = IncrementOption["id"]
 
 export class JoggingStore {
   selectedTabId: "cartesian" | "joint" | "debug" = "cartesian"
+
+  // TODO
+  isLocked: boolean = false
 
   /**
    * Id of selected coordinate system from among those defined on the API side
@@ -68,8 +70,8 @@ export class JoggingStore {
    * Load a jogging store with the relevant data it needs
    * from the backend
    */
-  static async loadFor(activeRobot: ActiveRobot) {
-    const { nova } = activeRobot.robotPad
+  static async loadFor(jogger: JoggerConnection) {
+    const { nova } = jogger
 
     // Find out what TCPs this motion group has (we need it for jogging)
     const [{ coordinatesystems }, { tcps }] = await Promise.all([
@@ -78,16 +80,16 @@ export class JoggingStore {
 
       // Same for TCPs
       nova.api.motionGroupInfos.listTcps(
-        activeRobot.motionGroup.motion_group,
+        jogger.motionGroupId,
         "ROTATION_VECTOR",
       ),
     ])
 
-    return new JoggingStore(activeRobot, coordinatesystems || [], tcps || [])
+    return new JoggingStore(jogger, coordinatesystems || [], tcps || [])
   }
 
   constructor(
-    readonly activeRobot: ActiveRobot,
+    readonly jogger: JoggerConnection,
     readonly coordSystems: CoordinateSystem[],
     readonly tcps: RobotTcp[],
   ) {

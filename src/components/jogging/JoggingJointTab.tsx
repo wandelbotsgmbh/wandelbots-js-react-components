@@ -1,56 +1,18 @@
 import { Stack, Typography } from "@mui/material"
 import { observer } from "mobx-react-lite"
-import { useActiveRobot } from "./RobotPadContext"
-import { radiansToDegree } from "@/util/converters"
+import { radiansToDegrees } from "@wandelbots/wandelbots-js"
 import type { JoggingStore } from "./JoggingStore"
-import type { MotionGroupJogger } from "./MotionGroupJogger"
 import { JoggingVelocitySlider } from "./JoggingVelocitySlider"
-import { JoggingJointButtonPair } from "./JoggingJointButtonPair"
-import { useTranslation } from "react-i18next"
+import { JoggingJointRotationControl } from "./JoggingJointRotationControl"
 import { JoggingJointValues } from "./JoggingJointValues"
 
 export const JoggingJointTab = observer(
-  ({ store, jogger }: { store: JoggingStore; jogger: MotionGroupJogger }) => {
-    const activeRobot = useActiveRobot()
-    const { robotPad } = activeRobot
-
-    // async function runIncrementalJointJog(
-    //   increment: DiscreteIncrementOption,
-    //   joint: number,
-    //   direction: "-" | "+",
-    // ) {
-    //   const currentJoints =
-    //     activeRobot.rapidlyChangingMotionState.joint_position
-
-    //   try {
-    //     store.setIncrementJoggingInProgress(true)
-    //     await jogger.runIncrementalJointRotation({
-    //       joint,
-    //       currentJoints,
-    //       velocityRadsPerSec: store.rotationVelocityRadsPerSec,
-    //       direction,
-    //       distanceRads: degreesToRadians(increment.degrees),
-    //     })
-    //   } finally {
-    //     store.setIncrementJoggingInProgress(false)
-    //   }
-    // }
-
+  ({ store }: { store: JoggingStore; }) => {
     async function startJointJogging(opts: {
       joint: number
       direction: "-" | "+"
     }) {
-      if (robotPad.isLocked) return
-
-      // if (store.selectedDiscreteIncrement) {
-      //   return runIncrementalJointJog(
-      //     store.selectedDiscreteIncrement,
-      //     opts.joint,
-      //     opts.direction,
-      //   )
-      // }
-
-      await jogger.startJointJogging({
+      await store.jogger.startJointRotation({
         joint: opts.joint,
         direction: opts.direction,
         velocityRadsPerSec: store.rotationVelocityRadsPerSec,
@@ -58,28 +20,26 @@ export const JoggingJointTab = observer(
     }
 
     async function stopJointJogging() {
-      // if (robotPad.isLocked) return
-      // if (store.selectedDiscreteIncrement) return
-
-      await jogger.stopJogging()
+      await store.jogger.stop()
     }
+  
     return (
       <Stack>
         <JoggingVelocitySlider store={store} />
-        <JoggingJointValues />
+        <JoggingJointValues store={store} />
         <Stack>
-          {activeRobot.joints.map((joint) => {
+          {store.jogger.motionStream.joints.map((joint) => {
             const jointLimits =
-              activeRobot.motionGroupSpecification.mechanical_joint_limits?.[
+              store.jogger.motionStream.motionGroupSpecification.mechanical_joint_limits?.[
                 joint.index
               ]
             const lowerLimitDegs =
               jointLimits?.lower_limit !== undefined
-                ? radiansToDegree(jointLimits.lower_limit)
+                ? radiansToDegrees(jointLimits.lower_limit)
                 : undefined
             const upperLimitDegs =
               jointLimits?.upper_limit !== undefined
-                ? radiansToDegree(jointLimits.upper_limit)
+                ? radiansToDegrees(jointLimits.upper_limit)
                 : undefined
 
             return (
@@ -96,17 +56,17 @@ export const JoggingJointTab = observer(
                     textAlign: "right",
                   }}
                 >{`J${joint.index + 1}`}</Typography>
-                <JoggingJointButtonPair
+                <JoggingJointRotationControl
                   key={joint.index}
-                  disabled={robotPad.isLocked}
+                  disabled={store.isLocked}
                   lowerLimitDegs={lowerLimitDegs}
                   upperLimitDegs={upperLimitDegs}
                   getValueDegs={() => {
                     const value =
-                      activeRobot.rapidlyChangingMotionState.state
+                      store.jogger.motionStream.rapidlyChangingMotionState.state
                         .joint_position.joints[joint.index]
                     return value !== undefined
-                      ? radiansToDegree(value)
+                      ? radiansToDegrees(value)
                       : undefined
                   }}
                   startJogging={(direction: "-" | "+") =>

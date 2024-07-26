@@ -1,19 +1,24 @@
 import { observer } from "mobx-react-lite"
-import { useActiveRobot } from "./RobotPadContext"
 import { Stack, Typography } from "@mui/material"
 import { useRef } from "react"
 import { useTranslation } from "react-i18next"
+import { JoggingStore } from "./JoggingStore"
+import { useAnimationFrame } from "../utils/hooks"
 
-export const JoggingJointValues = observer(() => {
-  const activeRobot = useActiveRobot()
+export const JoggingJointValues = observer(({ store }: { store: JoggingStore }) => {
   const valueHolderRef = useRef<HTMLPreElement>(null)
   const { t } = useTranslation()
 
   function getCurrentValueString() {
-    const joints =
-      activeRobot.rapidlyChangingMotionState.state.joint_position.joints
+    const { joints } =
+      store.jogger.motionStream.rapidlyChangingMotionState.state.joint_position
     return `{${joints.map((j) => parseFloat(j.toFixed(4))).join(", ")}}`
   }
+
+  useAnimationFrame(() => {
+    if (!valueHolderRef.current) return
+    valueHolderRef.current.textContent = getCurrentValueString()
+  })
 
   return (
     <Stack alignItems="center" marginTop="0.8rem">

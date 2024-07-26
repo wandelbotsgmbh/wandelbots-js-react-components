@@ -1,41 +1,40 @@
 import { Stack, Tab, Tabs } from "@mui/material"
 import { observer, useLocalObservable } from "mobx-react-lite"
-import { useActiveRobot } from "./RobotPadContext"
 import { useEffect } from "react"
 import { JoggingCartesianTab } from "./JoggingCartesianTab"
 import { JoggingJointTab } from "./JoggingJointTab"
 import { JoggingStore } from "./JoggingStore"
-import { LoadingScreen } from "./LoadingScreen"
-import { MotionGroupJogger } from "./MotionGroupJogger"
+import { LoadingCover } from "../LoadingCover"
 import { runInAction } from "mobx"
 import { useTranslation } from "react-i18next"
-import { useThemeColors } from "@/theme"
-import { LoadingButton } from "@/components/LoadingButton"
-import { JoggingDebugTab } from "./JoggingDebugTab"
+import { useThemeColors } from "../../themes/wbTheme"
+import { NovaClient, JoggerConnection } from "@wandelbots/wandelbots-js"
 
-export const JoggingPanel = observer(() => {
-  const activeRobot = useActiveRobot()
+export type JoggingPanelProps = {
+  nova: NovaClient
+  motionGroupId: string
+}
+
+export const JoggingPanel = observer((props: JoggingPanelProps) => {
   const { t } = useTranslation()
-  const { robotPad } = activeRobot
-  const { nova } = robotPad
+  const { nova } = props
 
   const state = useLocalObservable(() => ({
-    jogger: null as MotionGroupJogger | null,
+    loaded: null as {
+      jogger: JoggerConnection,
+      joggingStore: JoggingStore
+    } | null,
+    jogger: null as JoggerConnection | null,
+    joggingStore: null as JoggingStore | null,
     loadingError: null as unknown | null,
-    savingPoint: false,
   }))
 
   async function init() {
     try {
-      const store =
-        activeRobot.joggingStore || (await JoggingStore.loadFor(activeRobot))
+      const jogger = await nova.connectJogger(props.motionGroupId)
+      const joggingStore = await JoggingStore.loadFor(jogger)
       runInAction(() => {
-        activeRobot.joggingStore = store
-        state.jogger = new MotionGroupJogger({
-          nova: nova,
-          motionGroupId: activeRobot.motionGroupId,
-          numJoints: activeRobot.joints.length,
-        })
+        state.loaded = { jogger, joggingStore }
       })
     } catch (err) {
       state.loadingError = err
@@ -51,14 +50,14 @@ export const JoggingPanel = observer(() => {
 
   // Set correct jogging mode on jogger based on user selections
   useEffect(() => {
-    if (!activeRobot.joggingStore || !state.jogger) return
+    if (!state.loaded) return
 
     const {
       currentTab,
       selectedTcpId,
       selectedCoordSystemId,
       selectedDiscreteIncrement,
-    } = activeRobot.joggingStore
+    } = state.loaded.joggingStore
 
     if (currentTab.id !== "cartesian" && currentTab.id !== "joint") return
 
@@ -73,19 +72,21 @@ export const JoggingPanel = observer(() => {
       state.jogger.setJoggingMode(currentTab.id, cartesianJoggingOpts)
     }
   }, [
-    activeRobot.joggingStore?.currentTab,
-    activeRobot.joggingStore?.selectedTcpId,
-    activeRobot.joggingStore?.selectedCoordSystemId,
-    activeRobot.joggingStore?.selectedDiscreteIncrement,
+    state.loaded?.joggingStore.currentTab,
+    state.loaded?.joggingStore.selectedTcpId,
+    state.loaded?.joggingStore.selectedCoordSystemId,
+    state.loaded?.joggingStore.selectedDiscreteIncrement,
   ])
 
   useEffect(() => {
+    if (!state.loaded) return
+
     // Set the robot to default control mode (JoZi says is important for physical robot jogging)
 
     async function init() {
       try {
         await nova.api.controller.setDefaultMode(
-          activeRobot.controllerId,
+          state.loaded.jogger.motionStream.controllerId,
           "MODE_CONTROL",
         )
       } catch (err) {
@@ -94,57 +95,17 @@ export const JoggingPanel = observer(() => {
     }
 
     init()
-  }, [activeRobot.controllerId])
+  }, [state.loaded?.jogger.motionStream.controllerId])
 
-  const store = activeRobot.joggingStore
-  const jogger = state.jogger
-
-  if (!store || !jogger) {
+  if (!state.loaded) {
     return (
       <JoggingPanelOuter>
-        <LoadingScreen message="Loading jogging" error={state.loadingError} />
+        <LoadingCover message="Loading jogging" error={state.loadingError} />
       </JoggingPanelOuter>
     )
   }
 
-  async function savePoint() {
-    if (state.savingPoint) return
-
-    runInAction(() => {
-      state.savingPoint = true
-    })
-
-    try {
-      const flangePose =
-        activeRobot.rapidlyChangingMotionState.state.flange_pose
-      const tcpPose = activeRobot.rapidlyChangingMotionState.tcp_pose!
-      const jointPosition =
-        activeRobot.rapidlyChangingMotionState.state.joint_position
-      if (!tcpPose || !flangePose) return
-
-      const worldPose =
-        await nova.api.coordinateSystems.transformInCoordinateSystem(
-          "world",
-          flangePose,
-        )
-
-      activeRobot.savePointFromJogging({
-        jointAnglesInRads: jointPosition.joints,
-        worldPositionInMm: worldPose.position,
-        worldRotationInRads: worldPose.orientation || { x: 0, y: 0, z: 0 },
-        tcpPose: {
-          position: tcpPose.position,
-          orientation: tcpPose.orientation || { x: 0, y: 0, z: 0 },
-          coordSystemId: tcpPose.coordinate_system || "world",
-          tcpId: tcpPose.tcp,
-        },
-      })
-    } finally {
-      runInAction(() => {
-        state.savingPoint = false
-      })
-    }
-  }
+  const { joggingStore: store, jogger } = state.loaded
 
   return (
     <JoggingPanelOuter>
@@ -164,36 +125,12 @@ export const JoggingPanel = observer(() => {
         {/* Current tab content */}
         <Stack flexGrow={1}>
           {store.currentTab.id === "cartesian" && (
-            <JoggingCartesianTab store={store} jogger={jogger} />
+            <JoggingCartesianTab store={store} />
           )}
           {store.currentTab.id === "joint" && (
-            <JoggingJointTab store={store} jogger={jogger} />
+            <JoggingJointTab store={store} />
           )}
-          {store.currentTab.id === "debug" && <JoggingDebugTab />}
         </Stack>
-
-        {/* Add point button => goto points tool */}
-        {store.selectedTabId === "cartesian" && (
-          <Stack
-            alignItems={"center"}
-            sx={{
-              marginBottom: "1rem",
-            }}
-          >
-            <LoadingButton
-              loading={state.savingPoint}
-              variant="contained"
-              sx={{
-                width: "90%",
-                maxWidth: "250px",
-              }}
-              onClick={savePoint}
-              disabled={robotPad.isLocked}
-            >
-              {t("Jogging.SavePose.bt")}
-            </LoadingButton>
-          </Stack>
-        )}
       </Stack>
     </JoggingPanelOuter>
   )

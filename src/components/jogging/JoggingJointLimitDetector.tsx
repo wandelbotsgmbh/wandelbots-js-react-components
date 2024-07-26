@@ -1,33 +1,31 @@
 import { Typography } from "@mui/material"
 import { useTranslation } from "react-i18next"
-import { useActiveRobot } from "./RobotPadContext"
 import { useState } from "react"
 import { isEqual } from "lodash-es"
-import { useAutorun } from "@/util/hooks"
+import { MotionStreamConnection } from "@wandelbots/wandelbots-js"
+import { useAnimationFrame } from "../utils/hooks"
+import { JoggingStore } from "./JoggingStore"
 
 /**
  * Monitors the active robot motion state and displays a message if
  * any joint limits are reached.
  */
-export const JoggingJointLimitDetector = () => {
-  const activeRobot = useActiveRobot()
+export const JoggingJointLimitDetector = ({ store }: { store: JoggingStore }) => {
   const { t } = useTranslation()
 
   const [jointLimitsReached, setJointLimitsReached] = useState(
-    activeRobot.rapidlyChangingMotionState.state.joint_limit_reached
+    store.jogger.motionStream.rapidlyChangingMotionState.state.joint_limit_reached
       .limit_reached,
   )
 
-  useAutorun(() => {
+  useAnimationFrame(() => {
     const newLimitsReached =
-      activeRobot.rapidlyChangingMotionState.state.joint_limit_reached
+      store.jogger.motionStream.rapidlyChangingMotionState.state.joint_limit_reached
         .limit_reached
 
-    requestAnimationFrame(() => {
-      if (!isEqual(jointLimitsReached, newLimitsReached)) {
-        setJointLimitsReached(newLimitsReached)
-      }
-    })
+    if (!isEqual(jointLimitsReached, newLimitsReached)) {
+      setJointLimitsReached(newLimitsReached)
+    }
   })
 
   const jointLimitReachedIndices: number[] = []

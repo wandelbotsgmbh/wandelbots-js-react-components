@@ -1,12 +1,10 @@
-import { Stack, MenuItem, InputLabel } from "@mui/material"
+import { Stack, MenuItem, InputLabel, Select } from "@mui/material"
 import { observer } from "mobx-react-lite"
-import { ThemeSelect } from "@/components/ThemeSelect"
 import type { IncrementOptionId, JoggingStore } from "./JoggingStore"
 import { useTranslation } from "react-i18next"
-import { useThemeColors } from "@/theme"
+import { useThemeColors } from "../../themes/wbTheme"
 
 export const JoggingOptions = observer(({ store }: { store: JoggingStore }) => {
-  const { robotPad } = store.activeRobot
   const { t } = useTranslation()
   const colors = useThemeColors()
 
@@ -27,57 +25,54 @@ export const JoggingOptions = observer(({ store }: { store: JoggingStore }) => {
       {/* Coordinate system */}
       <Stack width="33%">
         <InputLabel id="jogging-coord-select">{"Coordinate Sys."}</InputLabel>
-        <ThemeSelect
+        <Select
           labelId="jogging-coord-select"
           value={store.selectedCoordSystemId}
           displayEmpty={true}
-          kind="filled"
           onChange={(event) => {
             store.setSelectedCoordSystemId(event.target.value as string)
           }}
-          disabled={robotPad.isLocked}
+          disabled={store.isLocked}
         >
           {store.coordSystems.map((cs) => (
             <MenuItem key={cs.coordinate_system} value={cs.coordinate_system}>
               {cs.name || cs.coordinate_system}
             </MenuItem>
           ))}
-        </ThemeSelect>
+        </Select>
       </Stack>
 
       {/* TCP selection */}
       <Stack width="33%">
         <InputLabel id="jogging-tcp-select">TCP</InputLabel>
-        <ThemeSelect
+        <Select
           labelId="jogging-tcp-select"
           value={store.selectedTcpId}
-          kind="filled"
           onChange={(event) => {
             store.setSelectedTcpId(event.target.value as string)
           }}
-          disabled={robotPad.isLocked}
+          disabled={store.isLocked}
         >
           {store.tcps.map((tcp) => (
             <MenuItem key={tcp.id} value={tcp.id}>
               {tcp.id}
             </MenuItem>
           ))}
-        </ThemeSelect>
+        </Select>
       </Stack>
 
       {/* Increment selection */}
       <Stack width="33%">
         <InputLabel id="jogging-increment-select">{"Increment"}</InputLabel>
-        <ThemeSelect
+        <Select
           labelId="jogging-increment-select"
           value={store.selectedIncrementId}
-          kind="filled"
           onChange={(event) => {
             store.setSelectedIncrementId(
               event.target.value as IncrementOptionId,
             )
           }}
-          disabled={robotPad.isLocked}
+          disabled={store.isLocked}
         >
           <MenuItem key="continuous" value="continuous">
             {t("Jogging.Increment.Continuous.dd")}
@@ -90,7 +85,7 @@ export const JoggingOptions = observer(({ store }: { store: JoggingStore }) => {
                 : `${inc.degrees}°`}
             </MenuItem>
           ))}
-        </ThemeSelect>
+        </Select>
       </Stack>
     </Stack>
   )

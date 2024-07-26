@@ -1,24 +1,22 @@
 import { IconButton, Slider, Typography } from "@mui/material"
 import Stack from "@mui/material/Stack"
 import { observer, useLocalObservable } from "mobx-react-lite"
-import { useThemeColors } from "@/theme"
-import { defaultsDeep, omit } from "lodash-es"
 import { useTranslation } from "react-i18next"
-import { runInAction } from "mobx"
 import { ChevronLeft, ChevronRight } from "@mui/icons-material"
-import { useAutorun } from "@/util/hooks"
+import { useAnimationFrame } from "../utils/hooks"
+import { useState } from "react"
 
-type JoggingJointButtonPairProps = {
+type JoggingJointRotationControlProps = {
   startJogging: (direction: "-" | "+") => void
   stopJogging: () => void
-  lowerLimitDegs: number | undefined
-  upperLimitDegs: number | undefined
-  getValueDegs: () => number | undefined
+  lowerLimitDegs?: number
+  upperLimitDegs?: number
+  getValueDegs: () => number
 
   disabled?: boolean
 } & React.ComponentProps<typeof Stack>
 
-export const JoggingJointButtonPair = observer(
+export const JoggingJointRotationControl = observer(
   ({
     startJogging,
     stopJogging,
@@ -27,11 +25,11 @@ export const JoggingJointButtonPair = observer(
     getValueDegs,
     disabled,
     ...rest
-  }: JoggingJointButtonPairProps) => {
+  }: JoggingJointRotationControlProps) => {
     const { t } = useTranslation()
-    const colors = useThemeColors()
+    const [currentValue, setCurrentValue] = useState<number>(0)
+
     const state = useLocalObservable(() => ({
-      currentValue: getValueDegs(),
       activeJoggingDir: null as "-" | "+" | null,
 
       startJogging(dir: "-" | "+") {
@@ -45,13 +43,8 @@ export const JoggingJointButtonPair = observer(
       },
     }))
 
-    useAutorun(() => {
-      const value = getValueDegs()
-      requestAnimationFrame(() => {
-        runInAction(() => {
-          state.currentValue = value
-        })
-      })
+    useAnimationFrame(() => {
+      setCurrentValue(getValueDegs())
     })
 
     function onPointerDownMinus(ev: React.PointerEvent) {
@@ -130,7 +123,7 @@ export const JoggingJointButtonPair = observer(
               top: "5px",
             }}
           >
-            {formatDegrees(state.currentValue)}
+            {formatDegrees(currentValue)}
           </Typography>
 
           <Slider
@@ -138,7 +131,7 @@ export const JoggingJointButtonPair = observer(
             aria-label="Joint position"
             min={lowerLimitDegs}
             max={upperLimitDegs}
-            value={state.currentValue}
+            value={currentValue}
             track={false}
             sx={{
               "& .MuiSlider-mark": {

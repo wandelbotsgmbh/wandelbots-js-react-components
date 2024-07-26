@@ -1,10 +1,10 @@
-import { useAutorun } from "@/util/hooks"
 import { Button, Typography } from "@mui/material"
 import Stack from "@mui/material/Stack"
 import { observer } from "mobx-react-lite"
 import { useRef, type ReactNode } from "react"
+import { useAnimationFrame } from "../utils/hooks"
 
-type JoggingAxisButtonPairProps = {
+type JoggingCartesianAxisControlProps = {
   color?: string
   label: ReactNode
   getDisplayedValue: () => string
@@ -13,7 +13,7 @@ type JoggingAxisButtonPairProps = {
   disabled?: boolean
 } & React.ComponentProps<typeof Stack>
 
-export const JoggingAxisButtonPair = observer(
+export const JoggingCartesianAxisControl = observer(
   ({
     color,
     label,
@@ -22,16 +22,13 @@ export const JoggingAxisButtonPair = observer(
     stopJogging,
     disabled,
     ...rest
-  }: JoggingAxisButtonPairProps) => {
-    function updateDisplayValueRef(displayValue: string) {
-      if (valueContainerRef.current) {
-        valueContainerRef.current.textContent = displayValue
-      }
-    }
-
-    useAutorun(() => {
+  }: JoggingCartesianAxisControlProps) => {
+    useAnimationFrame(() => {
       const displayValue = getDisplayedValue()
-      requestAnimationFrame(() => updateDisplayValueRef(displayValue))
+      const element = valueContainerRef.current
+      if (!element) return
+
+      element.textContent = displayValue
     })
 
     const valueContainerRef = useRef<HTMLParagraphElement>(null)

@@ -1,7 +1,7 @@
 import { Stack, Divider, Typography } from "@mui/material"
 import { observer, useLocalObservable } from "mobx-react-lite"
 import type { JoggingStore } from "./JoggingStore"
-import { VelocitySlider } from "./VelocitySlider"
+import { VelocitySlider } from "../VelocitySlider"
 import { useTranslation } from "react-i18next"
 
 export const JoggingVelocitySlider = observer(
@@ -44,7 +44,7 @@ export const JoggingVelocitySlider = observer(
               min={store.minVelocityInCurrentUnits}
               max={store.maxVelocityInCurrentUnits}
               onVelocityChange={store.setVelocityFromSlider}
-              disabled={store.activeRobot.robotPad.isLocked}
+              disabled={store.isLocked}
               valueLabelFormat={state.valueLabelFormat}
             />
           </Stack>

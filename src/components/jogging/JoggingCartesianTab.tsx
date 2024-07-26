@@ -5,19 +5,17 @@ import {
   Typography,
 } from "@mui/material"
 import { observer } from "mobx-react-lite"
-import { JoggingAxisButtonPair } from "./JoggingAxisButtonPair"
-import { useActiveRobot } from "./RobotPadContext"
-import { degreesToRadians, radiansToDegree } from "@/util/converters"
+import { JoggingCartesianAxisControl } from "./JoggingCartesianAxisControl"
+import { degreesToRadians, radiansToDegrees } from "@wandelbots/wandelbots-js"
 import { useTranslation } from "react-i18next"
 import RotationIcon from "@/icons/rotation.svg"
 import XAxisIcon from "@/icons/axis-x.svg"
 import YAxisIcon from "@/icons/axis-y.svg"
 import ZAxisIcon from "@/icons/axis-z.svg"
 import type { JoggingStore, DiscreteIncrementOption } from "./JoggingStore"
-import type { MotionGroupJogger } from "./MotionGroupJogger"
 import { JoggingOptions } from "./JoggingOptions"
 import { JoggingVelocitySlider } from "./JoggingVelocitySlider"
-import { useReaction } from "@/util/hooks"
+import { useReaction } from "../utils/hooks"
 import { JoggingCartesianValues } from "./JoggingCartesianValues"
 import { JoggingJointLimitDetector } from "./JoggingJointLimitDetector"
 
@@ -28,9 +26,7 @@ type JoggingCartesianOpts = {
 }
 
 export const JoggingCartesianTab = observer(
-  ({ store, jogger }: { store: JoggingStore; jogger: MotionGroupJogger }) => {
-    const activeRobot = useActiveRobot()
-    const { robotPad } = activeRobot
+  ({ store }: { store: JoggingStore }) => {
     const { t } = useTranslation()
 
     function onMotionTypeChange(
@@ -44,8 +40,8 @@ export const JoggingCartesianTab = observer(
     useReaction(
       () => [store.selectedCoordSystemId, store.selectedTcpId],
       () => {
-        store.activeRobot.motionStateSocket.path = `${activeRobot.robotPad.nova.api.config.basePath}/cells/${activeRobot.robotPad.cellId}/motion-groups/${activeRobot.motionGroupId}/state-stream?tcp=${store.selectedTcpId}&response_coordinate_system=${store.selectedCoordSystemId}`
-        store.activeRobot.motionStateSocket.reconnect()
+        store.jogger.motionStream.motionStateSocket.path = store.jogger.nova.makeWebsocketURL(`/motion-groups/${store.jogger.motionGroupId}/state-stream?tcp=${store.selectedTcpId}&response_coordinate_system=${store.selectedCoordSystemId}`)
+        store.jogger.motionStream.motionStateSocket.reconnect()
       },
       { fireImmediately: true } as any,
     )
@@ -54,66 +50,64 @@ export const JoggingCartesianTab = observer(
       opts: JoggingCartesianOpts,
       increment: DiscreteIncrementOption,
     ) {
-      const tcpPose = activeRobot.rapidlyChangingMotionState.tcp_pose
+      const tcpPose = store.jogger.motionStream.rapidlyChangingMotionState.tcp_pose
       const jointPosition =
-        activeRobot.rapidlyChangingMotionState.state.joint_position
+        store.jogger.motionStream.rapidlyChangingMotionState.state.joint_position
       if (!tcpPose) return
 
-      await robotPad.withMotionLock(async () => {
-        await jogger.runIncrementalCartesianMotion({
-          currentTcpPose: tcpPose,
-          currentJoints: jointPosition,
-          coordSystemId: store.selectedCoordSystemId,
-          velocityInRelevantUnits: store.velocityInCurrentUnits,
-          axis: opts.axis,
-          direction: opts.direction,
-          motion:
-            store.selectedCartesianMotionType === "translate"
-              ? {
-                  type: "translate",
-                  distanceMm: increment.mm,
-                }
-              : {
-                  type: "rotate",
-                  distanceRads: degreesToRadians(increment.degrees),
-                },
-        })
-      })
+      // await robotPad.withMotionLock(async () => {
+      //   await jogger.runIncrementalCartesianMotion({
+      //     currentTcpPose: tcpPose,
+      //     currentJoints: jointPosition,
+      //     coordSystemId: store.selectedCoordSystemId,
+      //     velocityInRelevantUnits: store.velocityInCurrentUnits,
+      //     axis: opts.axis,
+      //     direction: opts.direction,
+      //     motion:
+      //       store.selectedCartesianMotionType === "translate"
+      //         ? {
+      //             type: "translate",
+      //             distanceMm: increment.mm,
+      //           }
+      //         : {
+      //             type: "rotate",
+      //             distanceRads: degreesToRadians(increment.degrees),
+      //           },
+      //   })
+      // })
     }
 
     async function startCartesianJogging(opts: JoggingCartesianOpts) {
-      if (robotPad.isLocked) return
+      if (store.isLocked) return
 
       if (store.selectedDiscreteIncrement) {
         return runIncrementalCartesianJog(opts, store.selectedDiscreteIncrement)
       }
 
-      await jogger.startCartesianJogging({
-        tcpId: store.selectedTcpId,
-        coordSystemId: store.selectedCoordSystemId,
-        axis: opts.axis,
-        direction: opts.direction,
-        motion:
-          opts.motionType === "translate"
-            ? {
-                type: "translate",
-                velocityMmPerSec: store.translationVelocityMmPerSec,
-              }
-            : {
-                type: "rotate",
-                velocityRadsPerSec: store.rotationVelocityRadsPerSec,
-              },
-      })
+      if (opts.motionType === "translate") {
+        await store.jogger.startTCPTranslation({
+          axis: opts.axis,
+          direction: opts.direction,
+          velocityMmPerSec: store.translationVelocityMmPerSec,
+        })
+      } else {
+        await store.jogger.startTCPRotation({
+          axis: opts.axis,
+          direction: opts.direction,
+          velocityRadsPerSec: store.rotationVelocityRadsPerSec,
+        })
+
+      }
     }
 
     async function stopJogging() {
-      if (robotPad.isLocked) return
+      if (store.isLocked) return
 
       if (store.selectedDiscreteIncrement) {
         return
       }
 
-      await jogger.stopJogging()
+      await store.jogger.stop()
     }
 
     const axisList = [
@@ -140,7 +134,7 @@ export const JoggingCartesianTab = observer(
 
     function formatDegrees(value: number) {
       return t("General.degree.variable", {
-        amount: radiansToDegree(value).toFixed(1),
+        amount: radiansToDegrees(value).toFixed(1),
       })
     }
 
@@ -153,7 +147,7 @@ export const JoggingCartesianTab = observer(
         <JoggingVelocitySlider store={store} />
 
         {/* Show Wandelscript string for the current coords */}
-        <JoggingCartesianValues />
+        <JoggingCartesianValues store={store} />
 
         {/* Translate or rotate toggle */}
         <Stack alignItems="center" marginTop="1rem">
@@ -183,10 +177,10 @@ export const JoggingCartesianTab = observer(
           {/* Cartesian translate jogging */}
           {store.selectedCartesianMotionType === "translate" &&
             axisList.map((axis) => (
-              <JoggingAxisButtonPair
+              <JoggingCartesianAxisControl
                 key={axis.id}
                 color={axis.color}
-                disabled={robotPad.isLocked}
+                disabled={store.isLocked}
                 sx={{
                   marginTop: "12px",
                 }}
@@ -205,7 +199,7 @@ export const JoggingCartesianTab = observer(
                 }
                 getDisplayedValue={() =>
                   formatMM(
-                    activeRobot.rapidlyChangingMotionState.tcp_pose?.position[
+                    store.jogger.motionStream.rapidlyChangingMotionState.tcp_pose?.position[
                       axis.id
                     ] || 0,
                   )
@@ -224,10 +218,10 @@ export const JoggingCartesianTab = observer(
           {/* Cartesian rotate jogging */}
           {store.selectedCartesianMotionType === "rotate" &&
             axisList.map((axis) => (
-              <JoggingAxisButtonPair
+              <JoggingCartesianAxisControl
                 key={axis.id}
                 color={axis.color}
-                disabled={robotPad.isLocked}
+                disabled={store.isLocked}
                 sx={{
                   marginTop: "12px",
                 }}
@@ -246,7 +240,7 @@ export const JoggingCartesianTab = observer(
                 }
                 getDisplayedValue={() =>
                   formatDegrees(
-                    activeRobot.rapidlyChangingMotionState.tcp_pose
+                    store.jogger.motionStream.rapidlyChangingMotionState.tcp_pose
                       ?.orientation?.[axis.id] || 0,
                   )
                 }
@@ -263,7 +257,7 @@ export const JoggingCartesianTab = observer(
         </Stack>
 
         {/* Show message if joint limits reached */}
-        <JoggingJointLimitDetector />
+        <JoggingJointLimitDetector store={store} />
       </Stack>
     )
   },
