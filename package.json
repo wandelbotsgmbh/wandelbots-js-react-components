@@ -87,6 +87,7 @@
     "@mui/icons-material": "^5.16.5",
     "@mui/lab": "^5.0.0-alpha.172",
     "@shikijs/monaco": "^1.10.1",
+    "i18next-browser-languagedetector": "^8.0.0",
     "lodash-es": "^4.17.21",
     "react-i18next": "^15.0.0",
     "shiki": "^1.10.1"

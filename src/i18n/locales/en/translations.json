@@ -1,0 +1,6 @@
+{
+  "Jogging.Cartesian.Translation.velocityMmPerSec.lb": "{{amount}} mm/s",
+  "Jogging.Cartesian.Rotation.velocityDegPerSec.lb": "{{amount}}°/s",
+  "Jogging.Velocity.lb": "Velocity",
+  "General.degree.variable": "{{amount}}°"
+}

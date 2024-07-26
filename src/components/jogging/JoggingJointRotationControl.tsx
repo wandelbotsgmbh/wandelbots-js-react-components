@@ -1,10 +1,11 @@
 import { IconButton, Slider, Typography } from "@mui/material"
 import Stack from "@mui/material/Stack"
 import { observer, useLocalObservable } from "mobx-react-lite"
-import { useTranslation } from "react-i18next"
+import { I18nextProvider, useTranslation } from "react-i18next"
 import { ChevronLeft, ChevronRight } from "@mui/icons-material"
 import { useAnimationFrame } from "../utils/hooks"
 import { useState } from "react"
+import i18n from '../../i18n/config';
 
 type JoggingJointRotationControlProps = {
   startJogging: (direction: "-" | "+") => void
@@ -71,6 +72,7 @@ export const JoggingJointRotationControl = observer(
     }
 
     return (
+      <I18nextProvider i18n={i18n}>
       <Stack
         height="64px"
         width="100%"
@@ -189,6 +191,7 @@ export const JoggingJointRotationControl = observer(
           <ChevronRight />
         </IconButton>
       </Stack>
+      </I18nextProvider>
     )
   },
 )
