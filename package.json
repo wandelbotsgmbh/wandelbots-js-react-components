@@ -13,6 +13,7 @@
     "dev": "storybook dev -p 6006",
     "test": "vitest",
     "build": "rollup -c",
+    "build:dev": "rollup -c rollup.config.dev.mjs",
     "build-storybook": "storybook build"
   },
   "repository": {
