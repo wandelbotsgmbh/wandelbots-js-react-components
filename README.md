@@ -34,6 +34,7 @@ import { WandelscriptEditor, ... } from '@wandelbots/wandelbots-js-react-compone
         <ul>
           <li><a href="#robots">Robots</a></li>
           <li><a href="#lightning">Lightning</a></li>
+          <li><a href="#safety">Safety Zones</a></li>
         </ul>
       </ul>
     </td>
@@ -111,6 +112,14 @@ The `PresetEnvironment` component adds a default lighting setup to the 3D viewpo
 
 ```tsx
 <PresetEnvironment>
+```
+
+#### Safety 
+
+The `SafetyZonesRenderer` component visualizes the safety zones of the controller.
+
+```tsx
+<SafetyZonesRenderer safetyZones={activeRobot.safetyZones||[]}/>
 ```
 
 
