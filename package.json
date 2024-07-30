@@ -1,6 +1,6 @@
 {
   "name": "@wandelbots/wandelbots-js-react-components",
-  "version": "0.0.40",
+  "version": "0.0.0-semantically-released",
   "description": "React UI toolkit for building applications on top of the Wandelbots platform",
   "main": "dist/cjs/index.js",
   "module": "dist/esm/index.js",
@@ -86,7 +86,7 @@
   "dependencies": {
     "@monaco-editor/react": "^4.6.0",
     "@shikijs/monaco": "^1.10.1",
-    "@wandelbots/wandelbots-js": "file:../wandelbots-js/wandelbots-wandelbots-js-0.0.41.tgz",
+    "@wandelbots/wandelbots-js": "^1.2.2",
     "lodash-es": "^4.17.21",
     "shiki": "^1.10.1"
   }
