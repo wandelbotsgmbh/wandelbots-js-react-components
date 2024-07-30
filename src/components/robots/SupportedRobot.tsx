@@ -24,23 +24,31 @@ import { type GroupProps } from "@react-three/fiber"
 import type { ConnectedMotionGroup } from "@wandelbots/wandelbots-js"
 import { DHRobot } from "./DHRobot"
 
-export type RobotProps = {
+export type DHRobotProps = {
   connectedMotionGroup: ConnectedMotionGroup
-  modelURL: string;
 } & GroupProps
 
-export type SupportedRobotProps = RobotProps & {
+export type RobotProps = {
   connectedMotionGroup: ConnectedMotionGroup
-  getModel?: (modelFromController: string) => string;
-}
+  modelURL: string
+} & GroupProps
+
+export type SupportedRobotProps = {
+  connectedMotionGroup: ConnectedMotionGroup
+  getModel?: (modelFromController: string) => string
+} & GroupProps
 
 function defaultGetModel(modelFromController: string): string {
-  return `https://cdn.jsdelivr.net/gh/wandelbotsgmbh/wandelbots-js-react-components/public/models/${modelFromController}.glb`;
-};
+  return `https://cdn.jsdelivr.net/gh/wandelbotsgmbh/wandelbots-js-react-components/public/models/${modelFromController}.glb`
+}
 
-export function SupportedRobot({ getModel = defaultGetModel, ...props }: SupportedRobotProps) {
+export function SupportedRobot({
+  connectedMotionGroup,
+  getModel = defaultGetModel,
+  ...props
+}: SupportedRobotProps) {
   let Robot
-  const modelFromController = props.connectedMotionGroup.modelFromController
+  const modelFromController = connectedMotionGroup.modelFromController
   switch (modelFromController) {
     case "UniversalRobots_UR3":
       Robot = UniversalRobots_UR3
@@ -103,15 +111,21 @@ export function SupportedRobot({ getModel = defaultGetModel, ...props }: Support
       Robot = ABB_1200_07_7
       break
     default:
-      console.warn(
-        `Unknown robot type: ${modelFromController}`,
-      )
+      console.warn(`Unknown robot type: ${modelFromController}`)
       Robot = DHRobot
   }
 
   return (
-    <Suspense fallback={<DHRobot {...props} />}>
-      <Robot modelURL={getModel(modelFromController)} {...props} />
+    <Suspense
+      fallback={
+        <DHRobot connectedMotionGroup={connectedMotionGroup} {...props} />
+      }
+    >
+      <Robot
+        connectedMotionGroup={connectedMotionGroup}
+        modelURL={getModel(modelFromController)}
+        {...props}
+      />
     </Suspense>
   )
 }

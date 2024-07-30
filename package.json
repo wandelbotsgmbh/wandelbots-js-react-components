@@ -1,6 +1,6 @@
 {
   "name": "@wandelbots/wandelbots-js-react-components",
-  "version": "0.0.0-semantically-released",
+  "version": "0.0.40",
   "description": "React UI toolkit for building applications on top of the Wandelbots platform",
   "main": "dist/cjs/index.js",
   "module": "dist/esm/index.js",
@@ -10,7 +10,8 @@
   ],
   "types": "dist/index.d.ts",
   "scripts": {
-    "dev": "storybook dev -p 6006",
+    "dev": "nodemon -w \".\" -i *.tgz -i dist -x \"npm run build && npm pack\"",
+    "storybook": "storybook dev -p 6006",
     "test": "vitest",
     "build": "rollup -c",
     "build:dev": "rollup -c rollup.config.dev.mjs",
@@ -48,15 +49,16 @@
     "@storybook/test-runner": "^0.19.0",
     "@types/react": "^18.2.14",
     "@vitejs/plugin-react": "^4.3.1",
+    "nodemon": "^3.1.0",
     "postcss": "^8.4.24",
     "prop-types": "^15.8.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "rollup": "^3.25.3",
     "rollup-plugin-dts": "^5.3.0",
+    "rollup-plugin-gltf": "^4.0.0",
     "rollup-plugin-peer-deps-external": "^2.2.4",
     "rollup-plugin-postcss": "^4.0.2",
-    "rollup-plugin-gltf": "^4.0.0",
     "semantic-release": "^24.0.0",
     "storybook": "^8.1.11",
     "tslib": "^2.6.0",
@@ -71,10 +73,10 @@
     "@react-spring/three": "^9.7.3",
     "@react-three/drei": "^9.105.4",
     "@react-three/fiber": ">=8.0",
-    "@wandelbots/wandelbots-js": "^1.1.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "three": ">=0.137"
+    "three": ">=0.137",
+    "three-stdlib": "^2.30.4"
   },
   "peerDependenciesMeta": {
     "react-dom": {
@@ -84,6 +86,7 @@
   "dependencies": {
     "@monaco-editor/react": "^4.6.0",
     "@shikijs/monaco": "^1.10.1",
+    "@wandelbots/wandelbots-js": "file:../wandelbots-js/wandelbots-wandelbots-js-0.0.41.tgz",
     "lodash-es": "^4.17.21",
     "shiki": "^1.10.1"
   }
