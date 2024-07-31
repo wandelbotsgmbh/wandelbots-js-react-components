@@ -6,7 +6,7 @@ import {
 } from "@mui/material"
 import { observer } from "mobx-react-lite"
 import { JoggingCartesianAxisControl } from "./JoggingCartesianAxisControl"
-import { degreesToRadians, radiansToDegrees } from "@wandelbots/wandelbots-js"
+import { radiansToDegrees } from "@wandelbots/wandelbots-js"
 import { useTranslation } from "react-i18next"
 import RotationIcon from "../../icons/rotation.svg"
 import XAxisIcon from "../../icons/axis-x.svg"
@@ -143,9 +143,6 @@ export const JoggingCartesianTab = observer(
         {/* Jogging options */}
         <JoggingOptions store={store} />
 
-        {/* Velocity slider */}
-        <JoggingVelocitySlider store={store} />
-
         {/* Show Wandelscript string for the current coords */}
         <JoggingCartesianValues store={store} />
 
@@ -255,6 +252,9 @@ export const JoggingCartesianTab = observer(
               />
             ))}
         </Stack>
+
+        {/* Velocity slider */}
+        <JoggingVelocitySlider store={store} />
 
         {/* Show message if joint limits reached */}
         <JoggingJointLimitDetector store={store} />

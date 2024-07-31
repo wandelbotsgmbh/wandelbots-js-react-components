@@ -1,6 +1,6 @@
 import { keyBy } from "lodash-es"
 import { autorun, makeAutoObservable, type IReactionDisposer } from "mobx"
-import type { CoordinateSystem, JoggerConnection, RobotTcp } from "@wandelbots/wandelbots-js"
+import type { CoordinateSystem, JoggerConnection, MotionGroupSpecification, RobotTcp } from "@wandelbots/wandelbots-js"
 import { tryParseJson } from "@wandelbots/wandelbots-js"
 
 const discreteIncrementOptions = [
@@ -74,7 +74,9 @@ export class JoggingStore {
     const { nova } = jogger
 
     // Find out what TCPs this motion group has (we need it for jogging)
-    const [{ coordinatesystems }, { tcps }] = await Promise.all([
+    const [motionGroupSpec, { coordinatesystems }, { tcps }] = await Promise.all([
+      nova.api.motionGroupInfos.getMotionGroupSpecification(jogger.motionGroupId),
+
       // Fetch coord systems so user can select between them
       nova.api.coordinateSystems.listCoordinateSystems("ROTATION_VECTOR"),
 
@@ -85,11 +87,12 @@ export class JoggingStore {
       ),
     ])
 
-    return new JoggingStore(jogger, coordinatesystems || [], tcps || [])
+    return new JoggingStore(jogger, motionGroupSpec, coordinatesystems || [], tcps || [])
   }
 
   constructor(
     readonly jogger: JoggerConnection,
+    readonly motionGroupSpec: MotionGroupSpecification,
     readonly coordSystems: CoordinateSystem[],
     readonly tcps: RobotTcp[],
   ) {
@@ -118,6 +121,7 @@ export class JoggingStore {
     for (const dispose of this.disposers) {
       dispose()
     }
+    this.jogger.dispose()
   }
 
   loadFromLocalStorage() {
@@ -171,10 +175,6 @@ export class JoggingStore {
       {
         id: "joint",
         label: "Joint",
-      },
-      {
-        id: "debug",
-        label: "Debug",
       },
     ] as const
   }

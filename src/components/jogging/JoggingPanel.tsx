@@ -20,11 +20,6 @@ export const JoggingPanel = observer((props: JoggingPanelProps) => {
   const { nova } = props
 
   const state = useLocalObservable(() => ({
-    loaded: null as {
-      jogger: JoggerConnection,
-      joggingStore: JoggingStore
-    } | null,
-    jogger: null as JoggerConnection | null,
     joggingStore: null as JoggingStore | null,
     loadingError: null as unknown | null,
   }))
@@ -34,7 +29,7 @@ export const JoggingPanel = observer((props: JoggingPanelProps) => {
       const jogger = await nova.connectJogger(props.motionGroupId)
       const joggingStore = await JoggingStore.loadFor(jogger)
       runInAction(() => {
-        state.loaded = { jogger, joggingStore }
+        state.joggingStore = joggingStore
       })
     } catch (err) {
       state.loadingError = err
@@ -44,20 +39,20 @@ export const JoggingPanel = observer((props: JoggingPanelProps) => {
   useEffect(() => {
     init()
     return () => {
-      state.jogger?.dispose()
+      state.joggingStore?.dispose()
     }
   }, [])
 
   // Set correct jogging mode on jogger based on user selections
   useEffect(() => {
-    if (!state.loaded) return
+    if (!state.joggingStore) return
 
     const {
       currentTab,
       selectedTcpId,
       selectedCoordSystemId,
       selectedDiscreteIncrement,
-    } = state.loaded.joggingStore
+    } = state.joggingStore
 
     if (currentTab.id !== "cartesian" && currentTab.id !== "joint") return
 
@@ -67,26 +62,26 @@ export const JoggingPanel = observer((props: JoggingPanelProps) => {
     }
 
     if (selectedDiscreteIncrement && currentTab.id === "cartesian") {
-      state.jogger.setJoggingMode("increment", cartesianJoggingOpts)
+      state.joggingStore.jogger.setJoggingMode("increment", cartesianJoggingOpts)
     } else {
-      state.jogger.setJoggingMode(currentTab.id, cartesianJoggingOpts)
+      state.joggingStore.jogger.setJoggingMode(currentTab.id, cartesianJoggingOpts)
     }
   }, [
-    state.loaded?.joggingStore.currentTab,
-    state.loaded?.joggingStore.selectedTcpId,
-    state.loaded?.joggingStore.selectedCoordSystemId,
-    state.loaded?.joggingStore.selectedDiscreteIncrement,
+    state.joggingStore?.currentTab,
+    state.joggingStore?.selectedTcpId,
+    state.joggingStore?.selectedCoordSystemId,
+    state.joggingStore?.selectedDiscreteIncrement,
   ])
 
   useEffect(() => {
-    if (!state.loaded) return
 
     // Set the robot to default control mode (JoZi says is important for physical robot jogging)
-
     async function init() {
+      if (!state.joggingStore) return
+
       try {
         await nova.api.controller.setDefaultMode(
-          state.loaded.jogger.motionStream.controllerId,
+          state.joggingStore.jogger.motionStream.controllerId,
           "MODE_CONTROL",
         )
       } catch (err) {
@@ -95,9 +90,9 @@ export const JoggingPanel = observer((props: JoggingPanelProps) => {
     }
 
     init()
-  }, [state.loaded?.jogger.motionStream.controllerId])
+  }, [state.joggingStore?.jogger.motionStream.controllerId])
 
-  if (!state.loaded) {
+  if (!state.joggingStore) {
     return (
       <JoggingPanelOuter>
         <LoadingCover message="Loading jogging" error={state.loadingError} />
@@ -105,7 +100,7 @@ export const JoggingPanel = observer((props: JoggingPanelProps) => {
     )
   }
 
-  const { joggingStore: store, jogger } = state.loaded
+  const { joggingStore: store } = state
 
   return (
     <JoggingPanelOuter>
@@ -137,17 +132,12 @@ export const JoggingPanel = observer((props: JoggingPanelProps) => {
 })
 
 function JoggingPanelOuter({ children }: { children: React.ReactNode }) {
-  const colors = useThemeColors()
   return (
     <Stack
       sx={{
-        borderLeftStyle: "solid",
-        borderColor: colors.borderColorDefault,
-        width: `30%`,
         maxWidth: "460px",
         minWidth: "350px",
         overflowY: "auto",
-        maxHeight: `calc(100vh - 64px)`,
         position: "relative",
       }}
     >

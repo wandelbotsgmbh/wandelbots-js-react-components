@@ -12,7 +12,7 @@ type JoggingJointRotationControlProps = {
   stopJogging: () => void
   lowerLimitDegs?: number
   upperLimitDegs?: number
-  getValueDegs: () => number
+  getValueDegs: () => number|undefined
 
   disabled?: boolean
 } & React.ComponentProps<typeof Stack>
@@ -28,7 +28,7 @@ export const JoggingJointRotationControl = observer(
     ...rest
   }: JoggingJointRotationControlProps) => {
     const { t } = useTranslation()
-    const [currentValue, setCurrentValue] = useState<number>(0)
+    const [currentValue, setCurrentValue] = useState<number|undefined>()
 
     const state = useLocalObservable(() => ({
       activeJoggingDir: null as "-" | "+" | null,

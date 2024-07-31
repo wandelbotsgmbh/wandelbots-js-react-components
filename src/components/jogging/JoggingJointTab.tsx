@@ -25,12 +25,11 @@ export const JoggingJointTab = observer(
   
     return (
       <Stack>
-        <JoggingVelocitySlider store={store} />
         <JoggingJointValues store={store} />
         <Stack>
           {store.jogger.motionStream.joints.map((joint) => {
             const jointLimits =
-              store.jogger.motionStream.motionGroupSpecification.mechanical_joint_limits?.[
+              store.motionGroupSpec.mechanical_joint_limits?.[
                 joint.index
               ]
             const lowerLimitDegs =
@@ -87,6 +86,7 @@ export const JoggingJointTab = observer(
             )
           })}
         </Stack>
+        <JoggingVelocitySlider store={store} />
       </Stack>
     )
   },

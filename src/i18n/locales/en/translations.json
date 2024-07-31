@@ -2,5 +2,11 @@
   "Jogging.Cartesian.Translation.velocityMmPerSec.lb": "{{amount}} mm/s",
   "Jogging.Cartesian.Rotation.velocityDegPerSec.lb": "{{amount}}°/s",
   "Jogging.Velocity.lb": "Velocity",
-  "General.degree.variable": "{{amount}}°"
+  "General.degree.variable": "{{amount}}°",
+  "General.mm.variable": "{{amount}}mm",
+  "Jogging.Cartesian.MotionType.lb": "Motion type",
+  "Jogging.Cartesian.Translation.bt": "Translation",
+  "Jogging.Cartesian.Rotation.bt": "Rotation",
+  "Jogging.Joints.JointValues.lb": "Joint values",
+  "Jogging.Increment.Continuous.dd": "Continuous"
 }

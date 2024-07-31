@@ -77,7 +77,7 @@ export function useThemeColors() {
 export const wbTheme = createTheme({
   name: 'wandelbots',
   palette: {
-    mode: 'light',
+    mode: 'dark',
     primary: {
       main: '#010B23',
     },

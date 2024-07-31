@@ -9,7 +9,8 @@
     "jsx": "react-jsx",
     "composite": true,
     "esModuleInterop": true,
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "strict": true,
   },
   "include": [
     "src/**/*.ts",
