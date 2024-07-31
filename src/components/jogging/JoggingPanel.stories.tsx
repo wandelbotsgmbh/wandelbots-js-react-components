@@ -12,11 +12,11 @@ const meta: Meta<typeof JoggingPanel> = {
   render: function Component(args) {
     const [, setArgs] = useArgs();
     return <JoggingPanel
+      {...args} 
       nova={new NovaClient({
         instanceUrl: "https://mock",
         mock: true
       })}
-      {...args} 
     />;
   },
 };

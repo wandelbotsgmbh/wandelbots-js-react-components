@@ -1,7 +1,8 @@
-import { createTheme, useTheme } from "@mui/material/styles";
-import { NamedThemeOptions } from "./theme";
+"use client"
 
-// TODO put custom colors in theme palette maybe?
+import { createTheme, useTheme, type ThemeOptions } from "@mui/material/styles"
+import { defaultsDeep } from "lodash-es"
+
 const baseColors = {
   white: "#FFFFFF",
   midnightblue: "#001337",
@@ -74,84 +75,111 @@ export function useThemeColors() {
   return useTheme().palette.mode === "dark" ? darkColors : lightColors
 }
 
-export const wbTheme = createTheme({
-  name: 'wandelbots',
-  palette: {
-    mode: 'dark',
-    primary: {
-      main: '#010B23',
-    },
-    secondary: {
-      main: '#4A526B',
-    },
-    background: {
-      default: '#010B23'
-    },
-    text: {
-      primary: '#010B23',
-      secondary: '#010B23',
-    },
-    line: {
-      primary: 'rgb(255,255,255)',
-      secondary: 'rgb(100,100,100)',
-    },
-  },
-  buttonPrimary: {
-    background: "#00A4F5",
-    text: "#FFFFFF"
-  },
-  buttonSecondary: {
-    background: "#879399",
-    text: "#FFFFFF"
-  },
-  buttonBack: {
-    background: "transparent",
-    text: "#151D35"
-  },
-  inputField: {
-    background: "#F5F8FA",
-    text: "#242C3E",
-    unitBackground: "#CCD4D9",
-    unitText: "#242C3E",
-  },
-  sidebar: {
-    background: "#000000",
-    backgroundSelected: "#4B4B4B",
-    selected: "#6FE946"
-  },
-  actionPanel: {
-    background: "#262626",
-    backgroundSelected: "#4B4B4B",
-    text: "#FAFAFA"
-  },
-  controlPanel: {
-    background: "#EBEBEB",
-    text: "#525F66"
-  },
-  listItem: {
-    background: "#D9D9D9",
-    backgroundSelected: "#616161",
-    textTitle: "#262626",
-    textTitleSelected: "#FAFAFA",
-    textDesc: "#616161",
-    textDescSelected: "#F5F5F5"
-  },
-  breadcrumb: {
-    background: "#FFFFFF",
-    text: "#010B2366",
-    textSelected: "#010B23"
-  },
-  axes: {
-    x: '#B52222',
-    y: '#28AF28',
-    z: '#0045FF'
-  },
-  viewport: {
-    background: "#FAFAFA",
-    controlBackground: 'rgb(100,100,100)',
-  },
-  tabIcon: {
-    color: "#444444"
-  }
-} as NamedThemeOptions);
+function createRobotPadTheme(
+  mode: "light" | "dark",
+  options: ThemeOptions = {},
+) {
+  const colors = mode === "light" ? lightColors : darkColors
+  return createTheme(
+    defaultsDeep(options, {
+      palette: {
+        mode,
+        primary: {
+          main: colors.primary,
+        },
+        background: {
+          default: colors.backgroundDefault,
+        },
+      },
+      typography: {
+        allVariants: {
+          color: colors.textDefault,
+        },
+      },
+      components: {
+        MuiPaper: {
+          styleOverrides: {
+            root: {
+              backgroundColor: colors.backgroundDefault,
+            },
+          },
+        },
+        MuiTabs: {
+          styleOverrides: {
+            root: {
+              backgroundColor: colors.tabsBarBackground,
+              minHeight: "42px",
+            },
+          },
+        },
+        MuiTab: {
+          styleOverrides: {
+            root: {
+              minHeight: "42px",
+              textTransform: "none",
+              "&.Mui-selected": {
+                color: "inherit",
+                backgroundColor: colors.activeTabBackground,
+              },
+            },
+          },
+        },
+        MuiButton: {
+          defaultProps: {
+            disableElevation: true,
+          },
+          styleOverrides: {
+            root: {
+              textTransform: "none",
+              borderRadius: "10px",
+              fontSize: "14px",
+              fontWeight: 500,
+            },
+          },
+          variants: [
+            {
+              props: { variant: "outlined" },
+              style: {
+                border: "2px solid rgba(255, 255, 255, 0.6)",
+                color: "rgba(255, 255, 255, 0.6)",
+                backgroundColor: "rgba(255, 255, 255, 0.2)",
+                "&:hover": {
+                  backgroundColor: "rgba(255, 255, 255, 0.4)",
+                  border: "2px solid rgba(255, 255, 255, 0.8)",
+                },
+              },
+            },
+          ],
+        },
+        MuiFab: {
+          styleOverrides: {
+            root: {
+              width: "48px",
+              height: "48px",
+              backgroundColor: colors.viewportButtonInactiveBackground,
+              color: colors.textDefault,
+              "&:hover": {
+                backgroundColor: colors.viewportButtonHover,
+              },
+            },
+          },
+          variants: [
+            {
+              props: { variant: "active" },
+              style: {
+                backgroundColor: colors.viewportButtonActiveBackground,
+                color: colors.textInverse,
+                "&:hover": {
+                  backgroundColor: colors.viewportButtonActiveBackground,
+                },
+              },
+            },
+          ],
+        },
+      },
+    }),
+  )
+}
 
+export const wbTheme = createRobotPadTheme("dark")
+// export const lightTheme = createRobotPadTheme("light")

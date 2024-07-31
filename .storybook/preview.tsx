@@ -1,4 +1,6 @@
 import type { Preview } from "@storybook/react";
+import { ThemeProvider } from "@mui/material"
+import { wbTheme } from "../src/themes/wbTheme"
 
 const preview: Preview = {
   parameters: {
@@ -10,6 +12,13 @@ const preview: Preview = {
       },
     },
   },
+  decorators: [
+    (Story) => (
+      <ThemeProvider theme={wbTheme}>
+        <Story />
+      </ThemeProvider>
+    ),
+  ],
   tags: ["autodocs"]
 };
 
