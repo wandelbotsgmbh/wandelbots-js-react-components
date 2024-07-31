@@ -10,11 +10,12 @@
   ],
   "types": "dist/index.d.ts",
   "scripts": {
-    "dev": "storybook dev -p 6006",
+    "dev": "storybook dev -p 6006 --no-open",
     "dev:wbjs": "nodemon --watch $WBJS_PATH -e tgz --exec 'npm install file:$WBJS_PATH && storybook dev -p 6006 --no-open'",
     "tsc": "tsc --pretty --noEmit",
     "test": "vitest",
     "build": "rollup -c",
+    "build:dev": "rollup -c rollup.config.dev.mjs",
     "build-storybook": "storybook build"
   },
   "repository": {
@@ -71,14 +72,15 @@
   "peerDependencies": {
     "@emotion/react": "^11.11.1",
     "@emotion/styled": "^11.11.0",
-    "@mui/material": "^5.13.6",
-    "@react-spring/three": "^9.7.3",
-    "@react-three/drei": "^9.105.4",
-    "@react-three/fiber": ">=8.0",
-    "@wandelbots/wandelbots-js": "file:../wbjs/wandelbots-wandelbots-js-0.0.0-semantically-released.tgz",
+    "@mui/material": ">=5",
+    "@react-spring/three": ">=9",
+    "@react-three/drei": ">=9",
+    "@react-three/fiber": ">=8",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "three": ">=0.137"
+    "three": ">=0.137",
+    "three-stdlib": ">=2",
+    "@wandelbots/wandelbots-js": ">=1"
   },
   "peerDependenciesMeta": {
     "react-dom": {

@@ -8,12 +8,12 @@ import {
   getAllJointsByName,
   type RobotSceneJoint,
 } from "../utils/robotTreeQuery"
-import type { RobotProps } from "./SupportedRobot"
+import type { DHRobotProps } from "./SupportedRobot"
 
 const CHILD_LINE = "line"
 const CHILD_MESH = "mesh"
 
-export function DHRobot({ connectedMotionGroup, ...props }: RobotProps) {
+export function DHRobot({ connectedMotionGroup, ...props }: DHRobotProps) {
   // reused in every update
   const accumulatedMatrix = new Matrix4()
 

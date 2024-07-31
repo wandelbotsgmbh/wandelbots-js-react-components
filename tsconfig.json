@@ -5,6 +5,9 @@
       "ESNext",
       "DOM"
     ],
+    "target": "ES5",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
     "rootDir": "src",
     "jsx": "react-jsx",
     "composite": true,
@@ -12,11 +15,16 @@
     "resolveJsonModule": true,
     "strict": true,
   },
+  "declaration": true,
+  "skipLibCheck": true,
+  "forceConsistentCasingInFileNames": true,
+  "declarationDir": "dist/types",
   "include": [
     "src/**/*.ts",
     "src/**/*.tsx",
     "src/**/*.json",
     "src/**/*.svg",
-    "rollup.config.ts"
+    "rollup.config.ts",
+    "node_modules/@types"
   ]
 }
