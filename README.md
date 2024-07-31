@@ -26,10 +26,6 @@ import { WandelscriptEditor, ... } from '@wandelbots/wandelbots-js-react-compone
         <ul>
           <li><a href="#wandelscripteditor">WandelscriptEditor</a></li>
         </ul>
-        <li><a href="#materialui">Material UI</a></li>
-        <ul>
-          <li><a href="#defaulttheme">getDefaultThemeOptionsForMui</a></li>
-        </ul>
         <li><a href="#viewport">3D Viewport</a></li>
         <ul>
           <li><a href="#robots">Robots</a></li>
