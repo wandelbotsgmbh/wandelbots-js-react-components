@@ -40,7 +40,10 @@ export const JoggingCartesianTab = observer(
     useReaction(
       () => [store.selectedCoordSystemId, store.selectedTcpId],
       () => {
-        store.jogger.motionStream.motionStateSocket.path = store.jogger.nova.makeWebsocketURL(`/motion-groups/${store.jogger.motionGroupId}/state-stream?tcp=${store.selectedTcpId}&response_coordinate_system=${store.selectedCoordSystemId}`)
+        store.jogger.motionStream.motionStateSocket.path =
+          store.jogger.nova.makeWebsocketURL(
+            `/motion-groups/${store.jogger.motionGroupId}/state-stream?tcp=${store.selectedTcpId}&response_coordinate_system=${store.selectedCoordSystemId}`,
+          )
         store.jogger.motionStream.motionStateSocket.reconnect()
       },
       { fireImmediately: true } as any,
@@ -50,9 +53,11 @@ export const JoggingCartesianTab = observer(
       opts: JoggingCartesianOpts,
       increment: DiscreteIncrementOption,
     ) {
-      const tcpPose = store.jogger.motionStream.rapidlyChangingMotionState.tcp_pose
+      const tcpPose =
+        store.jogger.motionStream.rapidlyChangingMotionState.tcp_pose
       const jointPosition =
-        store.jogger.motionStream.rapidlyChangingMotionState.state.joint_position
+        store.jogger.motionStream.rapidlyChangingMotionState.state
+          .joint_position
       if (!tcpPose) return
 
       // await robotPad.withMotionLock(async () => {
@@ -96,7 +101,6 @@ export const JoggingCartesianTab = observer(
           direction: opts.direction,
           velocityRadsPerSec: store.rotationVelocityRadsPerSec,
         })
-
       }
     }
 
@@ -196,9 +200,8 @@ export const JoggingCartesianTab = observer(
                 }
                 getDisplayedValue={() =>
                   formatMM(
-                    store.jogger.motionStream.rapidlyChangingMotionState.tcp_pose?.position[
-                      axis.id
-                    ] || 0,
+                    store.jogger.motionStream.rapidlyChangingMotionState
+                      .tcp_pose?.position[axis.id] || 0,
                   )
                 }
                 startJogging={(direction: "-" | "+") =>
@@ -237,8 +240,8 @@ export const JoggingCartesianTab = observer(
                 }
                 getDisplayedValue={() =>
                   formatDegrees(
-                    store.jogger.motionStream.rapidlyChangingMotionState.tcp_pose
-                      ?.orientation?.[axis.id] || 0,
+                    store.jogger.motionStream.rapidlyChangingMotionState
+                      .tcp_pose?.orientation?.[axis.id] || 0,
                   )
                 }
                 startJogging={(direction: "-" | "+") =>

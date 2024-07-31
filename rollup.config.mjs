@@ -5,6 +5,7 @@ import postcss from "rollup-plugin-postcss";
 import terser from "@rollup/plugin-terser";
 import peerDepsExternal from "rollup-plugin-peer-deps-external";
 import dts from "rollup-plugin-dts";
+import json from "@rollup/plugin-json";
 
 import packageJson from "./package.json" assert { type: "json" };
 
@@ -25,6 +26,7 @@ export default [
       peerDepsExternal(),
       resolve(),
       commonjs(),
+      json(),
       typescript({ tsconfig: "./tsconfig.json" }),
       postcss({ plugins: [] }),
       terser(),
