@@ -48,7 +48,6 @@ export function useAnimationFrame(callback: () => void) {
     frameId = requestAnimationFrame(frame)
 
     return () => {
-      console.log("Cleaning up animation frame")
       cancelAnimationFrame(frameId)
     }
   })

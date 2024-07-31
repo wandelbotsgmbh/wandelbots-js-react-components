@@ -123,7 +123,7 @@ export function SupportedRobot({
     >
       <Robot
         connectedMotionGroup={connectedMotionGroup}
-        modelURL={getModel(modelFromController)}
+        modelURL={getModel(modelFromController||"")}
         {...props}
       />
     </Suspense>

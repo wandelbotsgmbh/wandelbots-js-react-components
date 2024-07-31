@@ -1,17 +1,30 @@
 {
   "compilerOptions": {
     "outDir": "dist",
-    "lib": ["ESNext", "DOM"],
+    "lib": [
+      "ESNext",
+      "DOM"
+    ],
     "target": "ES5",
     "module": "ESNext",
+    "moduleResolution": "bundler",
     "rootDir": "src",
     "jsx": "react-jsx",
     "composite": true,
     "esModuleInterop": true,
-    "declaration": true,
-    "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
-    "declarationDir": "dist/types",
+    "resolveJsonModule": true,
+    "strict": true,
   },
-  "include": ["src/**/*.ts", "src/**/*.tsx", "rollup.config.ts", "node_modules/@types"]
+  "declaration": true,
+  "skipLibCheck": true,
+  "forceConsistentCasingInFileNames": true,
+  "declarationDir": "dist/types",
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "src/**/*.json",
+    "src/**/*.svg",
+    "rollup.config.ts",
+    "node_modules/@types"
+  ]
 }

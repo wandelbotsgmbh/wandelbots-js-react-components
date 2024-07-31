@@ -6,11 +6,11 @@ import {
   getAllJointsByName,
   type RobotSceneJoint,
 } from "../utils/robotTreeQuery"
-import type { ConnectedMotionGroup } from "@wandelbots/wandelbots-js"
+import type { MotionStreamConnection } from "@wandelbots/wandelbots-js"
 import { useAutorun } from "../utils/hooks"
 
 type RobotAnimatorProps = {
-  connectedMotionGroup: ConnectedMotionGroup
+  connectedMotionGroup: MotionStreamConnection
   robotRootObjectName: string
   onRotationChanged: (joints: THREE.Object3D[], jointValues: number[]) => void
   jointCollector?: (rootObject: THREE.Object3D) => RobotSceneJoint[]
