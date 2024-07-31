@@ -12,9 +12,9 @@ type VelocitySliderProps = {
   valueLabelFormat?: (value: number) => string
 }
 
+/** A slider for controlling the movement velocity of a robot */
 export const VelocitySlider = observer((props: VelocitySliderProps) => {
   const valueLabelFormat = props.valueLabelFormat || ((value: number) => `${value}`)
-
 
   function onSliderChange(_event: Event, newVelocity: number | number[]) {
     if (newVelocity === props.velocity || !isNumber(newVelocity)) return

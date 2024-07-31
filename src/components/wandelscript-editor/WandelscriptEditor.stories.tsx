@@ -37,7 +37,7 @@ export const Editor: StoryObj<typeof WandelscriptEditor> = {
   },
   render: (props) => {
     return (
-      <div style={{ height: "100vh" }}>
+      <div style={{ height: "400px" }}>
         <WandelscriptEditor {...props} />
       </div>
     );

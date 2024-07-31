@@ -18,6 +18,7 @@ type WandelscriptEditorProps = {
 
 const shikiTheme: BundledTheme = "dark-plus"
 
+/** A Monaco (VSCode-style) embedded code editor with Wandelscript syntax highlighting */
 export const WandelscriptEditor = (props: WandelscriptEditorProps) => {
   const monaco = useMonaco()
   const theme = useTheme()
