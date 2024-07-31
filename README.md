@@ -58,31 +58,6 @@ type WandelscriptEditorProps = {
 }
 ```
 
-### MaterialUI
-
-#### defaulttheme
-
-This function creates a [Material UI theme](https://mui.com/material-ui/customization/theming/) with the default colors, typography, and MUI component configuration.
-
-```tsx
-declare function createDefaultMuiTheme(mode: 'dark'|'light' = 'dark'): Theme
-```
-
-Example use in a MUI application:
-
-```tsx
-import { ThemeProvider } from "@mui/system"
-import { createDefaultMuiTheme } from "@wandelbots/wandelui"
-
-const defaultDarkTheme = createDefaultMuiTheme('dark')
-
-export const Layout = ({ children }: { children: React.ReactNode }) => {
-  return <ThemeProvider theme={defaultDarkTheme}>
-    {children}
-  </ThemeProvider>
-}
-```
-
 ### Viewport
 
 #### Robots
