@@ -6,7 +6,7 @@ import RobotAnimator from "./RobotAnimator"
 
 export function KUKA_KR270_R2700({
   modelURL,
-  connectedMotionGroup,
+  rapidlyChangingMotionState,
   ...props
 }: RobotProps) {
   const gltf = useGLTF(modelURL) as any
@@ -26,7 +26,7 @@ export function KUKA_KR270_R2700({
   return (
     <>
       <RobotAnimator
-        connectedMotionGroup={connectedMotionGroup}
+        rapidlyChangingMotionState={rapidlyChangingMotionState}
         robotRootObjectName="Scene"
         onRotationChanged={setRotation}
       />

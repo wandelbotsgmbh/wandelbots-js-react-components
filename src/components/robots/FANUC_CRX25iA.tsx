@@ -4,7 +4,11 @@ import type { RobotProps } from "./SupportedRobot"
 import { animated } from "@react-spring/three"
 import RobotAnimator from "./RobotAnimator"
 
-export function FANUC_CRX25iA({ modelURL, connectedMotionGroup, ...props }: RobotProps) {
+export function FANUC_CRX25iA({
+  modelURL,
+  rapidlyChangingMotionState,
+  ...props
+}: RobotProps) {
   const gltf = useGLTF(modelURL) as any
   const nodes = gltf.nodes
   const materials = gltf.materials
@@ -20,7 +24,7 @@ export function FANUC_CRX25iA({ modelURL, connectedMotionGroup, ...props }: Robo
   return (
     <>
       <RobotAnimator
-        connectedMotionGroup={connectedMotionGroup}
+        rapidlyChangingMotionState={rapidlyChangingMotionState}
         robotRootObjectName="Scene"
         onRotationChanged={setRotation}
       />
