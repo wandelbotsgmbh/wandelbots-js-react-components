@@ -181,5 +181,6 @@ function createRobotPadTheme(
   )
 }
 
-export const wbTheme = createRobotPadTheme("dark")
-// export const lightTheme = createRobotPadTheme("light")
+export const darkTheme = createRobotPadTheme("dark")
+export const lightTheme = createRobotPadTheme("light")
+export const wbTheme = darkTheme

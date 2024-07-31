@@ -1,4 +1,4 @@
-import { Stack, Tab, Tabs } from "@mui/material"
+import { Paper, Stack, Tab, Tabs } from "@mui/material"
 import { observer, useLocalObservable } from "mobx-react-lite"
 import { useEffect } from "react"
 import { JoggingCartesianTab } from "./JoggingCartesianTab"
@@ -6,9 +6,7 @@ import { JoggingJointTab } from "./JoggingJointTab"
 import { JoggingStore } from "./JoggingStore"
 import { LoadingCover } from "../LoadingCover"
 import { runInAction } from "mobx"
-import { useTranslation } from "react-i18next"
-import { useThemeColors } from "../../themes/wbTheme"
-import { NovaClient, JoggerConnection } from "@wandelbots/wandelbots-js"
+import { NovaClient } from "@wandelbots/wandelbots-js"
 
 export type JoggingPanelProps = {
   nova: NovaClient
@@ -16,7 +14,6 @@ export type JoggingPanelProps = {
 }
 
 export const JoggingPanel = observer((props: JoggingPanelProps) => {
-  const { t } = useTranslation()
   const { nova } = props
 
   const state = useLocalObservable(() => ({
@@ -141,7 +138,11 @@ function JoggingPanelOuter({ children }: { children: React.ReactNode }) {
         position: "relative",
       }}
     >
-      {children}
+      <Paper sx={{
+        minHeight: "90vh"
+      }}>
+        {children}
+      </Paper>
     </Stack>
   )
 }

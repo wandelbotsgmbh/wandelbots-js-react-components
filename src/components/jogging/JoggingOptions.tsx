@@ -3,6 +3,7 @@ import { observer } from "mobx-react-lite"
 import type { IncrementOptionId, JoggingStore } from "./JoggingStore"
 import { useTranslation } from "react-i18next"
 import { useThemeColors } from "../../themes/wbTheme"
+import { ThemeSelect } from "../ThemeSelect"
 
 export const JoggingOptions = observer(({ store }: { store: JoggingStore }) => {
   const { t } = useTranslation()
@@ -25,7 +26,8 @@ export const JoggingOptions = observer(({ store }: { store: JoggingStore }) => {
       {/* Coordinate system */}
       <Stack width="33%">
         <InputLabel id="jogging-coord-select">{"Coordinate Sys."}</InputLabel>
-        <Select
+        <ThemeSelect
+          kind="filled"
           labelId="jogging-coord-select"
           value={store.selectedCoordSystemId}
           displayEmpty={true}
@@ -39,13 +41,14 @@ export const JoggingOptions = observer(({ store }: { store: JoggingStore }) => {
               {cs.name || cs.coordinate_system}
             </MenuItem>
           ))}
-        </Select>
+        </ThemeSelect>
       </Stack>
 
       {/* TCP selection */}
       <Stack width="33%">
         <InputLabel id="jogging-tcp-select">TCP</InputLabel>
-        <Select
+        <ThemeSelect
+          kind="filled"
           labelId="jogging-tcp-select"
           value={store.selectedTcpId}
           onChange={(event) => {
@@ -58,13 +61,14 @@ export const JoggingOptions = observer(({ store }: { store: JoggingStore }) => {
               {tcp.id}
             </MenuItem>
           ))}
-        </Select>
+        </ThemeSelect>
       </Stack>
 
       {/* Increment selection */}
       <Stack width="33%">
         <InputLabel id="jogging-increment-select">{"Increment"}</InputLabel>
-        <Select
+        <ThemeSelect
+          kind="filled"
           labelId="jogging-increment-select"
           value={store.selectedIncrementId}
           onChange={(event) => {
@@ -85,7 +89,7 @@ export const JoggingOptions = observer(({ store }: { store: JoggingStore }) => {
                 : `${inc.degrees}°`}
             </MenuItem>
           ))}
-        </Select>
+        </ThemeSelect>
       </Stack>
     </Stack>
   )
