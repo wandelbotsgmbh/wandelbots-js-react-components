@@ -8,7 +8,8 @@
     "declaration": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "declarationDir": "dist/types"
+    "declarationDir": "dist/types",
+    "strict": true
   },
   "include": [
     "src/**/*.ts",

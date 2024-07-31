@@ -1,6 +1,6 @@
-import { Meta, StoryObj } from "@storybook/react";
-import { VelocitySlider } from "./VelocitySlider";
-import { useArgs } from "@storybook/preview-api";
+import { Meta, StoryObj } from "@storybook/react"
+import { VelocitySlider } from "./VelocitySlider"
+import { useArgs } from "@storybook/preview-api"
 
 const meta: Meta<typeof VelocitySlider> = {
   component: VelocitySlider,
@@ -12,21 +12,18 @@ const meta: Meta<typeof VelocitySlider> = {
     disabled: false,
   },
   render: function Component(args) {
-    const [, setArgs] = useArgs();
+    const [, setArgs] = useArgs()
 
     function onVelocityChange(newVelocity: number) {
-      args.onVelocityChange?.(newVelocity);
-      setArgs({ velocity: newVelocity });
+      args.onVelocityChange?.(newVelocity)
+      setArgs({ velocity: newVelocity })
     }
 
-    return <VelocitySlider
-      onVelocityChange={onVelocityChange}
-      {...args} 
-    />;
+    const { onVelocityChange: _, ...restArgs } = args
+
+    return <VelocitySlider onVelocityChange={onVelocityChange} {...restArgs} />
   },
+}
+export default meta
 
-};
-export default meta;
-
-export const Default: StoryObj<typeof VelocitySlider> = {
-};
+export const Default: StoryObj<typeof VelocitySlider> = {}
