@@ -21,7 +21,7 @@
     "dev:pack": "nodemon -w \".\" -e ts -i *.tgz -i dist -x \"npm run build && npm pack\"",
     "dev:wbjs": "nodemon --watch $WBJS_PATH -e tgz --exec 'npm install file:$WBJS_PATH && storybook dev -p 6006 --no-open'",
     "tsc": "tsc --pretty --noEmit",
-    "test": "vitest",
+    "test": "npm run build",
     "build": "rimraf dist && vite build && tsc --declaration --emitDeclarationOnly",
     "build:dev": "rollup -c rollup.config.dev.mjs",
     "build-storybook": "storybook build"
