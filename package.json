@@ -15,14 +15,14 @@
       "require": "./dist/index.cjs"
     }
   },
-  "types": "dist/index.d.ts",
+  "types": "./dist/index.d.ts",
   "scripts": {
     "dev": "storybook dev -p 6006 --no-open",
     "dev:pack": "nodemon -w \".\" -e ts -i *.tgz -i dist -x \"npm run build && npm pack\"",
     "dev:wbjs": "nodemon --watch $WBJS_PATH -e tgz --exec 'npm install file:$WBJS_PATH && storybook dev -p 6006 --no-open'",
     "tsc": "tsc --pretty --noEmit",
     "test": "vitest",
-    "build": "vite build",
+    "build": "rimraf dist && vite build && tsc --declaration --emitDeclarationOnly",
     "build:dev": "rollup -c rollup.config.dev.mjs",
     "build-storybook": "storybook build"
   },
@@ -63,6 +63,7 @@
     "prop-types": "^15.8.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "rimraf": "^6.0.1",
     "rollup": "^4.19.2",
     "rollup-plugin-dts": "^6.1.1",
     "rollup-plugin-gltf": "^4.0.0",
