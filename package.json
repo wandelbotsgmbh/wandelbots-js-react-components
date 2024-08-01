@@ -6,11 +6,12 @@
   "module": "dist/esm/index.js",
   "files": [
     "dist",
-    "assets"
+    "src"
   ],
   "types": "dist/index.d.ts",
   "scripts": {
     "dev": "storybook dev -p 6006 --no-open",
+    "dev:pack": "nodemon -w \".\" -e ts -i *.tgz -i dist -x \"npm run build && npm pack\"",
     "dev:wbjs": "nodemon --watch $WBJS_PATH -e tgz --exec 'npm install file:$WBJS_PATH && storybook dev -p 6006 --no-open'",
     "tsc": "tsc --pretty --noEmit",
     "test": "vitest",
