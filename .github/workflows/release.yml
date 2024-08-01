@@ -1,7 +1,7 @@
 # semantic-release action
 # Derived from https://semantic-release.gitbook.io/semantic-release/recipes/ci-configurations/github-actions
 
-name: Release
+name: release
 on:
   push:
     branches:
