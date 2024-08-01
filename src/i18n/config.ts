@@ -1,10 +1,10 @@
 import deJSON from "./locales/de/translations.json"
 import enJSON from "./locales/en/translations.json"
-import i18next from "i18next"
+import i18next, { i18n as i18nType } from "i18next";
 import LanguageDetector from "i18next-browser-languagedetector"
 import { initReactI18next } from "react-i18next"
 
-const i18n = i18next.createInstance()
+const i18n: i18nType = i18next.createInstance()
 
 i18n
   .use(LanguageDetector)
