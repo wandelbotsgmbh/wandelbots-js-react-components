@@ -21,34 +21,42 @@ import { FANUC_ARC_Mate_120iD } from "./FANUC_ARC_Mate_120iD"
 import { ABB_1200_07_7 } from "./ABB_1200_07_7"
 
 import type { GroupProps } from "@react-three/fiber"
-import type { ConnectedMotionGroup } from "@wandelbots/wandelbots-js"
+import type {
+  MotionGroupStateResponse,
+  DHParameter,
+} from "@wandelbots/wandelbots-api-client"
 import { DHRobot } from "./DHRobot"
 
 export type DHRobotProps = {
-  connectedMotionGroup: ConnectedMotionGroup
+  rapidlyChangingMotionState: MotionGroupStateResponse
+  dhParameters: Array<DHParameter>
 } & GroupProps
 
 export type RobotProps = {
-  connectedMotionGroup: ConnectedMotionGroup
+  rapidlyChangingMotionState: MotionGroupStateResponse
   modelURL: string
 } & GroupProps
 
 export type SupportedRobotProps = {
-  connectedMotionGroup: ConnectedMotionGroup
+  rapidlyChangingMotionState: MotionGroupStateResponse
+  modelFromController: string
+  dhParameters: DHParameter[]
   getModel?: (modelFromController: string) => string
 } & GroupProps
 
-function defaultGetModel(modelFromController: string): string {
+export function defaultGetModel(modelFromController: string): string {
   return `https://cdn.jsdelivr.net/gh/wandelbotsgmbh/wandelbots-js-react-components/public/models/${modelFromController}.glb`
 }
 
 export function SupportedRobot({
-  connectedMotionGroup,
+  rapidlyChangingMotionState,
+  modelFromController,
+  dhParameters,
   getModel = defaultGetModel,
   ...props
 }: SupportedRobotProps) {
   let Robot
-  const modelFromController = connectedMotionGroup.modelFromController
+
   switch (modelFromController) {
     case "UniversalRobots_UR3":
       Robot = UniversalRobots_UR3
@@ -118,12 +126,17 @@ export function SupportedRobot({
   return (
     <Suspense
       fallback={
-        <DHRobot connectedMotionGroup={connectedMotionGroup} {...props} />
+        <DHRobot
+          rapidlyChangingMotionState={rapidlyChangingMotionState}
+          dhParameters={dhParameters}
+          {...props}
+        />
       }
     >
       <Robot
-        connectedMotionGroup={connectedMotionGroup}
-        modelURL={getModel(modelFromController||"")}
+        rapidlyChangingMotionState={rapidlyChangingMotionState}
+        modelURL={getModel(modelFromController)}
+        dhParameters={dhParameters}
         {...props}
       />
     </Suspense>

@@ -6,18 +6,18 @@ import {
   getAllJointsByName,
   type RobotSceneJoint,
 } from "../utils/robotTreeQuery"
-import type { MotionStreamConnection } from "@wandelbots/wandelbots-js"
+import type { MotionGroupStateResponse } from "@wandelbots/wandelbots-api-client"
 import { useAutorun } from "../utils/hooks"
 
 type RobotAnimatorProps = {
-  connectedMotionGroup: MotionStreamConnection
+  rapidlyChangingMotionState: MotionGroupStateResponse
   robotRootObjectName: string
   onRotationChanged: (joints: THREE.Object3D[], jointValues: number[]) => void
   jointCollector?: (rootObject: THREE.Object3D) => RobotSceneJoint[]
 }
 
 export default function RobotAnimator({
-  connectedMotionGroup,
+  rapidlyChangingMotionState,
   robotRootObjectName,
   onRotationChanged,
   jointCollector,
@@ -58,7 +58,7 @@ export default function RobotAnimator({
 
   useAutorun(() => {
     const newJointValues =
-      connectedMotionGroup.rapidlyChangingMotionState.state.joint_position.joints.filter(
+      rapidlyChangingMotionState.state.joint_position.joints.filter(
         (item) => item !== undefined,
       )
 
@@ -68,8 +68,7 @@ export default function RobotAnimator({
   const [axisValues, setSpring] = useSpring(() => ({
     ...Object.assign(
       {},
-      connectedMotionGroup.rapidlyChangingMotionState.state.joint_position
-        .joints,
+      rapidlyChangingMotionState.state.joint_position.joints,
     ),
     onChange: () => {
       setRotation()
