@@ -20,8 +20,8 @@ const meta: Meta<typeof VelocitySlider> = {
     }
 
     return <VelocitySlider
-      onVelocityChange={onVelocityChange}
       {...args} 
+      onVelocityChange={onVelocityChange}
     />;
   },
 

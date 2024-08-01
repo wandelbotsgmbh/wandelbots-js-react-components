@@ -1,30 +1,28 @@
 {
+  // tsconfig is based on that of @react-three/drei with some modernization
+  // https://github.com/pmndrs/drei/blob/master/tsconfig.json
   "compilerOptions": {
-    "outDir": "dist",
+    "target": "es6",
     "lib": [
-      "ESNext",
-      "DOM"
+      "es2019",
+      "dom"
     ],
-    "target": "ES5",
-    "module": "ESNext",
+    "outDir": "dist",
+    "module": "preserve",
     "moduleResolution": "bundler",
-    "rootDir": "src",
     "jsx": "react-jsx",
-    "composite": true,
     "esModuleInterop": true,
     "resolveJsonModule": true,
     "strict": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "composite": true,
+    "declaration": true,
+    "declarationDir": "dist/types",
   },
-  "declaration": true,
-  "skipLibCheck": true,
-  "forceConsistentCasingInFileNames": true,
-  "declarationDir": "dist/types",
   "include": [
     "src/**/*.ts",
     "src/**/*.tsx",
     "src/**/*.json",
-    "src/**/*.svg",
-    "rollup.config.ts",
-    "node_modules/@types"
-  ]
+  ],
 }

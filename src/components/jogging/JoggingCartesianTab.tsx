@@ -40,8 +40,9 @@ export const JoggingCartesianTab = observer(
     useReaction(
       () => [store.selectedCoordSystemId, store.selectedTcpId],
       () => {
-        store.jogger.motionStream.motionStateSocket.path = store.jogger.nova.makeWebsocketURL(`/motion-groups/${store.jogger.motionGroupId}/state-stream?tcp=${store.selectedTcpId}&response_coordinate_system=${store.selectedCoordSystemId}`)
-        store.jogger.motionStream.motionStateSocket.reconnect()
+        store.jogger.motionStream.motionStateSocket.changeUrl(
+          store.jogger.nova.makeWebsocketURL(`/motion-groups/${store.jogger.motionGroupId}/state-stream?tcp=${store.selectedTcpId}&response_coordinate_system=${store.selectedCoordSystemId}`)
+        )
       },
       { fireImmediately: true } as any,
     )
