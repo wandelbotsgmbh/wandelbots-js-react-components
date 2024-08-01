@@ -26,16 +26,12 @@ const meta: Meta<typeof JoggingCartesianAxisControl> = {
       }
     })
 
-    const { startJogging, stopJogging, getDisplayedValue, ...restArgs } = args
-
-    return (
-      <JoggingCartesianAxisControl
-        startJogging={(direction) => (joggingDirRef.current = direction)}
-        stopJogging={() => (joggingDirRef.current = null)}
-        getDisplayedValue={() => joggingValueRef.current.toString()}
-        {...restArgs}
-      />
-    )
+    return <JoggingCartesianAxisControl
+      {...args} 
+      startJogging={(direction) => joggingDirRef.current = direction} 
+      stopJogging={() => joggingDirRef.current = null}
+      getDisplayedValue={() => joggingValueRef.current.toString()}
+    />;
   },
 }
 export default meta

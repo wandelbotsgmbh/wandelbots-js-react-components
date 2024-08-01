@@ -19,9 +19,10 @@ const meta: Meta<typeof VelocitySlider> = {
       setArgs({ velocity: newVelocity })
     }
 
-    const { onVelocityChange: _, ...restArgs } = args
-
-    return <VelocitySlider onVelocityChange={onVelocityChange} {...restArgs} />
+    return <VelocitySlider
+      {...args} 
+      onVelocityChange={onVelocityChange}
+    />;
   },
 }
 export default meta

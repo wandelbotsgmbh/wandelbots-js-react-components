@@ -23,16 +23,12 @@ const meta: Meta<typeof JoggingJointRotationControl> = {
       }
     })
 
-    const { startJogging, stopJogging, getValueDegs, ...restArgs } = args
-
-    return (
-      <JoggingJointRotationControl
-        startJogging={(direction) => (joggingDirRef.current = direction)}
-        stopJogging={() => (joggingDirRef.current = null)}
-        getValueDegs={() => joggingValueRef.current}
-        {...restArgs}
-      />
-    )
+    return <JoggingJointRotationControl
+      {...args} 
+      startJogging={(direction) => joggingDirRef.current = direction} 
+      stopJogging={() => joggingDirRef.current = null}
+      getValueDegs={() => joggingValueRef.current}
+    />;
   },
 }
 export default meta
