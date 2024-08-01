@@ -76,7 +76,7 @@
     "@react-spring/three": ">=9",
     "@react-three/drei": ">=9",
     "@react-three/fiber": ">=8",
-    "@wandelbots/wandelbots-js": "file:../wbjs/wandelbots-wandelbots-js-0.0.0-semantically-released.tgz",
+    "@wandelbots/wandelbots-js": ">=1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "three": ">=0.137",
