@@ -24,10 +24,10 @@ const meta: Meta<typeof JoggingJointRotationControl> = {
     })
 
     return <JoggingJointRotationControl
+      {...args} 
       startJogging={(direction) => joggingDirRef.current = direction} 
       stopJogging={() => joggingDirRef.current = null}
       getValueDegs={() => joggingValueRef.current}
-      {...args} 
     />;
   },
 

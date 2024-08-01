@@ -27,10 +27,10 @@ const meta: Meta<typeof JoggingCartesianAxisControl> = {
     })
 
     return <JoggingCartesianAxisControl
+      {...args} 
       startJogging={(direction) => joggingDirRef.current = direction} 
       stopJogging={() => joggingDirRef.current = null}
       getDisplayedValue={() => joggingValueRef.current.toString()}
-      {...args} 
     />;
   },
 
