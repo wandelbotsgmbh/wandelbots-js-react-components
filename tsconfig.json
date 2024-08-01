@@ -16,13 +16,13 @@
     "strict": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
+    "composite": true,
     "declaration": true,
     "declarationDir": "dist/types",
   },
   "include": [
-    "src"
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "src/**/*.json",
   ],
-  "exclude": [
-    "node_modules"
-  ]
 }

@@ -20,7 +20,7 @@ import { FANUC_ARC_Mate_100iD } from "./FANUC_ARC_Mate_100iD"
 import { FANUC_ARC_Mate_120iD } from "./FANUC_ARC_Mate_120iD"
 import { ABB_1200_07_7 } from "./ABB_1200_07_7"
 
-import { type GroupProps } from "@react-three/fiber"
+import type { GroupProps } from "@react-three/fiber"
 import type { ConnectedMotionGroup } from "@wandelbots/wandelbots-js"
 import { DHRobot } from "./DHRobot"
 
