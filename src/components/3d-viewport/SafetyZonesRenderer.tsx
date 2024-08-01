@@ -1,4 +1,4 @@
-import { SafetySetupSafetyZone } from "@wandelbots/wandelbots-js"
+import { SafetySetupSafetyZone, Geometry } from "@wandelbots/wandelbots-js"
 import * as THREE from "three"
 import { ConvexGeometry } from "three-stdlib"
 import { type GroupProps } from "@react-three/fiber"
@@ -14,14 +14,18 @@ export function SafetyZonesRenderer({
   return (
     <group {...props}>
       {safetyZones.map((zone, index) => {
-        let geometries = []
-        if (zone.geometry.compound) {
-          geometries = zone.geometry.compound.child_geometries
-        } else if (zone.geometry.convex_hull) {
-          geometries = [zone.geometry]
+        let geometries: Geometry[] = []
+        if (zone.geometry) {
+          if (zone.geometry.compound) {
+            geometries = zone.geometry.compound.child_geometries
+          } else if (zone.geometry.convex_hull) {
+            geometries = [zone.geometry]
+          }
         }
 
         return geometries.map((geometry, i) => {
+          if (!geometry.convex_hull) return null
+
           const vertices = geometry.convex_hull.vertices.map(
             (v) => new THREE.Vector3(v.x / 1000, v.y / 1000, v.z / 1000),
           )
