@@ -24,12 +24,16 @@ export function Robot({
   getModel = defaultGetModel,
   ...props
 }: ConnectecMotionGroupRobotProps) {
+  if (!connectedMotionGroup.dhParameters) {
+    return null
+  }
+
   return (
     <SupportedRobot
       rapidlyChangingMotionState={
         connectedMotionGroup.rapidlyChangingMotionState
       }
-      modelFromController={connectedMotionGroup.modelFromController}
+      modelFromController={connectedMotionGroup.modelFromController || ""}
       dhParameters={connectedMotionGroup.dhParameters}
       getModel={getModel}
       {...props}
