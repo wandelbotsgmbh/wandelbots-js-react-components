@@ -23,6 +23,7 @@
     "tsc": "tsc --pretty --noEmit",
     "test": "npm run build",
     "build": "rimraf dist && vite build && tsc --declaration --emitDeclarationOnly",
+    "build:dev": "rollup -c rollup.config.dev.mjs",
     "build-storybook": "storybook build"
   },
   "repository": {
