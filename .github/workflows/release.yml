@@ -31,7 +31,8 @@ jobs:
         run: npm clean-install
       - name: Verify the integrity of provenance attestations and registry signatures for installed dependencies
         run: npm audit signatures
-
+      - name: Build
+        run: npm run build
       # semantic-release skips non-configured branches or pull-requests
       - name: Release
         env:
