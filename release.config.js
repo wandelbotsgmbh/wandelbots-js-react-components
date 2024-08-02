@@ -6,6 +6,7 @@ export default {
     "@semantic-release/commit-analyzer",
     "@semantic-release/release-notes-generator",
     "@semantic-release/npm",
+    
     [
       "@semantic-release/github",
       // Workaround for rate limit issue on github
