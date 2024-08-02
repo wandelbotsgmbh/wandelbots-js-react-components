@@ -4,7 +4,11 @@ import type { RobotProps } from "./SupportedRobot"
 import { animated } from "@react-spring/three"
 import RobotAnimator from "./RobotAnimator"
 
-export function Yaskawa_AR1440({ modelURL, connectedMotionGroup, ...props }: RobotProps) {
+export function Yaskawa_AR1440({
+  modelURL,
+  rapidlyChangingMotionState,
+  ...props
+}: RobotProps) {
   const gltf = useGLTF(modelURL) as any
 
   const nodes = gltf.nodes
@@ -23,7 +27,7 @@ export function Yaskawa_AR1440({ modelURL, connectedMotionGroup, ...props }: Rob
   return (
     <>
       <RobotAnimator
-        connectedMotionGroup={connectedMotionGroup}
+        rapidlyChangingMotionState={rapidlyChangingMotionState}
         robotRootObjectName="Scene"
         onRotationChanged={setRotation}
       />

@@ -6,7 +6,7 @@ import { animated } from "@react-spring/three"
 
 export function UniversalRobots_UR10({
   modelURL,
-  connectedMotionGroup,
+  rapidlyChangingMotionState,
   ...props
 }: RobotProps) {
   const gltf = useGLTF(modelURL) as any
@@ -22,7 +22,7 @@ export function UniversalRobots_UR10({
   return (
     <>
       <RobotAnimator
-        connectedMotionGroup={connectedMotionGroup}
+        rapidlyChangingMotionState={rapidlyChangingMotionState}
         robotRootObjectName="Scene"
         onRotationChanged={setRotation}
       />

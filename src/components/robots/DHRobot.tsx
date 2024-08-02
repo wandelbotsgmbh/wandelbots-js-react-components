@@ -13,7 +13,11 @@ import type { DHRobotProps } from "./SupportedRobot"
 const CHILD_LINE = "line"
 const CHILD_MESH = "mesh"
 
-export function DHRobot({ connectedMotionGroup, ...props }: DHRobotProps) {
+export function DHRobot({
+  rapidlyChangingMotionState,
+  dhParameters,
+  ...props
+}: DHRobotProps) {
   // reused in every update
   const accumulatedMatrix = new Matrix4()
 
@@ -53,13 +57,11 @@ export function DHRobot({ connectedMotionGroup, ...props }: DHRobotProps) {
     mesh: THREE.Mesh,
     jointValue: number,
   ) {
-    const dh_parameters =
-      connectedMotionGroup.motionGroupSpecification.dh_parameters
-    if (!dh_parameters) {
+    if (!dhParameters) {
       return
     }
 
-    const dh_parameter = dh_parameters[jointIndex]
+    const dh_parameter = dhParameters[jointIndex]
     if (!dh_parameter) {
       return
     }
@@ -90,7 +92,7 @@ export function DHRobot({ connectedMotionGroup, ...props }: DHRobotProps) {
   return (
     <>
       <RobotAnimator
-        connectedMotionGroup={connectedMotionGroup}
+        rapidlyChangingMotionState={rapidlyChangingMotionState}
         robotRootObjectName="Scene"
         onRotationChanged={setRotation}
         jointCollector={getAllJoints}
@@ -100,29 +102,26 @@ export function DHRobot({ connectedMotionGroup, ...props }: DHRobotProps) {
           <sphereGeometry args={[0.01, 32, 32]} />
           <meshStandardMaterial color={"black"} depthTest={true} />
         </mesh>
-        {connectedMotionGroup.motionGroupSpecification.dh_parameters!.map(
-          (param, index) => {
-            const { a, b } = getLinePoints(
-              param,
-              connectedMotionGroup.rapidlyChangingMotionState.state
-                .joint_position.joints[index] ?? 0,
-            )
-            return (
-              <group name={`group_${index}`} key={"group_" + index}>
-                <Line
-                  name={CHILD_LINE}
-                  points={[a, b]}
-                  color={"white"}
-                  lineWidth={5}
-                />
-                <mesh name={CHILD_MESH} key={"mesh_" + index} position={b}>
-                  <sphereGeometry args={[0.01, 32, 32]} />
-                  <meshStandardMaterial color={"black"} depthTest={true} />
-                </mesh>
-              </group>
-            )
-          },
-        )}
+        {dhParameters!.map((param, index) => {
+          const { a, b } = getLinePoints(
+            param,
+            rapidlyChangingMotionState.state.joint_position.joints[index] ?? 0,
+          )
+          return (
+            <group name={`group_${index}`} key={"group_" + index}>
+              <Line
+                name={CHILD_LINE}
+                points={[a, b]}
+                color={"white"}
+                lineWidth={5}
+              />
+              <mesh name={CHILD_MESH} key={"mesh_" + index} position={b}>
+                <sphereGeometry args={[0.01, 32, 32]} />
+                <meshStandardMaterial color={"black"} depthTest={true} />
+              </mesh>
+            </group>
+          )
+        })}
       </group>
     </>
   )

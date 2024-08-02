@@ -6,7 +6,7 @@ import RobotAnimator from "./RobotAnimator"
 
 export function UniversalRobots_UR3e({
   modelURL,
-  connectedMotionGroup,
+  rapidlyChangingMotionState,
   ...props
 }: RobotProps) {
   const gltf = useGLTF(modelURL) as any
@@ -22,7 +22,7 @@ export function UniversalRobots_UR3e({
   return (
     <>
       <RobotAnimator
-        connectedMotionGroup={connectedMotionGroup}
+        rapidlyChangingMotionState={rapidlyChangingMotionState}
         robotRootObjectName="Scene"
         onRotationChanged={setRotation}
       />

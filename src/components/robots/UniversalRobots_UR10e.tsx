@@ -6,7 +6,7 @@ import type * as THREE from "three"
 
 export function UniversalRobots_UR10e({
   modelURL,
-  connectedMotionGroup,
+  rapidlyChangingMotionState,
   ...props
 }: RobotProps) {
   const gltf = useGLTF(modelURL) as any
@@ -22,7 +22,7 @@ export function UniversalRobots_UR10e({
   return (
     <>
       <RobotAnimator
-        connectedMotionGroup={connectedMotionGroup}
+        rapidlyChangingMotionState={rapidlyChangingMotionState}
         robotRootObjectName="Scene"
         onRotationChanged={setRotation}
       />

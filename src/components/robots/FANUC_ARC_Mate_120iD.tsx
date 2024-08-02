@@ -6,7 +6,7 @@ import { animated } from "@react-spring/three"
 
 export function FANUC_ARC_Mate_120iD({
   modelURL,
-  connectedMotionGroup,
+  rapidlyChangingMotionState,
   ...props
 }: RobotProps) {
   const gltf = useGLTF(modelURL) as any
@@ -24,7 +24,7 @@ export function FANUC_ARC_Mate_120iD({
   return (
     <>
       <RobotAnimator
-        connectedMotionGroup={connectedMotionGroup}
+        rapidlyChangingMotionState={rapidlyChangingMotionState}
         robotRootObjectName="Scene"
         onRotationChanged={setRotation}
       />
