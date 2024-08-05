@@ -1,6 +1,6 @@
 // TODO implement this as part of theme?
 
-import { useThemeColors } from "../themes/wbTheme"
+import { useThemeColors } from "../themes/novaTheme"
 import { Select, type SxProps } from "@mui/material"
 import { defaultsDeep } from "lodash-es"
 

@@ -2,7 +2,7 @@ import { Stack, MenuItem, InputLabel, Select } from "@mui/material"
 import { observer } from "mobx-react-lite"
 import type { IncrementOptionId, JoggingStore } from "./JoggingStore"
 import { useTranslation } from "react-i18next"
-import { useThemeColors } from "../../themes/wbTheme"
+import { useThemeColors } from "../../themes/novaTheme"
 import { ThemeSelect } from "../ThemeSelect"
 
 export const JoggingOptions = observer(({ store }: { store: JoggingStore }) => {

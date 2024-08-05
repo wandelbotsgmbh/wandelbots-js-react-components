@@ -1,6 +1,6 @@
 import type { Preview } from "@storybook/react";
 import { ThemeProvider } from "@mui/material"
-import { darkTheme, lightTheme } from "../src/themes/wbTheme"
+import { createNovaTheme } from "../src/themes/novaTheme"
 import { themes } from '@storybook/theming';
 import { DocsContainer, type DocsContainerProps } from '@storybook/blocks'
 import React, { type FC } from 'react'
@@ -35,7 +35,7 @@ const preview: Preview = {
   },
   decorators: [
     (Story) => (
-      <ThemeProvider theme={darkTheme}>
+      <ThemeProvider theme={createNovaTheme('dark')}>
         <Story />
       </ThemeProvider>
     ),
