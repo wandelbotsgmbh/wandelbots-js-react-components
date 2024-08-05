@@ -1,5 +1,5 @@
 import { Meta, StoryObj } from "@storybook/react";
-import { VelocitySlider } from "./VelocitySlider";
+import { VelocitySlider } from "../index";
 import { useArgs } from "@storybook/preview-api";
 
 const meta: Meta<typeof VelocitySlider> = {
