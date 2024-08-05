@@ -1,3 +1,4 @@
+export * from "./components/wandelscript-editor/WandelscriptEditor"
 export * from "./components/robots/SupportedRobot"
 export * from "./components/robots/Robot"
 export * from "./components/robots/AxisConfig"
