@@ -1,5 +1,5 @@
 import Editor, { useMonaco, type Monaco } from "@monaco-editor/react"
-import React, { useEffect } from "react"
+import { useEffect } from "react"
 import { createHighlighter, type BundledTheme } from "shiki"
 import { shikiToMonaco } from "@shikijs/monaco"
 
@@ -12,6 +12,8 @@ type WandelscriptEditorProps = {
   code?: string
   /** What to do when the user edits the code */
   onChange?: (code: string|undefined, ev: editor.IModelContentChangedEvent) => void
+  /** Options for monaco editor */
+  monacoOptions?: editor.IEditorOptions
   /** Callback to further configure monaco on startup if needed */
   monacoSetup?: (monaco: Monaco) => void
 }
@@ -64,27 +66,16 @@ export const WandelscriptEditor = (props: WandelscriptEditorProps) => {
       inherit: true,
       rules: [],
       colors: {
-        // "editor.background": colors.backgroundDefault,
-        // "editorLineNumber.foreground": "#797979",
-        // "editorLineNumber.activeForeground": "#e9e9e9",
+        "editor.background": "#262F42",
+        "editorLineNumber.foreground": "#797979",
+        "editorLineNumber.activeForeground": "#e9e9e9",
+        "editor.lineHighlightBorder": "#494949"
       },
     })
 
     if (props.monacoSetup) {
       props.monacoSetup(monaco)
     }
-
-
-    // Define some custom keybindings
-      // monaco.editor.addCommand({
-      //   id: "save",
-      //   run: () => props.onSave ? props.onSave(monaco.editor.getModels()[0]!.getValue()) : null,
-      // })
-
-      // monaco.editor.addKeybindingRule({
-      //   keybinding: monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS,
-      //   command: "save",
-      // })
   }
 
   useEffect(() => {
@@ -107,7 +98,7 @@ export const WandelscriptEditor = (props: WandelscriptEditorProps) => {
         minimap: { enabled: false },
         wordWrap: "on",
         automaticLayout: true,
-        // ...props.monacoOptions,
+        ...props.monacoOptions,
       }}
     />
   )
