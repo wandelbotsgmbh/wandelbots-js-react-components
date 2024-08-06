@@ -1,13 +1,12 @@
-import { Stack, MenuItem, InputLabel, Select } from "@mui/material"
+import { Stack, MenuItem, InputLabel, Select, useTheme } from "@mui/material"
 import { observer } from "mobx-react-lite"
 import type { IncrementOptionId, JoggingStore } from "./JoggingStore"
 import { useTranslation } from "react-i18next"
-import { useThemeColors } from "../../themes/novaTheme"
 import { ThemeSelect } from "../ThemeSelect"
 
 export const JoggingOptions = observer(({ store }: { store: JoggingStore }) => {
   const { t } = useTranslation()
-  const colors = useThemeColors()
+  const theme = useTheme()
 
   return (
     <Stack
@@ -17,7 +16,7 @@ export const JoggingOptions = observer(({ store }: { store: JoggingStore }) => {
       sx={{
         padding: "16px",
         "& label": {
-          color: colors.textSubtle,
+          color: theme.nova.colors.textSubtle,
           fontSize: "12px",
           marginBottom: "4px",
         },

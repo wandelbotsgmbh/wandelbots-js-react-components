@@ -1,4 +1,5 @@
-import React, { ReactNode, useEffect, useState } from "react";
+import { Typography, useTheme } from "@mui/material";
+import { ReactNode, useEffect, useState } from "react";
 
 export function ColorSection(props: { name: string; children: ReactNode }) {
   return (
@@ -18,6 +19,7 @@ export function ColorSection(props: { name: string; children: ReactNode }) {
 }
 
 export function Color({ name, color }: { name: string; color: string }) {
+  const theme = useTheme()
   const [showCopied, setShowCopied] = useState(false);
 
   function handleClick(value: string) {
@@ -58,17 +60,17 @@ export function Color({ name, color }: { name: string; color: string }) {
           // border: "1px solid lightgray",
         }}
       />
-      <span>{name}</span>
+      <Typography component="span">{name}</Typography>
       <br />
-      <span
+      <Typography
         style={{
-          color: "gray",
+          color: theme.nova.colors.textSubtle,
           fontSize: "0.9em",
           fontFamily: "monospace",
         }}
       >
         {showCopied ? "Copied ✔︎" : color}
-      </span>
+      </Typography>
     </li>
   );
 }

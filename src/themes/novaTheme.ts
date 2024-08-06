@@ -1,10 +1,12 @@
 "use client"
 
-import { createTheme, useTheme } from "@mui/material/styles"
-import type { ThemeOptions } from "@mui/system";
-import { defaultsDeep } from "lodash-es"
+import { createTheme, Theme } from "@mui/material/styles"
 
-const baseColors = {
+/**
+ * The palette of named colors we pick from for
+ * configuring the default nova themes.
+ */
+const colors = {
   white: "#FFFFFF",
   midnightblue: "#001337",
   lightbuttonblue: "#47D3FF",
@@ -21,190 +23,72 @@ const baseColors = {
   magenta: "#EA3785",
 }
 
-/** Colors for the dark theme */
-export const darkColors = {
-  primary: baseColors.skyblue500,
-  textDefault: baseColors.white,
-  textInverse: baseColors.darkestblue,
-  textError: baseColors.scaryred,
-  textSubtle: baseColors.midnightgray500,
-  backgroundDefault: baseColors.darkishblue,
-  inputBackgroundDefault: baseColors.darkgrayishblue,
-  borderColorDefault: "#3A4150",
-
-  selectBackground: baseColors.grayishblue,
-  appBarBackground: baseColors.darkestblue,
-  virtualRobot: "#1AC0B2",
-  physicalRobot: "#956FFA",
-  robotViewportBackground: "#1F283A",
-  viewportButtonInactiveBackground: baseColors.darkestblue,
-  viewportButtonHover: baseColors.midnightgray500,
-  viewportButtonActiveBackground: baseColors.skyblue500,
-  tabsBarBackground: baseColors.darkestblue,
-  activeTabBackground: baseColors.darkishblue,
-  omniverseConfigurationSuccess: baseColors.tealGreen,
-  omniverseConfigurationFailure: baseColors.magenta,
-}
-
-/** Colors for the light theme */
-export const lightColors = {
-  primary: baseColors.lightbuttonblue,
-  textDefault: "#18181B",
-  textInverse: baseColors.white,
-  textError: baseColors.scaryred,
-  textSubtle: baseColors.midnightgray500,
-  backgroundDefault: baseColors.white,
-  inputBackgroundDefault: baseColors.white,
-  borderColorDefault: baseColors.midnightgray500,
-
-  selectBackground: "#E4E4E7",
-  appBarBackground: baseColors.white,
-  virtualRobot: "green",
-  physicalRobot: "blue",
-  robotViewportBackground: "#E4E4E7",
-  viewportButtonInactiveBackground: baseColors.midnightgray,
-  viewportButtonHover: baseColors.midnightgray500,
-  viewportButtonActiveBackground: baseColors.lightbuttonblue,
-  tabsBarBackground: baseColors.white,
-  activeTabBackground: baseColors.white,
-  omniverseConfigurationSuccess: baseColors.tealGreen,
-  omniverseConfigurationFailure: baseColors.magenta,
-}
-
-/** Gets the colors for the current theme (light or dark) */
-export function useThemeColors() {
-  return useTheme().palette.mode === "dark" ? darkColors : lightColors
-}
-
-
-
 /**
+ * A Nova theme is a collection of Nova-specific settings that is
+ * not specifically MUI-related, but can be used to construct a MUI
+ * theme in turn.
  * 
+ * This object defines the default Nova theme settings, and the structure
+ * of the options here is used to validate alternative themes.
  */
-export const novaThemeMUIDefaults: ThemeOptions = {
-  palette: {
-    mode: 'dark',
-    primary: {
-      main: colors.skyblue500,
-    },
-    background: {
-      default: colors.darkishblue,
-    },
-  },
-  typography: {
-    allVariants: {
-      color: colors.white,
-    },
-  },
-  components: {
-    MuiPaper: {
-      styleOverrides: {
-        root: {
-          backgroundColor: colors.darkishblue,
-        },
+export const novaDarkTheme = {
+  mode: 'dark' as 'dark' | 'light',
+  colors: {
+    primary: colors.skyblue500,
+    textDefault: colors.white,
+    textSubtle: colors.midnightgray,
+    backgroundDefault: colors.darkishblue,
+    buttonPrimary: {
+      background: "#00A4F5",
+      text: "#FFFFFF"
       },
+    buttonSecondary: {
+      background: "#879399",
+      text: "#FFFFFF"
     },
-    MuiTabs: {
-      styleOverrides: {
-        root: {
-          backgroundColor: colors.tabsBarBackground,
-          minHeight: "42px",
-        },
-      },
+    buttonBack: {
+      background: "transparent",
+      text: "#151D35"
     },
-    MuiTab: {
-      styleOverrides: {
-        root: {
-          minHeight: "42px",
-          textTransform: "none",
-          "&.Mui-selected": {
-            color: "inherit",
-            backgroundColor: colors.activeTabBackground,
-          },
-        },
-      },
+    inputField: {
+      background: "#F5F8FA",
+      text: "#242C3E",
+      unitBackground: "#CCD4D9",
+      unitText: "#242C3E",
     },
-    MuiButton: {
-      defaultProps: {
-        disableElevation: true,
-      },
-      styleOverrides: {
-        root: {
-          textTransform: "none",
-          borderRadius: "10px",
-          fontSize: "14px",
-          fontWeight: 500,
-        },
-      },
-      variants: [
-        {
-          props: { variant: "outlined" },
-          style: {
-            border: "2px solid rgba(255, 255, 255, 0.6)",
-            color: "rgba(255, 255, 255, 0.6)",
-            backgroundColor: "rgba(255, 255, 255, 0.2)",
-            "&:hover": {
-              backgroundColor: "rgba(255, 255, 255, 0.4)",
-              border: "2px solid rgba(255, 255, 255, 0.8)",
-            },
-          },
-        },
-      ],
-    },
-    MuiFab: {
-      styleOverrides: {
-        root: {
-          width: "48px",
-          height: "48px",
-          backgroundColor: colors.viewportButtonInactiveBackground,
-          color: colors.textDefault,
-          "&:hover": {
-            backgroundColor: colors.viewportButtonHover,
-          },
-        },
-      },
-      variants: [
-        {
-          props: { variant: "active" },
-          style: {
-            backgroundColor: colors.viewportButtonActiveBackground,
-            color: colors.textInverse,
-            "&:hover": {
-              backgroundColor: colors.viewportButtonActiveBackground,
-            },
-          },
-        },
-      ],
-    },
+    sidebar: {
+      background: "#000000",
+      backgroundSelected: "#4B4B4B",
+      selected: "#6FE946"
+    }
   }
-};
+}
 
-export const novaDarkThemeCustomOptions = {
-  layout: {
-    /** Height of the little gradient bar at the top */
-    linearGradientHeight: 12,
-    linearGradientStart: "#EA3767",
-    linearGradientEnd: "#72D0FB",
-    /** Height of the sidebar logo and security panel container */
-    topPanelHeight: 72,
-  },
-};
+export type NovaTheme = typeof novaDarkTheme;
 
-export const novaThemeOptions = {
-  ...novaDarkThemeMUIOptions,
-  ...novaDarkThemeCustomOptions,
-};
-
-export type NovaThemeOptions = typeof novaThemeOptions;
-
-
-export function createNovaTheme(
-  mode: "light" | "dark",
-  options: ThemeOptions = {},
-) {
-  const colors = mode === "light" ? lightColors : darkColors
-  return createTheme(
-    defaultsDeep(options, {
-    }),
-  )
+/** 
+ * Turn a set of Nova theme settings into a Material UI theme.
+ * 
+ * The original Nova settings are available on the resulting MUI
+ * theme object under the `nova` key, if needed.
+ */
+export function createNovaMUITheme(novaTheme: NovaTheme): Theme {
+  const nova = novaTheme
+  return createTheme({
+    palette: {
+      mode: nova.mode,
+      primary: {
+        main: nova.colors.primary,
+      },
+      background: {
+        default: nova.colors.backgroundDefault,
+      }
+    },
+    typography: {
+      allVariants: {
+        color: nova.colors.textDefault,
+      },
+    },
+    nova
+  })
 }

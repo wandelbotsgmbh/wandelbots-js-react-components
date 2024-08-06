@@ -23,33 +23,33 @@ const ColorPalette = () => {
       <ColorSection name="Button">
         <Color
           name="Primary Background"
-          color={theme.buttonPrimary.background}
+          color={theme.nova.colors.buttonPrimary.background}
         />
-        <Color name="Primary Text" color={theme.buttonPrimary.text} />
+        <Color name="Primary Text" color={theme.nova.colors.buttonPrimary.text} />
         <Color
           name="Secondary Background"
-          color={theme.buttonSecondary.background}
+          color={theme.nova.colors.buttonSecondary.background}
         />
-        <Color name="Secondary Text" color={theme.buttonSecondary.text} />
-        <Color name="Back Background" color={theme.buttonBack.background} />
-        <Color name="Back Text" color={theme.buttonBack.text} />
+        <Color name="Secondary Text" color={theme.nova.colors.buttonSecondary.background} />
+        <Color name="Back Background" color={theme.nova.colors.buttonBack.background} />
+        <Color name="Back Text" color={theme.nova.colors.buttonBack.text} />
       </ColorSection>
       <ColorSection name="Input Field">
-        <Color name="Background" color={theme.inputField.background} />
-        <Color name="Text" color={theme.inputField.text} />
+        <Color name="Background" color={theme.nova.colors.inputField.background} />
+        <Color name="Text" color={theme.nova.colors.inputField.text} />
         <Color
           name="Unit Background"
-          color={theme.inputField.unitBackground}
+          color={theme.nova.colors.inputField.unitBackground}
         />
-        <Color name="Unit Text" color={theme.inputField.unitText} />
+        <Color name="Unit Text" color={theme.nova.colors.inputField.unitText} />
       </ColorSection>
       <ColorSection name="Sidebar">
-        <Color name="Background" color={theme.sidebar.background} />
+        <Color name="Background" color={theme.nova.colors.sidebar.background} />
         <Color
           name="Background Selected"
-          color={theme.sidebar.backgroundSelected}
+          color={theme.nova.colors.sidebar.backgroundSelected}
         />
-        <Color name="Selected" color={theme.sidebar.selected} />
+        <Color name="Selected" color={theme.nova.colors.sidebar.backgroundSelected} />
       </ColorSection>
     </div>
   );
