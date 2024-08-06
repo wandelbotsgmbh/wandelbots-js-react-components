@@ -8,7 +8,8 @@ const config: StorybookConfig = {
     "@storybook/addon-essentials",
     "@chromatic-com/storybook",
     "@storybook/addon-interactions",
-    "storybook-preset-inline-svg"
+    "storybook-preset-inline-svg",
+    "storybook-dark-mode"
   ],
   framework: {
     name: "@storybook/react-vite",

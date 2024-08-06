@@ -27,12 +27,12 @@ const colors = {
  * A Nova theme is a collection of Nova-specific settings that is
  * not specifically MUI-related, but can be used to construct a MUI
  * theme in turn.
- * 
+ *
  * This object defines the default Nova theme settings, and the structure
  * of the options here is used to validate alternative themes.
  */
 export const novaDarkTheme = {
-  mode: 'dark' as 'dark' | 'light',
+  mode: "dark" as "dark" | "light",
   colors: {
     primary: colors.skyblue500,
     textDefault: colors.white,
@@ -40,15 +40,15 @@ export const novaDarkTheme = {
     backgroundDefault: colors.darkishblue,
     buttonPrimary: {
       background: "#00A4F5",
-      text: "#FFFFFF"
-      },
+      text: "#FFFFFF",
+    },
     buttonSecondary: {
       background: "#879399",
-      text: "#FFFFFF"
+      text: "#FFFFFF",
     },
     buttonBack: {
       background: "transparent",
-      text: "#151D35"
+      text: "#151D35",
     },
     inputField: {
       background: "#F5F8FA",
@@ -56,19 +56,42 @@ export const novaDarkTheme = {
       unitBackground: "#CCD4D9",
       unitText: "#242C3E",
     },
-    sidebar: {
-      background: "#000000",
-      backgroundSelected: "#4B4B4B",
-      selected: "#6FE946"
-    }
-  }
+  },
 }
 
-export type NovaTheme = typeof novaDarkTheme;
+export const novaLightTheme = {
+  mode: "light" as "dark" | "light",
+  colors: {
+    primary: colors.skyblue500,
+    textDefault: colors.darkishblue,
+    textSubtle: colors.midnightgray,
+    backgroundDefault: colors.skyblue500,
+    buttonPrimary: {
+      background: "#00A4F5",
+      text: "#FFFFFF",
+    },
+    buttonSecondary: {
+      background: "#879399",
+      text: "#FFFFFF",
+    },
+    buttonBack: {
+      background: "transparent",
+      text: "#151D35",
+    },
+    inputField: {
+      background: "#F5F8FA",
+      text: "#242C3E",
+      unitBackground: "#CCD4D9",
+      unitText: "#242C3E",
+    },
+  },
+}
 
-/** 
+export type NovaTheme = typeof novaDarkTheme
+
+/**
  * Turn a set of Nova theme settings into a Material UI theme.
- * 
+ *
  * The original Nova settings are available on the resulting MUI
  * theme object under the `nova` key, if needed.
  */
@@ -82,13 +105,13 @@ export function createNovaMUITheme(novaTheme: NovaTheme): Theme {
       },
       background: {
         default: nova.colors.backgroundDefault,
-      }
+      },
     },
     typography: {
       allVariants: {
         color: nova.colors.textDefault,
       },
     },
-    nova
+    nova,
   })
 }
