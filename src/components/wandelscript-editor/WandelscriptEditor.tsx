@@ -1,6 +1,11 @@
 import Editor, { useMonaco, type Monaco } from "@monaco-editor/react"
-import { useEffect, useState } from "react"
-import { createHighlighter, type BundledTheme } from "shiki"
+import { useEffect, useRef, useState } from "react"
+import {
+  BundledLanguage,
+  createHighlighter,
+  HighlighterGeneric,
+  type BundledTheme,
+} from "shiki"
 import { shikiToMonaco } from "@shikijs/monaco"
 
 import wandelscriptTextmateGrammar from "./wandelscript.tmLanguage"
@@ -25,6 +30,10 @@ type WandelscriptEditorProps = {
 export const WandelscriptEditor = (props: WandelscriptEditorProps) => {
   const monaco = useMonaco()
   const theme = useTheme()
+  const shikiHighlighterRef = useRef<HighlighterGeneric<
+    BundledLanguage,
+    BundledTheme
+  > | null>(null)
 
   const [activeShikiTheme, setActiveShikiTheme] =
     useState<BundledTheme>("dark-plus")
@@ -33,8 +42,6 @@ export const WandelscriptEditor = (props: WandelscriptEditorProps) => {
     theme.nova.mode === "dark" ? "dark-plus" : "light-plus"
 
   async function setupEditor(monaco: Monaco) {
-    console.log("setting up editor")
-
     // Register and configure the Wandelscript language
     monaco.languages.register({ id: "wandelscript" })
 
@@ -59,14 +66,16 @@ export const WandelscriptEditor = (props: WandelscriptEditorProps) => {
     // Monaco doesn't support TextMate grammar config directly, so we
     // use Shiki as an intermediary
 
-    const highlighter = await createHighlighter({
-      // Our textmate grammar doesn't quite conform to the expected type
-      // here; I'm not sure what the missing properties mean exactly
-      langs: [wandelscriptTextmateGrammar as any],
-      themes: ["dark-plus", "light-plus"],
-    })
+    if (!shikiHighlighterRef.current) {
+      shikiHighlighterRef.current = await createHighlighter({
+        // Our textmate grammar doesn't quite conform to the expected type
+        // here; I'm not sure what the missing properties mean exactly
+        langs: [wandelscriptTextmateGrammar as any],
+        themes: ["dark-plus", "light-plus"],
+      })
+    }
 
-    shikiToMonaco(highlighter, monaco)
+    shikiToMonaco(shikiHighlighterRef.current, monaco)
 
     // Override the generated shiki theme to use shiki syntax highlighting
     // but vscode colors

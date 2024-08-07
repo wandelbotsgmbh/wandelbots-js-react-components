@@ -1,10 +1,5 @@
 import type { Preview } from "@storybook/react"
-import { Box, ThemeProvider } from "@mui/material"
-import {
-  createNovaMUITheme,
-  novaDarkTheme,
-  novaLightTheme,
-} from "../src/themes/novaTheme"
+import { Box, createTheme, ThemeProvider } from "@mui/material"
 import React from "react"
 import { DocsContainer } from "./DocsContainer"
 import { useDarkMode } from "storybook-dark-mode"
@@ -25,10 +20,17 @@ const preview: Preview = {
     (Story) => {
       const isDark = useDarkMode()
 
+      // Not a nova-derived theme since we want to test that the
+      // downstream components correctly get a nova theme automatically
+      // if not provided with one
+      const muiTheme = createTheme({
+        palette: {
+          mode: isDark ? "dark" : "light",
+        },
+      })
+
       return (
-        <ThemeProvider
-          theme={createNovaMUITheme(isDark ? novaDarkTheme : novaLightTheme)}
-        >
+        <ThemeProvider theme={muiTheme}>
           <Story />
         </ThemeProvider>
       )
