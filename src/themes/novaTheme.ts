@@ -1,6 +1,7 @@
 "use client"
 
 import { createTheme, Theme } from "@mui/material/styles"
+import type { editor } from "monaco-editor"
 
 /**
  * The palette of named colors we pick from for
@@ -59,6 +60,8 @@ export const novaDarkTheme = {
   },
 }
 
+export type NovaTheme = typeof novaDarkTheme
+
 export const novaLightTheme = {
   mode: "light" as "dark" | "light",
   colors: {
@@ -85,9 +88,7 @@ export const novaLightTheme = {
       unitText: "#242C3E",
     },
   },
-}
-
-export type NovaTheme = typeof novaDarkTheme
+} satisfies NovaTheme
 
 /**
  * Turn a set of Nova theme settings into a Material UI theme.

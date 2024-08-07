@@ -1,5 +1,5 @@
 import Editor, { useMonaco, type Monaco } from "@monaco-editor/react"
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { createHighlighter, type BundledTheme } from "shiki"
 import { shikiToMonaco } from "@shikijs/monaco"
 
@@ -21,14 +21,20 @@ type WandelscriptEditorProps = {
   monacoSetup?: (monaco: Monaco) => void
 }
 
-const shikiTheme: BundledTheme = "dark-plus"
-
 /** A Monaco (VSCode-style) embedded code editor with Wandelscript syntax highlighting */
 export const WandelscriptEditor = (props: WandelscriptEditorProps) => {
   const monaco = useMonaco()
   const theme = useTheme()
 
+  const [activeShikiTheme, setActiveShikiTheme] =
+    useState<BundledTheme>("dark-plus")
+
+  const targetShikiTheme =
+    theme.nova.mode === "dark" ? "dark-plus" : "light-plus"
+
   async function setupEditor(monaco: Monaco) {
+    console.log("setting up editor")
+
     // Register and configure the Wandelscript language
     monaco.languages.register({ id: "wandelscript" })
 
@@ -57,35 +63,40 @@ export const WandelscriptEditor = (props: WandelscriptEditorProps) => {
       // Our textmate grammar doesn't quite conform to the expected type
       // here; I'm not sure what the missing properties mean exactly
       langs: [wandelscriptTextmateGrammar as any],
-      themes: [shikiTheme],
+      themes: ["dark-plus", "light-plus"],
     })
 
     shikiToMonaco(highlighter, monaco)
 
     // Override the generated shiki theme to use shiki syntax highlighting
     // but vscode colors
-    monaco.editor.defineTheme(shikiTheme, {
-      base: theme.palette.mode === "dark" ? "vs-dark" : "vs",
+    monaco.editor.defineTheme(targetShikiTheme, {
+      base: theme.nova.mode === "dark" ? "vs-dark" : "vs",
       inherit: true,
       rules: [],
-      colors: {
-        "editor.background": "#262F42",
-        "editorLineNumber.foreground": "#797979",
-        "editorLineNumber.activeForeground": "#e9e9e9",
-        "editor.lineHighlightBorder": "#494949",
-      },
+      colors:
+        theme.nova.mode === "dark"
+          ? {
+              "editor.background": "#262F42",
+              "editorLineNumber.foreground": "#797979",
+              "editorLineNumber.activeForeground": "#e9e9e9",
+              "editor.lineHighlightBorder": "#494949",
+            }
+          : {},
     })
 
     if (props.monacoSetup) {
       props.monacoSetup(monaco)
     }
+
+    setActiveShikiTheme(targetShikiTheme)
   }
 
   useEffect(() => {
     if (monaco) {
       setupEditor(monaco)
     }
-  }, [monaco])
+  }, [monaco, targetShikiTheme])
 
   if (!monaco) {
     return null
@@ -96,7 +107,7 @@ export const WandelscriptEditor = (props: WandelscriptEditorProps) => {
       value={props.code}
       onChange={props.onChange}
       defaultLanguage="wandelscript"
-      theme={shikiTheme}
+      theme={activeShikiTheme}
       options={{
         minimap: { enabled: false },
         wordWrap: "on",
