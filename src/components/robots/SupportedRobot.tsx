@@ -106,6 +106,9 @@ export function SupportedRobot({
     case "FANUC_ARC_Mate_120iD":
       Robot = FANUC_ARC_Mate_120iD
       break
+    case "FANUC_ARC_Mate_120iD35":
+      Robot = FANUC_ARC_Mate_120iD
+      break
     case "FANUC_ARC_Mate_100iD":
       Robot = FANUC_ARC_Mate_100iD
       break
