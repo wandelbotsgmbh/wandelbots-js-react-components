@@ -1,5 +1,5 @@
 import type { Preview } from "@storybook/react"
-import { ThemeProvider } from "@mui/material"
+import { Box, ThemeProvider } from "@mui/material"
 import {
   createNovaMUITheme,
   novaDarkTheme,
@@ -8,11 +8,17 @@ import {
 import React from "react"
 import { DocsContainer } from "./DocsContainer"
 import { useDarkMode } from "storybook-dark-mode"
+import "./global.css"
 
 const preview: Preview = {
   parameters: {
     docs: {
       container: DocsContainer,
+    },
+    darkMode: {
+      stylePreview: true,
+      darkClass: "dark",
+      lightClass: "light",
     },
   },
   decorators: [

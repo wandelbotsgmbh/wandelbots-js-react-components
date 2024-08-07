@@ -61,6 +61,13 @@ const ColorPalette = () => {
 
 const meta: Meta<typeof ColorPalette> = {
   component: ColorPalette,
+  parameters: {
+    docs: {
+      description: {
+        story: "",
+      },
+    },
+  },
 }
 
 export default meta

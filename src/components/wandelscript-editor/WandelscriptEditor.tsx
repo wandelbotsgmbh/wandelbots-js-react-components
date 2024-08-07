@@ -11,7 +11,10 @@ type WandelscriptEditorProps = {
   /** The current Wandelscript content of the code editor (controlled component) */
   code?: string
   /** What to do when the user edits the code */
-  onChange?: (code: string|undefined, ev: editor.IModelContentChangedEvent) => void
+  onChange?: (
+    code: string | undefined,
+    ev: editor.IModelContentChangedEvent,
+  ) => void
   /** Options for monaco editor */
   monacoOptions?: editor.IEditorOptions
   /** Callback to further configure monaco on startup if needed */
@@ -69,7 +72,7 @@ export const WandelscriptEditor = (props: WandelscriptEditorProps) => {
         "editor.background": "#262F42",
         "editorLineNumber.foreground": "#797979",
         "editorLineNumber.activeForeground": "#e9e9e9",
-        "editor.lineHighlightBorder": "#494949"
+        "editor.lineHighlightBorder": "#494949",
       },
     })
 
