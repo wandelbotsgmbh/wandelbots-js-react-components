@@ -1,4 +1,4 @@
-import { Suspense } from "react"
+import { Suspense, useCallback, useRef } from "react"
 
 import { UniversalRobots_UR3 } from "./UniversalRobots_UR3"
 import { UniversalRobots_UR3e } from "./UniversalRobots_UR3e"
@@ -27,6 +27,8 @@ import type {
 } from "@wandelbots/wandelbots-api-client"
 import { DHRobot } from "./DHRobot"
 
+import * as THREE from "three"
+
 export type DHRobotProps = {
   rapidlyChangingMotionState: MotionGroupStateResponse
   dhParameters: Array<DHParameter>
@@ -42,6 +44,7 @@ export type SupportedRobotProps = {
   modelFromController: string
   dhParameters: DHParameter[]
   getModel?: (modelFromController: string) => string
+  isGhost?: boolean
 } & GroupProps
 
 export function defaultGetModel(modelFromController: string): string {
@@ -53,9 +56,61 @@ export function SupportedRobot({
   modelFromController,
   dhParameters,
   getModel = defaultGetModel,
+  isGhost = false,
   ...props
 }: SupportedRobotProps) {
   let Robot
+
+  const robotRef = useRef<THREE.Group>(new THREE.Group())
+
+  const setRobotRef = useCallback(
+    (instance: THREE.Group | null) => {
+      if (instance !== null) {
+        robotRef.current = instance
+        if (
+          isGhost &&
+          robotRef.current &&
+          robotRef.current.children.length > 0
+        ) {
+          if (!robotRef.current.userData.ghostsCreated) {
+            robotRef.current.traverse((obj) => {
+              if (obj instanceof THREE.Mesh && !obj.userData.isGhost) {
+                // Create a clone of the mesh
+                const ghost = obj.clone()
+
+                obj.material = new THREE.MeshStandardMaterial({
+                  depthTest: true,
+                  depthWrite: true,
+                  colorWrite: false,
+                  polygonOffset: true,
+                  polygonOffsetFactor: 1,
+                  color: "#ffffff",
+                })
+
+                // Set the material for the ghost mesh
+                ghost.material = new THREE.MeshStandardMaterial({
+                  color: "#D91433",
+                  opacity: 0.3,
+                  depthTest: true,
+                  depthWrite: false,
+                  transparent: true,
+                  polygonOffset: true,
+                  polygonOffsetFactor: -1,
+                })
+                ghost.userData.isGhost = true
+
+                if (obj.parent) {
+                  obj.parent.add(ghost)
+                }
+              }
+            })
+            robotRef.current.userData.ghostsCreated = true
+          }
+        }
+      }
+    },
+    [isGhost],
+  )
 
   switch (modelFromController) {
     case "UniversalRobots_UR3":
@@ -136,12 +191,14 @@ export function SupportedRobot({
         />
       }
     >
-      <Robot
-        rapidlyChangingMotionState={rapidlyChangingMotionState}
-        modelURL={getModel(modelFromController)}
-        dhParameters={dhParameters}
-        {...props}
-      />
+      <group ref={setRobotRef}>
+        <Robot
+          rapidlyChangingMotionState={rapidlyChangingMotionState}
+          modelURL={getModel(modelFromController)}
+          dhParameters={dhParameters}
+          {...props}
+        />
+      </group>
     </Suspense>
   )
 }
