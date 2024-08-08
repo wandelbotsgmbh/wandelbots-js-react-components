@@ -59,9 +59,15 @@ export const JoggingPanel = observer((props: JoggingPanelProps) => {
     }
 
     if (selectedDiscreteIncrement && currentTab.id === "cartesian") {
-      state.joggingStore.jogger.setJoggingMode("increment", cartesianJoggingOpts)
+      state.joggingStore.jogger.setJoggingMode(
+        "increment",
+        cartesianJoggingOpts,
+      )
     } else {
-      state.joggingStore.jogger.setJoggingMode(currentTab.id, cartesianJoggingOpts)
+      state.joggingStore.jogger.setJoggingMode(
+        currentTab.id,
+        cartesianJoggingOpts,
+      )
     }
   }, [
     state.joggingStore?.currentTab,
@@ -71,7 +77,6 @@ export const JoggingPanel = observer((props: JoggingPanelProps) => {
   ])
 
   useEffect(() => {
-
     // Set the robot to default control mode (JoZi says is important for physical robot jogging)
     async function init() {
       if (!state.joggingStore) return
@@ -119,9 +124,7 @@ export const JoggingPanel = observer((props: JoggingPanelProps) => {
           {store.currentTab.id === "cartesian" && (
             <JoggingCartesianTab store={store} />
           )}
-          {store.currentTab.id === "joint" && (
-            <JoggingJointTab store={store} />
-          )}
+          {store.currentTab.id === "joint" && <JoggingJointTab store={store} />}
         </Stack>
       </Stack>
     </JoggingPanelOuter>
@@ -138,9 +141,11 @@ function JoggingPanelOuter({ children }: { children: React.ReactNode }) {
         position: "relative",
       }}
     >
-      <Paper sx={{
-        minHeight: "90vh"
-      }}>
+      <Paper
+        sx={{
+          minHeight: "90vh",
+        }}
+      >
         {children}
       </Paper>
     </Stack>

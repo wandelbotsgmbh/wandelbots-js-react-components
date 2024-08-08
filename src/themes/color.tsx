@@ -71,7 +71,7 @@ export function Color({ name, color }: { name: string; color: string }) {
       <br />
       <Typography
         style={{
-          color: theme.nova.colors.textSubtle,
+          opacity: 0.7,
           fontSize: "0.9em",
           fontFamily: "monospace",
         }}

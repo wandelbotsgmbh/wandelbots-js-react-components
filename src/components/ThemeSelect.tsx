@@ -11,7 +11,7 @@ export const ThemeSelect = ({ kind, sx, ...rest }: ThemeSelectProps) => {
   const theme = useTheme()
 
   let style: SxProps = defaultsDeep(sx, {
-    backgroundColor: theme.nova.colors.backgroundDefault,
+    backgroundColor: theme.palette.background.default,
     borderRadius: "10px",
     borderStyle: "none",
     color: "currentColor",

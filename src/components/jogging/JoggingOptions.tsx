@@ -16,7 +16,7 @@ export const JoggingOptions = observer(({ store }: { store: JoggingStore }) => {
       sx={{
         padding: "16px",
         "& label": {
-          color: theme.nova.colors.textSubtle,
+          opacity: 0.7,
           fontSize: "12px",
           marginBottom: "4px",
         },
