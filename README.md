@@ -58,6 +58,8 @@ type WandelscriptEditorProps = {
 
 #### Robot
 
+<img width="20%" alt="Screenshot 2024-08-08 at 14 17 55" src="https://github.com/user-attachments/assets/da661136-8b53-48ba-85de-63b09e3b51f3">
+
 This `Robot` component adds the robot to the 3D viewport. Use it together with the `connectedMotionGroup` from `@wandelbots/wandelbots-js`.
 
 ```tsx

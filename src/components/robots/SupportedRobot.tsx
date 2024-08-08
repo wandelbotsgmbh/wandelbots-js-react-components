@@ -1,4 +1,4 @@
-import { Suspense, useCallback, useRef } from "react"
+import { Suspense, useCallback, useEffect, useRef } from "react"
 
 import { UniversalRobots_UR3 } from "./UniversalRobots_UR3"
 import { UniversalRobots_UR3e } from "./UniversalRobots_UR3e"
@@ -67,50 +67,101 @@ export function SupportedRobot({
     (instance: THREE.Group | null) => {
       if (instance !== null) {
         robotRef.current = instance
+        console.log("robotRef.current", robotRef.current)
         if (
           isGhost &&
           robotRef.current &&
           robotRef.current.children.length > 0
         ) {
-          if (!robotRef.current.userData.ghostsCreated) {
-            robotRef.current.traverse((obj) => {
-              if (obj instanceof THREE.Mesh && !obj.userData.isGhost) {
-                // Create a clone of the mesh
-                const ghost = obj.clone()
-
-                obj.material = new THREE.MeshStandardMaterial({
-                  depthTest: true,
-                  depthWrite: true,
-                  colorWrite: false,
-                  polygonOffset: true,
-                  polygonOffsetFactor: 1,
-                  color: "#ffffff",
-                })
-
-                // Set the material for the ghost mesh
-                ghost.material = new THREE.MeshStandardMaterial({
-                  color: "#D91433",
-                  opacity: 0.3,
-                  depthTest: true,
-                  depthWrite: false,
-                  transparent: true,
-                  polygonOffset: true,
-                  polygonOffsetFactor: -1,
-                })
-                ghost.userData.isGhost = true
-
-                if (obj.parent) {
-                  obj.parent.add(ghost)
-                }
-              }
-            })
-            robotRef.current.userData.ghostsCreated = true
-          }
+          addGhosts()
         }
       }
     },
     [isGhost],
   )
+
+  const addGhosts = () => {
+    if (robotRef.current && !robotRef.current.userData.ghostsCreated) {
+      robotRef.current.traverse((obj) => {
+        if (obj instanceof THREE.Mesh && !obj.userData.isGhost) {
+          if (obj.material instanceof THREE.Material) {
+            obj.material.colorWrite = false
+          }
+
+          // Create a clone of the mesh
+          const depth = obj.clone()
+          const ghost = obj.clone()
+
+          depth.material = new THREE.MeshStandardMaterial({
+            depthTest: true,
+            depthWrite: true,
+            colorWrite: false,
+            polygonOffset: true,
+            polygonOffsetFactor: 1,
+          })
+          depth.userData.isGhost = true
+
+          // Set the material for the ghost mesh
+          ghost.material = new THREE.MeshStandardMaterial({
+            color: "#D91433",
+            opacity: 0.3,
+            depthTest: true,
+            depthWrite: false,
+            transparent: true,
+            polygonOffset: true,
+            polygonOffsetFactor: -1,
+          })
+          ghost.userData.isGhost = true
+
+          if (obj.parent) {
+            obj.parent.add(depth)
+            obj.parent.add(ghost)
+          }
+        }
+      })
+      robotRef.current.userData.ghostsCreated = true
+    }
+  }
+
+  const removeGhosts = () => {
+    if (robotRef.current) {
+      const objectsToRemove: THREE.Object3D[] = []
+
+      robotRef.current.traverse((obj) => {
+        if (obj instanceof THREE.Mesh) {
+          if (obj.material instanceof THREE.Material) {
+            obj.material.colorWrite = true
+          }
+        }
+
+        if (
+          obj instanceof THREE.Mesh &&
+          obj.userData !== undefined &&
+          obj.userData &&
+          obj.userData.isGhost !== undefined &&
+          obj.userData.isGhost
+        ) {
+          objectsToRemove.push(obj)
+        }
+      })
+
+      objectsToRemove.forEach((obj) => {
+        if (obj.parent) {
+          obj.parent.remove(obj)
+        }
+      })
+
+      robotRef.current.userData.ghostsCreated = false
+    }
+  }
+
+  useEffect(() => {
+    if (isGhost) {
+      addGhosts()
+    } else {
+      removeGhosts()
+    }
+  }, [isGhost])
 
   switch (modelFromController) {
     case "UniversalRobots_UR3":
