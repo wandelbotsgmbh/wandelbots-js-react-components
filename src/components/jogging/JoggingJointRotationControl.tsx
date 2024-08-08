@@ -1,4 +1,4 @@
-import { IconButton, Slider, Typography } from "@mui/material"
+import { IconButton, Slider, Typography, useTheme } from "@mui/material"
 import Stack from "@mui/material/Stack"
 import { observer, useLocalObservable } from "mobx-react-lite"
 import { I18nextProvider, useTranslation } from "react-i18next"
@@ -6,6 +6,7 @@ import { ChevronLeft, ChevronRight } from "@mui/icons-material"
 import { useAnimationFrame } from "../utils/hooks"
 import { useState } from "react"
 import i18n from "../../i18n/config"
+import { throttle } from "lodash-es"
 
 type JoggingJointRotationControlProps = {
   startJogging: (direction: "-" | "+") => void
@@ -27,6 +28,7 @@ export const JoggingJointRotationControl = observer(
     disabled,
     ...rest
   }: JoggingJointRotationControlProps) => {
+    const theme = useTheme()
     const { t } = useTranslation()
     const [currentValue, setCurrentValue] = useState<number | undefined>()
 
@@ -44,9 +46,11 @@ export const JoggingJointRotationControl = observer(
       },
     }))
 
-    useAnimationFrame(() => {
+    const updateValue = throttle(() => {
       setCurrentValue(getValueDegs())
-    })
+    }, 50)
+
+    useAnimationFrame(updateValue)
 
     function onPointerDownMinus(ev: React.PointerEvent) {
       // Stop right click from triggering jog
@@ -55,6 +59,17 @@ export const JoggingJointRotationControl = observer(
 
     function onPointerDownPlus(ev: React.PointerEvent) {
       if (ev.button === 0) state.startJogging("+")
+    }
+
+    function onPointerUp(ev: React.PointerEvent) {
+      state.stopJogging()
+    }
+
+    function onPointerOut(ev: React.PointerEvent) {
+      // Prevent subelements of button from stopping jogging
+      if (ev.target !== ev.currentTarget) return
+
+      state.stopJogging()
     }
 
     function formatDegrees(value: number | undefined, precision = 1) {
@@ -79,25 +94,32 @@ export const JoggingJointRotationControl = observer(
           maxWidth="300px"
           direction="row"
           {...rest}
-        >
-          <IconButton
-            onPointerDown={onPointerDownMinus}
-            onPointerUp={state.stopJogging}
-            onPointerOut={state.stopJogging}
-            disabled={disabled}
-            sx={{
+          sx={{
+            "& .MuiIconButton-root": {
               width: "52px",
               color: "white",
               alignContent: "center",
-              borderRadius: "16px 0px 0px 16px",
-              backgroundColor:
-                state.activeJoggingDir === "-"
-                  ? "#495975 !important"
-                  : "#38445A",
+              backgroundColor: "#38445A",
+              "&:disabled": {
+                opacity: 0.5,
+                backgroundColor: "#38445A",
+              },
               "& svg": {
                 width: "42px",
                 height: "42px",
               },
+            },
+          }}
+        >
+          <IconButton
+            onPointerDown={onPointerDownMinus}
+            onPointerUp={onPointerUp}
+            onPointerOut={onPointerOut}
+            disabled={disabled}
+            sx={{
+              borderRadius: "16px 0px 0px 16px",
+              backgroundColor:
+                state.activeJoggingDir === "-" ? "#495975" : undefined,
             }}
           >
             <ChevronLeft />
@@ -125,6 +147,7 @@ export const JoggingJointRotationControl = observer(
                 fontSize: "15px",
                 position: "relative",
                 top: "5px",
+                color: "white",
               }}
             >
               {formatDegrees(currentValue)}
@@ -135,7 +158,7 @@ export const JoggingJointRotationControl = observer(
               aria-label="Joint position"
               min={lowerLimitDegs}
               max={upperLimitDegs}
-              value={currentValue}
+              value={currentValue || 0}
               track={false}
               sx={{
                 "& .MuiSlider-mark": {
@@ -149,6 +172,7 @@ export const JoggingJointRotationControl = observer(
                 "& .MuiSlider-markLabel": {
                   top: "20px",
                   fontSize: "12px",
+                  color: "white",
                 },
                 "& .MuiSlider-rail": {
                   backgroundColor: "#1F283A",
@@ -173,23 +197,15 @@ export const JoggingJointRotationControl = observer(
 
           <IconButton
             onPointerDown={onPointerDownPlus}
-            onPointerUp={state.stopJogging}
-            onPointerOut={state.stopJogging}
+            onPointerUp={onPointerUp}
+            onPointerOut={onPointerOut}
             disabled={disabled}
             sx={{
-              width: "52px",
-              color: "white",
-              alignContent: "center",
-              fontSize: "37px",
               borderRadius: "0px 16px 16px 0px",
               backgroundColor:
                 state.activeJoggingDir === "+"
                   ? "#495975 !important"
                   : "#38445A",
-              "& svg": {
-                width: "42px",
-                height: "42px",
-              },
             }}
           >
             <ChevronRight />
