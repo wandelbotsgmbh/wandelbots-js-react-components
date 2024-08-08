@@ -39,7 +39,7 @@ export const WandelscriptEditor = (props: WandelscriptEditorProps) => {
     useState<BundledTheme>("dark-plus")
 
   const targetShikiTheme =
-    theme.nova.mode === "dark" ? "dark-plus" : "light-plus"
+    theme.palette.mode === "dark" ? "dark-plus" : "light-plus"
 
   async function setupEditor(monaco: Monaco) {
     // Register and configure the Wandelscript language
@@ -80,11 +80,11 @@ export const WandelscriptEditor = (props: WandelscriptEditorProps) => {
     // Override the generated shiki theme to use shiki syntax highlighting
     // but vscode colors
     monaco.editor.defineTheme(targetShikiTheme, {
-      base: theme.nova.mode === "dark" ? "vs-dark" : "vs",
+      base: theme.palette.mode === "dark" ? "vs-dark" : "vs",
       inherit: true,
       rules: [],
       colors:
-        theme.nova.mode === "dark"
+        theme.palette.mode === "dark"
           ? {
               "editor.background": "#262F42",
               "editorLineNumber.foreground": "#797979",
