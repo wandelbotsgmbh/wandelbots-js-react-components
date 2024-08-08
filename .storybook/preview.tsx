@@ -26,6 +26,69 @@ const preview: Preview = {
       const muiTheme = createTheme({
         palette: {
           mode: isDark ? "dark" : "light",
+          background: {
+            default: isDark ? "#151D35" : "#F5F8FA",
+            paper: isDark ? "#262f41" : "#FFFFFF",
+          },
+        },
+        components: {
+          MuiSelect: {
+            styleOverrides: {
+              root: {
+                backgroundColor: "#505968",
+                borderRadius: "10px",
+                borderStyle: "none",
+                color: "currentColor",
+                "& > div": {
+                  padding: "4px 16px",
+                },
+                "& fieldset": {
+                  border: "none",
+                },
+              },
+            },
+          },
+          MuiToggleButtonGroup: {
+            styleOverrides: {
+              root: {
+                "& > button": {
+                  borderRadius: "8px",
+                  textTransform: "none",
+                  paddingTop: "4px",
+                  paddingBottom: "4px",
+                  width: "100%",
+                  borderWidth: 0,
+                  backgroundColor: "#3d4455",
+                  color: "rgba(255, 255, 255, 0.8)",
+
+                  "&.Mui-selected": {
+                    color: "white",
+                    backgroundColor: "#505968",
+                  },
+                },
+              },
+            },
+          },
+          MuiTabs: {
+            styleOverrides: {
+              root: {
+                backgroundColor: "#101629",
+                minHeight: "42px",
+              },
+            },
+          },
+          MuiTab: {
+            styleOverrides: {
+              root: {
+                minHeight: "42px",
+                textTransform: "none",
+                "&.Mui-selected": {
+                  color: "white",
+                  backgroundColor: "#404554",
+                },
+              },
+            },
+          },
         },
       })
 

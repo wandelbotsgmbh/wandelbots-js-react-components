@@ -11,6 +11,7 @@ import { NovaClient } from "@wandelbots/wandelbots-js"
 export type JoggingPanelProps = {
   nova: NovaClient
   motionGroupId: string
+  children: React.ReactNode
 }
 
 export const JoggingPanel = observer((props: JoggingPanelProps) => {
@@ -47,7 +48,7 @@ export const JoggingPanel = observer((props: JoggingPanelProps) => {
     const {
       currentTab,
       selectedTcpId,
-      selectedCoordSystemId,
+      activeCoordSystemId,
       selectedDiscreteIncrement,
     } = state.joggingStore
 
@@ -55,7 +56,7 @@ export const JoggingPanel = observer((props: JoggingPanelProps) => {
 
     const cartesianJoggingOpts = {
       tcpId: selectedTcpId,
-      coordSystemId: selectedCoordSystemId,
+      coordSystemId: activeCoordSystemId,
     }
 
     if (selectedDiscreteIncrement && currentTab.id === "cartesian") {
@@ -72,7 +73,7 @@ export const JoggingPanel = observer((props: JoggingPanelProps) => {
   }, [
     state.joggingStore?.currentTab,
     state.joggingStore?.selectedTcpId,
-    state.joggingStore?.selectedCoordSystemId,
+    state.joggingStore?.activeCoordSystemId,
     state.joggingStore?.selectedDiscreteIncrement,
   ])
 
@@ -125,6 +126,7 @@ export const JoggingPanel = observer((props: JoggingPanelProps) => {
             <JoggingCartesianTab store={store} />
           )}
           {store.currentTab.id === "joint" && <JoggingJointTab store={store} />}
+          {props.children}
         </Stack>
       </Stack>
     </JoggingPanelOuter>
