@@ -28,7 +28,7 @@ import { WandelscriptEditor, ... } from '@wandelbots/wandelbots-js-react-compone
         </ul>
         <li><a href="#viewport">3D Viewport</a></li>
         <ul>
-          <li><a href="#robots">Robots</a></li>
+          <li><a href="#robot">Robot</a></li>
           <li><a href="#lightning">Lightning</a></li>
           <li><a href="#safety">Safety Zones</a></li>
         </ul>
@@ -56,25 +56,60 @@ type WandelscriptEditorProps = {
 
 ### Viewport
 
-#### Robots
+#### Robot
 
-This `SupportedRobot` component adds the robot to the 3D viewport. Use it together with the `connectedMotionGroup` from `@wandelbots/wandelbots-js`.
+This `Robot` component adds the robot to the 3D viewport. Use it together with the `connectedMotionGroup` from `@wandelbots/wandelbots-js`.
 
 ```tsx
-<SupportedRobot connectedMotionGroup={activeRobot} />
+<Robot connectedMotionGroup={connectedMotionGroup} />
 ```
 
 The robot model are loaded from the [jsdelivr CDN](https://cdn.jsdelivr.net/gh/wandelbotsgmbh/wandelbots-js-react-components/public/models/).
 
-In case you want to use the application offline, you can download the models and host them locally. You can override the URL resolver of the `SupportedRobot` component by passing a `getModel` function like:
+In case you want to use the application offline, you can download the models and host them locally. You can override the URL resolver of the `Robot` component by passing a `getModel` function like:
+
+```tsx
+<Robot
+  getModel={() =>
+    `public/${connectedMotionGroup.modelFromController}.glb`
+  }
+  connectedMotionGroup={connectedMotionGroup}
+/>
+```
+
+```tsx
+export type ConnectecMotionGroupRobotProps = {
+  connectedMotionGroup: ConnectedMotionGroup // The connected motion group from wandelbots-js
+  getModel?: (modelFromController: string) => string // A function that returns the URL of the robot model
+  isGhost?: boolean // Whether the robot should be displayed transparently
+} & GroupProps
+```
+
+##### SupportedRobot
+
+The `SupportedRobot` can be used to display a robot model without the need for a `connectedMotionGroup` from `@wandelbots/wandelbots-js`.
 
 ```tsx
 <SupportedRobot
-  getModel={() =>
-    `public/${activeRobot.modelFromController}.glb`
+  rapidlyChangingMotionState={
+    rapidlyChangingMotionState
   }
-  connectedMotionGroup={activeRobot}
+  dhParameters={dhParameters as any}
+  modelFromController={modelFromController || ""}
+  getModel={() =>
+    `./robot-pad/models/${modelFromController}.glb`
+  }
 />
+```
+
+```tsx
+export type SupportedRobotProps = {
+  rapidlyChangingMotionState: MotionGroupStateResponse // The motion state of the robot
+  modelFromController: string // The model name of the robot
+  dhParameters: DHParameter[] // The DH parameters of the robot
+  getModel?: (modelFromController: string) => string // A function that returns the URL of the robot model
+  isGhost?: boolean // Whether the robot should be displayed transparently
+} & GroupProps
 ```
 
 #### Lightning 
@@ -90,7 +125,7 @@ The `PresetEnvironment` component adds a default lighting setup to the 3D viewpo
 The `SafetyZonesRenderer` component visualizes the safety zones of the controller.
 
 ```tsx
-<SafetyZonesRenderer safetyZones={activeRobot.safetyZones||[]}/>
+<SafetyZonesRenderer safetyZones={connectedMotionGroup.safetyZones||[]}/>
 ```
 
 
