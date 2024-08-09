@@ -4,7 +4,8 @@
   "description": "React UI toolkit for building applications on top of the Wandelbots platform",
   "files": [
     "dist",
-    "src"
+    "src",
+    "README.md"
   ],
   "type": "module",
   "module": "./dist/index.js",
@@ -83,7 +84,7 @@
     "@react-spring/three": ">=9",
     "@react-three/drei": ">=9",
     "@react-three/fiber": ">=8",
-    "@wandelbots/wandelbots-js": "file:../wandelbots-js/wandelbots-wandelbots-js-0.0.30.tgz",
+    "@wandelbots/wandelbots-js": "^1.6.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "three": ">=0.167",
