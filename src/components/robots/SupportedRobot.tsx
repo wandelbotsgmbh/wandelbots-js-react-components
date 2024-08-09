@@ -28,6 +28,7 @@ import type {
 import { DHRobot } from "./DHRobot"
 
 import * as THREE from "three"
+import { ErrorBoundary } from "react-error-boundary"
 
 export type DHRobotProps = {
   rapidlyChangingMotionState: MotionGroupStateResponse
@@ -233,7 +234,7 @@ export function SupportedRobot({
   }
 
   return (
-    <Suspense
+    <ErrorBoundary
       fallback={
         <DHRobot
           rapidlyChangingMotionState={rapidlyChangingMotionState}
@@ -242,14 +243,24 @@ export function SupportedRobot({
         />
       }
     >
-      <group ref={setRobotRef}>
-        <Robot
-          rapidlyChangingMotionState={rapidlyChangingMotionState}
-          modelURL={getModel(modelFromController)}
-          dhParameters={dhParameters}
-          {...props}
-        />
-      </group>
-    </Suspense>
+      <Suspense
+        fallback={
+          <DHRobot
+            rapidlyChangingMotionState={rapidlyChangingMotionState}
+            dhParameters={dhParameters}
+            {...props}
+          />
+        }
+      >
+        <group ref={setRobotRef}>
+          <Robot
+            rapidlyChangingMotionState={rapidlyChangingMotionState}
+            modelURL={getModel(modelFromController)}
+            dhParameters={dhParameters}
+            {...props}
+          />
+        </group>
+      </Suspense>
+    </ErrorBoundary>
   )
 }
