@@ -4,13 +4,14 @@ import { useRef } from "react"
 import { useTranslation } from "react-i18next"
 import { JoggingStore } from "./JoggingStore"
 import { useAnimationFrame } from "../utils/hooks"
+import { CopyableText } from "../CopyableText"
 
 export const JoggingJointValues = observer(
   ({ store }: { store: JoggingStore }) => {
-    const valueHolderRef = useRef<HTMLPreElement>(null)
+    const poseHolderRef = useRef<HTMLPreElement>(null)
     const { t } = useTranslation()
 
-    function getCurrentValueString() {
+    function getCurrentPoseString() {
       const { joints } =
         store.jogger.motionStream.rapidlyChangingMotionState.state
           .joint_position
@@ -18,30 +19,29 @@ export const JoggingJointValues = observer(
     }
 
     useAnimationFrame(() => {
-      if (!valueHolderRef.current) return
-      valueHolderRef.current.textContent = getCurrentValueString()
+      if (!poseHolderRef.current) return
+      poseHolderRef.current.textContent = getCurrentPoseString()
     })
 
     return (
-      <Stack alignItems="center" marginTop="0.8rem">
-        <Typography
-          sx={{
+      <Stack
+        alignItems="left"
+        marginTop="0.8rem"
+        spacing={2}
+        sx={{
+          padding: "16px",
+          "& label": {
+            opacity: 0.7,
             fontSize: "12px",
-            marginTop: "0.8rem",
-          }}
-        >
-          {t("Jogging.Joints.JointValues.lb")}
-        </Typography>
-        <Typography
-          component="pre"
-          ref={valueHolderRef}
-          sx={{
-            fontSize: "14px",
-            opacity: 0.6,
-          }}
-        >
-          {getCurrentValueString()}
-        </Typography>
+            marginBottom: "4px",
+          },
+        }}
+      >
+        <CopyableText
+          label={"Pose"}
+          value={getCurrentPoseString()}
+          ref={poseHolderRef}
+        />
       </Stack>
     )
   },

@@ -1,13 +1,20 @@
 import { observer } from "mobx-react-lite"
-import { Stack, Typography } from "@mui/material"
+import {
+  InputLabel,
+  Stack,
+  TextField,
+  Typography,
+  useTheme,
+} from "@mui/material"
 import { useRef } from "react"
 import { poseToWandelscriptString } from "@wandelbots/wandelbots-js"
 import { useAnimationFrame } from "../utils/hooks"
 import { JoggingStore } from "./JoggingStore"
+import { CopyableText } from "../CopyableText"
 
 export const JoggingCartesianValues = observer(
   ({ store }: { store: JoggingStore }) => {
-    const poseStringRef = useRef<HTMLPreElement>(null)
+    const poseHolderRef = useRef<HTMLPreElement>(null)
 
     function getCurrentPoseString() {
       const tcpPose =
@@ -17,23 +24,32 @@ export const JoggingCartesianValues = observer(
     }
 
     useAnimationFrame(() => {
-      if (!poseStringRef.current) {
+      if (!poseHolderRef.current) {
         return
       }
 
-      poseStringRef.current.textContent = getCurrentPoseString()
+      poseHolderRef.current.textContent = getCurrentPoseString()
     })
 
     return (
-      <Stack alignItems="center" marginTop="0.8rem">
-        <Typography
-          component="pre"
-          ref={poseStringRef}
-          sx={{
-            fontSize: "14px",
-            opacity: 0.6,
-          }}
-        ></Typography>
+      <Stack
+        alignItems="left"
+        marginTop="0.8rem"
+        spacing={2}
+        sx={{
+          padding: "16px",
+          "& label": {
+            opacity: 0.7,
+            fontSize: "12px",
+            marginBottom: "4px",
+          },
+        }}
+      >
+        <CopyableText
+          label={"Pose"}
+          value={getCurrentPoseString()}
+          ref={poseHolderRef}
+        />
       </Stack>
     )
   },

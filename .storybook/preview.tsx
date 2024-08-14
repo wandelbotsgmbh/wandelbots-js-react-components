@@ -48,6 +48,16 @@ const preview: Preview = {
               },
             },
           },
+          MuiChip: {
+            styleOverrides: {
+              root: {
+                backgroundColor: "#505968",
+                borderRadius: "10px",
+                color: "currentColor",
+              },
+            },
+          },
+
           MuiToggleButtonGroup: {
             styleOverrides: {
               root: {
