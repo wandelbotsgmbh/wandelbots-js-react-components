@@ -77,24 +77,6 @@ export const JoggingPanel = observer((props: JoggingPanelProps) => {
     state.joggingStore?.selectedDiscreteIncrement,
   ])
 
-  useEffect(() => {
-    // Set the robot to default control mode (JoZi says is important for physical robot jogging)
-    async function init() {
-      if (!state.joggingStore) return
-
-      try {
-        await nova.api.controller.setDefaultMode(
-          state.joggingStore.jogger.motionStream.controllerId,
-          "MODE_CONTROL",
-        )
-      } catch (err) {
-        console.error(err)
-      }
-    }
-
-    init()
-  }, [state.joggingStore?.jogger.motionStream.controllerId])
-
   if (!state.joggingStore) {
     return (
       <JoggingPanelOuter>

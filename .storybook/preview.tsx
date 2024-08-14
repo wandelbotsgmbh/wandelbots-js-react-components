@@ -35,15 +35,14 @@ const preview: Preview = {
           MuiSelect: {
             styleOverrides: {
               root: {
-                backgroundColor: "#505968",
+                backgroundColor: isDark ? "#505968" : undefined,
                 borderRadius: "10px",
-                borderStyle: "none",
                 color: "currentColor",
                 "& > div": {
                   padding: "4px 16px",
                 },
                 "& fieldset": {
-                  border: "none",
+                  border: isDark ? "none" : undefined,
                 },
               },
             },
@@ -51,13 +50,12 @@ const preview: Preview = {
           MuiChip: {
             styleOverrides: {
               root: {
-                backgroundColor: "#505968",
+                backgroundColor: isDark ? "#505968" : undefined,
                 borderRadius: "10px",
                 color: "currentColor",
               },
             },
           },
-
           MuiToggleButtonGroup: {
             styleOverrides: {
               root: {
@@ -68,13 +66,15 @@ const preview: Preview = {
                   paddingBottom: "4px",
                   width: "100%",
                   borderWidth: 0,
-                  backgroundColor: "#3d4455",
-                  color: "rgba(255, 255, 255, 0.8)",
+                  backgroundColor: isDark ? "#3d4455" : undefined,
+                  color: isDark ? "rgba(255, 255, 255, 0.8)" : undefined,
 
-                  "&.Mui-selected": {
-                    color: "white",
-                    backgroundColor: "#505968",
-                  },
+                  "&.Mui-selected": isDark
+                    ? {
+                        color: "white",
+                        backgroundColor: "#505968",
+                      }
+                    : undefined,
                 },
               },
             },
@@ -82,7 +82,7 @@ const preview: Preview = {
           MuiTabs: {
             styleOverrides: {
               root: {
-                backgroundColor: "#101629",
+                backgroundColor: isDark ? "#101629" : undefined,
                 minHeight: "42px",
               },
             },
@@ -92,10 +92,12 @@ const preview: Preview = {
               root: {
                 minHeight: "42px",
                 textTransform: "none",
-                "&.Mui-selected": {
-                  color: "white",
-                  backgroundColor: "#404554",
-                },
+                "&.Mui-selected": isDark
+                  ? {
+                      color: "white",
+                      backgroundColor: "#404554",
+                    }
+                  : undefined,
               },
             },
           },

@@ -74,4 +74,4 @@ export default meta
 
 type Story = StoryObj<typeof ColorPalette>
 
-export const colorPalette: Story = {}
+// export const colorPalette: Story = {}

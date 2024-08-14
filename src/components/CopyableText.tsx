@@ -23,9 +23,8 @@ export const CopyableText = forwardRef(
             fontSize: "14px",
             opacity: 0.8,
           }}
-        >
-          {value}
-        </Chip>
+          value={value}
+        />
       </>
     )
   },
