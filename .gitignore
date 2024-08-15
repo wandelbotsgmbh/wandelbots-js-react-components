@@ -5,3 +5,4 @@ tsconfig.tsbuildinfo
 *.tgz
 dist
 tmp
+storybook-static
