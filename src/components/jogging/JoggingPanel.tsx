@@ -11,7 +11,7 @@ import { NovaClient } from "@wandelbots/wandelbots-js"
 export type JoggingPanelProps = {
   nova: NovaClient
   motionGroupId: string
-  children: React.ReactNode
+  children?: React.ReactNode
 }
 
 export const JoggingPanel = observer((props: JoggingPanelProps) => {
