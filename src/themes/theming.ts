@@ -1,6 +1,7 @@
 "use client"
 
-import { createTheme, Theme } from "@mui/material/styles"
+import type { Theme } from "@mui/material/styles"
+import { createTheme } from "@mui/material/styles"
 import { defaultsDeep } from "lodash-es"
 
 /**

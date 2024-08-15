@@ -1,15 +1,9 @@
 import { observer } from "mobx-react-lite"
-import {
-  InputLabel,
-  Stack,
-  TextField,
-  Typography,
-  useTheme,
-} from "@mui/material"
+import { Stack } from "@mui/material"
 import { useRef } from "react"
 import { poseToWandelscriptString } from "@wandelbots/wandelbots-js"
 import { useAnimationFrame } from "../utils/hooks"
-import { JoggingStore } from "./JoggingStore"
+import type { JoggingStore } from "./JoggingStore"
 import { CopyableText } from "../CopyableText"
 
 export const JoggingCartesianValues = observer(
@@ -34,7 +28,6 @@ export const JoggingCartesianValues = observer(
     return (
       <Stack
         alignItems="left"
-        marginTop="0.8rem"
         spacing={2}
         sx={{
           padding: "16px",

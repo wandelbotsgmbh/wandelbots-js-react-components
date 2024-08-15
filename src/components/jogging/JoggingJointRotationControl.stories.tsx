@@ -1,4 +1,4 @@
-import { Meta, StoryObj } from "@storybook/react"
+import type { Meta, StoryObj } from "@storybook/react"
 import { JoggingJointRotationControl } from "../../index"
 import { useRef } from "react"
 import { useAnimationFrame } from "../utils/hooks"

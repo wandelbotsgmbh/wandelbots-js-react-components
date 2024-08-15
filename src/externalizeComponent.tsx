@@ -3,6 +3,7 @@ import { createMUIThemeFromNova, createNovaTheme } from "./themes/theming"
 import type { FC } from "react"
 import { useTheme } from "@mui/material"
 import { I18nextProvider } from "react-i18next"
+// @ts-expect-error invalid type-only import error
 import i18n from "./i18n/config"
 
 /**

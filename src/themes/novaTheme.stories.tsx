@@ -1,4 +1,4 @@
-import { Meta, StoryObj } from "@storybook/react"
+import type { Meta, StoryObj } from "@storybook/react"
 import { Color, ColorSection } from "./color"
 import { useTheme } from "@mui/material"
 

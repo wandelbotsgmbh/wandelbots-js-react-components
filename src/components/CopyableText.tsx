@@ -1,4 +1,4 @@
-import { Chip, InputLabel, useTheme } from "@mui/material"
+import { Chip, InputLabel } from "@mui/material"
 import { forwardRef } from "react"
 
 export const CopyableText = forwardRef(
@@ -20,6 +20,7 @@ export const CopyableText = forwardRef(
           sx={{
             fontSize: "14px",
             opacity: 0.8,
+            marginTop: "4px !important",
           }}
           value={value}
         />

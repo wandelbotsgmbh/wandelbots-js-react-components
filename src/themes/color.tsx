@@ -1,5 +1,6 @@
 import { Box, Typography, useTheme } from "@mui/material"
-import { ReactNode, useEffect, useState } from "react"
+import type { ReactNode} from "react";
+import { useEffect, useState } from "react"
 
 export function ColorSection(props: { name: string; children: ReactNode }) {
   return (

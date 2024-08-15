@@ -18,7 +18,8 @@
   "types": "./dist/index.d.ts",
   "scripts": {
     "dev": "storybook dev -p 6006 --no-open",
-    "dev:pack": "nodemon -V -w \".\" -e '*' -i *.tgz -i dist -x \"npm run build && npm pack\"",
+    "dev:pack": "nodemon -V -w src -e '*' -x \"npm run build && npm pack\"",
+    "dev:build": "nodemon -V -w src -e '*' -x \"vite build && tsc --declaration --emitDeclarationOnly\"",
     "dev:wbjs": "nodemon --watch $WBJS_PATH -e tgz --exec 'npm install file:$WBJS_PATH && storybook dev -p 6006 --no-open'",
     "tsc": "tsc --pretty --noEmit",
     "test": "npm run build",
@@ -56,6 +57,7 @@
     "@svgr/rollup": "^8.1.0",
     "@types/lodash-es": "^4.17.12",
     "@types/react": "^18.3.3",
+    "@types/three": "^0.167.1",
     "@vitejs/plugin-react": "^4.3.1",
     "nodemon": "^3.1.4",
     "postcss": "^8.4.40",

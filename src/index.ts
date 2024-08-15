@@ -28,6 +28,7 @@ export type * from "./components/jogging/JoggingJointRotationControl"
 import { JoggingJointRotationControl as JJRC } from "./components/jogging/JoggingJointRotationControl"
 export const JoggingJointRotationControl = externalizeComponent(JJRC)
 
+export type { JoggingStore } from "./components/jogging/JoggingStore"
 export type * from "./components/jogging/JoggingPanel"
 import { JoggingPanel as JP } from "./components/jogging/JoggingPanel"
 export const JoggingPanel = externalizeComponent(JP)

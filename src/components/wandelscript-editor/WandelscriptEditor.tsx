@@ -1,16 +1,17 @@
 import Editor, { useMonaco, type Monaco } from "@monaco-editor/react"
 import { useEffect, useRef, useState } from "react"
-import {
+import type {
   BundledLanguage,
+  HighlighterGeneric} from "shiki";
+import {
   createHighlighter,
-  HighlighterGeneric,
   type BundledTheme,
 } from "shiki"
 import { shikiToMonaco } from "@shikijs/monaco"
 
 import wandelscriptTextmateGrammar from "./wandelscript.tmLanguage"
 import { useTheme } from "@mui/material"
-import { editor } from "monaco-editor"
+import type { editor } from "monaco-editor"
 
 type WandelscriptEditorProps = {
   /** The current Wandelscript content of the code editor (controlled component) */

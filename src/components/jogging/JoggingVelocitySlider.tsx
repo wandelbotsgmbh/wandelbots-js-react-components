@@ -1,4 +1,4 @@
-import { Stack, Divider, Typography } from "@mui/material"
+import { Stack, Typography } from "@mui/material"
 import { observer, useLocalObservable } from "mobx-react-lite"
 import type { JoggingStore } from "./JoggingStore"
 import { VelocitySlider } from "../VelocitySlider"

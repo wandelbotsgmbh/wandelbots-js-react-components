@@ -1,4 +1,4 @@
-import { Meta, StoryObj } from "@storybook/react"
+import type { Meta, StoryObj } from "@storybook/react"
 import { JoggingPanel } from "../../index"
 import { useArgs } from "@storybook/preview-api"
 import { NovaClient } from "@wandelbots/wandelbots-js"
