@@ -31,6 +31,7 @@ export const JoggingOptions = observer(({ store }: { store: JoggingStore }) => {
         spacing={2}
         sx={{
           padding: "16px",
+          paddingTop: "8px",
           "& label": {
             opacity: 0.7,
             fontSize: "12px",
@@ -84,6 +85,7 @@ export const JoggingOptions = observer(({ store }: { store: JoggingStore }) => {
         spacing={2}
         sx={{
           padding: "16px",
+          paddingTop: "8px",
           "& label": {
             opacity: 0.7,
             fontSize: "12px",

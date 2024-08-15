@@ -31,7 +31,6 @@ export const JoggingVelocitySlider = observer(
         <Stack sx={{ width: "380px", maxWidth: "90%", margin: "auto" }}>
           <Stack
             sx={{
-              height: "40px",
               justifyContent: "center",
             }}
           >

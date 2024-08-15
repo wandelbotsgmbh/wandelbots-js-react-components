@@ -2,7 +2,7 @@ import { observer } from "mobx-react-lite"
 import { Stack, Typography } from "@mui/material"
 import { useRef } from "react"
 import { useTranslation } from "react-i18next"
-import { JoggingStore } from "./JoggingStore"
+import type { JoggingStore } from "./JoggingStore"
 import { useAnimationFrame } from "../utils/hooks"
 import { CopyableText } from "../CopyableText"
 
@@ -26,7 +26,6 @@ export const JoggingJointValues = observer(
     return (
       <Stack
         alignItems="left"
-        marginTop="0.8rem"
         spacing={2}
         sx={{
           padding: "16px",

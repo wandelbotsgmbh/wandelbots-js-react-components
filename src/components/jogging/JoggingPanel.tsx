@@ -131,11 +131,12 @@ function JoggingPanelOuter({ children }: { children: React.ReactNode }) {
         minWidth: "350px",
         overflowY: "auto",
         position: "relative",
+        height: "100%",
       }}
     >
       <Paper
         sx={{
-          minHeight: "90vh",
+          height: "100%",
         }}
       >
         {children}
