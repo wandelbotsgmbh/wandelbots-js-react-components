@@ -80,19 +80,19 @@
     "vite": "^5.3.5",
     "vite-plugin-svgr": "^4.2.0",
     "vitest": "^2.0.5",
-    "@wandelbots/wandelbots-js": "^1.7.0"
-  },
-  "peerDependencies": {
+    "@wandelbots/wandelbots-js": "^1.7.0",
     "@emotion/react": "^11.11.1",
     "@emotion/styled": "^11.11.0",
     "@mui/material": ">=5",
     "@react-spring/three": ">=9",
     "@react-three/drei": ">=9",
     "@react-three/fiber": ">=8",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
     "three": ">=0.167",
     "three-stdlib": ">=2"
+  },
+  "peerDependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
   },
   "peerDependenciesMeta": {
     "react-dom": {
