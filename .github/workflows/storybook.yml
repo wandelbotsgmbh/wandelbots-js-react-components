@@ -5,7 +5,7 @@ on:
   # Event for the workflow to run on
   push:
     branches:
-      - 'feature/deploy-storybook' # Replace with the branch you want to deploy from
+      - 'main' # Replace with the branch you want to deploy from
 
 permissions:
   contents: read
