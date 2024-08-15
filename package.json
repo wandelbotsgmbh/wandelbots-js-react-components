@@ -1,6 +1,6 @@
 {
   "name": "@wandelbots/wandelbots-js-react-components",
-  "version": "0.0.1",
+  "version": "0.0.0-semantically-released",
   "description": "React UI toolkit for building applications on top of the Wandelbots platform",
   "files": [
     "dist",
@@ -29,7 +29,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/wandelbotsgmbh/wandelui.git"
+    "url": "git+https://github.com/wandelbotsgmbh/wandelbots-js-react-components.git"
   },
   "keywords": [
     "ui",
