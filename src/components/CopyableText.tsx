@@ -12,8 +12,6 @@ export const CopyableText = forwardRef(
     },
     ref: React.ForwardedRef<HTMLPreElement>,
   ) => {
-    const theme = useTheme()
-
     return (
       <>
         {label && <InputLabel>{label}</InputLabel>}
