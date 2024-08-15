@@ -1,10 +1,12 @@
+import type {
+  DocsContainerProps} from "@storybook/blocks";
 import {
-  DocsContainer as BaseContainer,
-  DocsContainerProps,
+  DocsContainer as BaseContainer
 } from "@storybook/blocks"
 import { addons } from "@storybook/preview-api"
 import { themes } from "@storybook/theming"
-import React, { FC, PropsWithChildren, useEffect, useState } from "react"
+import type { FC, PropsWithChildren} from "react";
+import React, { useEffect, useState } from "react"
 import { DARK_MODE_EVENT_NAME } from "storybook-dark-mode"
 
 const channel = addons.getChannel()

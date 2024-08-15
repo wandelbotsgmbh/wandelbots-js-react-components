@@ -1,4 +1,4 @@
-import { keyBy } from "lodash-es"
+import { keyBy, uniqueId } from "lodash-es"
 import { autorun, makeAutoObservable, type IReactionDisposer } from "mobx"
 import type {
   CoordinateSystem,
@@ -27,8 +27,8 @@ export type IncrementOptionId = IncrementOption["id"]
 export class JoggingStore {
   selectedTabId: "cartesian" | "joint" | "debug" = "cartesian"
 
-  // TODO
-  isLocked: boolean = false
+  /** Locks to prevent UI interactions during certain operations */
+  locks = new Set<string>()
 
   /**
    * Id of selected coordinate system from among those defined on the API side
@@ -180,6 +180,10 @@ export class JoggingStore {
     )
   }
 
+  get isLocked() {
+    return this.locks.size > 0
+  }
+
   get localStorageSave() {
     return {
       selectedTabId: this.selectedTabId,
@@ -325,5 +329,17 @@ export class JoggingStore {
 
   setSelectedCartesianMotionType(type: "translate" | "rotate") {
     this.selectedCartesianMotionType = type
+  }
+
+  /** Lock the UI until the given async callback resolves */
+  async withMotionLock(fn: () => Promise<void>) {
+    const lockId = uniqueId()
+    this.locks.add(lockId)
+
+    try {
+      return await fn()
+    } finally {
+      this.locks.delete(lockId)
+    }
   }
 }

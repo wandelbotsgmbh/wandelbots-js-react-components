@@ -103,6 +103,7 @@ export const JoggingOptions = observer(({ store }: { store: JoggingStore }) => {
             onChange={onOrientationChange}
             exclusive
             aria-labelledby="orientation-select"
+            disabled={store.isLocked}
           >
             <ToggleButton value="coordsys">
               <OrientationCoordSysIcon />

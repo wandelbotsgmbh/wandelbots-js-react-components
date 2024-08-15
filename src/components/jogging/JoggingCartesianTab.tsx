@@ -6,7 +6,7 @@ import {
 } from "@mui/material"
 import { observer } from "mobx-react-lite"
 import { JoggingCartesianAxisControl } from "./JoggingCartesianAxisControl"
-import { radiansToDegrees } from "@wandelbots/wandelbots-js"
+import { degreesToRadians, radiansToDegrees } from "@wandelbots/wandelbots-js"
 import { useTranslation } from "react-i18next"
 import RotationIcon from "../../icons/rotation.svg"
 import XAxisIcon from "../../icons/axis-x.svg"
@@ -60,26 +60,26 @@ export const JoggingCartesianTab = observer(
           .joint_position
       if (!tcpPose) return
 
-      // await robotPad.withMotionLock(async () => {
-      //   await jogger.runIncrementalCartesianMotion({
-      //     currentTcpPose: tcpPose,
-      //     currentJoints: jointPosition,
-      //     coordSystemId: store.selectedCoordSystemId,
-      //     velocityInRelevantUnits: store.velocityInCurrentUnits,
-      //     axis: opts.axis,
-      //     direction: opts.direction,
-      //     motion:
-      //       store.selectedCartesianMotionType === "translate"
-      //         ? {
-      //             type: "translate",
-      //             distanceMm: increment.mm,
-      //           }
-      //         : {
-      //             type: "rotate",
-      //             distanceRads: degreesToRadians(increment.degrees),
-      //           },
-      //   })
-      // })
+      await store.withMotionLock(async () => {
+        await store.jogger.runIncrementalCartesianMotion({
+          currentTcpPose: tcpPose,
+          currentJoints: jointPosition,
+          coordSystemId: store.selectedCoordSystemId,
+          velocityInRelevantUnits: store.velocityInCurrentUnits,
+          axis: opts.axis,
+          direction: opts.direction,
+          motion:
+            store.selectedCartesianMotionType === "translate"
+              ? {
+                  type: "translate",
+                  distanceMm: increment.mm,
+                }
+              : {
+                  type: "rotate",
+                  distanceRads: degreesToRadians(increment.degrees),
+                },
+        })
+      })
     }
 
     async function startCartesianJogging(opts: JoggingCartesianOpts) {
