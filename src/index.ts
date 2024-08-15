@@ -37,4 +37,4 @@ export type * from "./components/VelocitySlider"
 import { VelocitySlider as VS } from "./components/VelocitySlider"
 export const VelocitySlider = externalizeComponent(VS)
 
-export * from "./components/robots/AxisConfig"
+export * from "./components/utils/hooks"

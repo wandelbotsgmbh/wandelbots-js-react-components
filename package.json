@@ -1,10 +1,11 @@
 {
   "name": "@wandelbots/wandelbots-js-react-components",
-  "version": "0.0.0-semantically-released",
+  "version": "0.0.1",
   "description": "React UI toolkit for building applications on top of the Wandelbots platform",
   "files": [
     "dist",
-    "src"
+    "src",
+    "README.md"
   ],
   "type": "module",
   "module": "./dist/index.js",
@@ -87,7 +88,7 @@
     "@react-spring/three": ">=9",
     "@react-three/drei": ">=9",
     "@react-three/fiber": ">=8",
-    "@wandelbots/wandelbots-js": "file:../wbjs",
+    "@wandelbots/wandelbots-js": "^1.6.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "three": ">=0.167",
@@ -107,6 +108,7 @@
     "lodash-es": "^4.17.21",
     "mobx": "^6.13.1",
     "mobx-react-lite": "^4.0.7",
+    "react-error-boundary": "^4.0.13",
     "react-i18next": "^15.0.0",
     "shiki": "^1.12.0"
   }

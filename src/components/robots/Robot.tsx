@@ -6,6 +6,7 @@ import { defaultGetModel, SupportedRobot } from "./SupportedRobot"
 export type ConnectecMotionGroupRobotProps = {
   connectedMotionGroup: ConnectedMotionGroup
   getModel?: (modelFromController: string) => string
+  isGhost?: boolean
 } & GroupProps
 
 /**
@@ -22,6 +23,7 @@ export type ConnectecMotionGroupRobotProps = {
 export function Robot({
   connectedMotionGroup,
   getModel = defaultGetModel,
+  isGhost = false,
   ...props
 }: ConnectecMotionGroupRobotProps) {
   if (!connectedMotionGroup.dhParameters) {
@@ -36,6 +38,7 @@ export function Robot({
       modelFromController={connectedMotionGroup.modelFromController || ""}
       dhParameters={connectedMotionGroup.dhParameters}
       getModel={getModel}
+      isGhost={isGhost}
       {...props}
     />
   )
