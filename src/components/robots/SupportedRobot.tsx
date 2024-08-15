@@ -12,6 +12,7 @@ import { Yaskawa_AR1730 } from "./Yaskawa_AR1730"
 import { Yaskawa_AR2010 } from "./Yaskawa_AR2010"
 import { Yaskawa_AR3120 } from "./Yaskawa_AR3120"
 import { FANUC_CRX10iA } from "./FANUC_CRX10iA"
+import { FANUC_CRX20iAL } from "./FANUC_CRX20iAL"
 import { FANUC_CRX25iA } from "./FANUC_CRX25iA"
 import { FANUC_CRX25iAL } from "./FANUC_CRX25iAL"
 import { KUKA_KR210_R2700 } from "./KUKA_KR210_R2700"
@@ -203,6 +204,9 @@ export function SupportedRobot({
       break
     case "FANUC_CRX10iA":
       Robot = FANUC_CRX10iA
+      break
+    case "FANUC_CRX20iAL":
+      Robot = FANUC_CRX20iAL
       break
     case "FANUC_CRX25iA":
       Robot = FANUC_CRX25iA
