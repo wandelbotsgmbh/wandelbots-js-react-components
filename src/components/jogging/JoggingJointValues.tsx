@@ -2,44 +2,46 @@ import { observer } from "mobx-react-lite"
 import { Stack, Typography } from "@mui/material"
 import { useRef } from "react"
 import { useTranslation } from "react-i18next"
-import { JoggingStore } from "./JoggingStore"
+import type { JoggingStore } from "./JoggingStore"
 import { useAnimationFrame } from "../utils/hooks"
+import { CopyableText } from "../CopyableText"
 
-export const JoggingJointValues = observer(({ store }: { store: JoggingStore }) => {
-  const valueHolderRef = useRef<HTMLPreElement>(null)
-  const { t } = useTranslation()
+export const JoggingJointValues = observer(
+  ({ store }: { store: JoggingStore }) => {
+    const poseHolderRef = useRef<HTMLPreElement>(null)
+    const { t } = useTranslation()
 
-  function getCurrentValueString() {
-    const { joints } =
-      store.jogger.motionStream.rapidlyChangingMotionState.state.joint_position
-    return `{${joints.map((j) => parseFloat(j.toFixed(4))).join(", ")}}`
-  }
+    function getCurrentPoseString() {
+      const { joints } =
+        store.jogger.motionStream.rapidlyChangingMotionState.state
+          .joint_position
+      return `{${joints.map((j) => parseFloat(j.toFixed(4))).join(", ")}}`
+    }
 
-  useAnimationFrame(() => {
-    if (!valueHolderRef.current) return
-    valueHolderRef.current.textContent = getCurrentValueString()
-  })
+    useAnimationFrame(() => {
+      if (!poseHolderRef.current) return
+      poseHolderRef.current.textContent = getCurrentPoseString()
+    })
 
-  return (
-    <Stack alignItems="center" marginTop="0.8rem">
-      <Typography
+    return (
+      <Stack
+        alignItems="left"
+        spacing={2}
         sx={{
-          fontSize: "12px",
-          marginTop: "0.8rem",
+          padding: "16px",
+          "& label": {
+            opacity: 0.7,
+            fontSize: "12px",
+            marginBottom: "4px",
+          },
         }}
       >
-        {t("Jogging.Joints.JointValues.lb")}
-      </Typography>
-      <Typography
-        component="pre"
-        ref={valueHolderRef}
-        sx={{
-          fontSize: "14px",
-          opacity: 0.6,
-        }}
-      >
-        {getCurrentValueString()}
-      </Typography>
-    </Stack>
-  )
-})
+        <CopyableText
+          label={"Pose"}
+          value={getCurrentPoseString()}
+          ref={poseHolderRef}
+        />
+      </Stack>
+    )
+  },
+)

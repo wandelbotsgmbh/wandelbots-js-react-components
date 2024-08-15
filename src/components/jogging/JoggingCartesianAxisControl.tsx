@@ -84,7 +84,7 @@ export const JoggingCartesianAxisControl = observer(
             alignItems="center"
             justifyItems="center"
             spacing={1}
-            sx={{ userSelect: "none" }}
+            sx={{ userSelect: "none", color: "white" }}
           >
             {label}
           </Stack>

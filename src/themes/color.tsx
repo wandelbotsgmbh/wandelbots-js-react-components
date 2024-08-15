@@ -1,41 +1,51 @@
-import React, { ReactNode, useEffect, useState } from "react";
+import { Box, Typography, useTheme } from "@mui/material"
+import type { ReactNode} from "react";
+import { useEffect, useState } from "react"
 
 export function ColorSection(props: { name: string; children: ReactNode }) {
   return (
     <>
-      <h2>{props.name}</h2>
-      <div
-        style={{
+      <Typography
+        component="h2"
+        sx={{
+          marginTop: "1rem",
+        }}
+      >
+        {props.name}
+      </Typography>
+      <Box
+        sx={{
           display: "grid",
           gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
           gap: "20px",
         }}
       >
         {props.children}
-      </div>
+      </Box>
     </>
-  );
+  )
 }
 
 export function Color({ name, color }: { name: string; color: string }) {
-  const [showCopied, setShowCopied] = useState(false);
+  const theme = useTheme()
+  const [showCopied, setShowCopied] = useState(false)
 
   function handleClick(value: string) {
     if (!navigator.clipboard) {
-      console.error("can't send value to clipboard");
-      return;
+      console.error("can't send value to clipboard")
+      return
     }
-    navigator.clipboard.writeText(value);
-    setShowCopied(true);
+    navigator.clipboard.writeText(value)
+    setShowCopied(true)
   }
 
   useEffect(() => {
     if (showCopied) {
       setTimeout(() => {
-        setShowCopied(false);
-      }, 2000);
+        setShowCopied(false)
+      }, 2000)
     }
-  }, [showCopied]);
+  }, [showCopied])
 
   return (
     <li
@@ -58,17 +68,17 @@ export function Color({ name, color }: { name: string; color: string }) {
           // border: "1px solid lightgray",
         }}
       />
-      <span>{name}</span>
+      <Typography component="span">{name}</Typography>
       <br />
-      <span
+      <Typography
         style={{
-          color: "gray",
+          opacity: 0.7,
           fontSize: "0.9em",
           fontFamily: "monospace",
         }}
       >
         {showCopied ? "Copied ✔︎" : color}
-      </span>
+      </Typography>
     </li>
-  );
+  )
 }

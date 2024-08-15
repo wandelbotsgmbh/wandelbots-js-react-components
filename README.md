@@ -2,7 +2,7 @@
 
 [![NPM version](https://img.shields.io/npm/v/@wandelbots/wandelbots-js-react-components.svg)](https://npmjs.org/package/@wandelbots/wandelbots-js-react-components) [![npm bundle size](https://img.shields.io/bundlephobia/minzip/@wandelbots/wandelbots-js-react-components)](https://bundlephobia.com/package/@wandelbots/wandelbots-js-react-components) [![Release](https://github.com/wandelbotsgmbh/wandelbots-js-react-components/actions/workflows/release.yml/badge.svg)](https://github.com/wandelbotsgmbh/wandelbots-js-react-components/actions/workflows/release.yml)
 
-A growing collection of ready-made React UI components based on MaterialUI and React Three Fiber for use with the Wandelbots platform. 
+A growing collection of ready-made React UI components based on MaterialUI and React Three Fiber for use with the Wandelbots platform.
 
 ```bash
 npm install @wandelbots/wandelbots-js-react-components
@@ -24,6 +24,7 @@ import { WandelscriptEditor, ... } from '@wandelbots/wandelbots-js-react-compone
       <ul>
         <li><a href="#wandelscript">Wandelscript</a></li>
         <ul>
+          <li><a href="#joggingpanel">JoggingPanel</a></li>
           <li><a href="#wandelscripteditor">WandelscriptEditor</a></li>
         </ul>
         <li><a href="#viewport">3D Viewport</a></li>
@@ -39,6 +40,23 @@ import { WandelscriptEditor, ... } from '@wandelbots/wandelbots-js-react-compone
 
 ### Wandelscript
 
+#### JoggingPanel
+
+The JoggingPanel is a high-level user interface for manually moving a robot using the Wandelbots stack. It needs only a `NovaClient` instance from [wandelbots-js](https://github.com/wandelbotsgmbh/wandelbots-js) and the id of a motion group to connect to.
+
+```tsx
+type JoggingPanelProps = {
+  /** Connection to a Nova instance to use for jogging */
+  nova: NovaClient
+  /** Id of the motion group to move e.g. 0@ur5e **/
+  motionGroupId: string
+  /** Callback with the jogging panel's state store for further customization/config */
+  onSetup: (store: JoggingStore) => void
+  /** Any children will go at the bottom of the panel under the default components */
+  children?: React.ReactNode
+}
+```
+
 #### WandelscriptEditor
 
 The WandelscriptEditor provides an interface for editing snippets of Wandelscript code with the appropriate syntax highlighting. It uses the [Monaco](https://microsoft.github.io/monaco-editor/) editor under the hood.
@@ -48,7 +66,10 @@ type WandelscriptEditorProps = {
   /** The current Wandelscript content of the code editor (controlled component) */
   code?: string
   /** What to do when the user edits the code */
-  onChange?: (code: string|undefined, ev: editor.IModelContentChangedEvent) => void
+  onChange?: (
+    code: string | undefined,
+    ev: editor.IModelContentChangedEvent,
+  ) => void
   /** Callback to further configure monaco on startup if needed */
   monacoSetup?: (monaco: Monaco) => void
 }
@@ -72,9 +93,7 @@ In case you want to use the application offline, you can download the models and
 
 ```tsx
 <Robot
-  getModel={() =>
-    `public/${connectedMotionGroup.modelFromController}.glb`
-  }
+  getModel={() => `public/${connectedMotionGroup.modelFromController}.glb`}
   connectedMotionGroup={connectedMotionGroup}
 />
 ```
@@ -93,14 +112,10 @@ The `SupportedRobot` can be used to display a robot model without the need for a
 
 ```tsx
 <SupportedRobot
-  rapidlyChangingMotionState={
-    rapidlyChangingMotionState
-  }
+  rapidlyChangingMotionState={rapidlyChangingMotionState}
   dhParameters={dhParameters as any}
   modelFromController={modelFromController || ""}
-  getModel={() =>
-    `./robot-pad/models/${modelFromController}.glb`
-  }
+  getModel={() => `./robot-pad/models/${modelFromController}.glb`}
 />
 ```
 
@@ -114,7 +129,7 @@ export type SupportedRobotProps = {
 } & GroupProps
 ```
 
-#### Lightning 
+#### Lighting
 
 The `PresetEnvironment` component adds a default lighting setup to the 3D viewport.
 
@@ -122,14 +137,13 @@ The `PresetEnvironment` component adds a default lighting setup to the 3D viewpo
 <PresetEnvironment>
 ```
 
-#### Safety 
+#### Safety
 
 The `SafetyZonesRenderer` component visualizes the safety zones of the controller.
 
 ```tsx
-<SafetyZonesRenderer safetyZones={connectedMotionGroup.safetyZones||[]}/>
+<SafetyZonesRenderer safetyZones={connectedMotionGroup.safetyZones || []} />
 ```
-
 
 ## Contributing
 
@@ -137,7 +151,7 @@ To set up wandelbots-js-react-components for development, first clone the repo a
 
 ```bash
 npm install
-``` 
+```
 
 Then you can run the storybook to develop the components:
 

@@ -1,7 +1,6 @@
 // TODO implement this as part of theme?
 
-import { useThemeColors } from "../themes/wbTheme"
-import { Select, type SxProps } from "@mui/material"
+import { Select, useTheme, type SxProps } from "@mui/material"
 import { defaultsDeep } from "lodash-es"
 
 type ThemeSelectProps = {
@@ -9,10 +8,10 @@ type ThemeSelectProps = {
 } & React.ComponentProps<typeof Select>
 
 export const ThemeSelect = ({ kind, sx, ...rest }: ThemeSelectProps) => {
-  const colors = useThemeColors()
+  const theme = useTheme()
 
   let style: SxProps = defaultsDeep(sx, {
-    backgroundColor: colors.selectBackground,
+    backgroundColor: theme.palette.background.default,
     borderRadius: "10px",
     borderStyle: "none",
     color: "currentColor",

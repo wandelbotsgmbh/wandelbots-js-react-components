@@ -1,4 +1,4 @@
-import { Stack, Divider, Typography } from "@mui/material"
+import { Stack, Typography } from "@mui/material"
 import { observer, useLocalObservable } from "mobx-react-lite"
 import type { JoggingStore } from "./JoggingStore"
 import { VelocitySlider } from "../VelocitySlider"
@@ -21,35 +21,37 @@ export const JoggingVelocitySlider = observer(
     }))
 
     return (
-      <Stack>
-        <Divider />
-        <Stack
-          sx={{
-            margin: "0px 20px",
-            marginTop: "0.8rem",
-            marginBottom: "0.8rem",
-          }}
-        >
-          <Stack sx={{ width: "380px", maxWidth: "90%", margin: "auto" }}>
+      <Stack
+        sx={{
+          margin: "0px 20px",
+          marginTop: "24px",
+          marginBottom: "24px",
+        }}
+      >
+        <Stack sx={{ width: "380px", maxWidth: "90%", margin: "auto" }}>
+          <Stack
+            sx={{
+              justifyContent: "center",
+            }}
+          >
             <Typography
               sx={{
-                fontWeight: "bold",
-                fontSize: "15px",
+                fontSize: "12px",
+                opacity: 0.6,
               }}
             >
               {t("Jogging.Velocity.lb")}
             </Typography>
-            <VelocitySlider
-              velocity={store.velocityInCurrentUnits}
-              min={store.minVelocityInCurrentUnits}
-              max={store.maxVelocityInCurrentUnits}
-              onVelocityChange={store.setVelocityFromSlider}
-              disabled={store.isLocked}
-              valueLabelFormat={state.valueLabelFormat}
-            />
           </Stack>
+          <VelocitySlider
+            velocity={store.velocityInCurrentUnits}
+            min={store.minVelocityInCurrentUnits}
+            max={store.maxVelocityInCurrentUnits}
+            onVelocityChange={store.setVelocityFromSlider}
+            disabled={store.isLocked}
+            valueLabelFormat={state.valueLabelFormat}
+          />
         </Stack>
-        <Divider />
       </Stack>
     )
   },

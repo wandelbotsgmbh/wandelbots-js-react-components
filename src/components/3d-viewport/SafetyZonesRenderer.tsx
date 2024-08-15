@@ -1,5 +1,5 @@
-import { SafetySetupSafetyZone } from "@wandelbots/wandelbots-js"
-import { Geometry } from "@wandelbots/wandelbots-api-client"
+import type { SafetySetupSafetyZone } from "@wandelbots/wandelbots-js"
+import type { Geometry } from "@wandelbots/wandelbots-api-client"
 import * as THREE from "three"
 import { ConvexGeometry } from "three-stdlib"
 import { type GroupProps } from "@react-three/fiber"

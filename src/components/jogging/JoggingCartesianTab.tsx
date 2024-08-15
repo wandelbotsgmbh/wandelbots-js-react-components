@@ -6,7 +6,7 @@ import {
 } from "@mui/material"
 import { observer } from "mobx-react-lite"
 import { JoggingCartesianAxisControl } from "./JoggingCartesianAxisControl"
-import { radiansToDegrees } from "@wandelbots/wandelbots-js"
+import { degreesToRadians, radiansToDegrees } from "@wandelbots/wandelbots-js"
 import { useTranslation } from "react-i18next"
 import RotationIcon from "../../icons/rotation.svg"
 import XAxisIcon from "../../icons/axis-x.svg"
@@ -41,7 +41,9 @@ export const JoggingCartesianTab = observer(
       () => [store.selectedCoordSystemId, store.selectedTcpId],
       () => {
         store.jogger.motionStream.motionStateSocket.changeUrl(
-          store.jogger.nova.makeWebsocketURL(`/motion-groups/${store.jogger.motionGroupId}/state-stream?tcp=${store.selectedTcpId}&response_coordinate_system=${store.selectedCoordSystemId}`)
+          store.jogger.nova.makeWebsocketURL(
+            `/motion-groups/${store.jogger.motionGroupId}/state-stream?tcp=${store.selectedTcpId}&response_coordinate_system=${store.selectedCoordSystemId}`,
+          ),
         )
       },
       { fireImmediately: true } as any,
@@ -51,31 +53,33 @@ export const JoggingCartesianTab = observer(
       opts: JoggingCartesianOpts,
       increment: DiscreteIncrementOption,
     ) {
-      const tcpPose = store.jogger.motionStream.rapidlyChangingMotionState.tcp_pose
+      const tcpPose =
+        store.jogger.motionStream.rapidlyChangingMotionState.tcp_pose
       const jointPosition =
-        store.jogger.motionStream.rapidlyChangingMotionState.state.joint_position
+        store.jogger.motionStream.rapidlyChangingMotionState.state
+          .joint_position
       if (!tcpPose) return
 
-      // await robotPad.withMotionLock(async () => {
-      //   await jogger.runIncrementalCartesianMotion({
-      //     currentTcpPose: tcpPose,
-      //     currentJoints: jointPosition,
-      //     coordSystemId: store.selectedCoordSystemId,
-      //     velocityInRelevantUnits: store.velocityInCurrentUnits,
-      //     axis: opts.axis,
-      //     direction: opts.direction,
-      //     motion:
-      //       store.selectedCartesianMotionType === "translate"
-      //         ? {
-      //             type: "translate",
-      //             distanceMm: increment.mm,
-      //           }
-      //         : {
-      //             type: "rotate",
-      //             distanceRads: degreesToRadians(increment.degrees),
-      //           },
-      //   })
-      // })
+      await store.withMotionLock(async () => {
+        await store.jogger.runIncrementalCartesianMotion({
+          currentTcpPose: tcpPose,
+          currentJoints: jointPosition,
+          coordSystemId: store.selectedCoordSystemId,
+          velocityInRelevantUnits: store.velocityInCurrentUnits,
+          axis: opts.axis,
+          direction: opts.direction,
+          motion:
+            store.selectedCartesianMotionType === "translate"
+              ? {
+                  type: "translate",
+                  distanceMm: increment.mm,
+                }
+              : {
+                  type: "rotate",
+                  distanceRads: degreesToRadians(increment.degrees),
+                },
+        })
+      })
     }
 
     async function startCartesianJogging(opts: JoggingCartesianOpts) {
@@ -97,7 +101,6 @@ export const JoggingCartesianTab = observer(
           direction: opts.direction,
           velocityRadsPerSec: store.rotationVelocityRadsPerSec,
         })
-
       }
     }
 
@@ -141,26 +144,19 @@ export const JoggingCartesianTab = observer(
 
     return (
       <Stack>
-        {/* Jogging options */}
-        <JoggingOptions store={store} />
-
         {/* Show Wandelscript string for the current coords */}
         <JoggingCartesianValues store={store} />
 
-        {/* Translate or rotate toggle */}
-        <Stack alignItems="center" marginTop="1rem">
+        {/* Jogging options */}
+        <JoggingOptions store={store} />
+
+        <Stack width="80%" maxWidth="296px" margin="auto" marginTop="24px">
+          {/* Translate or rotate toggle */}
           <ToggleButtonGroup
             value={store.selectedCartesianMotionType}
             onChange={onMotionTypeChange}
             exclusive
             aria-label={t("Jogging.Cartesian.MotionType.lb")}
-            sx={{
-              "& > button": {
-                borderRadius: "8px",
-                textTransform: "none",
-                padding: "4px 30px",
-              },
-            }}
           >
             <ToggleButton value="translate">
               {t("Jogging.Cartesian.Translation.bt")}
@@ -169,9 +165,7 @@ export const JoggingCartesianTab = observer(
               {t("Jogging.Cartesian.Rotation.bt")}
             </ToggleButton>
           </ToggleButtonGroup>
-        </Stack>
 
-        <Stack width="80%" maxWidth="296px" margin="auto">
           {/* Cartesian translate jogging */}
           {store.selectedCartesianMotionType === "translate" &&
             axisList.map((axis) => (
@@ -197,9 +191,8 @@ export const JoggingCartesianTab = observer(
                 }
                 getDisplayedValue={() =>
                   formatMM(
-                    store.jogger.motionStream.rapidlyChangingMotionState.tcp_pose?.position[
-                      axis.id
-                    ] || 0,
+                    store.jogger.motionStream.rapidlyChangingMotionState
+                      .tcp_pose?.position[axis.id] || 0,
                   )
                 }
                 startJogging={(direction: "-" | "+") =>
@@ -238,8 +231,8 @@ export const JoggingCartesianTab = observer(
                 }
                 getDisplayedValue={() =>
                   formatDegrees(
-                    store.jogger.motionStream.rapidlyChangingMotionState.tcp_pose
-                      ?.orientation?.[axis.id] || 0,
+                    store.jogger.motionStream.rapidlyChangingMotionState
+                      .tcp_pose?.orientation?.[axis.id] || 0,
                   )
                 }
                 startJogging={(direction: "-" | "+") =>

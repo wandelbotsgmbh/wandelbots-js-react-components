@@ -1,10 +1,10 @@
-import { Meta, StoryObj } from "@storybook/react";
-import { WandelscriptEditor } from "./WandelscriptEditor";
+import type { Meta, StoryObj } from "@storybook/react"
+import { WandelscriptEditor } from "../../index"
 
 const meta: Meta<typeof WandelscriptEditor> = {
   component: WandelscriptEditor,
-};
-export default meta;
+}
+export default meta
 
 const defaultCode = `start = [832, -452, 289]  # The start position of the edge
 end = [817, 168, 288]  # The end position of the edge
@@ -29,7 +29,7 @@ for i = 0..<int(n / 2) - 1:
     move via arc(a) to b
     if i == 10:
         test_pose = planned_pose()
-`;
+`
 
 export const Editor: StoryObj<typeof WandelscriptEditor> = {
   args: {
@@ -40,6 +40,6 @@ export const Editor: StoryObj<typeof WandelscriptEditor> = {
       <div style={{ height: "400px" }}>
         <WandelscriptEditor {...props} />
       </div>
-    );
+    )
   },
-};
+}

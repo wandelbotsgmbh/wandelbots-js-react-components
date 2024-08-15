@@ -1,6 +1,11 @@
-import { keyBy } from "lodash-es"
+import { keyBy, uniqueId } from "lodash-es"
 import { autorun, makeAutoObservable, type IReactionDisposer } from "mobx"
-import type { CoordinateSystem, JoggerConnection, MotionGroupSpecification, RobotTcp } from "@wandelbots/wandelbots-js"
+import type {
+  CoordinateSystem,
+  JoggerConnection,
+  MotionGroupSpecification,
+  RobotTcp,
+} from "@wandelbots/wandelbots-js"
 import { tryParseJson } from "@wandelbots/wandelbots-js"
 
 const discreteIncrementOptions = [
@@ -22,8 +27,8 @@ export type IncrementOptionId = IncrementOption["id"]
 export class JoggingStore {
   selectedTabId: "cartesian" | "joint" | "debug" = "cartesian"
 
-  // TODO
-  isLocked: boolean = false
+  /** Locks to prevent UI interactions during certain operations */
+  locks = new Set<string>()
 
   /**
    * Id of selected coordinate system from among those defined on the API side
@@ -32,6 +37,13 @@ export class JoggingStore {
 
   /** Id of selected tool center point from among the options available on the robot */
   selectedTcpId: string = ""
+
+  /**
+   * Whether the user is jogging in the coordinate system or tool orientation.
+   * When in tool orientation, the robot moves in a direction relative to the
+   * attached tool rotation.
+   */
+  selectedOrientation: "coordsys" | "tool" = "coordsys"
 
   /**
    * Id of selected increment amount for jogging. Options are defined by robot pad.
@@ -74,20 +86,28 @@ export class JoggingStore {
     const { nova } = jogger
 
     // Find out what TCPs this motion group has (we need it for jogging)
-    const [motionGroupSpec, { coordinatesystems }, { tcps }] = await Promise.all([
-      nova.api.motionGroupInfos.getMotionGroupSpecification(jogger.motionGroupId),
+    const [motionGroupSpec, { coordinatesystems }, { tcps }] =
+      await Promise.all([
+        nova.api.motionGroupInfos.getMotionGroupSpecification(
+          jogger.motionGroupId,
+        ),
 
-      // Fetch coord systems so user can select between them
-      nova.api.coordinateSystems.listCoordinateSystems("ROTATION_VECTOR"),
+        // Fetch coord systems so user can select between them
+        nova.api.coordinateSystems.listCoordinateSystems("ROTATION_VECTOR"),
 
-      // Same for TCPs
-      nova.api.motionGroupInfos.listTcps(
-        jogger.motionGroupId,
-        "ROTATION_VECTOR",
-      ),
-    ])
+        // Same for TCPs
+        nova.api.motionGroupInfos.listTcps(
+          jogger.motionGroupId,
+          "ROTATION_VECTOR",
+        ),
+      ])
 
-    return new JoggingStore(jogger, motionGroupSpec, coordinatesystems || [], tcps || [])
+    return new JoggingStore(
+      jogger,
+      motionGroupSpec,
+      coordinatesystems || [],
+      tcps || [],
+    )
   }
 
   constructor(
@@ -147,6 +167,10 @@ export class JoggingStore {
     if (["translate", "rotate"].includes(save.selectedCartesianMotionType)) {
       this.selectedCartesianMotionType = save.selectedCartesianMotionType
     }
+
+    if (["coordsys", "tool"].includes(save.selectedOrientation)) {
+      this.selectedOrientation = save.selectedOrientation
+    }
   }
 
   saveToLocalStorage() {
@@ -156,11 +180,16 @@ export class JoggingStore {
     )
   }
 
+  get isLocked() {
+    return this.locks.size > 0
+  }
+
   get localStorageSave() {
     return {
       selectedTabId: this.selectedTabId,
       selectedCoordSystemId: this.selectedCoordSystemId,
       selectedTcpId: this.selectedTcpId,
+      selectedOrientation: this.selectedOrientation,
       selectedIncrementId: this.selectedIncrementId,
       selectedCartesianMotionType: this.selectedCartesianMotionType,
     }
@@ -209,6 +238,12 @@ export class JoggingStore {
 
   get selectedCoordSystem() {
     return this.coordSystemsById[this.selectedCoordSystemId]
+  }
+
+  get activeCoordSystemId() {
+    return this.selectedOrientation === "tool"
+      ? "tool"
+      : this.selectedCoordSystemId
   }
 
   get tcpsById() {
@@ -272,6 +307,10 @@ export class JoggingStore {
     this.selectedTcpId = id
   }
 
+  setSelectedOrientation(orientation: "coordsys" | "tool") {
+    this.selectedOrientation = orientation
+  }
+
   setSelectedIncrementId(id: IncrementOptionId) {
     this.selectedIncrementId = id
   }
@@ -290,5 +329,17 @@ export class JoggingStore {
 
   setSelectedCartesianMotionType(type: "translate" | "rotate") {
     this.selectedCartesianMotionType = type
+  }
+
+  /** Lock the UI until the given async callback resolves */
+  async withMotionLock(fn: () => Promise<void>) {
+    const lockId = uniqueId()
+    this.locks.add(lockId)
+
+    try {
+      return await fn()
+    } finally {
+      this.locks.delete(lockId)
+    }
   }
 }

@@ -6,11 +6,17 @@ import { JoggingJointTab } from "./JoggingJointTab"
 import { JoggingStore } from "./JoggingStore"
 import { LoadingCover } from "../LoadingCover"
 import { runInAction } from "mobx"
-import { NovaClient } from "@wandelbots/wandelbots-js"
+import type { NovaClient } from "@wandelbots/wandelbots-js"
 
 export type JoggingPanelProps = {
+  /** Connection to a Nova instance to use for jogging */
   nova: NovaClient
+  /** Id of the motion group to move e.g. 0@ur5e **/
   motionGroupId: string
+  /** Callback with the jogging panel's state store for further customization/config */
+  onSetup?: (store: JoggingStore) => void
+  /** Any children will go at the bottom of the panel under the default components */
+  children?: React.ReactNode
 }
 
 export const JoggingPanel = observer((props: JoggingPanelProps) => {
@@ -28,6 +34,9 @@ export const JoggingPanel = observer((props: JoggingPanelProps) => {
       runInAction(() => {
         state.joggingStore = joggingStore
       })
+      if (props.onSetup) {
+        props.onSetup(joggingStore)
+      }
     } catch (err) {
       state.loadingError = err
     }
@@ -47,7 +56,7 @@ export const JoggingPanel = observer((props: JoggingPanelProps) => {
     const {
       currentTab,
       selectedTcpId,
-      selectedCoordSystemId,
+      activeCoordSystemId,
       selectedDiscreteIncrement,
     } = state.joggingStore
 
@@ -55,39 +64,26 @@ export const JoggingPanel = observer((props: JoggingPanelProps) => {
 
     const cartesianJoggingOpts = {
       tcpId: selectedTcpId,
-      coordSystemId: selectedCoordSystemId,
+      coordSystemId: activeCoordSystemId,
     }
 
     if (selectedDiscreteIncrement && currentTab.id === "cartesian") {
-      state.joggingStore.jogger.setJoggingMode("increment", cartesianJoggingOpts)
+      state.joggingStore.jogger.setJoggingMode(
+        "increment",
+        cartesianJoggingOpts,
+      )
     } else {
-      state.joggingStore.jogger.setJoggingMode(currentTab.id, cartesianJoggingOpts)
+      state.joggingStore.jogger.setJoggingMode(
+        currentTab.id,
+        cartesianJoggingOpts,
+      )
     }
   }, [
     state.joggingStore?.currentTab,
     state.joggingStore?.selectedTcpId,
-    state.joggingStore?.selectedCoordSystemId,
+    state.joggingStore?.activeCoordSystemId,
     state.joggingStore?.selectedDiscreteIncrement,
   ])
-
-  useEffect(() => {
-
-    // Set the robot to default control mode (JoZi says is important for physical robot jogging)
-    async function init() {
-      if (!state.joggingStore) return
-
-      try {
-        await nova.api.controller.setDefaultMode(
-          state.joggingStore.jogger.motionStream.controllerId,
-          "MODE_CONTROL",
-        )
-      } catch (err) {
-        console.error(err)
-      }
-    }
-
-    init()
-  }, [state.joggingStore?.jogger.motionStream.controllerId])
 
   if (!state.joggingStore) {
     return (
@@ -119,9 +115,8 @@ export const JoggingPanel = observer((props: JoggingPanelProps) => {
           {store.currentTab.id === "cartesian" && (
             <JoggingCartesianTab store={store} />
           )}
-          {store.currentTab.id === "joint" && (
-            <JoggingJointTab store={store} />
-          )}
+          {store.currentTab.id === "joint" && <JoggingJointTab store={store} />}
+          {props.children}
         </Stack>
       </Stack>
     </JoggingPanelOuter>
@@ -136,11 +131,14 @@ function JoggingPanelOuter({ children }: { children: React.ReactNode }) {
         minWidth: "350px",
         overflowY: "auto",
         position: "relative",
+        height: "100%",
       }}
     >
-      <Paper sx={{
-        minHeight: "90vh"
-      }}>
+      <Paper
+        sx={{
+          height: "100%",
+        }}
+      >
         {children}
       </Paper>
     </Stack>

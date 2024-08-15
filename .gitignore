@@ -4,3 +4,4 @@ node_modules
 tsconfig.tsbuildinfo
 *.tgz
 dist
+tmp

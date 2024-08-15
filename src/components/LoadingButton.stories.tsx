@@ -1,35 +1,29 @@
-import { Meta, StoryObj } from "@storybook/react";
-import { LoadingButton } from "./LoadingButton";
-import { useState } from "react";
+import type { Meta, StoryObj } from "@storybook/react"
+import { LoadingButton } from "./LoadingButton"
+import { useState } from "react"
 import { PlayArrow } from "@mui/icons-material"
 
 async function delay(ms: number) {
   return new Promise<void>((resolve) => {
     setTimeout(() => {
-      resolve();
-    }, ms);
-  });
+      resolve()
+    }, ms)
+  })
 }
 
 const DemoLoader = (props: React.ComponentProps<typeof LoadingButton>) => {
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false)
 
   async function doThing() {
-    setIsLoading(true);
+    setIsLoading(true)
     try {
-      await delay(1000);
+      await delay(1000)
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
   }
 
-  return (
-    <LoadingButton
-      loading={isLoading}
-      onClick={doThing}
-      {...props}
-    />
-  );
+  return <LoadingButton loading={isLoading} onClick={doThing} {...props} />
 }
 
 const meta: Meta<typeof LoadingButton> = {
@@ -44,18 +38,17 @@ const meta: Meta<typeof LoadingButton> = {
   argTypes: {
     loadingPosition: {
       options: ["center", "start", "end"],
-      control: { type: 'select' },
+      control: { type: "select" },
     },
     variant: {
       options: ["contained", "outlined", "text"],
-      control: { type: 'select' },
-    }
+      control: { type: "select" },
+    },
   },
   render: (props) => {
-    return <DemoLoader {...props} />;
-  }
-};
-export default meta;
+    return <DemoLoader {...props} />
+  },
+}
+export default meta
 
-export const Default: StoryObj<typeof LoadingButton> = {
-};
+export const Default: StoryObj<typeof LoadingButton> = {}
