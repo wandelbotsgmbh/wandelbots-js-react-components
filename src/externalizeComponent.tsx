@@ -1,8 +1,8 @@
 import { ThemeProvider } from "@emotion/react"
 import { createMUIThemeFromNova, createNovaTheme } from "./themes/theming"
-import { FC } from "react"
+import type { FC } from "react"
 import { useTheme } from "@mui/material"
-import { I18nextProvider, useTranslation } from "react-i18next"
+import { I18nextProvider } from "react-i18next"
 import i18n from "./i18n/config"
 
 /**
@@ -24,7 +24,6 @@ const NovaComponentsProvider: FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const theme = useTheme()
-  console.log(theme)
   const defaultNovaTheme = createNovaTheme({
     mode: theme.palette.mode,
   })

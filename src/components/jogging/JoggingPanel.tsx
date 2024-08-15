@@ -6,7 +6,7 @@ import { JoggingJointTab } from "./JoggingJointTab"
 import { JoggingStore } from "./JoggingStore"
 import { LoadingCover } from "../LoadingCover"
 import { runInAction } from "mobx"
-import { NovaClient } from "@wandelbots/wandelbots-js"
+import type { NovaClient } from "@wandelbots/wandelbots-js"
 
 export type JoggingPanelProps = {
   /** Connection to a Nova instance to use for jogging */
@@ -14,7 +14,7 @@ export type JoggingPanelProps = {
   /** Id of the motion group to move e.g. 0@ur5e **/
   motionGroupId: string
   /** Callback with the jogging panel's state store for further customization/config */
-  onSetup: (store: JoggingStore) => void
+  onSetup?: (store: JoggingStore) => void
   /** Any children will go at the bottom of the panel under the default components */
   children?: React.ReactNode
 }
