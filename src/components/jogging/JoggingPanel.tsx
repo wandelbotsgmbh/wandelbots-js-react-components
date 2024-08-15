@@ -9,8 +9,13 @@ import { runInAction } from "mobx"
 import { NovaClient } from "@wandelbots/wandelbots-js"
 
 export type JoggingPanelProps = {
+  /** Connection to a Nova instance to use for jogging */
   nova: NovaClient
+  /** Id of the motion group to move e.g. 0@ur5e **/
   motionGroupId: string
+  /** Callback with the jogging panel's state store for further customization/config */
+  onSetup: (store: JoggingStore) => void
+  /** Any children will go at the bottom of the panel under the default components */
   children?: React.ReactNode
 }
 
@@ -29,6 +34,9 @@ export const JoggingPanel = observer((props: JoggingPanelProps) => {
       runInAction(() => {
         state.joggingStore = joggingStore
       })
+      if (props.onSetup) {
+        props.onSetup(joggingStore)
+      }
     } catch (err) {
       state.loadingError = err
     }
