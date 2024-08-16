@@ -29,20 +29,6 @@ export const JoggingVelocitySlider = observer(
         }}
       >
         <Stack sx={{ width: "380px", maxWidth: "90%", margin: "auto" }}>
-          <Stack
-            sx={{
-              justifyContent: "center",
-            }}
-          >
-            <Typography
-              sx={{
-                fontSize: "12px",
-                opacity: 0.6,
-              }}
-            >
-              {t("Jogging.Velocity.lb")}
-            </Typography>
-          </Stack>
           <VelocitySlider
             velocity={store.velocityInCurrentUnits}
             min={store.minVelocityInCurrentUnits}

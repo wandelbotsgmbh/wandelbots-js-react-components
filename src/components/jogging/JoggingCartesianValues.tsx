@@ -30,7 +30,8 @@ export const JoggingCartesianValues = observer(
         alignItems="left"
         spacing={2}
         sx={{
-          padding: "16px",
+          padding: "8px 16px",
+          paddingTop: "16px",
           "& label": {
             opacity: 0.7,
             fontSize: "12px",
