@@ -30,6 +30,7 @@ import { DHRobot } from "./DHRobot"
 
 import * as THREE from "three"
 import { ErrorBoundary } from "react-error-boundary"
+import ConsoleFilter from "../ConsoleFilter"
 
 export type DHRobotProps = {
   rapidlyChangingMotionState: MotionGroupStateResponse
@@ -265,6 +266,7 @@ export function SupportedRobot({
           />
         </group>
       </Suspense>
+      <ConsoleFilter />
     </ErrorBoundary>
   )
 }
