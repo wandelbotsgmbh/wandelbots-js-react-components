@@ -30,7 +30,7 @@ export const VelocitySlider = observer((props: VelocitySliderProps) => {
       <Typography
         sx={{
           textAlign: "center",
-          fontSize: "15px",
+          fontSize: "14px",
           opacity: 0.8,
           color: theme.palette.text.primary,
         }}

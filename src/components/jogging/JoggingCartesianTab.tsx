@@ -150,7 +150,7 @@ export const JoggingCartesianTab = observer(
         {/* Jogging options */}
         <JoggingOptions store={store} />
 
-        <Stack width="80%" maxWidth="296px" margin="auto" marginTop="24px">
+        <Stack width="80%" maxWidth="296px" margin="auto" marginTop="16px">
           {/* Translate or rotate toggle */}
           <ToggleButtonGroup
             value={store.selectedCartesianMotionType}
