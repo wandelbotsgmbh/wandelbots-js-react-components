@@ -30,7 +30,13 @@ export function SafetyZonesRenderer({
           const vertices = geometry.convex_hull.vertices.map(
             (v) => new THREE.Vector3(v.x / 1000, v.y / 1000, v.z / 1000),
           )
-          const convexGeometry = new ConvexGeometry(vertices)
+          let convexGeometry
+          try {
+            convexGeometry = new ConvexGeometry(vertices)
+          } catch (error) {
+            console.log("Error creating ConvexGeometry:", error)
+            return null
+          }
           return (
             <>
               <mesh key={`${index}-${i}`} geometry={convexGeometry}>
