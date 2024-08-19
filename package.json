@@ -39,6 +39,7 @@
   "author": "Wandelbots",
   "license": "Apache-2.0",
   "devDependencies": {
+    "@chromatic-com/storybook": "^1.6.1",
     "@emotion/react": "^11.13.0",
     "@emotion/styled": "^11.13.0",
     "@mui/material": "^5.13.6",
@@ -75,13 +76,13 @@
     "semantic-release": "^24.0.0",
     "storybook": "^8.2.9",
     "storybook-dark-mode": "^4.0.2",
+    "storybook-preset-inline-svg": "^1.0.1",
     "tslib": "^2.6.3",
     "typescript": "^5.5.4",
     "vite": "^5.3.5",
     "vite-plugin-svgr": "^4.2.0",
     "vitest": "^2.0.5",
-    "@chromatic-com/storybook": "^1.6.1",
-    "storybook-preset-inline-svg": "^1.0.1"
+    "@wandelbots/wandelbots-js": "^1.8.0"
   },
   "peerDependencies": {
     "@emotion/react": "^11.11.1",
@@ -90,7 +91,6 @@
     "@react-spring/three": ">=9",
     "@react-three/drei": ">=9",
     "@react-three/fiber": ">=8",
-    "@wandelbots/wandelbots-js": "^1.7.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "three": ">=0.167",
