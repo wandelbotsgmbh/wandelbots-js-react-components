@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react"
 import { LoadingButton } from "./LoadingButton"
 import { useState } from "react"
-import { PlayArrow } from "@mui/icons-material"
+import PlayArrow from "@mui/icons-material/PlayArrow"
 
 async function delay(ms: number) {
   return new Promise<void>((resolve) => {
