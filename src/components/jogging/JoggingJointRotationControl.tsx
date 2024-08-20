@@ -5,7 +5,7 @@ import ChevronLeft from "@mui/icons-material/ChevronLeft"
 import ChevronRight from "@mui/icons-material/ChevronRight"
 import { useAnimationFrame } from "../utils/hooks"
 import { useState } from "react"
-import { throttle } from "lodash-es"
+import throttle from "lodash-es/throttle"
 import { useTranslation } from "react-i18next"
 
 type JoggingJointRotationControlProps = {

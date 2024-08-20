@@ -1,7 +1,7 @@
 import { Typography } from "@mui/material"
 import { useTranslation } from "react-i18next"
 import { useState } from "react"
-import { isEqual } from "lodash-es"
+import isEqual from "lodash-es/isEqual"
 import { useAnimationFrame } from "../utils/hooks"
 import type { JoggingStore } from "./JoggingStore"
 

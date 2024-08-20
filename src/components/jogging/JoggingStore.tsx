@@ -1,4 +1,5 @@
-import { keyBy, uniqueId } from "lodash-es"
+import keyBy from "lodash-es/keyBy"
+import uniqueId from "lodash-es/uniqueId"
 import { autorun, makeAutoObservable, type IReactionDisposer } from "mobx"
 import type {
   CoordinateSystem,
