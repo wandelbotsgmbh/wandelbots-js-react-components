@@ -14,11 +14,13 @@ import i18n from "./i18n/config"
 export function externalizeComponent<T extends JSX.ElementType>(
   Component: T,
 ): T {
-  return ((props: T) => (
+  const WrappedComponent = ((props: T) => (
     <NovaComponentsProvider>
       <Component {...(props as any)} />
     </NovaComponentsProvider>
-  )) as T
+  )) as any
+
+  return WrappedComponent
 }
 
 const NovaComponentsProvider: FC<{ children: React.ReactNode }> = ({

@@ -6,10 +6,8 @@ const config: StorybookConfig = {
     "../stories/**/*.stories.@(js|jsx|mjs|ts|tsx)",
   ],
   addons: [
-    "@storybook/addon-links",
     "@storybook/addon-essentials",
     "@chromatic-com/storybook",
-    "@storybook/addon-interactions",
     "storybook-preset-inline-svg",
     "storybook-dark-mode",
   ],
@@ -30,11 +28,8 @@ const config: StorybookConfig = {
       shouldExtractLiteralValuesFromEnum: true,
       // Makes string and boolean types that can be undefined appear as inputs and switches
       shouldRemoveUndefinedFromOptional: true,
-      // Filter out third-party props from node_modules except @mui packages
       propFilter: (prop) =>
-        prop.parent
-          ? !/node_modules\/(?!@mui)/.test(prop.parent.fileName)
-          : true,
+        prop.parent ? !/node_modules/.test(prop.parent.fileName) : true,
     },
   },
 }

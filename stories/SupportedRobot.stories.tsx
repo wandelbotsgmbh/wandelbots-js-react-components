@@ -1,8 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react"
-import { useState } from "react"
-import { Canvas } from "@react-three/fiber"
 import { Euler, Vector3, WebGLRenderer } from "three"
-import { OrbitControls, Grid } from "@react-three/drei"
 import { SupportedRobot } from "../src"
 import type {
   Joints,
