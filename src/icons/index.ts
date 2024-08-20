@@ -1,6 +1,6 @@
-export { ArrowForwardFilledIcon } from "./arrowForwardFilled";
-export { ExpandFilledIcon } from "./expandFilled";
-export { HomeIcon } from "./home";
-export { InfoOutlinedIcon } from "./infoOutlined";
-export { RobotIcon } from "./robot";
-export { WBLogoIcon } from "./wbLogo";
+export { default as ArrowForwardFilledIcon } from "./arrowForwardFilled.svg"
+export { default as ExpandFilledIcon } from "./expandFilled.svg"
+export { default as HomeIcon } from "./home.svg"
+export { default as InfoOutlinedIcon } from "./infoOutlined.svg"
+export { default as RobotIcon } from "./robot.svg"
+export { default as WBLogoIcon } from "./wbLogo.svg"
