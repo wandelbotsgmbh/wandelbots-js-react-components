@@ -2,9 +2,10 @@ import type { Meta, StoryObj } from "@storybook/react"
 import { JoggingCartesianAxisControl } from "./JoggingCartesianAxisControl"
 import { useRef } from "react"
 import { useAnimationFrame } from "../utils/hooks"
-import { useArgs } from "@storybook/preview-api"
 
 const meta: Meta<typeof JoggingCartesianAxisControl> = {
+  title: "Jogging/JoggingCartesianAxisControl",
+  tags: ["!dev"],
   component: JoggingCartesianAxisControl,
 
   args: {
@@ -13,8 +14,6 @@ const meta: Meta<typeof JoggingCartesianAxisControl> = {
     disabled: false,
   },
   render: function Component(args) {
-    const [, setArgs] = useArgs()
-
     const joggingDirRef = useRef<"+" | "-" | null>(null)
     const joggingValueRef = useRef(0)
 

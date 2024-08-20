@@ -14,7 +14,8 @@ import type {
 import { Setup } from "../../Setup"
 
 export default {
-  title: "Components/SupportedRobot",
+  tags: ["!dev"],
+  title: "3D View/SupportedRobot",
   component: SupportedRobot,
   decorators: [
     (Story) => (

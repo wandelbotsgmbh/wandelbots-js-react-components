@@ -4,6 +4,8 @@ import { useRef } from "react"
 import { useAnimationFrame } from "../utils/hooks"
 
 const meta: Meta<typeof JoggingJointRotationControl> = {
+  title: "Jogging/JoggingJointRotationControl",
+  tags: ["!dev"],
   component: JoggingJointRotationControl,
 
   args: {

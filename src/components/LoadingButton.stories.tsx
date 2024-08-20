@@ -28,7 +28,7 @@ const DemoLoader = (props: React.ComponentProps<typeof LoadingButton>) => {
 
 const meta: Meta<typeof LoadingButton> = {
   component: LoadingButton,
-
+  tags: ["!dev", "!autodocs"],
   args: {
     children: "Click me",
     loadingPosition: "start",

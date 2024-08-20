@@ -4,6 +4,8 @@ import { useArgs } from "@storybook/preview-api"
 import { NovaClient } from "@wandelbots/wandelbots-js"
 
 const meta: Meta<typeof JoggingPanel> = {
+  title: "Jogging/JoggingPanel",
+  tags: ["!dev"],
   component: JoggingPanel,
 
   args: {
