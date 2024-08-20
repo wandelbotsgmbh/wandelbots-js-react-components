@@ -37,5 +37,9 @@ export type * from "./components/VelocitySlider"
 import { VelocitySlider as VS } from "./components/VelocitySlider"
 export const VelocitySlider = externalizeComponent(VS)
 
+export type * from "./components/modal/NoMotionGroupModal"
+import { NoMotionGroupModal as NMGM } from "./components/modal/NoMotionGroupModal"
+export const NoMotionGroupModal = externalizeComponent(NMGM)
+
 export * from "./components/utils/hooks"
 export * from "./components/robots/AxisConfig"
