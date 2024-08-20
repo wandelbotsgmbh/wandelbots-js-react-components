@@ -5,6 +5,6 @@ declare module "*.glb" {
 
 // Type for svg imports handled by vite config
 declare module "*.svg" {
-  const content: React.FunctionComponent<React.SVGAttributes<SVGElement>>;
-  export default content;
+  const content: React.FunctionComponent<React.SVGAttributes<SVGElement>>
+  export default content
 }
