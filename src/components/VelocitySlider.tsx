@@ -1,5 +1,5 @@
 import Slider from "@mui/material/Slider"
-import { isNumber } from "lodash-es"
+import isNumber from "lodash-es/isNumber"
 import { observer } from "mobx-react-lite"
 import { Stack, Typography, useTheme } from "@mui/material"
 
