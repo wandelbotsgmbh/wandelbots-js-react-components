@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react"
-import { LoadingButton } from "./LoadingButton"
+import { LoadingButton } from "../src/components/LoadingButton"
 import { useState } from "react"
 import PlayArrow from "@mui/icons-material/PlayArrow"
 
@@ -28,7 +28,7 @@ const DemoLoader = (props: React.ComponentProps<typeof LoadingButton>) => {
 
 const meta: Meta<typeof LoadingButton> = {
   component: LoadingButton,
-
+  tags: ["!dev", "!autodocs"],
   args: {
     children: "Click me",
     loadingPosition: "start",

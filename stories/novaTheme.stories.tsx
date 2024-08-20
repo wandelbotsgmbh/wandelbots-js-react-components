@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react"
-import { Color, ColorSection } from "./color"
+import { Color, ColorSection } from "../src/themes/color"
 import { useTheme } from "@mui/material"
 
 const ColorPalette = () => {

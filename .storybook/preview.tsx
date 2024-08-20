@@ -1,5 +1,5 @@
 import type { Preview } from "@storybook/react"
-import { Box, createTheme, ThemeProvider } from "@mui/material"
+import { createTheme, ThemeProvider, CssBaseline } from "@mui/material"
 import React from "react"
 import { DocsContainer } from "./DocsContainer"
 import { useDarkMode } from "storybook-dark-mode"
@@ -15,6 +15,22 @@ const preview: Preview = {
       darkClass: "dark",
       lightClass: "light",
     },
+
+    options: {
+      storySort: (a, b) =>
+        a.id === b.id
+          ? 0
+          : a.id.localeCompare(b.id, undefined, { numeric: true }),
+    },
+
+    // From mui integration guide https://storybook.js.org/recipes/@mui/material
+    controls: {
+      expanded: true, // Adds the description and default columns
+      matchers: {
+        color: /(background|color)$/i,
+        date: /Date$/,
+      },
+    },
   },
   decorators: [
     (Story) => {
@@ -24,9 +40,12 @@ const preview: Preview = {
       })
 
       return (
-        <ThemeProvider theme={muiTheme}>
-          <Story />
-        </ThemeProvider>
+        <>
+          <CssBaseline />
+          <ThemeProvider theme={muiTheme}>
+            <Story />
+          </ThemeProvider>
+        </>
       )
     },
   ],

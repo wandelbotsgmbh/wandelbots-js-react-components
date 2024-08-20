@@ -1,7 +1,8 @@
 import type { Meta, StoryObj } from "@storybook/react"
-import { WandelscriptEditor } from "../../index"
+import { WandelscriptEditor } from "../src"
 
 const meta: Meta<typeof WandelscriptEditor> = {
+  title: "Wandelscript/WandelscriptEditor",
   component: WandelscriptEditor,
 }
 export default meta
@@ -32,6 +33,7 @@ for i = 0..<int(n / 2) - 1:
 `
 
 export const Editor: StoryObj<typeof WandelscriptEditor> = {
+  tags: ["!dev"],
   args: {
     code: defaultCode,
   },

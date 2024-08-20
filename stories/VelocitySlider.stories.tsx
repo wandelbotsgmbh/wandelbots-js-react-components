@@ -1,9 +1,11 @@
 import type { Meta, StoryObj } from "@storybook/react"
-import { VelocitySlider } from "../index"
+import { VelocitySlider } from "../src"
 import { useArgs } from "@storybook/preview-api"
 
 const meta: Meta<typeof VelocitySlider> = {
+  title: "Jogging/VelocitySlider",
   component: VelocitySlider,
+  tags: ["!dev"],
 
   args: {
     velocity: 1,

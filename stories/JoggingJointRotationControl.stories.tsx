@@ -1,9 +1,11 @@
 import type { Meta, StoryObj } from "@storybook/react"
-import { JoggingJointRotationControl } from "../../index"
+import { JoggingJointRotationControl } from "../src"
 import { useRef } from "react"
-import { useAnimationFrame } from "../utils/hooks"
+import { useAnimationFrame } from "../src/components/utils/hooks"
 
 const meta: Meta<typeof JoggingJointRotationControl> = {
+  title: "Jogging/JoggingJointRotationControl",
+  tags: ["!dev"],
   component: JoggingJointRotationControl,
 
   args: {
