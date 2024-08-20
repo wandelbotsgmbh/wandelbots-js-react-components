@@ -2,12 +2,13 @@
   "name": "@wandelbots/wandelbots-js-react-components",
   "version": "0.0.0-semantically-released",
   "description": "React UI toolkit for building applications on top of the Wandelbots platform",
+  "type": "module",
+  "sideEffects": false,
   "files": [
     "dist",
     "src",
     "README.md"
   ],
-  "type": "module",
   "module": "./dist/index.js",
   "main": "./dist/index.cjs",
   "exports": {
