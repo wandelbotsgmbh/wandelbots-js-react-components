@@ -3,7 +3,7 @@ import { useState } from "react"
 import { Canvas } from "@react-three/fiber"
 import { Euler, Vector3, WebGLRenderer } from "three"
 import { OrbitControls, Grid } from "@react-three/drei"
-import { SupportedRobot } from "./SupportedRobot"
+import { SupportedRobot } from "../src"
 import type {
   Joints,
   MotionGroupStateJointLimitReached,
@@ -11,7 +11,7 @@ import type {
   MotionVector,
   TcpPose,
 } from "@wandelbots/wandelbots-js"
-import { Setup } from "../../Setup"
+import { Setup } from "../src/Setup"
 
 export default {
   tags: ["!dev"],

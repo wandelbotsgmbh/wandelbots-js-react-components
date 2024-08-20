@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react"
-import { JoggingCartesianAxisControl } from "./JoggingCartesianAxisControl"
+import { JoggingCartesianAxisControl } from "../src"
 import { useRef } from "react"
-import { useAnimationFrame } from "../utils/hooks"
+import { useAnimationFrame } from "../src/components/utils/hooks"
 
 const meta: Meta<typeof JoggingCartesianAxisControl> = {
   title: "Jogging/JoggingCartesianAxisControl",

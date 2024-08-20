@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react"
-import { WandelscriptEditor } from "../../index"
+import { WandelscriptEditor } from "../src"
 
 const meta: Meta<typeof WandelscriptEditor> = {
   title: "Wandelscript/WandelscriptEditor",

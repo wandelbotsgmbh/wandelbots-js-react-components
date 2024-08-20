@@ -11,14 +11,14 @@ import i18n from "./i18n/config"
  * be provided by the user application; this wrapper ensures
  * they can be used either way.
  */
-export function externalizeComponent<T>(
-  Component: (props: T) => React.ReactNode,
-) {
-  return (props: T) => (
+export function externalizeComponent<T extends JSX.ElementType>(
+  Component: T,
+): T {
+  return ((props: T) => (
     <NovaComponentsProvider>
-      <Component {...(props as T & JSX.IntrinsicAttributes)} />
+      <Component {...(props as any)} />
     </NovaComponentsProvider>
-  )
+  )) as T
 }
 
 const NovaComponentsProvider: FC<{ children: React.ReactNode }> = ({

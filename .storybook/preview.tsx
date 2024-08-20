@@ -24,7 +24,6 @@ const preview: Preview = {
     },
 
     // From mui integration guide https://storybook.js.org/recipes/@mui/material
-    actions: { argTypesRegex: "^on[A-Z].*" },
     controls: {
       expanded: true, // Adds the description and default columns
       matchers: {

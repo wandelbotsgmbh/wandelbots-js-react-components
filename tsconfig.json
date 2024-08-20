@@ -21,7 +21,8 @@
     "verbatimModuleSyntax": true
   },
   "include": [
-    "src"
+    "src",
+    "stories"
   ],
   "exclude": [
     "node_modules"
