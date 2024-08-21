@@ -11,6 +11,10 @@ const preview: Preview = {
     docs: {
       container: DocsContainer,
     },
+
+    // Duplicate functionality with storybook-dark-mode
+    backgrounds: { disable: true },
+
     darkMode: {
       stylePreview: true,
       darkClass: "dark",

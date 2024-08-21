@@ -12,7 +12,7 @@ export const DocsContainer: FC<PropsWithChildren<DocsContainerProps>> = ({
   children,
   context,
 }) => {
-  const [isDark, setDark] = useState(false)
+  const [isDark, setDark] = useState(true)
 
   useEffect(() => {
     channel.on(DARK_MODE_EVENT_NAME, setDark)

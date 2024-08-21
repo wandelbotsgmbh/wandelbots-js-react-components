@@ -63,10 +63,15 @@ export const novaLightSettings = {
  * any defaults with the provided theme options.
  */
 export function createNovaMuiTheme(opts: ThemeOptions): Theme {
-  const browserPrefersLight =
-    typeof window !== "undefined" &&
-    window.matchMedia?.("(prefers-color-scheme: light)")?.matches
-  const isDark = opts.palette?.mode !== "light" && !browserPrefersLight
+  let isDark = true
+  if (opts.palette?.mode === "light") {
+    isDark = false
+  } else if (opts.palette?.mode !== "dark") {
+    const browserPrefersLight =
+      typeof window !== "undefined" &&
+      window.matchMedia?.("(prefers-color-scheme: light)")?.matches
+    isDark = !browserPrefersLight
+  }
 
   const nova = isDark ? novaDarkSettings : novaLightSettings
 
