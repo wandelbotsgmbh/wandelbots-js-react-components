@@ -1,0 +1,25 @@
+{/* Checkbox.mdx */}
+
+import { Canvas, Meta, Source } from '@storybook/blocks';
+ 
+import * as ThemeStories from './defaultTheme.stories';
+ 
+<Meta title="Theming/Wandelbots MUI Theme"/>
+ 
+# Wandelbots MUI Theme
+
+This page shows how various regular MUI components look with the default Wandelbots MUI theme.
+You can use also [customize or replace](?path=/docs/theming-theming-components--docs) this theme.
+
+<Source dark={true} code={`
+import { ThemeProvider } from "@mui/material"
+import { createNovaMuiTheme } from "@wandelbots/wandelbots-js-react-components"
+
+const theme = createNovaMuiTheme()
+
+<ThemeProvider theme={theme}>
+  ...
+</ThemeProvider>
+`}/>
+
+<Canvas of={ThemeStories.muiComponents} sourceState="none" />

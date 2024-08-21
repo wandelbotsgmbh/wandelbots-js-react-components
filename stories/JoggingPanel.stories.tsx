@@ -6,7 +6,10 @@ const meta: Meta<typeof JoggingPanel> = {
   title: "Jogging/JoggingPanel",
   tags: ["!dev"],
   component: JoggingPanel,
+}
+export default meta
 
+export const Default: StoryObj<typeof JoggingPanel> = {
   args: {
     nova: "https://mock.example.com",
     motionGroupId: "0@mock-ur5e",
@@ -18,11 +21,4 @@ const meta: Meta<typeof JoggingPanel> = {
       },
     },
   },
-  render: function Component(args) {
-    const [, setArgs] = useArgs()
-    return <JoggingPanel {...args} />
-  },
 }
-export default meta
-
-export const Default: StoryObj<typeof JoggingPanel> = {}
