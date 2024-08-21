@@ -4,6 +4,7 @@ import React from "react"
 import { DocsContainer } from "./DocsContainer"
 import { useDarkMode } from "storybook-dark-mode"
 import "./global.css"
+import { createNovaMuiTheme } from "../src"
 
 const preview: Preview = {
   parameters: {
@@ -35,7 +36,7 @@ const preview: Preview = {
   decorators: [
     (Story) => {
       const isDark = useDarkMode()
-      const muiTheme = createTheme({
+      const muiTheme = createNovaMuiTheme({
         palette: { mode: isDark ? "dark" : "light" },
       })
 

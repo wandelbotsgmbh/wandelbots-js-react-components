@@ -1,57 +1,72 @@
 import { Canvas, Meta, Source } from '@storybook/blocks';
 import { createTheme } from '@mui/material/styles';
-import { NovaThemeProvider } from '../src';
  
+import { Default as JoggingStory } from './JoggingPanel.stories';
 import { JoggingStoryExtendedTheme, JoggingStoryReplacedTheme } from './theming.stories';
  
 <Meta title="Theming/Theming components"/>
 
 # Theming components
 
-By default, the UI components defined in this library use the Wandelbots Nova MUI theme,
-even if another MUI theme is present. This is to avoid styling conflicts and ensure a consistent look
-by default.
+The UI components used in this library will respect the [Material UI theme](https://mui.com/material-ui/customization/theming/) of 
+the application they are rendered within. So you can customize the look and feel of the components using the MUI theming system.
 
-You can customize how the components look by either extending the default provided theme or replacing it entirely.
-`NovaThemeProvider` behaves identically to the MUI `ThemeProvider`, but also tells Nova components to respect the theme.
+## Using the Wandelbots default theme
+
+To make the components look like they do in this documentation, apply the provided Wandelbots MUI theme.
+
+<Source dark={true} code={`
+import { createNovaMuiTheme, JoggingPanel } from "@wandelbots/wandelbots-js-react-components"
+
+const theme = createNovaMuiTheme()
+
+<ThemeProvider theme={theme}>
+  <JoggingPanel ... />
+</ThemeProvider>
+`}/>
+
+<Canvas of={JoggingStory} sourceState="none"/>
 
 ## Extending the default theme
 
-If you want to keep the Wandelbots MUI theme defaults and just override a few things:
+You can also use the Wandelbots theme as a base and extend it with your own customizations, or even merge it
+with another theme using MUI [theme composition](https://mui.com/material-ui/customization/theming/#api).
 
 <Source dark={true} code={`
-import { NovaThemeProvider, createNovaMuiTheme } from "@wandelbots/wandelbots-js-react-components"
+import { createNovaMuiTheme, JoggingPanel } from "@wandelbots/wandelbots-js-react-components"
 
 const theme = createNovaMuiTheme({
   palette: {
-    background: {
-      paper: "black",
-    },
-  },
+    primary: {
+      main: "#ff0000"
+    }
+  }
 })
 
-<NovaThemeProvider theme={theme}>
-  <JoggingPanelExample />
-</NovaThemeProvider>
+<ThemeProvider theme={theme}>
+  <JoggingPanel ... />
+</ThemeProvider>
 `}/>
 
 <Canvas of={JoggingStoryExtendedTheme} sourceState="none"/>
 
-## Replacing the default theme
+## Use your own theme
 
-You can also replace the default theming entirely with your own MUI theme, for full customization.
+You could instead use an entirely different MUI theme and style the components as you like.
 
 <Source dark={true} code={`
-import { NovaThemeProvider } from "@wandelbots/wandelbots-js-react-components"
-import { createTheme } from "@mui/material/styles"
+import { createTheme } from '@mui/material/styles';
+import { JoggingPanel } from "@wandelbots/wandelbots-js-react-components"
 
 const theme = createTheme({
-  ...
+  typography: {
+    fontFamily: 'Comic Sans MS'
+  }
 })
 
-<NovaThemeProvider theme={theme}>
-  <JoggingPanelExample />
-</NovaThemeProvider>
+<ThemeProvider theme={theme}>
+  <JoggingPanel ... />
+</ThemeProvider>
 `}/>
 
 <Canvas of={JoggingStoryReplacedTheme} sourceState="none"/>

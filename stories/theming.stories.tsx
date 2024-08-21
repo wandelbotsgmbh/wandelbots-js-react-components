@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react"
-import { JoggingPanel, NovaThemeProvider, createNovaMuiTheme } from "../src"
+import { JoggingPanel, createNovaMuiTheme } from "../src"
 import { Default as JoggingPanelStory } from "./JoggingPanel.stories"
-import { createTheme } from "@mui/material"
+import { createTheme, ThemeProvider } from "@mui/material"
 
 const meta: Meta<typeof JoggingPanel> = {
   component: JoggingPanel,
@@ -15,16 +15,16 @@ export const JoggingStoryExtendedTheme: StoryObj<typeof JoggingPanel> = {
   render: (args) => {
     const theme = createNovaMuiTheme({
       palette: {
-        background: {
-          paper: "black",
+        primary: {
+          main: "#ff0000",
         },
       },
     })
 
     return (
-      <NovaThemeProvider theme={theme}>
+      <ThemeProvider theme={theme}>
         <JoggingPanel {...args} />
-      </NovaThemeProvider>
+      </ThemeProvider>
     )
   },
 }
@@ -33,12 +33,16 @@ export const JoggingStoryReplacedTheme: StoryObj<typeof JoggingPanel> = {
   ...JoggingPanelStory,
   tags: ["!dev", "!autodocs"],
   render: (args) => {
-    const theme = createTheme()
+    const theme = createTheme({
+      typography: {
+        fontFamily: "Comic Sans MS",
+      },
+    })
 
     return (
-      <NovaThemeProvider theme={theme}>
+      <ThemeProvider theme={theme}>
         <JoggingPanel {...args} />
-      </NovaThemeProvider>
+      </ThemeProvider>
     )
   },
 }

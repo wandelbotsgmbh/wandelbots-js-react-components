@@ -1,10 +1,7 @@
-import { createNovaMuiTheme } from "./themes/theming"
-import { useContext, type FC } from "react"
-import { useTheme } from "@mui/material"
+import { type FC } from "react"
 import { I18nextProvider } from "react-i18next"
 // @ts-expect-error invalid type-only import error
 import i18n from "./i18n/config"
-import { NovaThemeProvider, NovaComponentsContext } from "./NovaThemeProvider"
 
 /**
  * Our components require a certain context that may or may not
@@ -26,21 +23,5 @@ export function externalizeComponent<T extends JSX.ElementType>(
 const NovaComponentsProvider: FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const context = useContext(NovaComponentsContext)
-  const theme = useTheme()
-
-  if (context.novaMuiThemeSet) {
-    return <I18nextProvider i18n={i18n}>{children}</I18nextProvider>
-  } else {
-    const defaultTheme = createNovaMuiTheme({
-      palette: {
-        mode: theme.palette.mode,
-      },
-    })
-    return (
-      <NovaThemeProvider theme={defaultTheme}>
-        <I18nextProvider i18n={i18n}>{children}</I18nextProvider>
-      </NovaThemeProvider>
-    )
-  }
+  return <I18nextProvider i18n={i18n}>{children}</I18nextProvider>
 }
