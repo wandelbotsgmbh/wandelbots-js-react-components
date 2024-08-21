@@ -8,8 +8,11 @@ import * as ThemeStories from './defaultTheme.stories';
  
 # Wandelbots MUI Theme
 
-This page shows how various regular MUI components look with the default Wandelbots MUI theme.
-You can use also [customize or replace](?path=/docs/theming-theming-components--docs) this theme.
+The component library comes with a Wandelbots theme for Material UI which is the default theme used in this storybook. 
+If you like, you can use it in your own app to give the components a similar look.
+The theme is accessed by calling `createNovaMuiTheme`, and can be [customized](?path=/docs/theming-theming-components--docs) as needed.
+
+The theme comes in dark and light variants using the standard MUI [`palette.mode` option](https://mui.com/material-ui/customization/dark-mode/). 
 
 <Source dark={true} code={`
 import { ThemeProvider } from "@mui/material"

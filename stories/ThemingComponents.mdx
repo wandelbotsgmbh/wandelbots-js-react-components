@@ -8,14 +8,15 @@ import { JoggingStoryExtendedTheme, JoggingStoryReplacedTheme } from './theming.
 
 # Theming components
 
-The UI components used in this library will respect the [Material UI theme](https://mui.com/material-ui/customization/theming/) of 
-the application they are rendered within. So you can customize the look and feel of the components using the MUI theming system.
+The UI components presented in this library will respect the [Material UI theme](https://mui.com/material-ui/customization/theming/) of 
+the application they are rendered within, allowing customization with the MUI theming system.
 
-## Using the Wandelbots default theme
+## Using the Wandelbots MUI theme
 
-To make the components look like they do in this documentation, apply the provided Wandelbots MUI theme.
+To make the components look like they do in this documentation, just pass the Wandelbots MUI theme to `ThemeProvider`.
 
 <Source dark={true} code={`
+import { ThemeProvider } from "@mui/material";
 import { createNovaMuiTheme, JoggingPanel } from "@wandelbots/wandelbots-js-react-components"
 
 const theme = createNovaMuiTheme()
@@ -33,6 +34,7 @@ You can also use the Wandelbots theme as a base and extend it with your own cust
 with another theme using MUI [theme composition](https://mui.com/material-ui/customization/theming/#api).
 
 <Source dark={true} code={`
+import { ThemeProvider } from "@mui/material";
 import { createNovaMuiTheme, JoggingPanel } from "@wandelbots/wandelbots-js-react-components"
 
 const theme = createNovaMuiTheme({
@@ -55,7 +57,7 @@ const theme = createNovaMuiTheme({
 You could instead use an entirely different MUI theme and style the components as you like.
 
 <Source dark={true} code={`
-import { createTheme } from '@mui/material/styles';
+import { ThemeProvider, createTheme } from "@mui/material";
 import { JoggingPanel } from "@wandelbots/wandelbots-js-react-components"
 
 const theme = createTheme({
