@@ -1,25 +1,38 @@
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import FavoriteIcon from "@mui/icons-material/Favorite";
-import MoreVertIcon from "@mui/icons-material/MoreVert";
-import ShareIcon from "@mui/icons-material/Share";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore"
+import FavoriteIcon from "@mui/icons-material/Favorite"
+import MoreVertIcon from "@mui/icons-material/MoreVert"
+import ShareIcon from "@mui/icons-material/Share"
 import {
-  Avatar, Box, CardHeader, CardMedia,
-  Collapse, Grid, IconButton
-} from "@mui/material";
-import Button from "@mui/material/Button";
-import Card from "@mui/material/Card";
-import CardActions from "@mui/material/CardActions";
-import CardContent from "@mui/material/CardContent";
-import { red } from "@mui/material/colors";
-import Typography from "@mui/material/Typography";
-import React from "react";
+  Avatar,
+  Box,
+  CardHeader,
+  CardMedia,
+  Collapse,
+  Grid,
+  IconButton,
+} from "@mui/material"
+import Button from "@mui/material/Button"
+import Card from "@mui/material/Card"
+import CardActions from "@mui/material/CardActions"
+import CardContent from "@mui/material/CardContent"
+import { red } from "@mui/material/colors"
+import Typography from "@mui/material/Typography"
+import type { Theme } from "@mui/material/styles"
+import React from "react"
 
 export default function CardExample() {
-  const bull = <Box component="span" sx={{
-    display: "inline-block",
-    m: "0 2px",
-    transform: "scale(0.8)",
-  }}>•</Box>
+  const bull = (
+    <Box
+      component="span"
+      sx={{
+        display: "inline-block",
+        m: "0 2px",
+        transform: "scale(0.8)",
+      }}
+    >
+      •
+    </Box>
+  )
   const [expanded, setExpanded] = React.useState(false)
 
   const handleExpandClick = () => {
@@ -42,7 +55,7 @@ export default function CardExample() {
             <Typography variant="h5" component="h2">
               be{bull}nev{bull}o{bull}lent
             </Typography>
-            <Typography sx={{ mb: '12px' }} color="textSecondary">
+            <Typography sx={{ mb: "12px" }} color="textSecondary">
               adjective
             </Typography>
             <Typography variant="body2" component="p">
@@ -76,7 +89,7 @@ export default function CardExample() {
             <Typography variant="h5" component="h2">
               be{bull}nev{bull}o{bull}lent
             </Typography>
-            <Typography sx={{ mb: '12px' }} color="textSecondary">
+            <Typography sx={{ mb: "12px" }} color="textSecondary">
               adjective
             </Typography>
             <Typography variant="body2" component="p">
@@ -139,14 +152,16 @@ export default function CardExample() {
               sx={{
                 transform: expanded ? "rotate(180deg)" : "rotate(0deg)",
                 marginLeft: "auto",
-                transition: (theme) => theme.transitions.create("transform", {
-                  duration: theme.transitions.duration.shortest,
-                }),
+                transition: (theme: Theme) =>
+                  theme.transitions.create("transform", {
+                    duration: theme.transitions.duration.shortest,
+                  }),
               }}
               onClick={handleExpandClick}
               aria-expanded={expanded}
               aria-label="show more"
-              size="large">
+              size="large"
+            >
               <ExpandMoreIcon />
             </IconButton>
           </CardActions>
@@ -186,5 +201,5 @@ export default function CardExample() {
         </Card>
       </Grid>
     </Grid>
-  );
+  )
 }

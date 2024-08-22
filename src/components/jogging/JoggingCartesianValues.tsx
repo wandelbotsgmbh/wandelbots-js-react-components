@@ -8,7 +8,7 @@ import { CopyableText } from "../CopyableText"
 
 export const JoggingCartesianValues = observer(
   ({ store }: { store: JoggingStore }) => {
-    const poseHolderRef = useRef<HTMLPreElement>(null)
+    const poseHolderRef = useRef<HTMLDivElement>(null)
 
     function getCurrentPoseString() {
       const tcpPose =

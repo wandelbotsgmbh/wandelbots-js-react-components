@@ -2,7 +2,6 @@
 
 import type { Theme, ThemeOptions } from "@mui/material/styles"
 import { createTheme } from "@mui/material/styles"
-import defaultsDeep from "lodash-es/defaultsDeep"
 
 /**
  * The palette of named colors we pick from for

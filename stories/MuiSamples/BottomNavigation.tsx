@@ -1,9 +1,9 @@
-import FavoriteIcon from "@mui/icons-material/Favorite";
-import LocationOnIcon from "@mui/icons-material/LocationOn";
-import RestoreIcon from "@mui/icons-material/Restore";
-import BottomNavigation from "@mui/material/BottomNavigation";
-import BottomNavigationAction from "@mui/material/BottomNavigationAction";
-import React from "react";
+import FavoriteIcon from "@mui/icons-material/Favorite"
+import LocationOnIcon from "@mui/icons-material/LocationOn"
+import RestoreIcon from "@mui/icons-material/Restore"
+import BottomNavigation from "@mui/material/BottomNavigation"
+import BottomNavigationAction from "@mui/material/BottomNavigationAction"
+import React, { type ChangeEvent } from "react"
 
 export default function BottomNavigationExample() {
   const [value, setValue] = React.useState(0)
@@ -11,7 +11,7 @@ export default function BottomNavigationExample() {
   return (
     <BottomNavigation
       value={value}
-      onChange={(event, newValue) => {
+      onChange={(_event: ChangeEvent, newValue: number) => {
         setValue(newValue)
       }}
       showLabels

@@ -1,4 +1,3 @@
-import React from "react"
 import AppBarExample from "./AppBar"
 import AccordionExample from "./Accordion"
 import TypographyExample from "./Typography"

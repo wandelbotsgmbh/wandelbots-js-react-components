@@ -1,11 +1,11 @@
-import { NovaTheme } from "./novaTheme";
+import type { NovaThemeSettings } from "./novaTheme"
 
 declare module "@mui/material/styles" {
   interface Theme {
-    nova: NovaTheme
+    nova: NovaThemeSettings
   }
 
   interface ThemeOptions {
-    nova?: NovaTheme
+    nova?: NovaThemeSettings
   }
 }
