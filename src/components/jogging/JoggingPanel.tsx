@@ -8,6 +8,7 @@ import { LoadingCover } from "../LoadingCover"
 import { runInAction } from "mobx"
 import { NovaClient } from "@wandelbots/wandelbots-js"
 import { externalizeComponent } from "../../externalizeComponent"
+import { isString } from "lodash-es"
 
 export type JoggingPanelProps = {
   /** Either an existing NovaClient or the base url of a deployed Nova instance */
@@ -25,10 +26,9 @@ export type JoggingPanelProps = {
  */
 export const JoggingPanel = externalizeComponent(
   observer((props: JoggingPanelProps) => {
-    const nova =
-      props.nova instanceof NovaClient
-        ? props.nova
-        : new NovaClient({ instanceUrl: props.nova })
+    const nova = isString(props.nova)
+      ? new NovaClient({ instanceUrl: props.nova })
+      : props.nova
 
     const state = useLocalObservable(() => ({
       joggingStore: null as JoggingStore | null,
