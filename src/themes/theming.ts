@@ -1,8 +1,7 @@
 "use client"
 
-import type { Theme } from "@mui/material/styles"
+import type { Theme, ThemeOptions } from "@mui/material/styles"
 import { createTheme } from "@mui/material/styles"
-import defaultsDeep from "lodash-es/defaultsDeep"
 
 /**
  * The palette of named colors we pick from for
@@ -26,14 +25,11 @@ const colors = {
 }
 
 /**
- * A Nova components theme is a collection of Nova-specific settings that is
- * not specifically MUI-related, but can be used to construct a MUI
- * theme in turn.
- *
- * This object defines the default Nova theme settings, and the structure
- * of the options here is used to validate alternative themes.
+ * Settings used to construct the Nova default theme.
+ * The dark theme is the default and defines the structure of the
+ * settings.
  */
-export const novaDarkTheme = {
+export const novaDarkSettings = {
   mode: "dark" as "dark" | "light",
   colors: {
     primary: colors.skyblue500,
@@ -46,9 +42,9 @@ export const novaDarkTheme = {
   },
 }
 
-export type NovaTheme = typeof novaDarkTheme
+export type NovaThemeSettings = typeof novaDarkSettings
 
-export const novaLightTheme = {
+export const novaLightSettings = {
   mode: "light",
   colors: {
     primary: colors.skyblue500,
@@ -59,30 +55,26 @@ export const novaLightTheme = {
       panel: colors.white,
     },
   },
-} satisfies NovaTheme
+} satisfies NovaThemeSettings
 
 /**
- * Configure a Nova theme with the given options.
- * If no options are provided, the default dark theme is used.
- * Otherwise, the default dark or light theme is extended with
- * the overrides provided as appropriate.
+ * Create the default Wandelbots Nova Material UI theme, overriding
+ * any defaults with the provided theme options.
  */
-export function createNovaTheme(opts: Partial<NovaTheme> = {}): NovaTheme {
-  const defaults = opts.mode === "light" ? novaLightTheme : novaDarkTheme
-  return defaultsDeep(opts, defaults)
-}
+export function createNovaMuiTheme(opts: ThemeOptions): Theme {
+  let isDark = true
+  if (opts.palette?.mode === "light") {
+    isDark = false
+  } else if (opts.palette?.mode !== "dark") {
+    const browserPrefersLight =
+      typeof window !== "undefined" &&
+      window.matchMedia?.("(prefers-color-scheme: light)")?.matches
+    isDark = !browserPrefersLight
+  }
 
-/**
- * Turn a set of Nova theme settings into a Material UI theme.
- *
- * The original Nova settings are available on the resulting MUI
- * theme object under the `nova` key, if needed.
- */
-export function createMUIThemeFromNova(novaTheme: NovaTheme): Theme {
-  const nova = novaTheme
-  const isDark = nova.mode === "dark"
+  const nova = isDark ? novaDarkSettings : novaLightSettings
 
-  return createTheme({
+  const theme = createTheme({
     palette: {
       mode: nova.mode,
       primary: {
@@ -171,4 +163,10 @@ export function createMUIThemeFromNova(novaTheme: NovaTheme): Theme {
     },
     nova,
   })
+
+  if (opts) {
+    return createTheme(theme, opts)
+  } else {
+    return theme
+  }
 }

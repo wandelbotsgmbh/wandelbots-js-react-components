@@ -1,0 +1,28 @@
+{/* Checkbox.mdx */}
+
+import { Canvas, Meta, Source } from '@storybook/blocks';
+ 
+import * as ThemeStories from './defaultTheme.stories';
+ 
+<Meta title="Theming/Wandelbots MUI Theme"/>
+ 
+# Wandelbots MUI Theme
+
+The component library comes with a Wandelbots theme for Material UI which is the default theme used in this storybook. 
+If you like, you can use it in your own app to give the components a similar look.
+The theme is accessed by calling `createNovaMuiTheme`, and can be [customized](?path=/docs/theming-theming-components--docs) as needed.
+
+The theme comes in dark and light variants using the standard MUI [`palette.mode` option](https://mui.com/material-ui/customization/dark-mode/). 
+
+<Source dark={true} code={`
+import { ThemeProvider } from "@mui/material"
+import { createNovaMuiTheme } from "@wandelbots/wandelbots-js-react-components"
+
+const theme = createNovaMuiTheme()
+
+<ThemeProvider theme={theme}>
+  ...
+</ThemeProvider>
+`}/>
+
+<Canvas of={ThemeStories.muiComponents} sourceState="none" />

@@ -10,7 +10,7 @@ export const CopyableText = forwardRef(
       label?: string
       value: string
     },
-    ref: React.ForwardedRef<HTMLPreElement>,
+    ref: React.ForwardedRef<HTMLDivElement>,
   ) => {
     return (
       <>

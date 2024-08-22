@@ -7,7 +7,6 @@ const config: StorybookConfig = {
   ],
   addons: [
     "@storybook/addon-essentials",
-    "@chromatic-com/storybook",
     "storybook-preset-inline-svg",
     "storybook-dark-mode",
   ],
