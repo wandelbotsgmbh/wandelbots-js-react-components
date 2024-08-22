@@ -24,8 +24,7 @@
     "checkMdx": true
   },
   "include": [
-    "src",
-    "stories"
+    "src"
   ],
   "exclude": [
     "node_modules"
