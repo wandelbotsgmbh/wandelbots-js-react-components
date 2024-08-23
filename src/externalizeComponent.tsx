@@ -1,7 +1,4 @@
-import { ThemeProvider } from "@emotion/react"
-import { createMUIThemeFromNova, createNovaTheme } from "./themes/theming"
-import type { FC } from "react"
-import { useTheme } from "@mui/material"
+import { type FC } from "react"
 import { I18nextProvider } from "react-i18next"
 // @ts-expect-error invalid type-only import error
 import i18n from "./i18n/config"
@@ -26,14 +23,5 @@ export function externalizeComponent<T extends JSX.ElementType>(
 const NovaComponentsProvider: FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const theme = useTheme()
-  const defaultNovaTheme = createNovaTheme({
-    mode: theme.palette.mode,
-  })
-  const defaultTheme = createMUIThemeFromNova(defaultNovaTheme)
-  return (
-    <ThemeProvider theme={defaultTheme}>
-      <I18nextProvider i18n={i18n}>{children}</I18nextProvider>
-    </ThemeProvider>
-  )
+  return <I18nextProvider i18n={i18n}>{children}</I18nextProvider>
 }

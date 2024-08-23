@@ -6,3 +6,6 @@ tsconfig.tsbuildinfo
 dist
 tmp
 storybook-static
+
+# Local Netlify folder
+.netlify

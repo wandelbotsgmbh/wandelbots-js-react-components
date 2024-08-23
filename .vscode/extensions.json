@@ -5,7 +5,8 @@
   "recommendations": [
     "dbaeumer.vscode-eslint",
     "rvest.vs-code-prettier-eslint",
-    "lokalise.i18n-ally"
+    "lokalise.i18n-ally",
+    "unifiedjs.vscode-mdx"
   ],
   // List of extensions recommended by VS Code that should not be recommended for users of this workspace.
   "unwantedRecommendations": []

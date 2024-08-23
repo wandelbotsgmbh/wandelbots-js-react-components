@@ -1,11 +1,8 @@
-import type {
-  DocsContainerProps} from "@storybook/blocks";
-import {
-  DocsContainer as BaseContainer
-} from "@storybook/blocks"
+import type { DocsContainerProps } from "@storybook/blocks"
+import { DocsContainer as BaseContainer } from "@storybook/blocks"
 import { addons } from "@storybook/preview-api"
 import { themes } from "@storybook/theming"
-import type { FC, PropsWithChildren} from "react";
+import type { FC, PropsWithChildren } from "react"
 import React, { useEffect, useState } from "react"
 import { DARK_MODE_EVENT_NAME } from "storybook-dark-mode"
 
@@ -15,7 +12,7 @@ export const DocsContainer: FC<PropsWithChildren<DocsContainerProps>> = ({
   children,
   context,
 }) => {
-  const [isDark, setDark] = useState(false)
+  const [isDark, setDark] = useState(true)
 
   useEffect(() => {
     channel.on(DARK_MODE_EVENT_NAME, setDark)

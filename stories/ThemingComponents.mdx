@@ -1,0 +1,74 @@
+import { Canvas, Meta, Source } from '@storybook/blocks';
+import { createTheme } from '@mui/material/styles';
+ 
+import { Default as JoggingStory } from './JoggingPanel.stories';
+import { JoggingStoryExtendedTheme, JoggingStoryReplacedTheme } from './theming.stories';
+ 
+<Meta title="Theming/Theming components"/>
+
+# Theming components
+
+The UI components presented in this library will respect the [Material UI theme](https://mui.com/material-ui/customization/theming/) of 
+the application they are rendered within, allowing customization with the MUI theming system.
+
+## Using the Wandelbots MUI theme
+
+To make the components look exactly like they do in the storybook, pass the Wandelbots MUI theme to `ThemeProvider`.
+
+<Source dark={true} code={`
+import { ThemeProvider } from "@mui/material";
+import { createNovaMuiTheme, JoggingPanel } from "@wandelbots/wandelbots-js-react-components"
+
+const theme = createNovaMuiTheme()
+
+<ThemeProvider theme={theme}>
+  <JoggingPanel ... />
+</ThemeProvider>
+`}/>
+
+<Canvas of={JoggingStory} sourceState="none"/>
+
+## Extending the default theme
+
+You can also use the Wandelbots theme as a base and extend it with your own customizations, or even merge it
+with another theme using MUI [theme composition](https://mui.com/material-ui/customization/theming/#api).
+
+<Source dark={true} code={`
+import { ThemeProvider } from "@mui/material";
+import { createNovaMuiTheme, JoggingPanel } from "@wandelbots/wandelbots-js-react-components"
+
+const theme = createNovaMuiTheme({
+  palette: {
+    primary: {
+      main: "#ff0000"
+    }
+  }
+})
+
+<ThemeProvider theme={theme}>
+  <JoggingPanel ... />
+</ThemeProvider>
+`}/>
+
+<Canvas of={JoggingStoryExtendedTheme} sourceState="none"/>
+
+## Use your own theme
+
+You could instead use an entirely different MUI theme and style the components as you like.
+
+<Source dark={true} code={`
+import { ThemeProvider, createTheme } from "@mui/material";
+import { JoggingPanel } from "@wandelbots/wandelbots-js-react-components"
+
+const theme = createTheme({
+  typography: {
+    fontFamily: 'Comic Sans MS'
+  }
+})
+
+<ThemeProvider theme={theme}>
+  <JoggingPanel ... />
+</ThemeProvider>
+`}/>
+
+<Canvas of={JoggingStoryReplacedTheme} sourceState="none"/>
