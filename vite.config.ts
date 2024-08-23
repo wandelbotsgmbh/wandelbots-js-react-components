@@ -1,8 +1,8 @@
-import { defineConfig } from 'vite'
-import { resolve } from 'path'
-import react from '@vitejs/plugin-react'
-import svgr from "vite-plugin-svgr";
-import pkg from './package.json';
+import { defineConfig } from "vite"
+import { resolve } from "path"
+import react from "@vitejs/plugin-react"
+import svgr from "vite-plugin-svgr"
+import pkg from "./package.json"
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -10,18 +10,33 @@ export default defineConfig({
     copyPublicDir: false,
     lib: {
       // Could also be a dictionary or array of multiple entry points
-      entry: resolve(__dirname, 'src/index.ts'),
-      formats: ['es', 'cjs'],
+      entry: resolve(__dirname, "src/index.ts"),
+      formats: ["es", "cjs"],
       fileName: "index",
     },
     rollupOptions: {
-      external: Object.keys(pkg.dependencies).concat(Object.keys(pkg.peerDependencies).concat(Object.keys(pkg.devDependencies))),
+      external: Object.keys(pkg.dependencies).concat(
+        Object.keys(pkg.peerDependencies).concat(
+          Object.keys(pkg.devDependencies),
+        ),
+      ),
     },
-    sourcemap: true
+    sourcemap: true,
   },
-  plugins: [react(), svgr({
-    // svgr options: https://react-svgr.com/docs/options/
-    svgrOptions: { exportType: "default", ref: true, svgo: false, titleProp: true },
-    include: "**/*.svg",
-  })],
+  optimizeDeps: {
+    exclude: ["node_modules/.cache/storybook"],
+  },
+  plugins: [
+    react(),
+    svgr({
+      // svgr options: https://react-svgr.com/docs/options/
+      svgrOptions: {
+        exportType: "default",
+        ref: true,
+        svgo: false,
+        titleProp: true,
+      },
+      include: "**/*.svg",
+    }),
+  ],
 })
