@@ -11,6 +11,7 @@ import { Yaskawa_AR1440 } from "./Yaskawa_AR1440"
 import { Yaskawa_AR1730 } from "./Yaskawa_AR1730"
 import { Yaskawa_AR2010 } from "./Yaskawa_AR2010"
 import { Yaskawa_AR3120 } from "./Yaskawa_AR3120"
+import { Yaskawa_GP50 } from "./Yaskawa_GP50"
 import { FANUC_CRX10iA } from "./FANUC_CRX10iA"
 import { FANUC_CRX20iAL } from "./FANUC_CRX20iAL"
 import { FANUC_CRX25iA } from "./FANUC_CRX25iA"
@@ -204,6 +205,9 @@ export const SupportedRobot = externalizeComponent(
         break
       case "Yaskawa_AR3120":
         Robot = Yaskawa_AR3120
+        break
+      case "Yaskawa_GP50":
+        Robot = Yaskawa_GP50
         break
       case "FANUC_CRX10iA":
         Robot = FANUC_CRX10iA
