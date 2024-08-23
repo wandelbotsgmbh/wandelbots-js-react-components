@@ -66,7 +66,7 @@ export const JoggingCartesianTab = observer(
         store.selectedDiscreteIncrement ? "increment" : "cartesian",
         {
           tcpId: store.selectedTcpId,
-          coordSystemId: store.selectedCoordSystemId,
+          coordSystemId: store.activeCoordSystemId,
         },
       )
     }
@@ -90,7 +90,7 @@ export const JoggingCartesianTab = observer(
         await store.jogger.runIncrementalCartesianMotion({
           currentTcpPose: tcpPose,
           currentJoints: jointPosition,
-          coordSystemId: store.selectedCoordSystemId,
+          coordSystemId: store.activeCoordSystemId,
           velocityInRelevantUnits: store.velocityInCurrentUnits,
           axis: opts.axis,
           direction: opts.direction,
