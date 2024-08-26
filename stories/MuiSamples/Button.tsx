@@ -1,26 +1,17 @@
-import CloudUploadIcon from "@mui/icons-material/CloudUpload";
-import DeleteIcon from "@mui/icons-material/Delete";
-import KeyboardVoiceIcon from "@mui/icons-material/KeyboardVoice";
-import SaveIcon from "@mui/icons-material/Save";
-import { Box, Typography } from "@mui/material";
-import Button from "@mui/material/Button";
-import React from "react";
-
-const groupStyle = {
-  mb: 2,
-  '& > *': {
-    m: 1
-  }
-};
+import CloudUploadIcon from "@mui/icons-material/CloudUpload"
+import DeleteIcon from "@mui/icons-material/Delete"
+import KeyboardVoiceIcon from "@mui/icons-material/KeyboardVoice"
+import SaveIcon from "@mui/icons-material/Save"
+import { Stack, Typography } from "@mui/material"
+import Button from "@mui/material/Button"
 
 export default function ButtonsExample() {
-
   return (
     <div>
       <Typography variant="h6" id="contained-buttons">
         Contained Buttons
       </Typography>
-      <Box sx={groupStyle}>
+      <Stack direction="row" spacing={1} marginBottom={2}>
         <Button variant="contained">Default</Button>
         <Button variant="contained" color="primary">
           Primary
@@ -34,12 +25,12 @@ export default function ButtonsExample() {
         <Button variant="contained" color="primary" href="#contained-buttons">
           Link
         </Button>
-      </Box>
+      </Stack>
 
       <Typography variant="h6" id="text-buttons">
         Text Buttons
       </Typography>
-      <Box sx={groupStyle}>
+      <Stack direction="row" spacing={1} marginBottom={2}>
         <Button>Default</Button>
         <Button color="primary">Primary</Button>
         <Button color="secondary">Secondary</Button>
@@ -47,12 +38,12 @@ export default function ButtonsExample() {
         <Button color="primary" href="#text-buttons">
           Link
         </Button>
-      </Box>
+      </Stack>
 
       <Typography variant="h6" id="outlined-buttons">
         Outlined Buttons
       </Typography>
-      <Box sx={groupStyle}>
+      <Stack direction="row" spacing={1} marginBottom={2}>
         <Button variant="outlined">Default</Button>
         <Button variant="outlined" color="primary">
           Primary
@@ -66,12 +57,12 @@ export default function ButtonsExample() {
         <Button variant="outlined" color="primary" href="#outlined-buttons">
           Link
         </Button>
-      </Box>
+      </Stack>
 
       <Typography variant="h6" id="buttons-with-icons">
         Buttons with icons and label
       </Typography>
-      <Box sx={groupStyle}>
+      <Stack direction="row" spacing={1} marginBottom={2}>
         <Button
           variant="contained"
           color="secondary"
@@ -106,7 +97,7 @@ export default function ButtonsExample() {
         >
           Save
         </Button>
-      </Box>
+      </Stack>
     </div>
-  );
+  )
 }
