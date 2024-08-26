@@ -23,6 +23,8 @@ type WandelscriptEditorProps = {
   monacoSetup?: (monaco: Monaco) => void
 }
 
+const Editor = lazy(() => import("@monaco-editor/react"))
+
 /** A Monaco (VSCode-style) embedded code editor with Wandelscript syntax highlighting */
 export const WandelscriptEditor = externalizeComponent(
   (props: WandelscriptEditorProps) => {
@@ -35,8 +37,6 @@ export const WandelscriptEditor = externalizeComponent(
       useState<BundledTheme>("dark-plus")
     const targetShikiTheme =
       theme.palette.mode === "dark" ? "dark-plus" : "light-plus"
-
-    const Editor = lazy(() => import("@monaco-editor/react"))
 
     async function setupEditor(monaco: Monaco) {
       const [{ createHighlighter }, { shikiToMonaco }] = await Promise.all([
