@@ -1,5 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react"
 import { WandelscriptEditor } from "../src"
+import { useArgs } from "@storybook/preview-api"
+import type { editor } from "monaco-editor"
 
 const meta: Meta<typeof WandelscriptEditor> = {
   title: "Wandelscript/WandelscriptEditor",
@@ -37,10 +39,23 @@ export const Editor: StoryObj<typeof WandelscriptEditor> = {
   args: {
     code: defaultCode,
   },
-  render: (props) => {
+  render: function Component(args) {
+    const [, setArgs] = useArgs()
+
+    function onChange(
+      code: string | undefined,
+      ev: editor.IModelContentChangedEvent,
+    ) {
+      if (args.onChange) {
+        args.onChange(code, ev)
+      } else {
+        setArgs({ code })
+      }
+    }
+
     return (
       <div style={{ height: "400px" }}>
-        <WandelscriptEditor {...props} />
+        <WandelscriptEditor {...args} onChange={onChange} />
       </div>
     )
   },
