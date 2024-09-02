@@ -63,7 +63,7 @@ export const JoggingCartesianTab = observer(
 
     async function connectJogger() {
       store.jogger.setJoggingMode(
-        store.selectedDiscreteIncrement ? "increment" : "cartesian",
+        store.activeDiscreteIncrement ? "increment" : "cartesian",
         {
           tcpId: store.selectedTcpId,
           coordSystemId: store.activeCoordSystemId,
@@ -113,8 +113,8 @@ export const JoggingCartesianTab = observer(
 
       connectJogger()
 
-      if (store.selectedDiscreteIncrement) {
-        return runIncrementalCartesianJog(opts, store.selectedDiscreteIncrement)
+      if (store.activeDiscreteIncrement) {
+        return runIncrementalCartesianJog(opts, store.activeDiscreteIncrement)
       }
 
       if (opts.motionType === "translate") {
@@ -135,7 +135,7 @@ export const JoggingCartesianTab = observer(
     async function stopJogging() {
       if (store.isLocked) return
 
-      if (store.selectedDiscreteIncrement) {
+      if (store.activeDiscreteIncrement) {
         return
       }
 
