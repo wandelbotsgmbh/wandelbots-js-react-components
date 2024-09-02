@@ -70,7 +70,7 @@ export const JoggingPanel = externalizeComponent(
         currentTab,
         selectedTcpId,
         activeCoordSystemId,
-        selectedDiscreteIncrement,
+        activeDiscreteIncrement,
       } = state.joggingStore
 
       if (currentTab.id !== "cartesian" && currentTab.id !== "joint") return
@@ -80,7 +80,7 @@ export const JoggingPanel = externalizeComponent(
         coordSystemId: activeCoordSystemId,
       }
 
-      if (selectedDiscreteIncrement && currentTab.id === "cartesian") {
+      if (activeDiscreteIncrement && currentTab.id === "cartesian") {
         state.joggingStore.jogger.setJoggingMode(
           "increment",
           cartesianJoggingOpts,
@@ -95,7 +95,7 @@ export const JoggingPanel = externalizeComponent(
       state.joggingStore?.currentTab,
       state.joggingStore?.selectedTcpId,
       state.joggingStore?.activeCoordSystemId,
-      state.joggingStore?.selectedDiscreteIncrement,
+      state.joggingStore?.activeDiscreteIncrement,
     ])
 
     if (!state.joggingStore || state.loadingError) {

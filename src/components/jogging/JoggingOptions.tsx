@@ -117,7 +117,7 @@ export const JoggingOptions = observer(({ store }: { store: JoggingStore }) => {
           <InputLabel id="jogging-increment-select">{"Increment"}</InputLabel>
           <Select
             labelId="jogging-increment-select"
-            value={store.selectedIncrementId}
+            value={store.activeDiscreteIncrement?.id || "continuous"}
             onChange={(event) => {
               store.setSelectedIncrementId(
                 event.target.value as IncrementOptionId,
@@ -129,13 +129,15 @@ export const JoggingOptions = observer(({ store }: { store: JoggingStore }) => {
               {t("Jogging.Increment.Continuous.dd")}
             </MenuItem>
 
-            {store.discreteIncrementOptions.map((inc) => (
-              <MenuItem key={inc.id} value={inc.id}>
-                {store.currentMotionType === "translate"
-                  ? `${inc.mm}mm`
-                  : `${inc.degrees}°`}
-              </MenuItem>
-            ))}
+            {store.selectedOrientation === "tool"
+              ? null
+              : store.discreteIncrementOptions.map((inc) => (
+                  <MenuItem key={inc.id} value={inc.id}>
+                    {store.currentMotionType === "translate"
+                      ? `${inc.mm}mm`
+                      : `${inc.degrees}°`}
+                  </MenuItem>
+                ))}
           </Select>
         </Stack>
       </Stack>

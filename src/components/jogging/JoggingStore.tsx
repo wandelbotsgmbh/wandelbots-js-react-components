@@ -251,10 +251,10 @@ export class JoggingStore {
     return keyBy(this.tcps, (tcp) => tcp.id)
   }
 
-  get selectedDiscreteIncrement() {
-    return discreteIncrementOptions.find(
-      (d) => d.id === this.selectedIncrementId,
-    )
+  get activeDiscreteIncrement() {
+    return this.selectedOrientation === "tool"
+      ? undefined
+      : discreteIncrementOptions.find((d) => d.id === this.selectedIncrementId)
   }
 
   /** The selected rotation velocity converted to radians per second */
