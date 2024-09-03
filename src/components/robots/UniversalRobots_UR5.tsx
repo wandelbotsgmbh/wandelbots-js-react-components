@@ -11,6 +11,7 @@ export function UniversalRobots_UR5({
 }: RobotProps) {
   const gltf = useGLTF(modelURL) as any
   const nodes = gltf.nodes
+  const materials = gltf.materials
 
   function setRotation(jointObjects: THREE.Object3D[], jointValues: number[]) {
     jointObjects.forEach(
@@ -27,83 +28,236 @@ export function UniversalRobots_UR5({
       />
       <group {...props} dispose={null}>
         <group name="Scene">
-          <group name="UR5" rotation={[Math.PI / 2, 0, 0]}>
-            <animated.group name="UR5_J01" rotation={[-Math.PI / 2, 0, 0]}>
-              <animated.group
-                name="UR5_J02"
-                position={[0, 0.089, 0]}
-                rotation={[Math.PI / 2, 0, 0]}
-              >
-                <animated.group name="UR5_J03" position={[-0.425, 0, 0]}>
-                  <animated.group name="UR5_J04" position={[-0.392, 0, 0]}>
-                    <animated.group
-                      name="UR5_J05"
-                      position={[0, 0.109, 0]}
-                      rotation={[Math.PI / 2, 0, 0]}
-                    >
-                      <animated.group
-                        name="UR5_J06"
-                        position={[0, 0.095, 0]}
-                        rotation={[-Math.PI / 2, 0, 0]}
-                      >
-                        <group name="UR5_FLG" position={[0, 0.082, 0]} />
-                        <mesh
-                          name="UR5_L06"
-                          castShadow
-                          receiveShadow
-                          geometry={nodes.UR5_L06.geometry}
-                          material={nodes.UR5_L06.material}
-                        />
-                      </animated.group>
-                      <mesh
-                        name="UR5_L05"
-                        castShadow
-                        receiveShadow
-                        geometry={nodes.UR5_L05.geometry}
-                        material={nodes.UR5_L05.material}
-                      />
-                    </animated.group>
-                    <mesh
-                      name="UR5_L04"
-                      castShadow
-                      receiveShadow
-                      geometry={nodes.UR5_L04.geometry}
-                      material={nodes.UR5_L04.material}
-                    />
-                  </animated.group>
-                  <mesh
-                    name="UR5_L03"
-                    castShadow
-                    receiveShadow
-                    geometry={nodes.UR5_L03.geometry}
-                    material={nodes.UR5_L03.material}
-                  />
-                </animated.group>
-                <mesh
-                  name="UR5_L02"
-                  castShadow
-                  receiveShadow
-                  geometry={nodes.UR5_L02.geometry}
-                  material={nodes.UR5_L02.material}
-                />
-              </animated.group>
+          <animated.group name="UNIVERSALROBOTS_UR5CB3_J00">
+            <animated.group name="link_1">
               <mesh
-                name="UR5_L01"
+                name="visuals_1"
                 castShadow
                 receiveShadow
-                geometry={nodes.UR5_L01.geometry}
-                material={nodes.UR5_L01.material}
+                geometry={nodes.visuals_1.geometry}
+                material={materials.universalrobots_darkgrey}
+              />
+              <mesh
+                name="visuals_1_1"
+                castShadow
+                receiveShadow
+                geometry={nodes.visuals_1_1.geometry}
+                material={materials.universalrobots_black}
+              />
+              <mesh
+                name="visuals_1_2"
+                castShadow
+                receiveShadow
+                geometry={nodes.visuals_1_2.geometry}
+                material={materials.universalrobots_aluminum}
+              />
+              <mesh
+                name="visuals_1_3"
+                castShadow
+                receiveShadow
+                geometry={nodes.visuals_1_3.geometry}
+                material={materials.universalrobots_lightblue}
               />
             </animated.group>
-            <mesh
-              name="UR5_L00"
-              castShadow
-              receiveShadow
-              geometry={nodes.UR5_L00.geometry}
-              material={nodes.UR5_L00.material}
-              rotation={[-Math.PI / 2, 0, 0]}
-            />
-          </group>
+            <animated.group
+              name="UNIVERSALROBOTS_UR5CB3_J01"
+              position={[0, 0.089, 0]}
+              rotation={[Math.PI / 2, 0, 0]}
+            >
+              <animated.group
+                name="link_2"
+                position={[0, 0, 0.089]}
+                rotation={[-Math.PI / 2, 0, 0]}
+              >
+                <mesh
+                  name="visuals_2"
+                  castShadow
+                  receiveShadow
+                  geometry={nodes.visuals_2.geometry}
+                  material={materials.universalrobots_stainlesssteel}
+                />
+                <mesh
+                  name="visuals_2_1"
+                  castShadow
+                  receiveShadow
+                  geometry={nodes.visuals_2_1.geometry}
+                  material={materials.universalrobots_lightblue}
+                />
+                <mesh
+                  name="visuals_2_2"
+                  castShadow
+                  receiveShadow
+                  geometry={nodes.visuals_2_2.geometry}
+                  material={materials.universalrobots_aluminum}
+                />
+                <mesh
+                  name="visuals_2_3"
+                  castShadow
+                  receiveShadow
+                  geometry={nodes.visuals_2_3.geometry}
+                  material={materials.universalrobots_black}
+                />
+                <mesh
+                  name="visuals_2_4"
+                  castShadow
+                  receiveShadow
+                  geometry={nodes.visuals_2_4.geometry}
+                  material={materials.universalrobots_darkgrey}
+                />
+              </animated.group>
+              <animated.group
+                name="UNIVERSALROBOTS_UR5CB3_J02"
+                position={[-0.425, 0, 0]}
+              >
+                <animated.group
+                  name="link_3"
+                  position={[0.425, 0, 0.089]}
+                  rotation={[-Math.PI / 2, 0, 0]}
+                >
+                  <mesh
+                    name="visuals_3"
+                    castShadow
+                    receiveShadow
+                    geometry={nodes.visuals_3.geometry}
+                    material={materials.universalrobots_lightblue}
+                  />
+                  <mesh
+                    name="visuals_3_1"
+                    castShadow
+                    receiveShadow
+                    geometry={nodes.visuals_3_1.geometry}
+                    material={materials.universalrobots_black}
+                  />
+                  <mesh
+                    name="visuals_3_2"
+                    castShadow
+                    receiveShadow
+                    geometry={nodes.visuals_3_2.geometry}
+                    material={materials.universalrobots_aluminum}
+                  />
+                  <mesh
+                    name="visuals_3_3"
+                    castShadow
+                    receiveShadow
+                    geometry={nodes.visuals_3_3.geometry}
+                    material={materials.universalrobots_darkgrey}
+                  />
+                  <mesh
+                    name="visuals_3_4"
+                    castShadow
+                    receiveShadow
+                    geometry={nodes.visuals_3_4.geometry}
+                    material={materials.universalrobots_stainlesssteel}
+                  />
+                </animated.group>
+                <animated.group
+                  name="UNIVERSALROBOTS_UR5CB3_J03"
+                  position={[-0.392, 0, 0]}
+                >
+                  <animated.group
+                    name="link_4"
+                    position={[0.817, 0, 0.089]}
+                    rotation={[-Math.PI / 2, 0, 0]}
+                  >
+                    <mesh
+                      name="visuals_4"
+                      castShadow
+                      receiveShadow
+                      geometry={nodes.visuals_4.geometry}
+                      material={materials.universalrobots_darkgrey}
+                    />
+                    <mesh
+                      name="visuals_4_1"
+                      castShadow
+                      receiveShadow
+                      geometry={nodes.visuals_4_1.geometry}
+                      material={materials.universalrobots_aluminum}
+                    />
+                    <mesh
+                      name="visuals_4_2"
+                      castShadow
+                      receiveShadow
+                      geometry={nodes.visuals_4_2.geometry}
+                      material={materials.universalrobots_lightblue}
+                    />
+                    <mesh
+                      name="visuals_4_3"
+                      castShadow
+                      receiveShadow
+                      geometry={nodes.visuals_4_3.geometry}
+                      material={materials.universalrobots_black}
+                    />
+                  </animated.group>
+                  <animated.group
+                    name="UNIVERSALROBOTS_UR5CB3_J04"
+                    position={[0, 0.109, 0]}
+                    rotation={[Math.PI / 2, 0, 0]}
+                  >
+                    <animated.group
+                      name="link_5"
+                      position={[0.817, 0.089, 0.109]}
+                      rotation={[Math.PI, 0, 0]}
+                    >
+                      <mesh
+                        name="visuals_5"
+                        castShadow
+                        receiveShadow
+                        geometry={nodes.visuals_5.geometry}
+                        material={materials.universalrobots_darkgrey}
+                      />
+                      <mesh
+                        name="visuals_5_1"
+                        castShadow
+                        receiveShadow
+                        geometry={nodes.visuals_5_1.geometry}
+                        material={materials.universalrobots_lightblue}
+                      />
+                      <mesh
+                        name="visuals_5_2"
+                        castShadow
+                        receiveShadow
+                        geometry={nodes.visuals_5_2.geometry}
+                        material={materials.universalrobots_aluminum}
+                      />
+                      <mesh
+                        name="visuals_5_3"
+                        castShadow
+                        receiveShadow
+                        geometry={nodes.visuals_5_3.geometry}
+                        material={materials.universalrobots_black}
+                      />
+                    </animated.group>
+                    <animated.group
+                      name="UNIVERSALROBOTS_UR5CB3_J05"
+                      position={[0, 0.095, 0]}
+                      rotation={[-Math.PI / 2, 0, 0]}
+                    >
+                      <mesh
+                        name="link_6"
+                        castShadow
+                        receiveShadow
+                        geometry={nodes.link_6.geometry}
+                        material={materials.universalrobots_stainlesssteel}
+                        position={[0.817, -0.109, -0.005]}
+                        rotation={[-Math.PI / 2, 0, 0]}
+                      />
+                      <animated.group
+                        name="UNIVERSALROBOTS_UR5CB3_FLG"
+                        position={[0, 0.082, 0]}
+                      />
+                    </animated.group>
+                  </animated.group>
+                </animated.group>
+              </animated.group>
+            </animated.group>
+          </animated.group>
+          <mesh
+            name="link_0"
+            castShadow
+            receiveShadow
+            geometry={nodes.link_0.geometry}
+            material={materials.universalrobots_aluminum}
+          />
         </group>
       </group>
     </>
