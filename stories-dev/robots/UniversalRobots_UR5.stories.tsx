@@ -1,18 +1,12 @@
 import type { Meta, StoryObj } from "@storybook/react"
 import { Euler, Vector3, WebGLRenderer } from "three"
-import { SupportedRobot } from "../src"
-import type {
-  Joints,
-  MotionGroupStateJointLimitReached,
-  MotionGroupStateResponse,
-  MotionVector,
-  TcpPose,
-} from "@wandelbots/wandelbots-js"
-import { Setup } from "../src/Setup"
+import { SupportedRobot } from "../../src"
+import type { MotionGroupStateResponse } from "@wandelbots/wandelbots-js"
+import { Setup } from "../../src/Setup"
 
 export default {
   tags: ["!dev"],
-  title: "3D View/SupportedRobot",
+  title: "WIP/UniversalRobots_UR5",
   component: SupportedRobot,
   decorators: [
     (Story) => (
@@ -35,8 +29,6 @@ export default {
   ],
 } satisfies Meta<typeof SupportedRobot>
 
-type Story = StoryObj<typeof SupportedRobot>
-
 function SupportedRobotScene(
   props: React.ComponentProps<typeof SupportedRobot>,
 ) {
@@ -46,24 +38,24 @@ function SupportedRobotScene(
       controller: "",
       joint_position: {
         joints: [0, 0, 0, 0, 0, 0],
-      } as Joints,
+      },
       joint_velocity: {
         joints: [0, 0, 0, 0, 0, 0],
-      } as Joints,
+      },
       tcp_pose: {
         position: { x: 0, y: 0, z: 0 },
         orientation: { x: 0, y: 0, z: 0 },
         coordinate_system: "world",
         tcp: "flange",
-      } as TcpPose,
+      },
       velocity: {
         linear: { x: 0, y: 0, z: 0 },
         angular: { x: 0, y: 0, z: 0 },
         coordinate_system: "world",
-      } as MotionVector,
+      },
       joint_limit_reached: {
         limit_reached: [false, false, false, false, false, false],
-      } as MotionGroupStateJointLimitReached,
+      },
     },
   }
 
@@ -74,43 +66,43 @@ function SupportedRobotScene(
       dhParameters={[
         {
           a: 0,
-          d: 0,
+          d: 89.159000000000006,
           alpha: 1.5707963267948966,
           theta: 0,
           reverse_rotation_direction: false,
         },
         {
-          a: 710,
+          a: -425,
           d: 0,
           alpha: 0,
-          theta: 1.5707963267948966,
+          theta: 0,
           reverse_rotation_direction: false,
         },
         {
-          a: 0,
+          a: -392.25,
           d: 0,
-          alpha: -1.5707963267948966,
+          alpha: 0,
           theta: 0,
           reverse_rotation_direction: false,
         },
         {
           a: 0,
-          d: -540,
+          d: 109.15000000000001,
           alpha: 1.5707963267948966,
           theta: 0,
           reverse_rotation_direction: false,
         },
         {
           a: 0,
-          d: 150,
+          d: 94.650000000000006,
           alpha: -1.5707963267948966,
           theta: 0,
           reverse_rotation_direction: false,
         },
         {
           a: 0,
-          d: -160,
-          alpha: 3.141592653589793,
+          d: 82.299999999999997,
+          alpha: 0,
           theta: 0,
           reverse_rotation_direction: false,
         },
@@ -119,10 +111,10 @@ function SupportedRobotScene(
   )
 }
 
-export const SupportedRobotSceneSt = {
+export const UR5Story: StoryObj<typeof SupportedRobotScene> = {
   args: {
-    modelFromController: "FANUC_CRX25iAL",
+    modelFromController: "UniversalRobots_UR5",
   },
   render: (args) => <SupportedRobotScene {...args} />,
   name: "Default",
-} satisfies Story
+}

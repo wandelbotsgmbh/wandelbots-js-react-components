@@ -55,6 +55,7 @@
     "@storybook/react-vite": "^8.2.9",
     "@storybook/test": "^8.2.9",
     "@storybook/test-runner": "^0.19.1",
+    "@storybook/types": "^8.2.9",
     "@svgr/rollup": "^8.1.0",
     "@types/lodash-es": "^4.17.12",
     "@types/react": "^18.3.4",

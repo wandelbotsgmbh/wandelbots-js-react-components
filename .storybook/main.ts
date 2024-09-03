@@ -4,6 +4,12 @@ const config: StorybookConfig = {
   stories: [
     "../stories/**/*.mdx",
     "../stories/**/*.stories.@(js|jsx|mjs|ts|tsx)",
+    ...(process.env.NODE_ENV !== "production"
+      ? [
+          "../stories-dev/**/*.mdx",
+          "../stories-dev/**/*.stories.@(js|jsx|mjs|ts|tsx)",
+        ]
+      : []),
   ],
   addons: [
     "@storybook/addon-essentials",
