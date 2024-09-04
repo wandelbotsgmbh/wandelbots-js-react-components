@@ -1,14 +1,16 @@
-import { Paper, Stack, Tab, Tabs } from "@mui/material"
+import { Button, Paper, Stack, Tab, Tabs } from "@mui/material"
 import { observer, useLocalObservable } from "mobx-react-lite"
 import { useEffect } from "react"
 import { JoggingCartesianTab } from "./JoggingCartesianTab"
 import { JoggingJointTab } from "./JoggingJointTab"
 import { JoggingStore } from "./JoggingStore"
 import { LoadingCover } from "../LoadingCover"
+import { TransparentOverlay } from "../TransparentOverlay"
 import { runInAction } from "mobx"
 import { NovaClient } from "@wandelbots/wandelbots-js"
 import { externalizeComponent } from "../../externalizeComponent"
 import { isString } from "lodash-es"
+import { useReaction } from "../utils/hooks"
 
 export type JoggingPanelProps = {
   /** Either an existing NovaClient or the base url of a deployed Nova instance */
@@ -19,6 +21,8 @@ export type JoggingPanelProps = {
   onSetup?: (store: JoggingStore) => void
   /** Any children will go at the bottom of the panel under the default contents */
   children?: React.ReactNode
+  /** Set this to true to disable jogging UI temporarily e.g. when a program is executing */
+  locked?: boolean
 }
 
 /**
@@ -62,101 +66,142 @@ export const JoggingPanel = externalizeComponent(
       }
     }, [props.nova])
 
-    // Set correct jogging mode on jogger based on user selections
     useEffect(() => {
-      if (!state.joggingStore) return
+      const store = state.joggingStore
+      if (!store) return
 
-      const {
-        currentTab,
-        selectedTcpId,
-        activeCoordSystemId,
-        activeDiscreteIncrement,
-      } = state.joggingStore
-
-      if (currentTab.id !== "cartesian" && currentTab.id !== "joint") return
-
-      const cartesianJoggingOpts = {
-        tcpId: selectedTcpId,
-        coordSystemId: activeCoordSystemId,
-      }
-
-      if (activeDiscreteIncrement && currentTab.id === "cartesian") {
-        state.joggingStore.jogger.setJoggingMode(
-          "increment",
-          cartesianJoggingOpts,
-        )
+      if (props.locked) {
+        store.locks.add("external")
       } else {
-        state.joggingStore.jogger.setJoggingMode(
-          currentTab.id,
-          cartesianJoggingOpts,
-        )
+        store.locks.delete("external")
       }
-    }, [
-      state.joggingStore?.currentTab,
-      state.joggingStore?.selectedTcpId,
-      state.joggingStore?.activeCoordSystemId,
-      state.joggingStore?.activeDiscreteIncrement,
-    ])
-
-    if (!state.joggingStore || state.loadingError) {
-      return (
-        <JoggingPanelOuter>
-          <LoadingCover message="Loading jogging" error={state.loadingError} />
-        </JoggingPanelOuter>
-      )
-    }
-
-    const { joggingStore: store } = state
+    }, [props.locked])
 
     return (
-      <JoggingPanelOuter>
-        <Stack flexGrow={1}>
-          {/* Tab selection */}
-          <Tabs value={store.tabIndex} onChange={store.onTabChange}>
-            {store.tabs.map((tab) => (
-              <Tab
-                key={tab.id}
-                label={tab.label}
-                id={`jogging-tab-${tab.id}`}
-                aria-controls={`jogging-tab-${tab.id}`}
-              />
-            ))}
-          </Tabs>
-
-          {/* Current tab content */}
-          <Stack flexGrow={1}>
-            {store.currentTab.id === "cartesian" && (
-              <JoggingCartesianTab store={store} />
-            )}
-            {store.currentTab.id === "joint" && (
-              <JoggingJointTab store={store} />
-            )}
-            {props.children}
-          </Stack>
-        </Stack>
-      </JoggingPanelOuter>
+      <Stack
+        sx={{
+          maxWidth: "460px",
+          minWidth: "350px",
+          overflowY: "auto",
+          position: "relative",
+          height: "100%",
+        }}
+      >
+        <Paper
+          sx={{
+            height: "100%",
+          }}
+        >
+          {state.joggingStore ? (
+            <JoggingPanelInner store={state.joggingStore}>
+              {props.children}
+            </JoggingPanelInner>
+          ) : (
+            <LoadingCover
+              message="Loading jogging"
+              error={state.loadingError}
+            />
+          )}
+        </Paper>
+      </Stack>
     )
   }),
 )
 
-function JoggingPanelOuter({ children }: { children: React.ReactNode }) {
-  return (
-    <Stack
-      sx={{
-        maxWidth: "460px",
-        minWidth: "350px",
-        overflowY: "auto",
-        position: "relative",
-        height: "100%",
-      }}
-    >
-      <Paper
-        sx={{
-          height: "100%",
-        }}
-      >
-        {children}
-      </Paper>
-    </Stack>
-  )
-}
+const JoggingPanelInner = observer(
+  ({
+    store,
+    children,
+  }: {
+    store: JoggingStore
+    children?: React.ReactNode
+  }) => {
+    // Jogger is only active as long as the tab is focused
+    useEffect(() => {
+      window.addEventListener("blur", store.deactivate)
+
+      return () => {
+        window.removeEventListener("blur", store.deactivate)
+      }
+    })
+
+    // Update jogging mode on jogger based on user selections
+    useReaction(
+      () => [
+        store.currentTab,
+        store.selectedTcpId,
+        store.activeCoordSystemId,
+        store.activeDiscreteIncrement,
+      ],
+      () => {
+        if (store.activationState === "active") store.activate()
+      },
+    )
+
+    function renderOverlay() {
+      if (store.activationState === "inactive" && !store.activationError) {
+        return (
+          <TransparentOverlay>
+            <Button
+              color="primary"
+              variant="contained"
+              onClick={store.activate}
+              disabled={store.isLocked}
+            >
+              Activate jogging
+            </Button>
+          </TransparentOverlay>
+        )
+      } else if (store.activationState === "loading" || store.activationError) {
+        return (
+          <TransparentOverlay>
+            <LoadingCover
+              message="Activating jogging"
+              error={store.activationError}
+            />
+          </TransparentOverlay>
+        )
+      }
+    }
+
+    function renderTabContent() {
+      if (store.currentTab.id === "cartesian") {
+        return (
+          <>
+            <JoggingCartesianTab store={store} />
+            {children}
+          </>
+        )
+      } else if (store.currentTab.id === "joint") {
+        return (
+          <>
+            <JoggingJointTab store={store} />
+            {children}
+          </>
+        )
+      }
+    }
+
+    return (
+      <Stack flexGrow={1} height="100%">
+        {/* Tab selection */}
+        <Tabs value={store.tabIndex} onChange={store.onTabChange}>
+          {store.tabs.map((tab) => (
+            <Tab
+              key={tab.id}
+              label={tab.label}
+              id={`jogging-tab-${tab.id}`}
+              aria-controls={`jogging-tab-${tab.id}`}
+            />
+          ))}
+        </Tabs>
+
+        {/* Current tab content */}
+        <Stack flexGrow={1} position="relative">
+          {renderOverlay()}
+          {renderTabContent()}
+        </Stack>
+      </Stack>
+    )
+  },
+)

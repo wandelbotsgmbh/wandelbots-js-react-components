@@ -9,25 +9,6 @@ import { useEffect } from "react"
 
 export const JoggingJointTab = observer(
   ({ store }: { store: JoggingStore }) => {
-    useEffect(() => {
-      // Start in increment mode with no websockets open
-      store.jogger.setJoggingMode("increment")
-
-      window.addEventListener("blur", disconnectJogger)
-
-      return () => {
-        window.removeEventListener("blur", disconnectJogger)
-      }
-    }, [])
-
-    async function connectJogger() {
-      store.jogger.setJoggingMode("joint")
-    }
-
-    async function disconnectJogger() {
-      store.jogger.setJoggingMode("increment")
-    }
-
     async function startJointJogging(opts: {
       joint: number
       direction: "-" | "+"
@@ -44,7 +25,7 @@ export const JoggingJointTab = observer(
     }
 
     return (
-      <Stack onMouseEnter={connectJogger} onMouseLeave={disconnectJogger}>
+      <Stack>
         <JoggingJointValues store={store} />
         <Stack>
           {store.jogger.motionStream.joints.map((joint) => {

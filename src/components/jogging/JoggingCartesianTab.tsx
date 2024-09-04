@@ -18,7 +18,6 @@ import { JoggingVelocitySlider } from "./JoggingVelocitySlider"
 import { useReaction } from "../utils/hooks"
 import { JoggingCartesianValues } from "./JoggingCartesianValues"
 import { JoggingJointLimitDetector } from "./JoggingJointLimitDetector"
-import { useEffect } from "react"
 
 type JoggingCartesianOpts = {
   axis: "x" | "y" | "z"
@@ -49,31 +48,6 @@ export const JoggingCartesianTab = observer(
       },
       { fireImmediately: true } as any,
     )
-
-    useEffect(() => {
-      // Start in increment mode with no websockets open
-      store.jogger.setJoggingMode("increment")
-
-      window.addEventListener("blur", disconnectJogger)
-
-      return () => {
-        window.removeEventListener("blur", disconnectJogger)
-      }
-    }, [])
-
-    async function connectJogger() {
-      store.jogger.setJoggingMode(
-        store.activeDiscreteIncrement ? "increment" : "cartesian",
-        {
-          tcpId: store.selectedTcpId,
-          coordSystemId: store.activeCoordSystemId,
-        },
-      )
-    }
-
-    async function disconnectJogger() {
-      store.jogger.setJoggingMode("increment")
-    }
 
     async function runIncrementalCartesianJog(
       opts: JoggingCartesianOpts,
@@ -110,8 +84,6 @@ export const JoggingCartesianTab = observer(
 
     async function startCartesianJogging(opts: JoggingCartesianOpts) {
       if (store.isLocked) return
-
-      connectJogger()
 
       if (store.activeDiscreteIncrement) {
         return runIncrementalCartesianJog(opts, store.activeDiscreteIncrement)
@@ -171,7 +143,7 @@ export const JoggingCartesianTab = observer(
     }
 
     return (
-      <Stack onMouseEnter={connectJogger} onMouseLeave={disconnectJogger}>
+      <Stack>
         {/* Show Wandelscript string for the current coords */}
         <JoggingCartesianValues store={store} />
 
