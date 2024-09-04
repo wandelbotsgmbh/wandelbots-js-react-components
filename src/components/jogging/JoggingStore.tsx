@@ -1,6 +1,11 @@
 import keyBy from "lodash-es/keyBy"
 import uniqueId from "lodash-es/uniqueId"
-import { autorun, makeAutoObservable, type IReactionDisposer } from "mobx"
+import {
+  autorun,
+  makeAutoObservable,
+  runInAction,
+  type IReactionDisposer,
+} from "mobx"
 import type {
   CoordinateSystem,
   JoggerConnection,
@@ -27,6 +32,16 @@ export type IncrementOptionId = IncrementOption["id"]
 
 export class JoggingStore {
   selectedTabId: "cartesian" | "joint" | "debug" = "cartesian"
+
+  /**
+   * State of the jogging panel. Starts as "inactive"
+   */
+  activationState: "inactive" | "loading" | "active" = "inactive"
+
+  /**
+   * If an error occurred connecting to the jogging websocket
+   */
+  activationError: unknown | null = null
 
   /** Locks to prevent UI interactions during certain operations */
   locks = new Set<string>()
@@ -145,6 +160,68 @@ export class JoggingStore {
     this.jogger.dispose()
   }
 
+  async deactivate() {
+    if (this.activationState === "inactive") return
+    const websocket = this.jogger.activeWebsocket
+
+    this.activationState = "inactive"
+    this.jogger.setJoggingMode("increment")
+
+    if (websocket) {
+      await websocket.closed()
+    }
+  }
+
+  /** Activate the jogger with current settings */
+  async activate() {
+    const {
+      currentTab,
+      selectedTcpId,
+      activeCoordSystemId,
+      activeDiscreteIncrement,
+      jogger,
+    } = this
+
+    if (this.activationState === "loading") return
+
+    runInAction(() => {
+      this.activationState = "loading"
+      this.activationError = null
+    })
+
+    if (currentTab.id === "cartesian") {
+      const cartesianJoggingOpts = {
+        tcpId: selectedTcpId,
+        coordSystemId: activeCoordSystemId,
+      }
+
+      if (activeDiscreteIncrement) {
+        jogger.setJoggingMode("increment", cartesianJoggingOpts)
+      } else {
+        jogger.setJoggingMode("cartesian", cartesianJoggingOpts)
+      }
+    } else {
+      jogger.setJoggingMode("joint")
+    }
+
+    if (jogger.activeWebsocket) {
+      try {
+        jogger.stop()
+        await jogger.activeWebsocket.nextMessage()
+      } catch (err) {
+        runInAction(() => {
+          this.activationState = "inactive"
+          this.activationError = err
+        })
+        return
+      }
+    }
+
+    runInAction(() => {
+      this.activationState = "active"
+    })
+  }
+
   loadFromLocalStorage() {
     const save = tryParseJson(localStorage.getItem("joggingToolStore"))
     if (!save) return
@@ -241,6 +318,11 @@ export class JoggingStore {
     return this.coordSystemsById[this.selectedCoordSystemId]
   }
 
+  /**
+   * The id of the coordinate system to use for jogging.
+   * If in tool orientation, this is set to "tool", not the
+   * selected coordinate system.
+   */
   get activeCoordSystemId() {
     return this.selectedOrientation === "tool"
       ? "tool"
