@@ -20,6 +20,7 @@ const config: StorybookConfig = {
     name: "@storybook/react-vite",
     options: {},
   },
+  staticDirs: ["../public"],
   // TS config from mui integration guide https://storybook.js.org/recipes/@mui/material
   typescript: {
     reactDocgen: "react-docgen-typescript",
