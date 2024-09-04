@@ -6,7 +6,7 @@ import { Setup } from "../../src/Setup"
 
 export default {
   tags: ["!dev"],
-  title: "WIP/UniversalRobots_UR5",
+  title: "WIP/KUKA_KR16_R2010_2",
   component: SupportedRobot,
   decorators: [
     (Story) => (
@@ -113,7 +113,7 @@ function SupportedRobotScene(
 
 export const UR5Story: StoryObj<typeof SupportedRobotScene> = {
   args: {
-    modelFromController: "UniversalRobots_UR5",
+    modelFromController: "KUKA_KR16_R2010_2",
     getModel: (model: string) => `/models/${model}.glb`,
   },
   render: (args) => <SupportedRobotScene {...args} />,
