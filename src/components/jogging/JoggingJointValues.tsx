@@ -15,7 +15,7 @@ export const JoggingJointValues = observer(
       const { joints } =
         store.jogger.motionStream.rapidlyChangingMotionState.state
           .joint_position
-      return `{${joints.map((j) => parseFloat(j.toFixed(4))).join(", ")}}`
+      return `[${joints.map((j) => parseFloat(j.toFixed(4))).join(", ")}]`
     }
 
     useAnimationFrame(() => {
