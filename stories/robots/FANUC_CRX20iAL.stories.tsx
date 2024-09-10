@@ -68,7 +68,6 @@ function SupportedRobotScene(
 export const RobotStory: StoryObj<typeof SupportedRobotScene> = {
   args: {
     modelFromController: "FANUC_CRX20iAL",
-    getModel: (model: string) => `/models/${model}.glb`,
   },
   render: (args) => <SupportedRobotScene {...args} />,
   name: "Default",

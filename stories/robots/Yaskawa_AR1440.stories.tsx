@@ -68,7 +68,6 @@ function SupportedRobotScene(
 export const RobotStory: StoryObj<typeof SupportedRobotScene> = {
   args: {
     modelFromController: "Yaskawa_AR1440",
-    getModel: (model: string) => `/models/${model}.glb`,
   },
   render: (args) => <SupportedRobotScene {...args} />,
   name: "Default",
