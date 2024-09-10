@@ -1,0 +1,27 @@
+import { Canvas, Meta, Source } from '@storybook/blocks';
+import * as RobotStories from '../stories/robots/Robot.stories';
+
+
+<Meta title="3D View/Robot"/>
+ 
+# Robot
+
+
+This `Robot` component adds the robot to the 3D viewport. Use it together with the `connectedMotionGroup` from `@wandelbots/wandelbots-js`.
+
+```tsx
+<Robot connectedMotionGroup={connectedMotionGroup} />
+```
+
+The robot model are loaded from the [jsdelivr CDN](https://cdn.jsdelivr.net/gh/wandelbotsgmbh/wandelbots-js-react-components/public/models/).
+
+In case you want to use the application offline, you can download the models and host them locally. You can override the URL resolver of the `Robot` component by passing a `getModel` function like:
+
+```tsx
+<Robot
+  getModel={() => `public/${connectedMotionGroup.modelFromController}.glb`}
+  connectedMotionGroup={connectedMotionGroup}
+/>
+```
+
+<Canvas of={RobotStories.RobotStory} />

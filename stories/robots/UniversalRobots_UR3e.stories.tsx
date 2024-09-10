@@ -1,64 +1,18 @@
-import type { Meta, StoryObj } from "@storybook/react"
+import type { StoryObj } from "@storybook/react"
 import { Euler, Vector3, WebGLRenderer } from "three"
 import { SupportedRobot } from "../../src"
 import type { MotionGroupStateResponse } from "@wandelbots/wandelbots-js"
-import { Setup } from "../../src/Setup"
+import { rapidlyChangingMotionState } from "./motionState"
+import { sharedStoryConfig } from "./robotStoryConfig"
 
 export default {
-  tags: ["!dev"],
-  title: "WIP/KUKA_KR16_R2010_2",
-  component: SupportedRobot,
-  decorators: [
-    (Story) => (
-      <div
-        style={{
-          width: "100%",
-          height: "100vh",
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-        }}
-      >
-        <Setup cameraPosition={new Vector3(0, 0, 3)}>
-          <group position={[0, -0.25, 0]}>
-            <Story />
-          </group>
-        </Setup>
-      </div>
-    ),
-  ],
-} satisfies Meta<typeof SupportedRobot>
+  ...sharedStoryConfig,
+  title: "3D View/Robots/UniversalRobots_UR3e",
+}
 
 function SupportedRobotScene(
   props: React.ComponentProps<typeof SupportedRobot>,
 ) {
-  const rapidlyChangingMotionState: MotionGroupStateResponse = {
-    state: {
-      motion_group: "",
-      controller: "",
-      joint_position: {
-        joints: [0, 0, 0, 0, 0, 0],
-      },
-      joint_velocity: {
-        joints: [0, 0, 0, 0, 0, 0],
-      },
-      tcp_pose: {
-        position: { x: 0, y: 0, z: 0 },
-        orientation: { x: 0, y: 0, z: 0 },
-        coordinate_system: "world",
-        tcp: "flange",
-      },
-      velocity: {
-        linear: { x: 0, y: 0, z: 0 },
-        angular: { x: 0, y: 0, z: 0 },
-        coordinate_system: "world",
-      },
-      joint_limit_reached: {
-        limit_reached: [false, false, false, false, false, false],
-      },
-    },
-  }
-
   return (
     <SupportedRobot
       {...props}
@@ -111,9 +65,9 @@ function SupportedRobotScene(
   )
 }
 
-export const UR5Story: StoryObj<typeof SupportedRobotScene> = {
+export const RobotStory: StoryObj<typeof SupportedRobotScene> = {
   args: {
-    modelFromController: "KUKA_KR16_R2010_2",
+    modelFromController: "UniversalRobots_UR3e",
     getModel: (model: string) => `/models/${model}.glb`,
   },
   render: (args) => <SupportedRobotScene {...args} />,

@@ -1,6 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react"
 import { JoggingPanel } from "../src/index"
-import { useArgs } from "@storybook/preview-api"
 
 const meta: Meta<typeof JoggingPanel> = {
   title: "Jogging/JoggingPanel",
