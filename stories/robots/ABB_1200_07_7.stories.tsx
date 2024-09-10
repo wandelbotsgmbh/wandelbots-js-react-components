@@ -68,7 +68,6 @@ function SupportedRobotScene(
 export const RobotStory: StoryObj<typeof SupportedRobotScene> = {
   args: {
     modelFromController: "ABB_1200_07_7",
-    getModel: (model: string) => `/models/${model}.glb`,
   },
   render: (args) => <SupportedRobotScene {...args} />,
   name: "Default",

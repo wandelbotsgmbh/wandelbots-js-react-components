@@ -39,9 +39,7 @@ function SupportedRobotScene(
 }
 
 export const RobotStory: StoryObj<typeof SupportedRobotScene> = {
-  args: {
-    getModel: (model: string) => `/models/${model}.glb`,
-  },
+  args: {},
   render: (args) => <SupportedRobotScene {...args} />,
   name: "Default",
 }

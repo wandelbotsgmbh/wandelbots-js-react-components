@@ -67,7 +67,6 @@ function SupportedRobotScene(
 export const UR5Story: StoryObj<typeof SupportedRobotScene> = {
   args: {
     modelFromController: "UniversalRobots_UR5e",
-    getModel: (model: string) => `/models/${model}.glb`,
   },
   render: (args) => <SupportedRobotScene {...args} />,
   name: "Default",
