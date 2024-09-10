@@ -7,7 +7,7 @@ import { sharedStoryConfig } from "./robotStoryConfig"
 
 export default {
   ...sharedStoryConfig,
-  title: "WIP/ABB_1200_07_7",
+  title: "3D View/Robots/FANUC_CRX25iAL",
 }
 
 function SupportedRobotScene(
@@ -67,7 +67,7 @@ function SupportedRobotScene(
 
 export const RobotStory: StoryObj<typeof SupportedRobotScene> = {
   args: {
-    modelFromController: "ABB_1200_07_7",
+    modelFromController: "FANUC_CRX25iAL",
     getModel: (model: string) => `/models/${model}.glb`,
   },
   render: (args) => <SupportedRobotScene {...args} />,

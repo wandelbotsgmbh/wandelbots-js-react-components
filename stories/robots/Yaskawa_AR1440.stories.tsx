@@ -7,7 +7,7 @@ import { sharedStoryConfig } from "./robotStoryConfig"
 
 export default {
   ...sharedStoryConfig,
-  title: "WIP/UniversalRobots_UR3",
+  title: "3D View/Robots/Yaskawa_AR1440",
 }
 
 function SupportedRobotScene(
@@ -67,7 +67,7 @@ function SupportedRobotScene(
 
 export const RobotStory: StoryObj<typeof SupportedRobotScene> = {
   args: {
-    modelFromController: "UniversalRobots_UR3",
+    modelFromController: "Yaskawa_AR1440",
     getModel: (model: string) => `/models/${model}.glb`,
   },
   render: (args) => <SupportedRobotScene {...args} />,

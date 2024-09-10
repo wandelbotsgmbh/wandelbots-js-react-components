@@ -1,4 +1,5 @@
 import type { StoryObj } from "@storybook/react"
+import { Euler, Vector3, WebGLRenderer } from "three"
 import { SupportedRobot } from "../../src"
 import type { MotionGroupStateResponse } from "@wandelbots/wandelbots-js"
 import { rapidlyChangingMotionState } from "./motionState"
@@ -6,7 +7,7 @@ import { sharedStoryConfig } from "./robotStoryConfig"
 
 export default {
   ...sharedStoryConfig,
-  title: "WIP/UniversalRobots_UR5e",
+  title: "3D View/Robots/Yaskawa_AR2010",
 }
 
 function SupportedRobotScene(
@@ -64,9 +65,9 @@ function SupportedRobotScene(
   )
 }
 
-export const UR5Story: StoryObj<typeof SupportedRobotScene> = {
+export const RobotStory: StoryObj<typeof SupportedRobotScene> = {
   args: {
-    modelFromController: "UniversalRobots_UR5e",
+    modelFromController: "Yaskawa_AR2010",
     getModel: (model: string) => `/models/${model}.glb`,
   },
   render: (args) => <SupportedRobotScene {...args} />,

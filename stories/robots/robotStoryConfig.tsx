@@ -6,7 +6,6 @@ import { SupportedRobot } from "../../src"
 import { Vector3 } from "three"
 
 export const sharedStoryConfig = {
-  tags: ["!dev"],
   component: SupportedRobot,
   decorators: [
     (Story) => (

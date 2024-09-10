@@ -7,7 +7,7 @@ import { sharedStoryConfig } from "./robotStoryConfig"
 
 export default {
   ...sharedStoryConfig,
-  title: "WIP/KUKA_KR270_R2700",
+  title: "3D View/Robots/UniversalRobots_UR3e",
 }
 
 function SupportedRobotScene(
@@ -67,7 +67,7 @@ function SupportedRobotScene(
 
 export const RobotStory: StoryObj<typeof SupportedRobotScene> = {
   args: {
-    modelFromController: "KUKA_KR270_R2700",
+    modelFromController: "UniversalRobots_UR3e",
     getModel: (model: string) => `/models/${model}.glb`,
   },
   render: (args) => <SupportedRobotScene {...args} />,

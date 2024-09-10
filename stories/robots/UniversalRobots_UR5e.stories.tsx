@@ -1,11 +1,12 @@
 import type { StoryObj } from "@storybook/react"
 import { SupportedRobot } from "../../src"
+import type { MotionGroupStateResponse } from "@wandelbots/wandelbots-js"
 import { rapidlyChangingMotionState } from "./motionState"
 import { sharedStoryConfig } from "./robotStoryConfig"
 
 export default {
   ...sharedStoryConfig,
-  title: "WIP/UniversalRobots_UR10",
+  title: "3D View/Robots/UniversalRobots_UR5e",
 }
 
 function SupportedRobotScene(
@@ -18,20 +19,20 @@ function SupportedRobotScene(
       dhParameters={[
         {
           a: 0,
-          d: 127.3,
+          d: 89.159000000000006,
           alpha: 1.5707963267948966,
           theta: 0,
           reverse_rotation_direction: false,
         },
         {
-          a: -612,
+          a: -425,
           d: 0,
           alpha: 0,
           theta: 0,
           reverse_rotation_direction: false,
         },
         {
-          a: -572.29999999999995,
+          a: -392.25,
           d: 0,
           alpha: 0,
           theta: 0,
@@ -39,21 +40,21 @@ function SupportedRobotScene(
         },
         {
           a: 0,
-          d: 163.941,
+          d: 109.15000000000001,
           alpha: 1.5707963267948966,
           theta: 0,
           reverse_rotation_direction: false,
         },
         {
           a: 0,
-          d: 115.7,
+          d: 94.650000000000006,
           alpha: -1.5707963267948966,
           theta: 0,
           reverse_rotation_direction: false,
         },
         {
           a: 0,
-          d: 92.200000000000003,
+          d: 82.299999999999997,
           alpha: 0,
           theta: 0,
           reverse_rotation_direction: false,
@@ -63,9 +64,9 @@ function SupportedRobotScene(
   )
 }
 
-export const RobotStory: StoryObj<typeof SupportedRobotScene> = {
+export const UR5Story: StoryObj<typeof SupportedRobotScene> = {
   args: {
-    modelFromController: "UniversalRobots_UR10",
+    modelFromController: "UniversalRobots_UR5e",
     getModel: (model: string) => `/models/${model}.glb`,
   },
   render: (args) => <SupportedRobotScene {...args} />,

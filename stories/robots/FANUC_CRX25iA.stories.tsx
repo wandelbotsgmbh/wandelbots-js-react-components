@@ -7,7 +7,7 @@ import { sharedStoryConfig } from "./robotStoryConfig"
 
 export default {
   ...sharedStoryConfig,
-  title: "WIP/FANUC_CRX25iA",
+  title: "3D View/Robots/FANUC_CRX25iA",
 }
 
 function SupportedRobotScene(
