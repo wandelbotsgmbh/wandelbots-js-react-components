@@ -11,6 +11,7 @@ import { NovaClient } from "@wandelbots/wandelbots-js"
 import { externalizeComponent } from "../../externalizeComponent"
 import { isString } from "lodash-es"
 import { useReaction } from "../utils/hooks"
+import { useTranslation } from "react-i18next"
 
 export type JoggingPanelProps = {
   /** Either an existing NovaClient or the base url of a deployed Nova instance */
@@ -30,6 +31,8 @@ export type JoggingPanelProps = {
  */
 export const JoggingPanel = externalizeComponent(
   observer((props: JoggingPanelProps) => {
+    const { t } = useTranslation()
+
     const nova = isString(props.nova)
       ? new NovaClient({ instanceUrl: props.nova })
       : props.nova
@@ -116,12 +119,24 @@ const JoggingPanelInner = observer(
     store: JoggingStore
     children?: React.ReactNode
   }) => {
+    const { t } = useTranslation()
+
     // Jogger is only active as long as the tab is focused
     useEffect(() => {
-      window.addEventListener("blur", store.deactivate)
+      function deactivate() {
+        store.deactivate()
+      }
+
+      function activate() {
+        store.activate()
+      }
+
+      window.addEventListener("blur", deactivate)
+      window.addEventListener("focus", activate)
 
       return () => {
-        window.removeEventListener("blur", store.deactivate)
+        window.removeEventListener("blur", deactivate)
+        window.removeEventListener("focus", activate)
       }
     })
 
@@ -145,10 +160,10 @@ const JoggingPanelInner = observer(
             <Button
               color="primary"
               variant="contained"
-              onClick={store.activate}
+              onClick={() => store.activate({ manual: true })}
               disabled={store.isLocked}
             >
-              Activate jogging
+              {t("Jogging.Activate.bt")}
             </Button>
           </TransparentOverlay>
         )
@@ -156,7 +171,7 @@ const JoggingPanelInner = observer(
         return (
           <TransparentOverlay>
             <LoadingCover
-              message="Activating jogging"
+              message={t("Jogging.Activating.lb")}
               error={store.activationError}
             />
           </TransparentOverlay>

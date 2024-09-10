@@ -1,5 +1,6 @@
 import { makeErrorMessage } from "./utils/errorHandling"
-import { CircularProgress, Stack, useTheme } from "@mui/material"
+import { capitalize, CircularProgress, Stack, useTheme } from "@mui/material"
+import { lowerFirst } from "lodash-es"
 import { useEffect, useState } from "react"
 
 export const LoadingCover = (props: {
@@ -27,7 +28,10 @@ export const LoadingCover = (props: {
       justifyContent="center"
     >
       {props.error ? (
-        <LoadingErrorMessage message={props.message} error={props.error} />
+        <LoadingErrorMessage
+          loadingMessage={props.message}
+          error={props.error}
+        />
       ) : (
         <>
           <CircularProgress sx={{ marginBottom: "24px" }} />
@@ -47,7 +51,10 @@ export const LoadingCover = (props: {
   )
 }
 
-const LoadingErrorMessage = (props: { message?: string; error: unknown }) => {
+export const LoadingErrorMessage = (props: {
+  loadingMessage?: string
+  error: unknown
+}) => {
   const errorMessage = makeErrorMessage(props.error)
   const stack = props.error instanceof Error ? props.error.stack : null
   const theme = useTheme()
@@ -67,7 +74,9 @@ const LoadingErrorMessage = (props: { message?: string; error: unknown }) => {
         },
       }}
     >
-      {`Error while: ${props.message} - ${errorMessage}`}
+      {(props.loadingMessage
+        ? `Error while ${lowerFirst(capitalize(props.loadingMessage))} - `
+        : "") + errorMessage}
       <br />
       {stack && <pre>{stack}</pre>}
     </Stack>

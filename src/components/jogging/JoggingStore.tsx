@@ -34,6 +34,12 @@ export class JoggingStore {
   selectedTabId: "cartesian" | "joint" | "debug" = "cartesian"
 
   /**
+   * Whether the user must manually interact to activate jogging, or
+   * if it can be done automatically
+   */
+  manualActivationRequired: boolean = true
+
+  /**
    * State of the jogging panel. Starts as "inactive"
    */
   activationState: "inactive" | "loading" | "active" = "inactive"
@@ -160,7 +166,7 @@ export class JoggingStore {
     this.jogger.dispose()
   }
 
-  async deactivate() {
+  async deactivate(opts: { requireManualReactivation?: boolean } = {}) {
     if (this.activationState === "inactive") return
     const websocket = this.jogger.activeWebsocket
 
@@ -170,10 +176,16 @@ export class JoggingStore {
     if (websocket) {
       await websocket.closed()
     }
+
+    if (opts.requireManualReactivation) {
+      runInAction(() => {
+        this.manualActivationRequired = true
+      })
+    }
   }
 
   /** Activate the jogger with current settings */
-  async activate() {
+  async activate(opts: { manual?: boolean } = {}) {
     const {
       currentTab,
       selectedTcpId,
@@ -183,6 +195,8 @@ export class JoggingStore {
     } = this
 
     if (this.activationState === "loading") return
+
+    if (this.manualActivationRequired && !opts.manual) return
 
     runInAction(() => {
       this.activationState = "loading"
@@ -219,6 +233,9 @@ export class JoggingStore {
 
     runInAction(() => {
       this.activationState = "active"
+      if (opts.manual) {
+        this.manualActivationRequired = false
+      }
     })
   }
 

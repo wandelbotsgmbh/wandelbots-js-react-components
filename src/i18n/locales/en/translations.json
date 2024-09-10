@@ -9,5 +9,7 @@
   "Jogging.Cartesian.Rotation.bt": "Rotation",
   "Jogging.Joints.JointValues.lb": "Joint values",
   "Jogging.Increment.Continuous.dd": "Continuous",
-  "Jogging.Cartesian.Orientation.lb": "Orientation"
+  "Jogging.Cartesian.Orientation.lb": "Orientation",
+  "Jogging.Activate.bt": "Activate jogging",
+  "Jogging.Activating.lb": "Activating jogging"
 }
