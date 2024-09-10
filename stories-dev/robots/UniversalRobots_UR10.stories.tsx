@@ -63,7 +63,7 @@ function SupportedRobotScene(
   )
 }
 
-export const UR5Story: StoryObj<typeof SupportedRobotScene> = {
+export const RobotStory: StoryObj<typeof SupportedRobotScene> = {
   args: {
     modelFromController: "UniversalRobots_UR10",
     getModel: (model: string) => `/models/${model}.glb`,

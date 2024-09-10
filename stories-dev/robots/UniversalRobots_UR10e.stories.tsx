@@ -1,13 +1,11 @@
 import type { StoryObj } from "@storybook/react"
-import { Euler, Vector3, WebGLRenderer } from "three"
 import { SupportedRobot } from "../../src"
-import type { MotionGroupStateResponse } from "@wandelbots/wandelbots-js"
 import { rapidlyChangingMotionState } from "./motionState"
 import { sharedStoryConfig } from "./robotStoryConfig"
 
 export default {
   ...sharedStoryConfig,
-  title: "WIP/KUKA_KR16_R2010_2",
+  title: "WIP/UniversalRobots_UR10e",
 }
 
 function SupportedRobotScene(
@@ -20,20 +18,20 @@ function SupportedRobotScene(
       dhParameters={[
         {
           a: 0,
-          d: 89.159000000000006,
+          d: 127.3,
           alpha: 1.5707963267948966,
           theta: 0,
           reverse_rotation_direction: false,
         },
         {
-          a: -425,
+          a: -612,
           d: 0,
           alpha: 0,
           theta: 0,
           reverse_rotation_direction: false,
         },
         {
-          a: -392.25,
+          a: -572.29999999999995,
           d: 0,
           alpha: 0,
           theta: 0,
@@ -41,21 +39,21 @@ function SupportedRobotScene(
         },
         {
           a: 0,
-          d: 109.15000000000001,
+          d: 163.941,
           alpha: 1.5707963267948966,
           theta: 0,
           reverse_rotation_direction: false,
         },
         {
           a: 0,
-          d: 94.650000000000006,
+          d: 115.7,
           alpha: -1.5707963267948966,
           theta: 0,
           reverse_rotation_direction: false,
         },
         {
           a: 0,
-          d: 82.299999999999997,
+          d: 92.200000000000003,
           alpha: 0,
           theta: 0,
           reverse_rotation_direction: false,
@@ -67,7 +65,7 @@ function SupportedRobotScene(
 
 export const RobotStory: StoryObj<typeof SupportedRobotScene> = {
   args: {
-    modelFromController: "KUKA_KR16_R2010_2",
+    modelFromController: "UniversalRobots_UR10e",
     getModel: (model: string) => `/models/${model}.glb`,
   },
   render: (args) => <SupportedRobotScene {...args} />,
