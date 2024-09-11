@@ -2,6 +2,7 @@
 
 import type { Theme, ThemeOptions } from "@mui/material/styles"
 import { createTheme } from "@mui/material/styles"
+import { createDarkTheme } from "./dark"
 
 /**
  * The palette of named colors we pick from for
@@ -62,6 +63,7 @@ export const novaLightSettings = {
  * any defaults with the provided theme options.
  */
 export function createNovaMuiTheme(opts: ThemeOptions): Theme {
+  console.log("Create new theme")
   let isDark = true
   if (opts.palette?.mode === "light") {
     isDark = false
@@ -163,6 +165,8 @@ export function createNovaMuiTheme(opts: ThemeOptions): Theme {
     },
     nova,
   })
+
+  return createDarkTheme()
 
   if (opts) {
     return createTheme(theme, opts)
