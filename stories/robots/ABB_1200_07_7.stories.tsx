@@ -7,7 +7,8 @@ import { sharedStoryConfig } from "./robotStoryConfig"
 
 export default {
   ...sharedStoryConfig,
-  title: "3D View/Robots/ABB_1200_07_7",
+  tags: ["!autodocs"],
+  title: "3D View/Robot/Supported Models/ABB_1200_07_7",
 }
 
 function SupportedRobotScene(
@@ -70,5 +71,5 @@ export const RobotStory: StoryObj<typeof SupportedRobotScene> = {
     modelFromController: "ABB_1200_07_7",
   },
   render: (args) => <SupportedRobotScene {...args} />,
-  name: "Default",
+  name: "ABB_1200_07_7",
 }

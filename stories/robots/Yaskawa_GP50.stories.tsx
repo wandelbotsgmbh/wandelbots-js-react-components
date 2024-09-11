@@ -7,7 +7,8 @@ import { sharedStoryConfig } from "./robotStoryConfig"
 
 export default {
   ...sharedStoryConfig,
-  title: "3D View/Robots/Yaskawa_GP50",
+  tags: ["!autodocs"],
+  title: "3D View/Robot/Supported Models/Yaskawa_GP50",
 }
 
 function SupportedRobotScene(
@@ -70,5 +71,5 @@ export const RobotStory: StoryObj<typeof SupportedRobotScene> = {
     modelFromController: "Yaskawa_GP50",
   },
   render: (args) => <SupportedRobotScene {...args} />,
-  name: "Default",
+  name: "Yaskawa_GP50",
 }
