@@ -7,7 +7,8 @@ import { sharedStoryConfig } from "./robotStoryConfig"
 
 export default {
   ...sharedStoryConfig,
-  title: "3D View/Robots/FANUC_ARC_Mate_100iD",
+  tags: ["!autodocs"],
+  title: "3D View/Robot/Supported Models/FANUC_ARC_Mate_100iD",
 }
 
 function SupportedRobotScene(
@@ -70,5 +71,5 @@ export const RobotStory: StoryObj<typeof SupportedRobotScene> = {
     modelFromController: "FANUC_ARC_Mate_100iD",
   },
   render: (args) => <SupportedRobotScene {...args} />,
-  name: "Default",
+  name: "FANUC_ARC_Mate_100iD",
 }

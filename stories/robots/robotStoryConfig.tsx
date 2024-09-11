@@ -6,6 +6,7 @@ import { SupportedRobot } from "../../src"
 import { Vector3 } from "three"
 
 export const sharedStoryConfig = {
+  tags: ["!dev"],
   component: SupportedRobot,
   decorators: [
     (Story) => (
@@ -13,6 +14,7 @@ export const sharedStoryConfig = {
         style={{
           width: "100%",
           height: "100vh",
+          minHeight: "400px",
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
