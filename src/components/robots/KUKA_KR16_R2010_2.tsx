@@ -1,9 +1,8 @@
+import { animated } from "@react-spring/three"
 import { useGLTF } from "@react-three/drei"
 import type * as THREE from "three"
-import type { RobotProps } from "./SupportedRobot"
-import { animated } from "@react-spring/three"
-import RobotAnimator from "./RobotAnimator"
 import type { GLTF } from "three-stdlib"
+import type { RobotModelProps } from "./types"
 
 type GLTFResult = GLTF & {
   nodes: {
@@ -29,29 +28,15 @@ type GLTFResult = GLTF & {
   }
 }
 
-export function KUKA_KR16_R2010_2({
-  modelURL,
-  rapidlyChangingMotionState,
-  ...props
-}: RobotProps) {
+KUKA_KR16_R2010_2.config = {
+  rotationOffsets: [0, 0, -Math.PI / 2, 0, 0, 0],
+}
+
+export function KUKA_KR16_R2010_2({ modelURL, ...props }: RobotModelProps) {
   const { nodes, materials } = useGLTF(modelURL) as GLTFResult
-
-  const rotationOffsets = [0, 0, -Math.PI / 2, 0, 0, 0]
-
-  function setRotation(jointObjects: THREE.Object3D[], jointValues: number[]) {
-    jointObjects.forEach(
-      (object, index) =>
-        (object.rotation.y = jointValues[index]! + rotationOffsets[index]!),
-    )
-  }
 
   return (
     <>
-      <RobotAnimator
-        rapidlyChangingMotionState={rapidlyChangingMotionState}
-        robotRootObjectName="Scene"
-        onRotationChanged={setRotation}
-      />
       <group {...props} dispose={null}>
         <group name="Scene">
           <group name="link_0">
@@ -77,28 +62,28 @@ export function KUKA_KR16_R2010_2({
               material={materials.material_Material_Metall}
             />
           </group>
-          <group name="KUKA_KR16R2010_2_J00">
-            <group
+          <animated.group name="KUKA_KR16R2010_2_J00">
+            <animated.group
               name="KUKA_KR16R2010_2_J01"
               position={[0.16, 0.52, 0]}
               rotation={[-Math.PI / 2, 0, 0]}
             >
-              <group
+              <animated.group
                 name="KUKA_KR16R2010_2_J02"
                 position={[0.98, 0, 0]}
                 rotation={[0, -Math.PI / 2, 0]}
               >
-                <group
+                <animated.group
                   name="KUKA_KR16R2010_2_J03"
                   position={[0.15, 0, 0]}
                   rotation={[Math.PI / 2, 0, 0]}
                 >
-                  <group
+                  <animated.group
                     name="KUKA_KR16R2010_2_J04"
                     position={[0, -0.86, 0]}
                     rotation={[-Math.PI / 2, 0, 0]}
                   >
-                    <group
+                    <animated.group
                       name="KUKA_KR16R2010_2_J05"
                       rotation={[-Math.PI / 2, 0, -Math.PI]}
                     >
@@ -111,7 +96,7 @@ export function KUKA_KR16_R2010_2({
                         position={[0.67, 2, 0]}
                         rotation={[-Math.PI, 0, Math.PI / 2]}
                       />
-                    </group>
+                    </animated.group>
                     <mesh
                       name="link_5"
                       castShadow
@@ -121,7 +106,7 @@ export function KUKA_KR16_R2010_2({
                       position={[-0.67, 0, 2]}
                       rotation={[Math.PI / 2, 0, -Math.PI / 2]}
                     />
-                  </group>
+                  </animated.group>
                   <mesh
                     name="link_4"
                     castShadow
@@ -131,7 +116,7 @@ export function KUKA_KR16_R2010_2({
                     position={[-0.67, 1.14, 0]}
                     rotation={[0, 0, -Math.PI / 2]}
                   />
-                </group>
+                </animated.group>
                 <group
                   name="link_3"
                   position={[-0.52, 0, 1.14]}
@@ -159,7 +144,7 @@ export function KUKA_KR16_R2010_2({
                     material={materials.material_Material_Farbe__2_}
                   />
                 </group>
-              </group>
+              </animated.group>
               <group
                 name="link_2"
                 position={[-0.16, 0, -0.52]}
@@ -180,7 +165,7 @@ export function KUKA_KR16_R2010_2({
                   material={materials.material_Material_Metall}
                 />
               </group>
-            </group>
+            </animated.group>
             <group name="link_1">
               <mesh
                 name="visuals_1"
@@ -204,7 +189,7 @@ export function KUKA_KR16_R2010_2({
                 material={materials.material_Material_Metall}
               />
             </group>
-          </group>
+          </animated.group>
         </group>
       </group>
     </>

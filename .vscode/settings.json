@@ -6,6 +6,11 @@
   "editor.formatOnPaste": true,
   "editor.formatOnSave": true,
   "editor.formatOnSaveMode": "file",
+  "editor.codeActionsOnSave": {
+    "source.fixAll": "explicit",
+    "source.organizeImports": "explicit",
+    "source.sortMembers": "explicit"
+  },
   "files.autoSave": "onFocusChange",
   "vs-code-prettier-eslint.prettierLast": false,
   "editor.tabSize": 2,

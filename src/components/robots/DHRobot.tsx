@@ -1,13 +1,13 @@
-import { Vector3, Matrix4, Quaternion } from "three"
 import { Line } from "@react-three/drei"
-import type { LineGeometry } from "three/examples/jsm/lines/LineGeometry.js"
 import type { DHParameter } from "@wandelbots/wandelbots-api-client"
-import RobotAnimator from "./RobotAnimator"
 import type * as THREE from "three"
+import { Matrix4, Quaternion, Vector3 } from "three"
+import type { LineGeometry } from "three/examples/jsm/lines/LineGeometry.js"
 import {
   getAllJointsByName,
   type RobotSceneJoint,
 } from "../utils/robotTreeQuery"
+import RobotAnimator from "./RobotAnimator"
 import type { DHRobotProps } from "./SupportedRobot"
 
 const CHILD_LINE = "line"
@@ -85,7 +85,7 @@ export function DHRobot({
     })
   }
 
-  function getAllJoints(rootObject: THREE.Object3D): RobotSceneJoint[] {
+  function jointCollector(rootObject: THREE.Object3D): RobotSceneJoint[] {
     return getAllJointsByName(rootObject, "^group_[0-9]+$")
   }
 
@@ -93,36 +93,37 @@ export function DHRobot({
     <>
       <RobotAnimator
         rapidlyChangingMotionState={rapidlyChangingMotionState}
-        robotRootObjectName="Scene"
+        jointCollector={jointCollector}
         onRotationChanged={setRotation}
-        jointCollector={getAllJoints}
-      />
-      <group {...props} name="Scene">
-        <mesh>
-          <sphereGeometry args={[0.01, 32, 32]} />
-          <meshStandardMaterial color={"black"} depthTest={true} />
-        </mesh>
-        {dhParameters!.map((param, index) => {
-          const { a, b } = getLinePoints(
-            param,
-            rapidlyChangingMotionState.state.joint_position.joints[index] ?? 0,
-          )
-          return (
-            <group name={`group_${index}`} key={"group_" + index}>
-              <Line
-                name={CHILD_LINE}
-                points={[a, b]}
-                color={"white"}
-                lineWidth={5}
-              />
-              <mesh name={CHILD_MESH} key={"mesh_" + index} position={b}>
-                <sphereGeometry args={[0.01, 32, 32]} />
-                <meshStandardMaterial color={"black"} depthTest={true} />
-              </mesh>
-            </group>
-          )
-        })}
-      </group>
+      >
+        <group {...props} name="Scene">
+          <mesh>
+            <sphereGeometry args={[0.01, 32, 32]} />
+            <meshStandardMaterial color={"black"} depthTest={true} />
+          </mesh>
+          {dhParameters!.map((param, index) => {
+            const { a, b } = getLinePoints(
+              param,
+              rapidlyChangingMotionState.state.joint_position.joints[index] ??
+                0,
+            )
+            return (
+              <group name={`group_${index}`} key={"group_" + index}>
+                <Line
+                  name={CHILD_LINE}
+                  points={[a, b]}
+                  color={"white"}
+                  lineWidth={5}
+                />
+                <mesh name={CHILD_MESH} key={"mesh_" + index} position={b}>
+                  <sphereGeometry args={[0.01, 32, 32]} />
+                  <meshStandardMaterial color={"black"} depthTest={true} />
+                </mesh>
+              </group>
+            )
+          })}
+        </group>
+      </RobotAnimator>
     </>
   )
 }

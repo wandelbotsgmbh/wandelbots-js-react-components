@@ -1,59 +1,69 @@
-import { useEffect, useRef } from "react"
 import { Globals, useSpring } from "@react-spring/three"
 import { useThree } from "@react-three/fiber"
+import type { MotionGroupStateResponse } from "@wandelbots/wandelbots-api-client"
+import React, { useRef } from "react"
 import type * as THREE from "three"
+import { useAutorun } from "../utils/hooks"
 import {
   getAllJointsByName,
   type RobotSceneJoint,
 } from "../utils/robotTreeQuery"
-import type { MotionGroupStateResponse } from "@wandelbots/wandelbots-api-client"
-import { useAutorun } from "../utils/hooks"
+import type { RobotModelConfig } from "./types"
 
 type RobotAnimatorProps = {
   rapidlyChangingMotionState: MotionGroupStateResponse
-  robotRootObjectName: string
-  onRotationChanged: (joints: THREE.Object3D[], jointValues: number[]) => void
+  onRotationChanged?: (joints: THREE.Object3D[], jointValues: number[]) => void
   jointCollector?: (rootObject: THREE.Object3D) => RobotSceneJoint[]
+  robotConfig?: RobotModelConfig
+  children: React.ReactNode
 }
 
 export default function RobotAnimator({
   rapidlyChangingMotionState,
-  robotRootObjectName,
-  onRotationChanged,
   jointCollector,
+  onRotationChanged,
+  robotConfig,
+  children,
 }: RobotAnimatorProps) {
   Globals.assign({ frameLoop: "always" })
   const jointValues = useRef<number[]>([])
   const jointObjects = useRef<THREE.Object3D[]>([])
-  const { scene, invalidate } = useThree()
+  const { invalidate } = useThree()
 
-  useEffect(() => {
-    // All robots have a "Scene" object as root
-    // From this object the tree is traversed and all joints are extracted (ordered ASC)
-    const sceneObject = scene.getObjectByName(robotRootObjectName)
-    if (!sceneObject) {
-      return
-    }
+  function setGroupRef(group: THREE.Group | null) {
+    if (!group) return
 
     jointObjects.current = jointCollector
-      ? jointCollector(sceneObject)
-      : getAllJointsByName(sceneObject)
+      ? jointCollector(group)
+      : getAllJointsByName(group)
 
     // Set initial position
     setRotation()
     invalidate()
-  }, [])
+  }
 
   function updateJoints(newJointValues: number[]) {
     jointValues.current = newJointValues
     setSpring.start(Object.assign({}, jointValues.current) as any)
   }
 
+  const rotationSign = robotConfig?.rotationSign || [1, 1, 1, 1, 1, 1]
+  const rotationOffsets = robotConfig?.rotationOffsets || [0, 0, 0, 0, 0, 0]
+
   function setRotation() {
-    const updatedJointValues = jointObjects.current.map((object, objectIndex) =>
+    const updatedJointValues = jointObjects.current.map((_, objectIndex) =>
       (axisValues as any)[objectIndex].get(),
     )
-    onRotationChanged(jointObjects.current, updatedJointValues)
+
+    if (onRotationChanged) {
+      onRotationChanged(jointObjects.current, updatedJointValues)
+    } else {
+      for (const [index, object] of jointObjects.current.entries()) {
+        object.rotation.y =
+          rotationSign[index]! * updatedJointValues[index]! +
+          rotationOffsets[index]!
+      }
+    }
   }
 
   useAutorun(() => {
@@ -78,5 +88,6 @@ export default function RobotAnimator({
       setRotation()
     },
   }))
-  return null
+
+  return <group ref={setGroupRef}>{children}</group>
 }
