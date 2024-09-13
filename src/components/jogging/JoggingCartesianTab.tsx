@@ -6,6 +6,7 @@ import {
 } from "@mui/material"
 import { degreesToRadians, radiansToDegrees } from "@wandelbots/wandelbots-js"
 import { observer } from "mobx-react-lite"
+import type { ReactNode } from "react"
 import { useTranslation } from "react-i18next"
 import XAxisIcon from "../../icons/axis-x.svg"
 import YAxisIcon from "../../icons/axis-y.svg"
@@ -27,7 +28,7 @@ type JoggingCartesianOpts = {
 }
 
 export const JoggingCartesianTab = observer(
-  ({ store }: { store: JoggingStore }) => {
+  ({ store, children }: { store: JoggingStore; children?: ReactNode }) => {
     const { t } = useTranslation()
 
     function onMotionTypeChange(
@@ -144,17 +145,20 @@ export const JoggingCartesianTab = observer(
     }
 
     return (
-      <Stack>
-        {/* Show Wandelscript string for the current coords */}
-        <JoggingCartesianValues store={store} />
+      <Stack flexGrow={1} justifyContent="space-between">
+        <Stack>
+          {/* Show Wandelscript string for the current coords */}
+          <JoggingCartesianValues store={store} />
 
-        {/* Jogging options */}
-        <JoggingOptions store={store} />
+          {/* Jogging options */}
+          <JoggingOptions store={store} />
+        </Stack>
 
         <Stack
           width="80%"
           maxWidth="296px"
-          margin="auto"
+          marginLeft="auto"
+          marginRight="auto"
           marginTop="16px"
           gap="12px"
         >
@@ -252,11 +256,16 @@ export const JoggingCartesianTab = observer(
           </JoggingActivationRequired>
         </Stack>
 
-        {/* Show message if joint limits reached */}
-        <JoggingJointLimitDetector store={store} />
+        <Stack>
+          {/* Show message if joint limits reached */}
+          <JoggingJointLimitDetector store={store} />
 
-        {/* Velocity slider */}
-        <JoggingVelocitySlider store={store} />
+          {/* Velocity slider */}
+          <JoggingVelocitySlider store={store} />
+
+          {/* Custom content */}
+          {children}
+        </Stack>
       </Stack>
     )
   },
