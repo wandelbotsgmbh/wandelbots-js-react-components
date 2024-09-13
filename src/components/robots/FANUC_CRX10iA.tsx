@@ -1,33 +1,18 @@
-import { useGLTF } from "@react-three/drei"
-import type * as THREE from "three"
-import type { RobotProps } from "./SupportedRobot"
-import RobotAnimator from "./RobotAnimator"
 import { animated } from "@react-spring/three"
+import { useGLTF } from "@react-three/drei"
+import type { RobotModelProps } from "./types"
 
-export function FANUC_CRX10iA({
-  modelURL,
-  rapidlyChangingMotionState,
-  ...props
-}: RobotProps) {
+FANUC_CRX10iA.config = {
+  rotationOffsets: [0, Math.PI / 2, 0, 0, 0, 0],
+}
+
+export function FANUC_CRX10iA({ modelURL, ...props }: RobotModelProps) {
   const gltf = useGLTF(modelURL) as any
   const nodes = gltf.nodes
   const materials = gltf.materials
-  const rotationOffsets = [0, Math.PI / 2, 0, 0, 0, 0]
-
-  function setRotation(jointObjects: THREE.Object3D[], jointValues: number[]) {
-    jointObjects.forEach(
-      (object, index) =>
-        (object.rotation.y = jointValues[index]! + rotationOffsets[index]!),
-    )
-  }
 
   return (
     <>
-      <RobotAnimator
-        rapidlyChangingMotionState={rapidlyChangingMotionState}
-        robotRootObjectName="Scene"
-        onRotationChanged={setRotation}
-      />
       <group {...props} dispose={null}>
         <group name="Scene">
           <animated.group name="CRX10iA_J00">

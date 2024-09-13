@@ -1,36 +1,20 @@
-import { useGLTF } from "@react-three/drei"
-import type * as THREE from "three"
-import type { RobotProps } from "./SupportedRobot"
 import { animated } from "@react-spring/three"
-import RobotAnimator from "./RobotAnimator"
+import { useGLTF } from "@react-three/drei"
+import type { RobotModelProps } from "./types"
 
-export function Yaskawa_AR1440({
-  modelURL,
-  rapidlyChangingMotionState,
-  ...props
-}: RobotProps) {
+Yaskawa_AR1440.config = {
+  rotationOffsets: [0, -Math.PI / 2, 0, 0, 0, 0],
+  rotationSign: [1, -1, 1, 1, 1, 1],
+}
+
+export function Yaskawa_AR1440({ modelURL, ...props }: RobotModelProps) {
   const gltf = useGLTF(modelURL) as any
 
   const nodes = gltf.nodes
   const materials = gltf.materials
-  const rotationOffsets = [0, -Math.PI / 2, 0, 0, 0, 0]
-  const rotationSign = [1, -1, 1, 1, 1, 1]
-
-  function setRotation(jointObjects: THREE.Object3D[], jointValues: number[]) {
-    jointObjects.forEach(
-      (object, index) =>
-        (object.rotation.y =
-          rotationSign[index]! * jointValues[index]! + rotationOffsets[index]!),
-    )
-  }
 
   return (
     <>
-      <RobotAnimator
-        rapidlyChangingMotionState={rapidlyChangingMotionState}
-        robotRootObjectName="Scene"
-        onRotationChanged={setRotation}
-      />
       <group {...props} dispose={null}>
         <group name="Scene">
           <group name="AR1440" rotation={[Math.PI / 2, 0, 0]}>
