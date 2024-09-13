@@ -1,23 +1,23 @@
 import {
-  ToggleButtonGroup,
-  ToggleButton,
   Stack,
+  ToggleButton,
+  ToggleButtonGroup,
   Typography,
 } from "@mui/material"
-import { observer } from "mobx-react-lite"
-import { JoggingCartesianAxisControl } from "./JoggingCartesianAxisControl"
 import { degreesToRadians, radiansToDegrees } from "@wandelbots/wandelbots-js"
+import { observer } from "mobx-react-lite"
 import { useTranslation } from "react-i18next"
-import RotationIcon from "../../icons/rotation.svg"
 import XAxisIcon from "../../icons/axis-x.svg"
 import YAxisIcon from "../../icons/axis-y.svg"
 import ZAxisIcon from "../../icons/axis-z.svg"
-import type { JoggingStore, DiscreteIncrementOption } from "./JoggingStore"
-import { JoggingOptions } from "./JoggingOptions"
-import { JoggingVelocitySlider } from "./JoggingVelocitySlider"
+import RotationIcon from "../../icons/rotation.svg"
 import { useReaction } from "../utils/hooks"
+import { JoggingCartesianAxisControl } from "./JoggingCartesianAxisControl"
 import { JoggingCartesianValues } from "./JoggingCartesianValues"
 import { JoggingJointLimitDetector } from "./JoggingJointLimitDetector"
+import { JoggingOptions } from "./JoggingOptions"
+import type { DiscreteIncrementOption, JoggingStore } from "./JoggingStore"
+import { JoggingVelocitySlider } from "./JoggingVelocitySlider"
 
 type JoggingCartesianOpts = {
   axis: "x" | "y" | "z"
@@ -247,11 +247,11 @@ export const JoggingCartesianTab = observer(
             ))}
         </Stack>
 
-        {/* Velocity slider */}
-        <JoggingVelocitySlider store={store} />
-
         {/* Show message if joint limits reached */}
         <JoggingJointLimitDetector store={store} />
+
+        {/* Velocity slider */}
+        <JoggingVelocitySlider store={store} />
       </Stack>
     )
   },

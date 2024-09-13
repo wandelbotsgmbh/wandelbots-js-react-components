@@ -11,5 +11,6 @@
   "Jogging.Increment.Continuous.dd": "Continuous",
   "Jogging.Cartesian.Orientation.lb": "Orientation",
   "Jogging.Activate.bt": "Activate jogging",
-  "Jogging.Activating.lb": "Activating jogging"
+  "Jogging.Activating.lb": "Activating jogging",
+  "Jogging.JointLimitsReached.lb": "Joint limit reached for joint {{jointNumbers}}"
 }

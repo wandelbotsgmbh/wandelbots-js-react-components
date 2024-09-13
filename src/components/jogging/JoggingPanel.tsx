@@ -1,17 +1,17 @@
 import { Button, Paper, Stack, Tab, Tabs } from "@mui/material"
+import { NovaClient } from "@wandelbots/wandelbots-js"
+import { isString } from "lodash-es"
+import { runInAction } from "mobx"
 import { observer, useLocalObservable } from "mobx-react-lite"
 import { useEffect } from "react"
+import { useTranslation } from "react-i18next"
+import { externalizeComponent } from "../../externalizeComponent"
+import { LoadingCover } from "../LoadingCover"
+import { TransparentOverlay } from "../TransparentOverlay"
+import { useReaction } from "../utils/hooks"
 import { JoggingCartesianTab } from "./JoggingCartesianTab"
 import { JoggingJointTab } from "./JoggingJointTab"
 import { JoggingStore } from "./JoggingStore"
-import { LoadingCover } from "../LoadingCover"
-import { TransparentOverlay } from "../TransparentOverlay"
-import { runInAction } from "mobx"
-import { NovaClient } from "@wandelbots/wandelbots-js"
-import { externalizeComponent } from "../../externalizeComponent"
-import { isString } from "lodash-es"
-import { useReaction } from "../utils/hooks"
-import { useTranslation } from "react-i18next"
 
 export type JoggingPanelProps = {
   /** Either an existing NovaClient or the base url of a deployed Nova instance */
@@ -31,8 +31,6 @@ export type JoggingPanelProps = {
  */
 export const JoggingPanel = externalizeComponent(
   observer((props: JoggingPanelProps) => {
-    const { t } = useTranslation()
-
     const nova = isString(props.nova)
       ? new NovaClient({ instanceUrl: props.nova })
       : props.nova
