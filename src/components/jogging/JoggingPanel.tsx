@@ -151,15 +151,13 @@ const JoggingPanelInner = observer(
       if (store.currentTab.id === "cartesian") {
         return (
           <>
-            <JoggingCartesianTab store={store} />
-            {children}
+            <JoggingCartesianTab store={store}>{children}</JoggingCartesianTab>
           </>
         )
       } else if (store.currentTab.id === "joint") {
         return (
           <>
-            <JoggingJointTab store={store} />
-            {children}
+            <JoggingJointTab store={store}>{children}</JoggingJointTab>
           </>
         )
       }

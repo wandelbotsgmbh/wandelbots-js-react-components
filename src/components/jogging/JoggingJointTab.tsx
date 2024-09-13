@@ -1,6 +1,7 @@
 import { Stack, Typography } from "@mui/material"
 import { radiansToDegrees } from "@wandelbots/wandelbots-js"
 import { observer } from "mobx-react-lite"
+import type { ReactNode } from "react"
 import { JoggingActivationRequired } from "./JoggingActivationRequired"
 import { JoggingJointLimitDetector } from "./JoggingJointLimitDetector"
 import { JoggingJointRotationControl } from "./JoggingJointRotationControl"
@@ -9,7 +10,7 @@ import type { JoggingStore } from "./JoggingStore"
 import { JoggingVelocitySlider } from "./JoggingVelocitySlider"
 
 export const JoggingJointTab = observer(
-  ({ store }: { store: JoggingStore }) => {
+  ({ store, children }: { store: JoggingStore; children: ReactNode }) => {
     async function startJointJogging(opts: {
       joint: number
       direction: "-" | "+"
@@ -26,7 +27,7 @@ export const JoggingJointTab = observer(
     }
 
     return (
-      <Stack>
+      <Stack flexGrow={1} justifyContent="space-between">
         <JoggingJointValues store={store} />
 
         <Stack marginTop="0.8rem" />
