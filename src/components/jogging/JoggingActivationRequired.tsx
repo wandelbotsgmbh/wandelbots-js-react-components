@@ -13,7 +13,11 @@ export const JoggingActivationRequired = observer(
     function renderOverlay() {
       if (store.activationState === "inactive" && !store.activationError) {
         return (
-          <TransparentOverlay>
+          <TransparentOverlay
+            sx={{
+              borderRadius: "6px",
+            }}
+          >
             <Button
               color="primary"
               variant="contained"
@@ -37,7 +41,7 @@ export const JoggingActivationRequired = observer(
     }
 
     return (
-      <Stack sx={{ position: "relative" }}>
+      <Stack sx={{ position: "relative", padding: "6px" }}>
         {renderOverlay()}
         {children}
       </Stack>

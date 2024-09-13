@@ -1,16 +1,16 @@
 import {
-  Stack,
-  MenuItem,
   InputLabel,
+  MenuItem,
   Select,
-  ToggleButtonGroup,
+  Stack,
   ToggleButton,
+  ToggleButtonGroup,
 } from "@mui/material"
 import { observer } from "mobx-react-lite"
-import type { IncrementOptionId, JoggingStore } from "./JoggingStore"
 import { useTranslation } from "react-i18next"
 import OrientationCoordSysIcon from "../../icons/orientation-coord-system.svg"
 import OrientationToolIcon from "../../icons/orientation-tool.svg"
+import type { IncrementOptionId, JoggingStore } from "./JoggingStore"
 
 export const JoggingOptions = observer(({ store }: { store: JoggingStore }) => {
   const { t } = useTranslation()
@@ -30,7 +30,7 @@ export const JoggingOptions = observer(({ store }: { store: JoggingStore }) => {
         alignItems={"center"}
         spacing={2}
         sx={{
-          padding: "8px 16px",
+          padding: "6px 16px",
           "& label": {
             opacity: 0.7,
             fontSize: "12px",
@@ -83,7 +83,7 @@ export const JoggingOptions = observer(({ store }: { store: JoggingStore }) => {
         alignItems={"center"}
         spacing={2}
         sx={{
-          padding: "8px 16px",
+          padding: "6px 16px",
           "& label": {
             opacity: 0.7,
             fontSize: "12px",
