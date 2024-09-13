@@ -1,13 +1,11 @@
-import { Button, Paper, Stack, Tab, Tabs } from "@mui/material"
+import { Paper, Stack, Tab, Tabs } from "@mui/material"
 import { NovaClient } from "@wandelbots/wandelbots-js"
 import { isString } from "lodash-es"
 import { runInAction } from "mobx"
 import { observer, useLocalObservable } from "mobx-react-lite"
 import { useEffect } from "react"
-import { useTranslation } from "react-i18next"
 import { externalizeComponent } from "../../externalizeComponent"
 import { LoadingCover } from "../LoadingCover"
-import { TransparentOverlay } from "../TransparentOverlay"
 import { useReaction } from "../utils/hooks"
 import { JoggingCartesianTab } from "./JoggingCartesianTab"
 import { JoggingJointTab } from "./JoggingJointTab"
@@ -117,8 +115,6 @@ const JoggingPanelInner = observer(
     store: JoggingStore
     children?: React.ReactNode
   }) => {
-    const { t } = useTranslation()
-
     // Jogger is only active as long as the tab is focused
     useEffect(() => {
       function deactivate() {
@@ -150,32 +146,6 @@ const JoggingPanelInner = observer(
         if (store.activationState === "active") store.activate()
       },
     )
-
-    function renderOverlay() {
-      if (store.activationState === "inactive" && !store.activationError) {
-        return (
-          <TransparentOverlay>
-            <Button
-              color="primary"
-              variant="contained"
-              onClick={() => store.activate({ manual: true })}
-              disabled={store.isLocked}
-            >
-              {t("Jogging.Activate.bt")}
-            </Button>
-          </TransparentOverlay>
-        )
-      } else if (store.activationState === "loading" || store.activationError) {
-        return (
-          <TransparentOverlay>
-            <LoadingCover
-              message={t("Jogging.Activating.lb")}
-              error={store.activationError}
-            />
-          </TransparentOverlay>
-        )
-      }
-    }
 
     function renderTabContent() {
       if (store.currentTab.id === "cartesian") {
@@ -211,7 +181,6 @@ const JoggingPanelInner = observer(
 
         {/* Current tab content */}
         <Stack flexGrow={1} position="relative">
-          {renderOverlay()}
           {renderTabContent()}
         </Stack>
       </Stack>
