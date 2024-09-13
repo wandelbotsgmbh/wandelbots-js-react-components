@@ -159,7 +159,8 @@ export const JoggingCartesianTab = observer(
           maxWidth="296px"
           marginLeft="auto"
           marginRight="auto"
-          marginTop="16px"
+          marginTop="8px"
+          marginBottom="8px"
           gap="12px"
         >
           {/* Translate or rotate toggle */}
@@ -176,85 +177,93 @@ export const JoggingCartesianTab = observer(
               {t("Jogging.Cartesian.Rotation.bt")}
             </ToggleButton>
           </ToggleButtonGroup>
-
-          <JoggingActivationRequired store={store}>
-            {/* Cartesian translate jogging */}
-            <Stack gap="12px">
-              {store.selectedCartesianMotionType === "translate" &&
-                axisList.map((axis) => (
-                  <JoggingCartesianAxisControl
-                    key={axis.id}
-                    color={axis.color}
-                    disabled={store.isLocked}
-                    label={
-                      <>
-                        {axis.icon}
-                        <Typography
-                          sx={{
-                            fontSize: "24px",
-                            color: "white",
-                          }}
-                        >
-                          {axis.id.toUpperCase()}
-                        </Typography>
-                      </>
-                    }
-                    getDisplayedValue={() =>
-                      formatMM(
-                        store.jogger.motionStream.rapidlyChangingMotionState
-                          .tcp_pose?.position[axis.id] || 0,
-                      )
-                    }
-                    startJogging={(direction: "-" | "+") =>
-                      startCartesianJogging({
-                        axis: axis.id,
-                        motionType: "translate",
-                        direction,
-                      })
-                    }
-                    stopJogging={stopJogging}
-                  />
-                ))}
-
-              {/* Cartesian rotate jogging */}
-              {store.selectedCartesianMotionType === "rotate" &&
-                axisList.map((axis) => (
-                  <JoggingCartesianAxisControl
-                    key={axis.id}
-                    color={axis.color}
-                    disabled={store.isLocked}
-                    label={
-                      <>
-                        <RotationIcon />
-                        <Typography
-                          sx={{
-                            fontSize: "24px",
-                            color: "white",
-                          }}
-                        >
-                          {axis.id.toUpperCase()}
-                        </Typography>
-                      </>
-                    }
-                    getDisplayedValue={() =>
-                      formatDegrees(
-                        store.jogger.motionStream.rapidlyChangingMotionState
-                          .tcp_pose?.orientation?.[axis.id] || 0,
-                      )
-                    }
-                    startJogging={(direction: "-" | "+") =>
-                      startCartesianJogging({
-                        axis: axis.id,
-                        motionType: "rotate",
-                        direction,
-                      })
-                    }
-                    stopJogging={stopJogging}
-                  />
-                ))}
-            </Stack>
-          </JoggingActivationRequired>
         </Stack>
+
+        <JoggingActivationRequired store={store}>
+          <Stack
+            width="80%"
+            maxWidth="296px"
+            marginLeft="auto"
+            marginRight="auto"
+            marginTop="8px"
+            marginBottom="8px"
+            gap="12px"
+          >
+            {/* Cartesian translate jogging */}
+            {store.selectedCartesianMotionType === "translate" &&
+              axisList.map((axis) => (
+                <JoggingCartesianAxisControl
+                  key={axis.id}
+                  color={axis.color}
+                  disabled={store.isLocked}
+                  label={
+                    <>
+                      {axis.icon}
+                      <Typography
+                        sx={{
+                          fontSize: "24px",
+                          color: "white",
+                        }}
+                      >
+                        {axis.id.toUpperCase()}
+                      </Typography>
+                    </>
+                  }
+                  getDisplayedValue={() =>
+                    formatMM(
+                      store.jogger.motionStream.rapidlyChangingMotionState
+                        .tcp_pose?.position[axis.id] || 0,
+                    )
+                  }
+                  startJogging={(direction: "-" | "+") =>
+                    startCartesianJogging({
+                      axis: axis.id,
+                      motionType: "translate",
+                      direction,
+                    })
+                  }
+                  stopJogging={stopJogging}
+                />
+              ))}
+
+            {/* Cartesian rotate jogging */}
+            {store.selectedCartesianMotionType === "rotate" &&
+              axisList.map((axis) => (
+                <JoggingCartesianAxisControl
+                  key={axis.id}
+                  color={axis.color}
+                  disabled={store.isLocked}
+                  label={
+                    <>
+                      <RotationIcon />
+                      <Typography
+                        sx={{
+                          fontSize: "24px",
+                          color: "white",
+                        }}
+                      >
+                        {axis.id.toUpperCase()}
+                      </Typography>
+                    </>
+                  }
+                  getDisplayedValue={() =>
+                    formatDegrees(
+                      store.jogger.motionStream.rapidlyChangingMotionState
+                        .tcp_pose?.orientation?.[axis.id] || 0,
+                    )
+                  }
+                  startJogging={(direction: "-" | "+") =>
+                    startCartesianJogging({
+                      axis: axis.id,
+                      motionType: "rotate",
+                      direction,
+                    })
+                  }
+                  stopJogging={stopJogging}
+                />
+              ))}
+          </Stack>
+        </JoggingActivationRequired>
 
         <Stack>
           {/* Show message if joint limits reached */}
