@@ -1,4 +1,5 @@
 import { Stack } from "@mui/material"
+import { omit } from "lodash-es"
 import React from "react"
 
 export const TransparentOverlay = (
@@ -17,8 +18,9 @@ export const TransparentOverlay = (
         backgroundColor: "rgba(0, 0, 0, 0.6)",
         backdropFilter: "blur(1px)",
         zIndex: 100,
+        ...(props.sx || {}),
       }}
-      {...props}
+      {...omit(props, "sx")}
     />
   )
 }
