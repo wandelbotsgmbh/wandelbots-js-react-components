@@ -1,7 +1,7 @@
+import { Typography, useTheme } from "@mui/material"
 import Slider from "@mui/material/Slider"
 import isNumber from "lodash-es/isNumber"
 import { observer } from "mobx-react-lite"
-import { Typography, useTheme } from "@mui/material"
 
 type VelocitySliderProps = {
   min: number

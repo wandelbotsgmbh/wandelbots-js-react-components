@@ -16,7 +16,7 @@ export const TransparentOverlay = (
       justifyContent="center"
       sx={{
         backgroundColor: "rgba(0, 0, 0, 0.6)",
-        backdropFilter: "blur(1px)",
+        backdropFilter: "blur(2px)",
         zIndex: 100,
         ...(props.sx || {}),
       }}
