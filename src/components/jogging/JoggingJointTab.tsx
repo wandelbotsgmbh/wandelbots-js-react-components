@@ -29,8 +29,6 @@ export const JoggingJointTab = observer(
     return (
       <Stack flexGrow={1} justifyContent="space-between">
         <JoggingJointValues store={store} />
-
-        <Stack marginTop="0.8rem" />
         <JoggingActivationRequired store={store}>
           <Stack gap="0.8rem">
             {store.jogger.motionStream.joints.map((joint) => {
@@ -92,6 +90,8 @@ export const JoggingJointTab = observer(
         </JoggingActivationRequired>
         <JoggingJointLimitDetector store={store} />
         <JoggingVelocitySlider store={store} />
+        {/* Custom content */}
+        {children}
       </Stack>
     )
   },
