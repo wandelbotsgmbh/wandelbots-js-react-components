@@ -18,6 +18,9 @@ i18n.use(LanguageDetector).init({
   },
   ns: ["translations"],
   defaultNS: "translations",
+  detection: {
+    order: ["navigator", "htmlTag"],
+  },
 })
 
 export default i18n
