@@ -16,6 +16,7 @@ export const JoggingActivationRequired = observer(
           <TransparentOverlay
             sx={{
               borderRadius: "6px",
+              backgroundColor: "rgba(38, 47, 66, 0.7)",
             }}
           >
             <Button
@@ -30,7 +31,11 @@ export const JoggingActivationRequired = observer(
         )
       } else if (store.activationState === "loading" || store.activationError) {
         return (
-          <TransparentOverlay>
+          <TransparentOverlay
+            sx={{
+              backgroundColor: "rgba(38, 47, 66, 0.7)",
+            }}
+          >
             <LoadingCover
               message={t("Jogging.Activating.lb")}
               error={store.activationError}
