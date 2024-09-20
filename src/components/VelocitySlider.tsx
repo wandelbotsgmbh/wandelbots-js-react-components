@@ -32,6 +32,7 @@ export const VelocitySlider = observer((props: VelocitySliderProps) => {
           textAlign: "center",
           fontSize: "14px",
           opacity: 0.8,
+          lineHeight: 1,
           color: theme.palette.text.primary,
         }}
       >

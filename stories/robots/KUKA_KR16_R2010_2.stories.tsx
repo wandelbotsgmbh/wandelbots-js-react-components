@@ -7,7 +7,8 @@ import { sharedStoryConfig } from "./robotStoryConfig"
 
 export default {
   ...sharedStoryConfig,
-  title: "3D View/Robots/KUKA_KR16_R2010_2",
+  tags: ["!autodocs"],
+  title: "3D View/Robot/Supported Models/KUKA_KR16_R2010_2",
 }
 
 function SupportedRobotScene(
@@ -70,5 +71,5 @@ export const RobotStory: StoryObj<typeof SupportedRobotScene> = {
     modelFromController: "KUKA_KR16_R2010_2",
   },
   render: (args) => <SupportedRobotScene {...args} />,
-  name: "Default",
+  name: "KUKA_KR16_R2010_2",
 }

@@ -1,8 +1,8 @@
-import { Stack, Typography } from "@mui/material"
+import { Stack } from "@mui/material"
 import { observer, useLocalObservable } from "mobx-react-lite"
-import type { JoggingStore } from "./JoggingStore"
-import { VelocitySlider } from "../VelocitySlider"
 import { useTranslation } from "react-i18next"
+import { VelocitySlider } from "../VelocitySlider"
+import type { JoggingStore } from "./JoggingStore"
 
 export const JoggingVelocitySlider = observer(
   ({ store }: { store: JoggingStore }) => {
@@ -24,8 +24,7 @@ export const JoggingVelocitySlider = observer(
       <Stack
         sx={{
           margin: "0px 20px",
-          marginTop: "24px",
-          marginBottom: "24px",
+          marginBottom: "6px",
         }}
       >
         <Stack sx={{ width: "380px", maxWidth: "90%", margin: "auto" }}>

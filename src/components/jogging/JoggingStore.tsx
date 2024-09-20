@@ -1,3 +1,10 @@
+import type {
+  CoordinateSystem,
+  JoggerConnection,
+  MotionGroupSpecification,
+  RobotTcp,
+} from "@wandelbots/wandelbots-js"
+import { tryParseJson } from "@wandelbots/wandelbots-js"
 import keyBy from "lodash-es/keyBy"
 import uniqueId from "lodash-es/uniqueId"
 import {
@@ -6,13 +13,6 @@ import {
   runInAction,
   type IReactionDisposer,
 } from "mobx"
-import type {
-  CoordinateSystem,
-  JoggerConnection,
-  MotionGroupSpecification,
-  RobotTcp,
-} from "@wandelbots/wandelbots-js"
-import { tryParseJson } from "@wandelbots/wandelbots-js"
 
 const discreteIncrementOptions = [
   { id: "0.1", mm: 0.1, degrees: 0.05 },
@@ -177,6 +177,15 @@ export class JoggingStore {
       await websocket.closed()
     }
 
+    // Closing websocket sometimes isn't enough to stop interference
+    try {
+      await this.jogger.nova.api.motionGroupJogging.stopJogging(
+        this.jogger.motionGroupId,
+      )
+    } catch (err) {
+      console.error(err)
+    }
+
     if (opts.requireManualReactivation) {
       runInAction(() => {
         this.manualActivationRequired = true
@@ -202,6 +211,18 @@ export class JoggingStore {
       this.activationState = "loading"
       this.activationError = null
     })
+
+    // Setting mode control makes jogging startup slightly faster
+    // on physical robots
+    // https://wandelbots.slack.com/archives/C06VA4J59PF/p1725523765976109?thread_ts=1725464963.859559&cid=C06VA4J59PF
+    try {
+      await this.jogger.nova.api.controller.setDefaultMode(
+        this.jogger.motionStream.controllerId,
+        "MODE_CONTROL",
+      )
+    } catch (err) {
+      console.error(err)
+    }
 
     if (currentTab.id === "cartesian") {
       const cartesianJoggingOpts = {

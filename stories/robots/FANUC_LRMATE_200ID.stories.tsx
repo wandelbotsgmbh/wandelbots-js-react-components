@@ -1,14 +1,12 @@
 import type { StoryObj } from "@storybook/react"
-import { Euler, Vector3, WebGLRenderer } from "three"
 import { SupportedRobot } from "../../src"
-import type { MotionGroupStateResponse } from "@wandelbots/wandelbots-js"
 import { rapidlyChangingMotionState } from "./motionState"
 import { sharedStoryConfig } from "./robotStoryConfig"
 
 export default {
   ...sharedStoryConfig,
   tags: ["!autodocs"],
-  title: "3D View/Robot/Supported Models/UniversalRobots_UR3",
+  title: "3D View/Robot/Supported Models/FANUC_LRMATE_200ID",
 }
 
 function SupportedRobotScene(
@@ -20,44 +18,44 @@ function SupportedRobotScene(
       rapidlyChangingMotionState={rapidlyChangingMotionState}
       dhParameters={[
         {
-          a: 0,
-          d: 89.159000000000006,
+          a: 50,
+          d: 0,
           alpha: 1.5707963267948966,
           theta: 0,
           reverse_rotation_direction: false,
         },
         {
-          a: -425,
+          a: 330,
           d: 0,
           alpha: 0,
-          theta: 0,
+          theta: 1.5707963267948966,
           reverse_rotation_direction: false,
         },
         {
-          a: -392.25,
+          a: 35,
           d: 0,
-          alpha: 0,
-          theta: 0,
-          reverse_rotation_direction: false,
-        },
-        {
-          a: 0,
-          d: 109.15000000000001,
-          alpha: 1.5707963267948966,
-          theta: 0,
-          reverse_rotation_direction: false,
-        },
-        {
-          a: 0,
-          d: 94.650000000000006,
           alpha: -1.5707963267948966,
           theta: 0,
           reverse_rotation_direction: false,
         },
         {
           a: 0,
-          d: 82.299999999999997,
-          alpha: 0,
+          d: -335,
+          alpha: 1.5707963267948966,
+          theta: 0,
+          reverse_rotation_direction: false,
+        },
+        {
+          a: 0,
+          d: 0,
+          alpha: -1.5707963267948966,
+          theta: 0,
+          reverse_rotation_direction: false,
+        },
+        {
+          a: 0,
+          d: -80,
+          alpha: 3.1415926535897931,
           theta: 0,
           reverse_rotation_direction: false,
         },
@@ -68,8 +66,8 @@ function SupportedRobotScene(
 
 export const RobotStory: StoryObj<typeof SupportedRobotScene> = {
   args: {
-    modelFromController: "UniversalRobots_UR3",
+    modelFromController: "FANUC_LRMATE_200ID",
   },
   render: (args) => <SupportedRobotScene {...args} />,
-  name: "UniversalRobots_UR3",
+  name: "FANUC_LRMATE_200ID",
 }

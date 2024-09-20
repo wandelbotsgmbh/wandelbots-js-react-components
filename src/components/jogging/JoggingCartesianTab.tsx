@@ -13,6 +13,7 @@ import YAxisIcon from "../../icons/axis-y.svg"
 import ZAxisIcon from "../../icons/axis-z.svg"
 import RotationIcon from "../../icons/rotation.svg"
 import { useReaction } from "../utils/hooks"
+import { JoggingActivationRequired } from "./JoggingActivationRequired"
 import { JoggingCartesianAxisControl } from "./JoggingCartesianAxisControl"
 import { JoggingCartesianValues } from "./JoggingCartesianValues"
 import { JoggingJointLimitDetector } from "./JoggingJointLimitDetector"
@@ -27,7 +28,13 @@ type JoggingCartesianOpts = {
 }
 
 export const JoggingCartesianTab = observer(
-  ({ store }: { store: JoggingStore }) => {
+  ({
+    store,
+    children,
+  }: {
+    store: JoggingStore
+    children?: React.ReactNode
+  }) => {
     const { t } = useTranslation()
     const theme = useTheme()
 
@@ -145,14 +152,24 @@ export const JoggingCartesianTab = observer(
     }
 
     return (
-      <Stack>
-        {/* Show Wandelscript string for the current coords */}
-        <JoggingCartesianValues store={store} />
+      <Stack flexGrow={1} justifyContent="space-between">
+        <Stack>
+          {/* Show Wandelscript string for the current coords */}
+          <JoggingCartesianValues store={store} />
 
-        {/* Jogging options */}
-        <JoggingOptions store={store} />
+          {/* Jogging options */}
+          <JoggingOptions store={store} />
+        </Stack>
 
-        <Stack width="80%" maxWidth="296px" margin="auto" marginTop="16px">
+        <Stack
+          width="80%"
+          maxWidth="296px"
+          marginLeft="auto"
+          marginRight="auto"
+          marginTop="8px"
+          marginBottom="8px"
+          gap="12px"
+        >
           {/* Translate or rotate toggle */}
           <ToggleButtonGroup
             value={store.selectedCartesianMotionType}
@@ -168,19 +185,25 @@ export const JoggingCartesianTab = observer(
               {t("Jogging.Cartesian.Rotation.bt")}
             </ToggleButton>
           </ToggleButtonGroup>
+        </Stack>
 
-          {/* Cartesian translate jogging */}
-
-          <Stack gap="10px" marginTop="10px">
+        <JoggingActivationRequired store={store}>
+          <Stack
+            width="80%"
+            maxWidth="296px"
+            marginLeft="auto"
+            marginRight="auto"
+            marginTop="8px"
+            marginBottom="8px"
+            gap="12px"
+          >
+            {/* Cartesian translate jogging */}
             {store.selectedCartesianMotionType === "translate" &&
               axisList.map((axis) => (
                 <JoggingCartesianAxisControl
                   key={axis.id}
                   colors={axis.colors}
                   disabled={store.isLocked}
-                  sx={{
-                    marginTop: "12px",
-                  }}
                   label={
                     <>
                       {axis.icon}
@@ -218,9 +241,6 @@ export const JoggingCartesianTab = observer(
                   key={axis.id}
                   colors={axis.colors}
                   disabled={store.isLocked}
-                  sx={{
-                    marginTop: "12px",
-                  }}
                   label={
                     <>
                       <RotationIcon />
@@ -251,13 +271,18 @@ export const JoggingCartesianTab = observer(
                 />
               ))}
           </Stack>
+        </JoggingActivationRequired>
+
+        <Stack>
+          {/* Show message if joint limits reached */}
+          <JoggingJointLimitDetector store={store} />
+
+          {/* Velocity slider */}
+          <JoggingVelocitySlider store={store} />
+
+          {/* Custom content */}
+          {children}
         </Stack>
-
-        {/* Velocity slider */}
-        <JoggingVelocitySlider store={store} />
-
-        {/* Show message if joint limits reached */}
-        <JoggingJointLimitDetector store={store} />
       </Stack>
     )
   },

@@ -30,7 +30,7 @@ export const JoggingOptions = observer(({ store }: { store: JoggingStore }) => {
         alignItems={"center"}
         spacing={2}
         sx={{
-          padding: "8px 16px",
+          padding: "6px 16px",
           "& label": {
             opacity: 0.7,
             fontSize: "12px",
@@ -87,7 +87,7 @@ export const JoggingOptions = observer(({ store }: { store: JoggingStore }) => {
         alignItems={"center"}
         spacing={2}
         sx={{
-          padding: "8px 16px",
+          padding: "6px 16px",
           "& label": {
             opacity: 0.7,
             fontSize: "12px",

@@ -1,31 +1,14 @@
 import { animated } from "@react-spring/three"
 import { useGLTF } from "@react-three/drei"
-import type * as THREE from "three"
-import type { RobotProps } from "./SupportedRobot"
-import RobotAnimator from "./RobotAnimator"
+import type { RobotModelProps } from "./types"
 
-export function UniversalRobots_UR3({
-  modelURL,
-  rapidlyChangingMotionState,
-  ...props
-}: RobotProps) {
+export function UniversalRobots_UR3({ modelURL, ...props }: RobotModelProps) {
   const gltf = useGLTF(modelURL) as any
   const nodes = gltf.nodes
   const materials = gltf.materials
 
-  function setRotation(jointObjects: THREE.Object3D[], jointValues: number[]) {
-    jointObjects.forEach(
-      (object, index) => (object.rotation.y = jointValues[index]!),
-    )
-  }
-
   return (
     <>
-      <RobotAnimator
-        rapidlyChangingMotionState={rapidlyChangingMotionState}
-        robotRootObjectName="Scene"
-        onRotationChanged={setRotation}
-      />
       <group {...props} dispose={null}>
         <group name="Scene">
           <group name="UR3" rotation={[Math.PI / 2, 0, 0]}>

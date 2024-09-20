@@ -1,7 +1,7 @@
 import { Typography } from "@mui/material"
-import { useTranslation } from "react-i18next"
-import { useState } from "react"
 import isEqual from "lodash-es/isEqual"
+import { useRef, useState } from "react"
+import { useTranslation } from "react-i18next"
 import { useAnimationFrame } from "../utils/hooks"
 import type { JoggingStore } from "./JoggingStore"
 
@@ -20,30 +20,31 @@ export const JoggingJointLimitDetector = ({
     store.jogger.motionStream.rapidlyChangingMotionState.state
       .joint_limit_reached.limit_reached,
   )
+  const jointLimitsReachedRef = useRef(jointLimitsReached)
 
   useAnimationFrame(() => {
     const newLimitsReached =
       store.jogger.motionStream.rapidlyChangingMotionState.state
         .joint_limit_reached.limit_reached
 
-    if (!isEqual(jointLimitsReached, newLimitsReached)) {
+    if (!isEqual(jointLimitsReachedRef.current, newLimitsReached)) {
+      jointLimitsReachedRef.current = newLimitsReached
       setJointLimitsReached(newLimitsReached)
     }
   })
 
   const jointLimitReachedIndices: number[] = []
-  jointLimitsReached.forEach((limitReached, index) => {
+  for (const [index, limitReached] of jointLimitsReached.entries()) {
     if (limitReached) jointLimitReachedIndices.push(index)
-  })
-
-  if (!jointLimitReachedIndices.length) return null
+  }
 
   return (
     <Typography
       color="error"
       sx={{
-        padding: "1rem",
+        margin: "0.5rem 1rem",
         textAlign: "center",
+        visibility: jointLimitReachedIndices.length ? "visible" : "hidden",
       }}
     >
       {t("Jogging.JointLimitsReached.lb", {

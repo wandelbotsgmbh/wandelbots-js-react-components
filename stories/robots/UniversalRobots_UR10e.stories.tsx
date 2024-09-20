@@ -5,7 +5,8 @@ import { sharedStoryConfig } from "./robotStoryConfig"
 
 export default {
   ...sharedStoryConfig,
-  title: "3D View/Robots/UniversalRobots_UR10e",
+  tags: ["!autodocs"],
+  title: "3D View/Robot/Supported Models/UniversalRobots_UR10e",
 }
 
 function SupportedRobotScene(
@@ -68,5 +69,5 @@ export const RobotStory: StoryObj<typeof SupportedRobotScene> = {
     modelFromController: "UniversalRobots_UR10e",
   },
   render: (args) => <SupportedRobotScene {...args} />,
-  name: "Default",
+  name: "UniversalRobots_UR10e",
 }
