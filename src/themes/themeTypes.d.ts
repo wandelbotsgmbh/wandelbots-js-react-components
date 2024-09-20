@@ -8,7 +8,7 @@ type NovaColorPaletteExtension = {
       outlineBorder?: string
     }
     secondary?: {
-      tonal?: String
+      tonal?: string
     }
   }
 }

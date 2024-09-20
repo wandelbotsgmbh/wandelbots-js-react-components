@@ -209,7 +209,7 @@ const JoggingPanelInner = observer(
 
         {/* Current tab content */}
         <Stack flexGrow={1} position="relative">
-          {/* {renderOverlay()} */}
+          {renderOverlay()}
           {renderTabContent()}
         </Stack>
       </Stack>

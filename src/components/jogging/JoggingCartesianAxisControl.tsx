@@ -4,7 +4,7 @@ import Stack from "@mui/material/Stack"
 import { observer } from "mobx-react-lite"
 import { useRef, type ReactNode } from "react"
 import { externalizeComponent } from "../../externalizeComponent"
-import type { AxisControlComponentColors } from "../../themes/theming"
+import type { AxisControlComponentColors } from "../../themes/themeTypes"
 import { useAnimationFrame } from "../utils/hooks"
 
 type JoggingCartesianAxisControlProps = {
