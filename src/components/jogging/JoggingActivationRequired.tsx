@@ -1,4 +1,4 @@
-import { Button, Stack } from "@mui/material"
+import { Button, Stack, useTheme } from "@mui/material"
 import { observer } from "mobx-react-lite"
 import type React from "react"
 import { useTranslation } from "react-i18next"
@@ -9,6 +9,7 @@ import type { JoggingStore } from "./JoggingStore"
 export const JoggingActivationRequired = observer(
   ({ store, children }: { store: JoggingStore; children: React.ReactNode }) => {
     const { t } = useTranslation()
+    const theme = useTheme()
 
     function renderOverlay() {
       if (store.activationState === "inactive" && !store.activationError) {
@@ -16,7 +17,7 @@ export const JoggingActivationRequired = observer(
           <TransparentOverlay
             sx={{
               borderRadius: "6px",
-              backgroundColor: "rgba(38, 47, 66, 0.7)",
+              backgroundColor: `color-mix(in srgb, ${theme.palette.backgroundPaperElevation?.[5]}, transparent)`,
             }}
           >
             <Button
@@ -33,7 +34,7 @@ export const JoggingActivationRequired = observer(
         return (
           <TransparentOverlay
             sx={{
-              backgroundColor: "rgba(38, 47, 66, 0.7)",
+              backgroundColor: `color-mix(in srgb, ${theme.palette.backgroundPaperElevation?.[5]}, transparent)`,
             }}
           >
             <LoadingCover
