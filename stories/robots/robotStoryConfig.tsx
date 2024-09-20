@@ -1,13 +1,22 @@
 // sharedStoryConfig.tsx
-import React from "react"
 import type { Meta } from "@storybook/react"
-import { Setup } from "../../src/Setup"
-import { SupportedRobot } from "../../src"
 import { Vector3 } from "three"
+import { defaultGetModel, SupportedRobot } from "../../src"
+import { Setup } from "../../src/Setup"
 
 export const sharedStoryConfig = {
   tags: ["!dev"],
   component: SupportedRobot,
+  args: {
+    getModel: (modelFromController: string) => {
+      // Fetch from local models in development storybook rather than CDN
+      if (process.env.NODE_ENV === "development") {
+        return `/models/${modelFromController}.glb`
+      } else {
+        return defaultGetModel(modelFromController)
+      }
+    },
+  },
   decorators: [
     (Story) => (
       <div
