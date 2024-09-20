@@ -1,17 +1,17 @@
-import { Button, Paper, Stack, Tab, Tabs } from "@mui/material"
+import { Button, Stack, Tab, Tabs, useTheme } from "@mui/material"
+import { NovaClient } from "@wandelbots/wandelbots-js"
+import { isString } from "lodash-es"
+import { runInAction } from "mobx"
 import { observer, useLocalObservable } from "mobx-react-lite"
 import { useEffect } from "react"
+import { useTranslation } from "react-i18next"
+import { externalizeComponent } from "../../externalizeComponent"
+import { LoadingCover } from "../LoadingCover"
+import { TransparentOverlay } from "../TransparentOverlay"
+import { useReaction } from "../utils/hooks"
 import { JoggingCartesianTab } from "./JoggingCartesianTab"
 import { JoggingJointTab } from "./JoggingJointTab"
 import { JoggingStore } from "./JoggingStore"
-import { LoadingCover } from "../LoadingCover"
-import { TransparentOverlay } from "../TransparentOverlay"
-import { runInAction } from "mobx"
-import { NovaClient } from "@wandelbots/wandelbots-js"
-import { externalizeComponent } from "../../externalizeComponent"
-import { isString } from "lodash-es"
-import { useReaction } from "../utils/hooks"
-import { useTranslation } from "react-i18next"
 
 export type JoggingPanelProps = {
   /** Either an existing NovaClient or the base url of a deployed Nova instance */
@@ -32,6 +32,7 @@ export type JoggingPanelProps = {
 export const JoggingPanel = externalizeComponent(
   observer((props: JoggingPanelProps) => {
     const { t } = useTranslation()
+    const theme = useTheme()
 
     const nova = isString(props.nova)
       ? new NovaClient({ instanceUrl: props.nova })
@@ -90,22 +91,13 @@ export const JoggingPanel = externalizeComponent(
           height: "100%",
         }}
       >
-        <Paper
-          sx={{
-            height: "100%",
-          }}
-        >
-          {state.joggingStore ? (
-            <JoggingPanelInner store={state.joggingStore}>
-              {props.children}
-            </JoggingPanelInner>
-          ) : (
-            <LoadingCover
-              message="Loading jogging"
-              error={state.loadingError}
-            />
-          )}
-        </Paper>
+        {state.joggingStore ? (
+          <JoggingPanelInner store={state.joggingStore}>
+            {props.children}
+          </JoggingPanelInner>
+        ) : (
+          <LoadingCover message="Loading jogging" error={state.loadingError} />
+        )}
       </Stack>
     )
   }),
@@ -200,7 +192,11 @@ const JoggingPanelInner = observer(
     return (
       <Stack flexGrow={1} height="100%">
         {/* Tab selection */}
-        <Tabs value={store.tabIndex} onChange={store.onTabChange}>
+        <Tabs
+          value={store.tabIndex}
+          onChange={store.onTabChange}
+          variant="fullWidth"
+        >
           {store.tabs.map((tab) => (
             <Tab
               key={tab.id}
@@ -213,7 +209,7 @@ const JoggingPanelInner = observer(
 
         {/* Current tab content */}
         <Stack flexGrow={1} position="relative">
-          {renderOverlay()}
+          {/* {renderOverlay()} */}
           {renderTabContent()}
         </Stack>
       </Stack>

@@ -1,14 +1,14 @@
-import { Stack, Typography } from "@mui/material"
-import { observer } from "mobx-react-lite"
+import { Stack, Typography, useTheme } from "@mui/material"
 import { radiansToDegrees } from "@wandelbots/wandelbots-js"
-import type { JoggingStore } from "./JoggingStore"
-import { JoggingVelocitySlider } from "./JoggingVelocitySlider"
+import { observer } from "mobx-react-lite"
 import { JoggingJointRotationControl } from "./JoggingJointRotationControl"
 import { JoggingJointValues } from "./JoggingJointValues"
-import { useEffect } from "react"
+import type { JoggingStore } from "./JoggingStore"
+import { JoggingVelocitySlider } from "./JoggingVelocitySlider"
 
 export const JoggingJointTab = observer(
   ({ store }: { store: JoggingStore }) => {
+    const theme = useTheme()
     async function startJointJogging(opts: {
       joint: number
       direction: "-" | "+"

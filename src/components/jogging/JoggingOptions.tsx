@@ -1,16 +1,16 @@
 import {
-  Stack,
-  MenuItem,
   InputLabel,
+  MenuItem,
   Select,
-  ToggleButtonGroup,
+  Stack,
   ToggleButton,
+  ToggleButtonGroup,
 } from "@mui/material"
 import { observer } from "mobx-react-lite"
-import type { IncrementOptionId, JoggingStore } from "./JoggingStore"
 import { useTranslation } from "react-i18next"
 import OrientationCoordSysIcon from "../../icons/orientation-coord-system.svg"
 import OrientationToolIcon from "../../icons/orientation-tool.svg"
+import type { IncrementOptionId, JoggingStore } from "./JoggingStore"
 
 export const JoggingOptions = observer(({ store }: { store: JoggingStore }) => {
   const { t } = useTranslation()
@@ -44,6 +44,8 @@ export const JoggingOptions = observer(({ store }: { store: JoggingStore }) => {
           <Select
             labelId="jogging-coord-select"
             value={store.selectedCoordSystemId}
+            size="small"
+            variant="filled"
             displayEmpty={true}
             onChange={(event) => {
               store.setSelectedCoordSystemId(event.target.value as string)
@@ -64,6 +66,8 @@ export const JoggingOptions = observer(({ store }: { store: JoggingStore }) => {
           <Select
             labelId="jogging-tcp-select"
             value={store.selectedTcpId}
+            size="small"
+            variant="filled"
             onChange={(event) => {
               store.setSelectedTcpId(event.target.value as string)
             }}
@@ -92,7 +96,7 @@ export const JoggingOptions = observer(({ store }: { store: JoggingStore }) => {
         }}
       >
         {/* Orientation */}
-        <Stack width="35%">
+        <Stack width="50%">
           <InputLabel id="orientation-select">
             {t("Jogging.Cartesian.Orientation.lb")}
           </InputLabel>
@@ -103,20 +107,22 @@ export const JoggingOptions = observer(({ store }: { store: JoggingStore }) => {
             aria-labelledby="orientation-select"
             disabled={store.isLocked}
           >
-            <ToggleButton value="coordsys">
+            <ToggleButton value="coordsys" sx={{ flexGrow: 1 }}>
               <OrientationCoordSysIcon />
             </ToggleButton>
-            <ToggleButton value="tool">
+            <ToggleButton value="tool" sx={{ flexGrow: 1 }}>
               <OrientationToolIcon />
             </ToggleButton>
           </ToggleButtonGroup>
         </Stack>
 
         {/* Increment selection */}
-        <Stack width="65%">
+        <Stack width="50%">
           <InputLabel id="jogging-increment-select">{"Increment"}</InputLabel>
           <Select
             labelId="jogging-increment-select"
+            size="small"
+            variant="filled"
             value={store.activeDiscreteIncrement?.id || "continuous"}
             onChange={(event) => {
               store.setSelectedIncrementId(

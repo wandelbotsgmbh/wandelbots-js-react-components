@@ -1,7 +1,7 @@
+import { Typography, useTheme } from "@mui/material"
 import Slider from "@mui/material/Slider"
 import isNumber from "lodash-es/isNumber"
 import { observer } from "mobx-react-lite"
-import { Typography, useTheme } from "@mui/material"
 
 type VelocitySliderProps = {
   min: number
@@ -39,6 +39,7 @@ export const VelocitySlider = observer((props: VelocitySliderProps) => {
       </Typography>
       <Slider
         value={props.velocity}
+        color="secondary"
         onChange={onSliderChange}
         min={props.min}
         max={props.max}
