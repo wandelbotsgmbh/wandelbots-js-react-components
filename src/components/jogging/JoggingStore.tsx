@@ -1,3 +1,10 @@
+import type {
+  CoordinateSystem,
+  JoggerConnection,
+  MotionGroupSpecification,
+  RobotTcp,
+} from "@wandelbots/wandelbots-js"
+import { tryParseJson } from "@wandelbots/wandelbots-js"
 import keyBy from "lodash-es/keyBy"
 import uniqueId from "lodash-es/uniqueId"
 import {
@@ -6,13 +13,6 @@ import {
   runInAction,
   type IReactionDisposer,
 } from "mobx"
-import type {
-  CoordinateSystem,
-  JoggerConnection,
-  MotionGroupSpecification,
-  RobotTcp,
-} from "@wandelbots/wandelbots-js"
-import { tryParseJson } from "@wandelbots/wandelbots-js"
 
 const discreteIncrementOptions = [
   { id: "0.1", mm: 0.1, degrees: 0.05 },
@@ -175,6 +175,15 @@ export class JoggingStore {
 
     if (websocket) {
       await websocket.closed()
+    }
+
+    // Closing websocket sometimes isn't enough to stop interference
+    try {
+      await this.jogger.nova.api.motionGroupJogging.stopJogging(
+        this.jogger.motionGroupId,
+      )
+    } catch (err) {
+      console.error(err)
     }
 
     if (opts.requireManualReactivation) {
