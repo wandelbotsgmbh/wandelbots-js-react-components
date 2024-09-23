@@ -152,7 +152,7 @@ export const JoggingCartesianTab = observer(
     }
 
     return (
-      <Stack flexGrow={1} justifyContent="space-between">
+      <Stack flexGrow={1} gap={4}>
         <Stack>
           {/* Show Wandelscript string for the current coords */}
           <JoggingCartesianValues store={store} />
