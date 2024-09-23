@@ -104,7 +104,7 @@
     "@mui/icons-material": "^5.16.7",
     "@mui/lab": "^5.0.0-alpha.173",
     "@shikijs/monaco": "^1.16.1",
-    "@wandelbots/wandelbots-js": "^1.11.0",
+    "@wandelbots/wandelbots-js": "^1.11.1",
     "i18next-browser-languagedetector": "^8.0.0",
     "lodash-es": "^4.17.21",
     "mobx": "^6.13.1",
