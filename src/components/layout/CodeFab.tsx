@@ -1,6 +1,6 @@
 import { Fab, styled, type FabProps } from "@mui/material"
 
-const SelecteableFab = styled(Fab, {
+const SelectableFab = styled(Fab, {
   shouldForwardProp: (prop) => prop !== "selected",
 })<CodeFabProps>(({ theme }) => ({
   borderRadius: "20px",
