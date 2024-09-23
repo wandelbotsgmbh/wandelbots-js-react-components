@@ -1,10 +1,25 @@
+import { Box, useTheme } from "@mui/material"
 import type { Meta, StoryObj } from "@storybook/react"
-import { JoggingPanel } from "../src/index"
+import { JoggingPanel, type JoggingPanelProps } from "../src/index"
+
+const JoggingPanelWrapper = (props: JoggingPanelProps) => {
+  const theme = useTheme()
+  return (
+    <Box
+      sx={{
+        backgroundColor: theme.palette.backgroundPaperElevation?.[5],
+        maxWidth: "min-content",
+      }}
+    >
+      <JoggingPanel {...props} />
+    </Box>
+  )
+}
 
 const meta: Meta<typeof JoggingPanel> = {
   title: "Jogging/JoggingPanel",
   tags: ["!dev"],
-  component: JoggingPanel,
+  component: JoggingPanelWrapper,
 }
 export default meta
 
