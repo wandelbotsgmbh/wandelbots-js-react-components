@@ -1,8 +1,8 @@
-import type { Meta, StoryObj } from "@storybook/react"
 import { Box, Button, Stack, Typography, useTheme } from "@mui/material"
+import type { Meta, StoryObj } from "@storybook/react"
 
-import componentSamples from "./MuiSamples"
 import { externalizeComponent } from "../src/externalizeComponent"
+import componentSamples from "./MuiSamples"
 
 const MUIComponents = externalizeComponent(() => {
   const theme = useTheme()
@@ -13,6 +13,7 @@ const MUIComponents = externalizeComponent(() => {
         "& .MuiStack-root:not(:first-of-type)": {
           marginTop: "2rem",
         },
+        color: `${theme.palette.text.primary}`,
       }}
     >
       {componentSamples.map(({ id, title, component, docs }) => (
