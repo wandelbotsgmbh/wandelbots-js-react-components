@@ -37,7 +37,7 @@ type CodeFabProps = {
 
 export function CodeFab({ selected, ...props }: CodeFabProps) {
   return (
-    <SelecteableFab
+    <SelectableFab
       selected={selected}
       {...props}
       color={"secondary"}
