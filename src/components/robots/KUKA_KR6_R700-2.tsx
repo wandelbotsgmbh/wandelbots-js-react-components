@@ -1,8 +1,8 @@
-import * as THREE from "three"
-import React, { useRef } from "react"
+import { animated } from "@react-spring/three"
 import { useGLTF } from "@react-three/drei"
-import { GLTF } from "three-stdlib"
-import { RobotProps } from "./SupportedRobot"
+import * as THREE from "three"
+import type { GLTF } from "three-stdlib"
+import type { RobotModelProps } from "./types"
 
 type GLTFResult = GLTF & {
   nodes: {
@@ -25,11 +25,7 @@ type GLTFResult = GLTF & {
   }
 }
 
-export function Model({
-  modelURL,
-  connectedMotionGroup,
-  ...props
-}: RobotProps) {
+export function Model({ modelURL, ...props }: RobotModelProps) {
   const { nodes, materials } = useGLTF(modelURL) as GLTFResult
   return (
     <group {...props} dispose={null}>
@@ -50,28 +46,28 @@ export function Model({
             material={materials.kuka_black}
           />
         </group>
-        <group name="KUKA_KR6R700-2_J00">
-          <group
+        <animated.group name="KUKA_KR6R700-2_J00">
+          <animated.group
             name="KUKA_KR6R700-2_J01"
             position={[0.025, 0.4, 0]}
             rotation={[-Math.PI / 2, 0, 0]}
           >
-            <group
+            <animated.group
               name="KUKA_KR6R700-2_J02"
               position={[0.335, 0, 0]}
               rotation={[0, -Math.PI / 2, 0]}
             >
-              <group
+              <animated.group
                 name="KUKA_KR6R700-2_J03"
                 position={[0.025, 0, 0]}
                 rotation={[Math.PI / 2, 0, 0]}
               >
-                <group
+                <animated.group
                   name="KUKA_KR6R700-2_J04"
                   position={[0, -0.365, 0]}
                   rotation={[-Math.PI / 2, 0, 0]}
                 >
-                  <group
+                  <animated.group
                     name="KUKA_KR6R700-2_J05"
                     rotation={[-Math.PI / 2, 0, -Math.PI]}
                   >
@@ -89,7 +85,7 @@ export function Model({
                       position={[0.425, 0.725, 0]}
                       rotation={[-Math.PI, 0, Math.PI / 2]}
                     />
-                  </group>
+                  </animated.group>
                   <mesh
                     name="link_5"
                     castShadow
@@ -99,7 +95,7 @@ export function Model({
                     position={[-0.425, 0, 0.725]}
                     rotation={[Math.PI / 2, 0, -Math.PI / 2]}
                   />
-                </group>
+                </animated.group>
                 <group
                   name="link_4"
                   position={[-0.425, 0.36, 0]}
@@ -120,7 +116,7 @@ export function Model({
                     material={materials.kuka_orange}
                   />
                 </group>
-              </group>
+              </animated.group>
               <mesh
                 name="link_3"
                 castShadow
@@ -130,7 +126,7 @@ export function Model({
                 position={[-0.4, 0, 0.36]}
                 rotation={[Math.PI / 2, 0, -Math.PI / 2]}
               />
-            </group>
+            </animated.group>
             <group
               name="link_2"
               position={[-0.025, 0, -0.4]}
@@ -151,7 +147,7 @@ export function Model({
                 material={materials.kuka_orange}
               />
             </group>
-          </group>
+          </animated.group>
           <mesh
             name="link_1"
             castShadow
@@ -159,7 +155,7 @@ export function Model({
             geometry={nodes.link_1.geometry}
             material={materials.kuka_white}
           />
-        </group>
+        </animated.group>
       </group>
     </group>
   )
