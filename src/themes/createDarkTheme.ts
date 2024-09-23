@@ -1,6 +1,6 @@
-import { createTheme } from "@mui/material"
+import { createTheme, type Theme } from "@mui/material"
 
-export function createDarkTheme() {
+export function createDarkTheme(): Theme {
   const baseTheme = createTheme({
     palette: {
       mode: "dark",

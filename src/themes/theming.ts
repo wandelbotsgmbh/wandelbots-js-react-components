@@ -1,6 +1,6 @@
 "use client"
 
-import type { ThemeOptions } from "@mui/material/styles"
+import type { Theme, ThemeOptions } from "@mui/material/styles"
 import { createDarkTheme } from "./createDarkTheme"
 import { createLightTheme } from "./createLightTheme"
 
@@ -8,7 +8,7 @@ import { createLightTheme } from "./createLightTheme"
  * Create the default Wandelbots Nova Material UI theme, overriding
  * any defaults with the provided theme options.
  */
-export function createNovaMuiTheme(opts: ThemeOptions) {
+export function createNovaMuiTheme(opts: ThemeOptions): Theme {
   console.log("Create new theme")
   let isDark = true
   if (opts.palette?.mode === "light") {
