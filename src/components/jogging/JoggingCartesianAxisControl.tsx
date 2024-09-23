@@ -1,12 +1,14 @@
-import { Button, Typography } from "@mui/material"
+import { Add, Remove } from "@mui/icons-material"
+import { IconButton, Typography } from "@mui/material"
 import Stack from "@mui/material/Stack"
 import { observer } from "mobx-react-lite"
 import { useRef, type ReactNode } from "react"
-import { useAnimationFrame } from "../utils/hooks"
 import { externalizeComponent } from "../../externalizeComponent"
+import type { AxisControlComponentColors } from "../../themes/themeTypes"
+import { useAnimationFrame } from "../utils/hooks"
 
 type JoggingCartesianAxisControlProps = {
-  color?: string
+  colors?: AxisControlComponentColors
   label: ReactNode
   getDisplayedValue: () => string
   startJogging: (direction: "-" | "+") => void
@@ -17,7 +19,7 @@ type JoggingCartesianAxisControlProps = {
 export const JoggingCartesianAxisControl = externalizeComponent(
   observer(
     ({
-      color,
+      colors,
       label,
       getDisplayedValue,
       startJogging,
@@ -35,8 +37,6 @@ export const JoggingCartesianAxisControl = externalizeComponent(
 
       const valueContainerRef = useRef<HTMLParagraphElement>(null)
 
-      color = color || "#F14D42"
-
       function onPointerDownMinus(ev: React.PointerEvent) {
         // Stop right click from triggering jog
         if (ev.button === 0) startJogging("-")
@@ -46,35 +46,46 @@ export const JoggingCartesianAxisControl = externalizeComponent(
         if (ev.button === 0) startJogging("+")
       }
 
+      if (!colors) {
+        colors = {
+          color: "#fff",
+          backgroundColor: "#000",
+          borderColor: "#000",
+          buttonBackgroundColor: "#000",
+        }
+      }
+
       return (
-        <Stack height="72px" direction="row" {...rest}>
-          <Button
+        <Stack height="72px" direction="row" justifyContent="center" {...rest}>
+          <IconButton
             onPointerDown={onPointerDownMinus}
             onPointerUp={stopJogging}
             onPointerOut={stopJogging}
             disabled={disabled}
+            size="large"
             sx={{
-              width: "105px",
-              backgroundColor: color,
-              color: "white",
+              width: "55px",
+              backgroundColor: colors.buttonBackgroundColor,
+              color: colors.color,
               alignContent: "center",
               fontSize: "37px",
               borderRadius: "16px 0px 0px 16px",
-
+              borderLeft: `2px solid ${colors.borderColor ?? "#fff"}`,
+              borderBottom: `2px solid ${colors.borderColor ?? "#fff"}`,
+              borderTop: `2px solid ${colors.borderColor ?? "#fff"}`,
               ":hover": {
-                color: "white",
-                backgroundColor: color,
+                backgroundColor: colors.buttonBackgroundColor,
               },
             }}
           >
-            {"-"}
-          </Button>
+            <Remove />
+          </IconButton>
 
           <Stack
             spacing="6px"
             sx={{
-              width: "184px",
-              backgroundColor: color,
+              width: "150px",
+              backgroundColor: colors.backgroundColor,
               alignItems: "center",
               justifyContent: "center",
               opacity: "0.9",
@@ -94,7 +105,7 @@ export const JoggingCartesianAxisControl = externalizeComponent(
               height="22px"
               sx={{
                 fontSize: "15px",
-                color: "white",
+                color: colors.color,
               }}
               ref={valueContainerRef}
             >
@@ -102,27 +113,29 @@ export const JoggingCartesianAxisControl = externalizeComponent(
             </Typography>
           </Stack>
 
-          <Button
+          <IconButton
             onPointerDown={onPointerDownPlus}
             onPointerUp={stopJogging}
             onPointerOut={stopJogging}
             disabled={disabled}
+            size="large"
             sx={{
-              width: "105px",
-              backgroundColor: color,
-              color: "white",
+              width: "55px",
+              backgroundColor: colors.buttonBackgroundColor,
+              color: colors.color,
               alignContent: "center",
               fontSize: "37px",
               borderRadius: "0px 16px 16px 0px",
-
+              borderRight: `2px solid ${colors.borderColor ?? "#fff"}`,
+              borderBottom: `2px solid ${colors.borderColor ?? "#fff"}`,
+              borderTop: `2px solid ${colors.borderColor ?? "#fff"}`,
               ":hover": {
-                color: "white",
-                backgroundColor: color,
+                backgroundColor: colors.buttonBackgroundColor,
               },
             }}
           >
-            {"+"}
-          </Button>
+            <Add />
+          </IconButton>
         </Stack>
       )
     },

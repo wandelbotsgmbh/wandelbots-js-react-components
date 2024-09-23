@@ -1,4 +1,4 @@
-import { Paper, Stack, Tab, Tabs } from "@mui/material"
+import { Paper, Stack, Tab, Tabs, useTheme } from "@mui/material"
 import { NovaClient } from "@wandelbots/wandelbots-js"
 import { isString } from "lodash-es"
 import { runInAction } from "mobx"
@@ -29,6 +29,8 @@ export type JoggingPanelProps = {
  */
 export const JoggingPanel = externalizeComponent(
   observer((props: JoggingPanelProps) => {
+    const theme = useTheme()
+
     const nova = isString(props.nova)
       ? new NovaClient({ instanceUrl: props.nova })
       : props.nova
@@ -86,22 +88,13 @@ export const JoggingPanel = externalizeComponent(
           height: "100%",
         }}
       >
-        <Paper
-          sx={{
-            height: "100%",
-          }}
-        >
-          {state.joggingStore ? (
-            <JoggingPanelInner store={state.joggingStore}>
-              {props.children}
-            </JoggingPanelInner>
-          ) : (
-            <LoadingCover
-              message="Loading jogging"
-              error={state.loadingError}
-            />
-          )}
-        </Paper>
+        {state.joggingStore ? (
+          <JoggingPanelInner store={state.joggingStore}>
+            {props.children}
+          </JoggingPanelInner>
+        ) : (
+          <LoadingCover message="Loading jogging" error={state.loadingError} />
+        )}
       </Stack>
     )
   }),
@@ -166,7 +159,11 @@ const JoggingPanelInner = observer(
     return (
       <Stack flexGrow={1} height="100%">
         {/* Tab selection */}
-        <Tabs value={store.tabIndex} onChange={store.onTabChange}>
+        <Tabs
+          value={store.tabIndex}
+          onChange={store.onTabChange}
+          variant="fullWidth"
+        >
           {store.tabs.map((tab) => (
             <Tab
               key={tab.id}

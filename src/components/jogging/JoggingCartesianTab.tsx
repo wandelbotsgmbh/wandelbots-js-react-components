@@ -3,10 +3,10 @@ import {
   ToggleButton,
   ToggleButtonGroup,
   Typography,
+  useTheme,
 } from "@mui/material"
 import { degreesToRadians, radiansToDegrees } from "@wandelbots/wandelbots-js"
 import { observer } from "mobx-react-lite"
-import type { ReactNode } from "react"
 import { useTranslation } from "react-i18next"
 import XAxisIcon from "../../icons/axis-x.svg"
 import YAxisIcon from "../../icons/axis-y.svg"
@@ -28,8 +28,15 @@ type JoggingCartesianOpts = {
 }
 
 export const JoggingCartesianTab = observer(
-  ({ store, children }: { store: JoggingStore; children?: ReactNode }) => {
+  ({
+    store,
+    children,
+  }: {
+    store: JoggingStore
+    children?: React.ReactNode
+  }) => {
     const { t } = useTranslation()
+    const theme = useTheme()
 
     function onMotionTypeChange(
       _event: React.MouseEvent<HTMLElement>,
@@ -119,17 +126,17 @@ export const JoggingCartesianTab = observer(
     const axisList = [
       {
         id: "x",
-        color: "#F14D42",
+        colors: theme.componentsExt?.JoggingCartesian?.Axis?.X,
         icon: <XAxisIcon />,
       },
       {
         id: "y",
-        color: "#42A705",
+        colors: theme.componentsExt?.JoggingCartesian?.Axis?.Y,
         icon: <YAxisIcon />,
       },
       {
         id: "z",
-        color: "#0075FF",
+        colors: theme.componentsExt?.JoggingCartesian?.Axis?.Z,
         icon: <ZAxisIcon />,
       },
     ] as const
@@ -145,7 +152,7 @@ export const JoggingCartesianTab = observer(
     }
 
     return (
-      <Stack flexGrow={1} justifyContent="space-between">
+      <Stack flexGrow={1} gap={4}>
         <Stack>
           {/* Show Wandelscript string for the current coords */}
           <JoggingCartesianValues store={store} />
@@ -169,6 +176,7 @@ export const JoggingCartesianTab = observer(
             onChange={onMotionTypeChange}
             exclusive
             aria-label={t("Jogging.Cartesian.MotionType.lb")}
+            sx={{ justifyContent: "center" }}
           >
             <ToggleButton value="translate">
               {t("Jogging.Cartesian.Translation.bt")}
@@ -194,7 +202,7 @@ export const JoggingCartesianTab = observer(
               axisList.map((axis) => (
                 <JoggingCartesianAxisControl
                   key={axis.id}
-                  color={axis.color}
+                  colors={axis.colors}
                   disabled={store.isLocked}
                   label={
                     <>
@@ -231,7 +239,7 @@ export const JoggingCartesianTab = observer(
               axisList.map((axis) => (
                 <JoggingCartesianAxisControl
                   key={axis.id}
-                  color={axis.color}
+                  colors={axis.colors}
                   disabled={store.isLocked}
                   label={
                     <>

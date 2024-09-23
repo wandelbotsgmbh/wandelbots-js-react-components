@@ -40,6 +40,7 @@ export const VelocitySlider = observer((props: VelocitySliderProps) => {
       </Typography>
       <Slider
         value={props.velocity}
+        color="secondary"
         onChange={onSliderChange}
         min={props.min}
         max={props.max}
