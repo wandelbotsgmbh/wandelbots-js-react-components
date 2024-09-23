@@ -1,4 +1,4 @@
-import { Paper, Stack, Tab, Tabs, useTheme } from "@mui/material"
+import { Stack, Tab, Tabs } from "@mui/material"
 import { NovaClient } from "@wandelbots/wandelbots-js"
 import { isString } from "lodash-es"
 import { runInAction } from "mobx"
@@ -29,8 +29,6 @@ export type JoggingPanelProps = {
  */
 export const JoggingPanel = externalizeComponent(
   observer((props: JoggingPanelProps) => {
-    const theme = useTheme()
-
     const nova = isString(props.nova)
       ? new NovaClient({ instanceUrl: props.nova })
       : props.nova
@@ -65,7 +63,7 @@ export const JoggingPanel = externalizeComponent(
       return () => {
         state.joggingStore?.dispose()
       }
-    }, [props.nova])
+    }, [props.nova, props.motionGroupId])
 
     useEffect(() => {
       const store = state.joggingStore
