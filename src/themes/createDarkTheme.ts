@@ -108,7 +108,7 @@ export function createDarkTheme(): Theme {
         },
         variants: [
           {
-            props: { color: "secondary" },
+            props: { color: "secondary", variant: "contained" },
             style: {
               border: `1px solid ${baseTheme.palette.divider}`,
               background: baseTheme.paletteExt?.secondary?.tonal?.toString(),
@@ -174,6 +174,21 @@ export function createDarkTheme(): Theme {
                 padding: "6px 16px",
                 borderRadius: "10px",
               },
+            },
+          },
+        ],
+      },
+      MuiFab: {
+        styleOverrides: {
+          root: {
+            background: baseTheme.paletteExt?.secondary?.tonal,
+          },
+        },
+        variants: [
+          {
+            props: { color: "primary" },
+            style: {
+              background: baseTheme.palette.primary.main,
             },
           },
         ],
