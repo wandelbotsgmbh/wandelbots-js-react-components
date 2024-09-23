@@ -9,7 +9,6 @@ import { createLightTheme } from "./createLightTheme"
  * any defaults with the provided theme options.
  */
 export function createNovaMuiTheme(opts: ThemeOptions): Theme {
-  console.log("Create new theme")
   let isDark = true
   if (opts.palette?.mode === "light") {
     isDark = false
