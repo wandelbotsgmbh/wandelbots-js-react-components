@@ -16,6 +16,7 @@ type JoggingCartesianAxisControlProps = {
   disabled?: boolean
 } & React.ComponentProps<typeof Stack>
 
+/** A input widget to control an individual cartesian axis */
 export const JoggingCartesianAxisControl = externalizeComponent(
   observer(
     ({

@@ -1,13 +1,13 @@
-import { IconButton, Slider, Typography, useTheme } from "@mui/material"
-import Stack from "@mui/material/Stack"
-import { observer, useLocalObservable } from "mobx-react-lite"
 import ChevronLeft from "@mui/icons-material/ChevronLeft"
 import ChevronRight from "@mui/icons-material/ChevronRight"
-import { useAnimationFrame } from "../utils/hooks"
-import { useState } from "react"
+import { IconButton, Slider, Typography } from "@mui/material"
+import Stack from "@mui/material/Stack"
 import throttle from "lodash-es/throttle"
+import { observer, useLocalObservable } from "mobx-react-lite"
+import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { externalizeComponent } from "../../externalizeComponent"
+import { useAnimationFrame } from "../utils/hooks"
 
 type JoggingJointRotationControlProps = {
   startJogging: (direction: "-" | "+") => void
@@ -19,6 +19,7 @@ type JoggingJointRotationControlProps = {
   disabled?: boolean
 } & React.ComponentProps<typeof Stack>
 
+/** A input widget to control an individual joint */
 export const JoggingJointRotationControl = externalizeComponent(
   observer(
     ({
