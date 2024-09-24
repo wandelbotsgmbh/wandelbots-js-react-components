@@ -1,0 +1,16 @@
+import { Meta, Story } from '@storybook/blocks';
+import * as SafetyZonesRenderer from './SafetyZonesRenderer.stories';
+
+<Meta of={SafetyZonesRenderer} />
+
+# Safety Zones Renderer
+
+The `SafetyZonesRenderer` component visualizes the safety zones of the controller.
+
+This component should be used with [wandelbots-js](https://github.com/wandelbotsgmbh/wandelbots-js). Pass the `safetyZones` from the `connectedMotionGroup` to the component.
+
+```tsx
+<SafetyZonesRenderer safetyZones={connectedMotionGroup.safetyZones || []} />
+```
+
+<Story of={SafetyZonesRenderer.SafetyZonesRendererSt} />
