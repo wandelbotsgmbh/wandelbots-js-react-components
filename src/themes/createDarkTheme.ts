@@ -17,7 +17,6 @@ export function createDarkTheme(): Theme {
       },
       secondary: {
         main: "rgba(255, 255, 255, 1)",
-
         dark: "rgba(255, 255, 255, 0.06)",
         contrastText: "rgba(255, 255, 255, 0.87)",
       },
@@ -34,7 +33,7 @@ export function createDarkTheme(): Theme {
         contrastText: "rgba(255, 255, 255, 1)",
       },
       warning: {
-        main: "rgba(255, 255, 255, 1)",
+        main: "rgba(255, 171, 64, 1)",
         dark: "rgba(255, 145, 0, 1)",
         light: "rgba(255, 209, 128, 1)",
         contrastText: "rgba(0, 0, 0, 0.87)",
@@ -112,6 +111,12 @@ export function createDarkTheme(): Theme {
             style: {
               border: `1px solid ${baseTheme.palette.divider}`,
               background: baseTheme.paletteExt?.secondary?.tonal?.toString(),
+            },
+          },
+          {
+            props: { color: "secondary", variant: "outlined" },
+            style: {
+              border: `1px solid ${baseTheme.palette.divider}`,
             },
           },
         ],
