@@ -11,6 +11,7 @@ import { FANUC_LRMATE_200ID } from "./FANUC_LRMATE_200ID"
 import { KUKA_KR16_R2010_2 } from "./KUKA_KR16_R2010_2"
 import { KUKA_KR210_R2700 } from "./KUKA_KR210_R2700"
 import { KUKA_KR270_R2700 } from "./KUKA_KR270_R2700"
+import { KUKA_KR6_R700_2 } from "./KUKA_KR6_R700_2"
 import { UniversalRobots_UR10 } from "./UniversalRobots_UR10"
 import { UniversalRobots_UR10e } from "./UniversalRobots_UR10e"
 import { UniversalRobots_UR3 } from "./UniversalRobots_UR3"
@@ -226,6 +227,9 @@ export const SupportedRobot = externalizeComponent(
         break
       case "KUKA_KR16_R2010_2":
         Robot = KUKA_KR16_R2010_2
+        break
+      case "KUKA_KR6_R700_2":
+        Robot = KUKA_KR6_R700_2
         break
       case "ABB_1200_07_7":
         Robot = ABB_1200_07_7

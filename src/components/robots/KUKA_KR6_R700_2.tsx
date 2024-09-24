@@ -25,7 +25,7 @@ type GLTFResult = GLTF & {
   }
 }
 
-export function Model({ modelURL, ...props }: RobotModelProps) {
+export function KUKA_KR6_R700_2({ modelURL, ...props }: RobotModelProps) {
   const { nodes, materials } = useGLTF(modelURL) as GLTFResult
   return (
     <group {...props} dispose={null}>
