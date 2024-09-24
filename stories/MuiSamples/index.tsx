@@ -1,30 +1,31 @@
-import AppBarExample from "./AppBar"
 import AccordionExample from "./Accordion"
-import TypographyExample from "./Typography"
-import ButtonExample from "./Button"
-import CheckboxesExample from "./Checkboxes"
-import FabExample from "./FAB"
-import RadioExample from "./RadioGroup"
-import TabsExample from "./Tabs"
-import CardExample from "./Card"
-import ProgressExample from "./Progress"
-import SnackbarExample from "./Snackbar"
-import AvatarExample from "./Avatar"
 import AlertExample from "./Alert"
+import AppBarExample from "./AppBar"
+import AvatarExample from "./Avatar"
 import BadgeExample from "./Badge"
-import ChipExample from "./Chip"
 import BottomNavigationExample from "./BottomNavigation"
+import ButtonExample from "./Button"
+import CardExample from "./Card"
+import CheckboxesExample from "./Checkboxes"
+import ChipExample from "./Chip"
 import DialogExample from "./Dialog"
+import FabExample from "./FAB"
 import IconExample from "./Icon"
+import ListExample from "./List"
 import MenuExample from "./Menu"
+import PaletteExample from "./Palette"
+import ProgressExample from "./Progress"
+import RadioExample from "./RadioGroup"
 import SelectExample from "./Select"
 import SliderExample from "./Slider"
+import SnackbarExample from "./Snackbar"
 import StepperExample from "./Stepper"
 import SwitchExample from "./Switch"
-import TextFieldExample from "./TextField"
 import TableExample from "./Table"
-import ListExample from "./List"
+import TabsExample from "./Tabs"
+import TextFieldExample from "./TextField"
 import TooltipExample from "./Tooltip"
+import TypographyExample from "./Typography"
 
 // items skipped for now:
 // Button Group
@@ -34,6 +35,12 @@ import TooltipExample from "./Tooltip"
 
 // Alphabetically sorted list of all Material-UI component examples
 export default [
+  {
+    id: "Palette",
+    title: "Palette",
+    component: <PaletteExample />,
+    docs: "https://material-ui.com/customization/palette/",
+  },
   {
     id: "Accordion",
     title: "Accordion",
