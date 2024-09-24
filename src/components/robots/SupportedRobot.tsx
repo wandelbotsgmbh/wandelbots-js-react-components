@@ -12,7 +12,7 @@ import { KUKA_KR16_R2010_2 } from "./KUKA_KR16_R2010_2"
 import { KUKA_KR210_R2700 } from "./KUKA_KR210_R2700"
 import { KUKA_KR270_R2700 } from "./KUKA_KR270_R2700"
 import { KUKA_KR6_R700_2 } from "./KUKA_KR6_R700_2"
-import { UniversalRobots_UR10 } from "./UniversalRobots_UR10"
+import { UniversalRobots_UR10CB } from "./UniversalRobots_UR10CB"
 import { UniversalRobots_UR10e } from "./UniversalRobots_UR10e"
 import { UniversalRobots_UR3 } from "./UniversalRobots_UR3"
 import { UniversalRobots_UR3e } from "./UniversalRobots_UR3e"
@@ -168,8 +168,8 @@ export const SupportedRobot = externalizeComponent(
       case "UniversalRobots_UR5e":
         Robot = UniversalRobots_UR5e
         break
-      case "UniversalRobots_UR10":
-        Robot = UniversalRobots_UR10
+      case "UniversalRobots_UR10CB":
+        Robot = UniversalRobots_UR10CB
         break
       case "UniversalRobots_UR10e":
         Robot = UniversalRobots_UR10e
