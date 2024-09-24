@@ -1,6 +1,7 @@
 import { Suspense, useCallback, useEffect, useRef } from "react"
 
 import { ABB_1200_07_7 } from "./ABB_1200_07_7"
+import { ABB_1300_115_10 } from "./ABB_1300_115_10"
 import { FANUC_ARC_Mate_100iD } from "./FANUC_ARC_Mate_100iD"
 import { FANUC_ARC_Mate_120iD } from "./FANUC_ARC_Mate_120iD"
 import { FANUC_CRX10iA } from "./FANUC_CRX10iA"
@@ -233,6 +234,9 @@ export const SupportedRobot = externalizeComponent(
         break
       case "ABB_1200_07_7":
         Robot = ABB_1200_07_7
+        break
+      case "ABB_1300_115_10":
+        Robot = ABB_1300_115_10
         break
       default:
         console.warn(`Unknown robot type: ${modelFromController}`)
