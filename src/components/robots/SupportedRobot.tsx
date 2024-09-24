@@ -16,7 +16,7 @@ import { UniversalRobots_UR10 } from "./UniversalRobots_UR10"
 import { UniversalRobots_UR10e } from "./UniversalRobots_UR10e"
 import { UniversalRobots_UR3 } from "./UniversalRobots_UR3"
 import { UniversalRobots_UR3e } from "./UniversalRobots_UR3e"
-import { UniversalRobots_UR5 } from "./UniversalRobots_UR5"
+import { UniversalRobots_UR5CB } from "./UniversalRobots_UR5CB"
 import { UniversalRobots_UR5e } from "./UniversalRobots_UR5e"
 import { Yaskawa_AR1440 } from "./Yaskawa_AR1440"
 import { Yaskawa_AR1730 } from "./Yaskawa_AR1730"
@@ -162,8 +162,8 @@ export const SupportedRobot = externalizeComponent(
       case "UniversalRobots_UR3e":
         Robot = UniversalRobots_UR3e
         break
-      case "UniversalRobots_UR5":
-        Robot = UniversalRobots_UR5
+      case "UniversalRobots_UR5CB":
+        Robot = UniversalRobots_UR5CB
         break
       case "UniversalRobots_UR5e":
         Robot = UniversalRobots_UR5e
