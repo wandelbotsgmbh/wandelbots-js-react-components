@@ -14,8 +14,10 @@ npm install @wandelbots/wandelbots-js-react-components
 Import your desired components or functions from the package:
 
 ```jsx
-import { WandelscriptEditor, ... } from '@wandelbots/wandelbots-js-react-components'
+import { JoggingPanel, ... } from '@wandelbots/wandelbots-js-react-components'
 ```
+
+See the [Storybook](https://wandelbotsgmbh.github.io/wandelbots-js-react-components) for implementation details of each component.
 
 ### Index
 
@@ -23,10 +25,11 @@ import { WandelscriptEditor, ... } from '@wandelbots/wandelbots-js-react-compone
   <tr>
     <td valign="top">
       <ul>
-        <li><a href="#wandelscript">Wandelscript</a></li>
+        <li><a href="#ui">UI</a></li>
         <ul>
           <li><a href="#joggingpanel">JoggingPanel</a></li>
           <li><a href="#wandelscripteditor">WandelscriptEditor</a></li>
+          <li><a href="#theming">Theming</a></li>
         </ul>
         <li><a href="#viewport">3D Viewport</a></li>
         <ul>
@@ -39,9 +42,13 @@ import { WandelscriptEditor, ... } from '@wandelbots/wandelbots-js-react-compone
   </tr>
 </table>
 
-### Wandelscript
+### UI
 
 #### JoggingPanel
+
+<a href="https://wandelbotsgmbh.github.io/wandelbots-js-react-components/?path=/docs/jogging-joggingpanel--docs">
+<img width="20%" alt="jogging" src="https://github.com/user-attachments/assets/07d8bd72-9378-4199-8f54-d101c857797c">
+</a>
 
 The JoggingPanel is a high-level user interface for manually moving a robot using the Wandelbots stack. It needs only a `NovaClient` instance from [wandelbots-js](https://github.com/wandelbotsgmbh/wandelbots-js) and the id of a motion group to connect to.
 
@@ -76,11 +83,31 @@ type WandelscriptEditorProps = {
 }
 ```
 
+#### Theming
+
+The UI components presented in this library will respect the Material UI theme of the application they are rendered within, allowing customization with the [MUI theming system](mui.com/material-ui).
+
+Using the Wandelbots MUI theme
+To make the components look exactly like they do in the storybook, pass the [Wandelbots MUI theme](https://wandelbotsgmbh.github.io/wandelbots-js-react-components/?path=/docs/theming-wandelbots-mui-theme--docs) to ThemeProvider.
+
+```tsx
+import { ThemeProvider } from "@mui/material";
+import { createNovaMuiTheme, JoggingPanel } from "@wandelbots/wandelbots-js-react-components"
+
+const theme = createNovaMuiTheme()
+
+<ThemeProvider theme={theme}>
+  <JoggingPanel ... />
+</ThemeProvider>
+```
+
 ### Viewport
 
 #### Robot
 
-<img width="20%" alt="Screenshot 2024-08-08 at 14 17 55" src="https://github.com/user-attachments/assets/da661136-8b53-48ba-85de-63b09e3b51f3">
+<a href="https://wandelbotsgmbh.github.io/wandelbots-js-react-components/?path=/docs/3d-view-robot--docs">
+<img width="20%" alt="Robot" src="https://github.com/user-attachments/assets/da661136-8b53-48ba-85de-63b09e3b51f3">
+</a>
 
 This `Robot` component adds the robot to the 3D viewport. Use it together with the `connectedMotionGroup` from `@wandelbots/wandelbots-js`.
 
@@ -139,6 +166,10 @@ The `PresetEnvironment` component adds a default lighting setup to the 3D viewpo
 ```
 
 #### Safety
+
+<a href="https://wandelbotsgmbh.github.io/wandelbots-js-react-components/?path=/docs/3d-view-safetyzonesrenderer--docs">
+<img width="20%" alt="Bildschirmfoto 2024-09-19 um 14 26 40" src="https://github.com/user-attachments/assets/be5ef8c3-5cd2-4d6d-bfc3-cbf4eb4fc04c">
+</a>
 
 The `SafetyZonesRenderer` component visualizes the safety zones of the controller.
 
