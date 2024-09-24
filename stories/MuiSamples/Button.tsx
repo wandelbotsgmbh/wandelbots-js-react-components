@@ -25,6 +25,15 @@ export default function ButtonsExample() {
         <Button variant="contained" color="primary" href="#contained-buttons">
           Link
         </Button>
+        <Button variant="contained" color="warning">
+          Warning
+        </Button>
+        <Button variant="contained" color="error">
+          Error
+        </Button>
+        <Button variant="contained" color="success">
+          Success
+        </Button>
       </Stack>
 
       <Typography variant="h6" id="text-buttons">
@@ -37,6 +46,15 @@ export default function ButtonsExample() {
         <Button disabled>Disabled</Button>
         <Button color="primary" href="#text-buttons">
           Link
+        </Button>
+        <Button variant="text" color="warning">
+          Warning
+        </Button>
+        <Button variant="text" color="error">
+          Error
+        </Button>
+        <Button variant="text" color="success">
+          Success
         </Button>
       </Stack>
 
@@ -56,6 +74,15 @@ export default function ButtonsExample() {
         </Button>
         <Button variant="outlined" color="primary" href="#outlined-buttons">
           Link
+        </Button>
+        <Button variant="outlined" color="warning">
+          Warning
+        </Button>
+        <Button variant="outlined" color="error">
+          Error
+        </Button>
+        <Button variant="outlined" color="success">
+          Success
         </Button>
       </Stack>
 
