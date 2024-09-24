@@ -2,7 +2,7 @@ import { animated } from "@react-spring/three"
 import { useGLTF } from "@react-three/drei"
 import type { RobotModelProps } from "./types"
 
-export function UniversalRobots_UR3({ modelURL, ...props }: RobotModelProps) {
+export function UniversalRobots_UR3CB({ modelURL, ...props }: RobotModelProps) {
   const gltf = useGLTF(modelURL) as any
   const nodes = gltf.nodes
   const materials = gltf.materials

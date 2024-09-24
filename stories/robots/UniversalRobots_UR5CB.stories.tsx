@@ -1,13 +1,12 @@
 import type { StoryObj } from "@storybook/react"
 import { SupportedRobot } from "../../src"
-import type { MotionGroupStateResponse } from "@wandelbots/wandelbots-js"
 import { rapidlyChangingMotionState } from "./motionState"
 import { sharedStoryConfig } from "./robotStoryConfig"
 
 export default {
   ...sharedStoryConfig,
   tags: ["!autodocs"],
-  title: "3D View/Robot/Supported Models/UniversalRobots_UR5",
+  title: "3D View/Robot/Supported Models/UniversalRobots_UR5CB",
 }
 
 function SupportedRobotScene(
@@ -67,8 +66,8 @@ function SupportedRobotScene(
 
 export const UR5Story: StoryObj<typeof SupportedRobotScene> = {
   args: {
-    modelFromController: "UniversalRobots_UR5",
+    modelFromController: "UniversalRobots_UR5CB",
   },
   render: (args) => <SupportedRobotScene {...args} />,
-  name: "UniversalRobots_UR5",
+  name: "UniversalRobots_UR5CB",
 }
