@@ -128,13 +128,13 @@ const JoggingPanelInner = observer(
     // Update jogging mode on jogger based on user selections
     useReaction(
       () => [
-        store.currentTab,
+        store.currentTab.id,
         store.selectedTcpId,
         store.activeCoordSystemId,
         store.activeDiscreteIncrement,
       ],
       () => {
-        if (store.activationState === "active") store.activate()
+        if (store.activationState !== "inactive") store.activate()
       },
     )
 
