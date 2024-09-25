@@ -39,11 +39,15 @@ export const JoggingCartesianAxisControl = externalizeComponent(
       const valueContainerRef = useRef<HTMLParagraphElement>(null)
 
       function onPointerDownMinus(ev: React.PointerEvent) {
+        if (disabled) return
+
         // Stop right click from triggering jog
         if (ev.button === 0) startJogging("-")
       }
 
       function onPointerDownPlus(ev: React.PointerEvent) {
+        if (disabled) return
+
         if (ev.button === 0) startJogging("+")
       }
 
@@ -62,7 +66,6 @@ export const JoggingCartesianAxisControl = externalizeComponent(
             onPointerDown={onPointerDownMinus}
             onPointerUp={stopJogging}
             onPointerOut={stopJogging}
-            disabled={disabled}
             size="large"
             sx={{
               width: "55px",
@@ -118,7 +121,6 @@ export const JoggingCartesianAxisControl = externalizeComponent(
             onPointerDown={onPointerDownPlus}
             onPointerUp={stopJogging}
             onPointerOut={stopJogging}
-            disabled={disabled}
             size="large"
             sx={{
               width: "55px",
