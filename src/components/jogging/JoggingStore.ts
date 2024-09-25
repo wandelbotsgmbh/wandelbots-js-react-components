@@ -49,6 +49,9 @@ export class JoggingStore {
    */
   activationError: unknown | null = null
 
+  /** To avoid activation race conditions */
+  activationCounter: number = 0
+
   /** Locks to prevent UI interactions during certain operations */
   locks = new Set<string>()
 
@@ -195,16 +198,7 @@ export class JoggingStore {
 
   /** Activate the jogger with current settings */
   async activate(opts: { manual?: boolean } = {}) {
-    const {
-      currentTab,
-      selectedTcpId,
-      activeCoordSystemId,
-      activeDiscreteIncrement,
-      jogger,
-    } = this
-
-    if (this.activationState === "loading") return
-
+    console.log("activate!!")
     if (this.manualActivationRequired && !opts.manual) return
 
     runInAction(() => {
@@ -224,25 +218,25 @@ export class JoggingStore {
       console.error(err)
     }
 
-    if (currentTab.id === "cartesian") {
+    if (this.currentTab.id === "cartesian") {
       const cartesianJoggingOpts = {
-        tcpId: selectedTcpId,
-        coordSystemId: activeCoordSystemId,
+        tcpId: this.selectedTcpId,
+        coordSystemId: this.activeCoordSystemId,
       }
 
-      if (activeDiscreteIncrement) {
-        jogger.setJoggingMode("increment", cartesianJoggingOpts)
+      if (this.activeDiscreteIncrement) {
+        this.jogger.setJoggingMode("increment", cartesianJoggingOpts)
       } else {
-        jogger.setJoggingMode("cartesian", cartesianJoggingOpts)
+        this.jogger.setJoggingMode("cartesian", cartesianJoggingOpts)
       }
     } else {
-      jogger.setJoggingMode("joint")
+      this.jogger.setJoggingMode("joint")
     }
 
-    if (jogger.activeWebsocket) {
+    if (this.jogger.activeWebsocket) {
       try {
-        jogger.stop()
-        await jogger.activeWebsocket.nextMessage()
+        this.jogger.stop()
+        await this.jogger.activeWebsocket.nextMessage()
       } catch (err) {
         runInAction(() => {
           this.activationState = "inactive"
