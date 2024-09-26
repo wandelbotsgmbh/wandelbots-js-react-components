@@ -28,7 +28,7 @@ type GLTFResult = GLTF & {
   }
 }
 
-export function FANUC_LRMATE_200ID({ modelURL, ...props }: RobotModelProps) {
+export function FANUC_LR_MATE_200ID({ modelURL, ...props }: RobotModelProps) {
   const { nodes, materials } = useGLTF(modelURL) as GLTFResult
   return (
     <group {...props} dispose={null}>
