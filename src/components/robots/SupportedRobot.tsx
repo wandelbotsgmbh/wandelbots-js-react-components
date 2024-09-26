@@ -208,7 +208,7 @@ export const SupportedRobot = externalizeComponent(
       case "FANUC_CRX25iAL":
         Robot = FANUC_CRX25iAL
         break
-      case "FANUC_LRMATE_200ID":
+      case "FANUC_LR_MATE_200ID":
         Robot = FANUC_LR_MATE_200ID
         break
       case "FANUC_ARC_Mate_120iD":
