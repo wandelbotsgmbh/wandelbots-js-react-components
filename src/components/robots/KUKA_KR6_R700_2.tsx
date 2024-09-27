@@ -1,6 +1,6 @@
 import { animated } from "@react-spring/three"
 import { useGLTF } from "@react-three/drei"
-import * as THREE from "three"
+import type * as THREE from "three"
 import type { GLTF } from "three-stdlib"
 import type { RobotModelProps } from "./types"
 
@@ -23,6 +23,11 @@ type GLTFResult = GLTF & {
     kuka_white: THREE.MeshStandardMaterial
     kuka_orange: THREE.MeshStandardMaterial
   }
+}
+
+KUKA_KR6_R700_2.config = {
+  rotationOffsets: [0, 0, -Math.PI / 2, 0, 0, 0],
+  rotationSign: [-1, 1, 1, 1, 1, 1],
 }
 
 export function KUKA_KR6_R700_2({ modelURL, ...props }: RobotModelProps) {
