@@ -157,19 +157,19 @@ export const SupportedRobot = externalizeComponent(
     }, [isGhost])
 
     switch (modelFromController) {
-      case "UniversalRobots_UR3CB":
+      case "UniversalRobots_UR3":
         Robot = UniversalRobots_UR3CB
         break
       case "UniversalRobots_UR3e":
         Robot = UniversalRobots_UR3e
         break
-      case "UniversalRobots_UR5CB":
+      case "UniversalRobots_UR5":
         Robot = UniversalRobots_UR5CB
         break
       case "UniversalRobots_UR5e":
         Robot = UniversalRobots_UR5e
         break
-      case "UniversalRobots_UR10CB":
+      case "UniversalRobots_UR10":
         Robot = UniversalRobots_UR10CB
         break
       case "UniversalRobots_UR10e":
