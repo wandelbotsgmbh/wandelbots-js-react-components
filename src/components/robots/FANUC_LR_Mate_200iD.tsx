@@ -28,6 +28,10 @@ type GLTFResult = GLTF & {
   }
 }
 
+FANUC_LR_Mate_200iD.config = {
+  rotationOffsets: [0, Math.PI / 2, 0, 0, 0, 0],
+}
+
 export function FANUC_LR_Mate_200iD({ modelURL, ...props }: RobotModelProps) {
   const { nodes, materials } = useGLTF(modelURL) as GLTFResult
   return (
