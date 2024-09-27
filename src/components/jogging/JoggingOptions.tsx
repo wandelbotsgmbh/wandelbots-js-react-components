@@ -54,7 +54,10 @@ export const JoggingOptions = observer(({ store }: { store: JoggingStore }) => {
           >
             {store.coordSystems.map((cs) => (
               <MenuItem key={cs.coordinate_system} value={cs.coordinate_system}>
-                {cs.name || cs.coordinate_system}
+                {/* Distinguish coordinate systems with the same name */}
+                {cs.name && store.coordSystemCountByName[cs.name] > 1
+                  ? `${cs.name} / ${cs.coordinate_system}`
+                  : cs.name || cs.coordinate_system}
               </MenuItem>
             ))}
           </Select>

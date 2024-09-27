@@ -5,6 +5,7 @@ import type {
   RobotTcp,
 } from "@wandelbots/wandelbots-js"
 import { tryParseJson } from "@wandelbots/wandelbots-js"
+import { countBy } from "lodash-es"
 import keyBy from "lodash-es/keyBy"
 import uniqueId from "lodash-es/uniqueId"
 import {
@@ -169,6 +170,10 @@ export class JoggingStore {
     this.jogger.dispose()
   }
 
+  get coordSystemCountByName() {
+    return countBy(this.coordSystems, (cs) => cs.name)
+  }
+
   async deactivate(opts: { requireManualReactivation?: boolean } = {}) {
     if (this.activationState === "inactive") return
     const websocket = this.jogger.activeWebsocket
@@ -198,7 +203,6 @@ export class JoggingStore {
 
   /** Activate the jogger with current settings */
   async activate(opts: { manual?: boolean } = {}) {
-    console.log("activate!!")
     if (this.manualActivationRequired && !opts.manual) return
 
     runInAction(() => {
