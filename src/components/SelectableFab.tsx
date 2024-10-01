@@ -1,4 +1,5 @@
 import { Fab, styled, type FabProps } from "@mui/material"
+import { forwardRef, type Ref } from "react"
 
 const StyledSelectableFab = styled(Fab, {
   shouldForwardProp: (prop) => prop !== "selected",
@@ -35,13 +36,16 @@ type CodeFabProps = {
   selected?: boolean
 } & Omit<FabProps, "variant" | "color">
 
-export function SelectableFab({ selected, ...props }: CodeFabProps) {
-  return (
-    <StyledSelectableFab
-      selected={selected}
-      {...props}
-      color={"secondary"}
-      variant="circular"
-    />
-  )
-}
+export const SelectableFab = forwardRef(
+  (props: CodeFabProps, ref: Ref<HTMLButtonElement>) => {
+    return (
+      <StyledSelectableFab
+        ref={ref}
+        selected={props.selected}
+        {...props}
+        color={"secondary"}
+        variant="circular"
+      />
+    )
+  },
+)
