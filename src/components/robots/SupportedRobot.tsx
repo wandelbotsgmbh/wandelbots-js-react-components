@@ -37,6 +37,7 @@ import { ErrorBoundary } from "react-error-boundary"
 import * as THREE from "three"
 import { externalizeComponent } from "../../externalizeComponent"
 import ConsoleFilter from "../ConsoleFilter"
+import { FANUC_CRX10iAL } from "./FANUC_CRX10iAL"
 import RobotAnimator from "./RobotAnimator"
 import type { RobotModelComponent } from "./types"
 
@@ -198,6 +199,9 @@ export const SupportedRobot = externalizeComponent(
         break
       case "FANUC_CRX10iA":
         Robot = FANUC_CRX10iA
+        break
+      case "FANUC_CRX10iAL":
+        Robot = FANUC_CRX10iAL
         break
       case "FANUC_CRX20iAL":
         Robot = FANUC_CRX20iAL
