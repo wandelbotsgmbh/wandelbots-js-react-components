@@ -1,29 +1,6 @@
 import { animated } from "@react-spring/three"
 import { useGLTF } from "@react-three/drei"
-import type * as THREE from "three"
-import type { GLTF } from "three-stdlib"
 import type { RobotModelProps } from "./types"
-
-type GLTFResult = GLTF & {
-  nodes: {
-    visuals_0: THREE.Mesh
-    visuals_0_1: THREE.Mesh
-    link_6: THREE.Mesh
-    link_5: THREE.Mesh
-    visuals_4: THREE.Mesh
-    visuals_4_1: THREE.Mesh
-    link_3: THREE.Mesh
-    visuals_2: THREE.Mesh
-    visuals_2_1: THREE.Mesh
-    link_1: THREE.Mesh
-  }
-  materials: {
-    kuka_metal: THREE.MeshPhysicalMaterial
-    kuka_black: THREE.MeshStandardMaterial
-    kuka_white: THREE.MeshStandardMaterial
-    kuka_orange: THREE.MeshStandardMaterial
-  }
-}
 
 KUKA_KR6_R700_2.config = {
   rotationOffsets: [0, 0, -Math.PI / 2, 0, 0, 0],
@@ -31,7 +8,7 @@ KUKA_KR6_R700_2.config = {
 }
 
 export function KUKA_KR6_R700_2({ modelURL, ...props }: RobotModelProps) {
-  const { nodes, materials } = useGLTF(modelURL) as GLTFResult
+  const { nodes, materials } = useGLTF(modelURL) as any
   return (
     <group {...props} dispose={null}>
       <group name="Scene">
