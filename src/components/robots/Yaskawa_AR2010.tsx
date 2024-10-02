@@ -13,135 +13,147 @@ export function Yaskawa_AR2010({ modelURL, ...props }: RobotModelProps) {
   const materials = gltf.materials
 
   return (
-    <>
-      <group {...props} dispose={null}>
-        <group name="Scene">
-          <group name="AR2010" rotation={[Math.PI / 2, 0, 0]}>
-            <animated.group name="AR2010_J01" rotation={[-Math.PI / 2, 0, 0]}>
-              <animated.group
-                name="AR2010_J02"
-                position={[0.15, 0, 0]}
-                rotation={[Math.PI / 2, 0, Math.PI]}
-              >
-                <animated.group
-                  name="AR2010_J03"
-                  position={[0.76, 0, 0]}
-                  rotation={[Math.PI, 0, 0]}
-                >
-                  <animated.group
-                    name="AR2010_J04"
-                    position={[0.2, 0, 0]}
-                    rotation={[-Math.PI / 2, 0, 0]}
-                  >
-                    <animated.group
-                      name="AR2010_J05"
-                      position={[0, -1.082, 0]}
-                      rotation={[Math.PI / 2, 0, 0]}
-                    >
-                      <animated.group
-                        name="AR2010_J06"
-                        rotation={[-Math.PI / 2, 0, 0]}
-                      >
-                        <group
-                          name="AR2010_FLG"
-                          position={[0, -0.1, 0]}
-                          rotation={[-Math.PI, 0, 0]}
-                        ></group>
-                        <group name="AR2010_L06">
-                          <mesh
-                            name="AR2010_06001"
-                            castShadow
-                            receiveShadow
-                            geometry={nodes.AR2010_06001.geometry}
-                            material={materials.yaskawaBlueMetall}
-                          />
-                          <mesh
-                            name="AR2010_06001_1"
-                            castShadow
-                            receiveShadow
-                            geometry={nodes.AR2010_06001_1.geometry}
-                            material={materials.metall}
-                          />
-                        </group>
-                      </animated.group>
-                      <mesh
-                        name="AR2010_L05"
-                        castShadow
-                        receiveShadow
-                        geometry={nodes.AR2010_L05.geometry}
-                        material={materials.yaskawaBlueMetall}
-                      />
-                    </animated.group>
-                    <group name="AR2010_L04">
-                      <mesh
-                        name="AR2010_04001"
-                        castShadow
-                        receiveShadow
-                        geometry={nodes.AR2010_04001.geometry}
-                        material={materials.yaskawaBlueMetall}
-                      />
-                      <mesh
-                        name="AR2010_04001_1"
-                        castShadow
-                        receiveShadow
-                        geometry={nodes.AR2010_04001_1.geometry}
-                        material={materials.white}
-                      />
-                    </group>
-                  </animated.group>
-                  <group name="AR2010_L03">
-                    <mesh
-                      name="AR2010_03001"
-                      castShadow
-                      receiveShadow
-                      geometry={nodes.AR2010_03001.geometry}
-                      material={materials.yaskawaBlueMetall}
-                    />
-                    <mesh
-                      name="AR2010_03001_1"
-                      castShadow
-                      receiveShadow
-                      geometry={nodes.AR2010_03001_1.geometry}
-                      material={materials.blackMetall}
-                    />
-                  </group>
-                </animated.group>
-                <mesh
-                  name="AR2010_L02"
-                  castShadow
-                  receiveShadow
-                  geometry={nodes.AR2010_L02.geometry}
-                  material={materials.yaskawaBlueMetall}
-                />
-              </animated.group>
-              <group name="AR2010_L01">
-                <mesh
-                  name="AR2010_01001"
-                  castShadow
-                  receiveShadow
-                  geometry={nodes.AR2010_01001.geometry}
-                  material={materials.yaskawaBlueMetall}
-                />
-                <mesh
-                  name="AR2010_01001_1"
-                  castShadow
-                  receiveShadow
-                  geometry={nodes.AR2010_01001_1.geometry}
-                  material={materials.blackMetall}
-                />
-              </group>
-            </animated.group>
+    <group {...props} dispose={null}>
+      <group name="Scene">
+        <group name="link_0">
+          <mesh
+            name="shape"
+            castShadow
+            receiveShadow
+            geometry={nodes.shape.geometry}
+            material={materials.yaskawa_black}
+          />
+          <mesh
+            name="shape_1"
+            castShadow
+            receiveShadow
+            geometry={nodes.shape_1.geometry}
+            material={materials.yaskawa_metalsilver}
+          />
+          <mesh
+            name="shape_2"
+            castShadow
+            receiveShadow
+            geometry={nodes.shape_2.geometry}
+            material={materials.yaskawa_blue}
+          />
+          <mesh
+            name="shape_3"
+            castShadow
+            receiveShadow
+            geometry={nodes.shape_3.geometry}
+            material={materials.yaskawa_metalsilver}
+          />
+        </group>
+        <animated.group name="YASKAWA_AR2010_J00">
+          <group name="link_1">
             <mesh
-              name="AR2010_L00"
+              name="shape001"
               castShadow
               receiveShadow
-              geometry={nodes.AR2010_L00.geometry}
-              material={materials.yaskawaBlueMetall}
-              rotation={[-Math.PI / 2, 0, 0]}
+              geometry={nodes.shape001.geometry}
+              material={materials.yaskawa_black}
+            />
+            <mesh
+              name="shape001_1"
+              castShadow
+              receiveShadow
+              geometry={nodes.shape001_1.geometry}
+              material={materials.yaskawa_blue}
             />
           </group>
-        </group>
+          <animated.group
+            name="YASKAWA_AR2010_J01"
+            position={[0.15, 0, 0]}
+            rotation={[-Math.PI / 2, -Math.PI / 2, 0]}
+          >
+            <mesh
+              name="link_2"
+              castShadow
+              receiveShadow
+              geometry={nodes.link_2.geometry}
+              material={materials.yaskawa_blue}
+              position={[0, 0, 0.15]}
+              rotation={[Math.PI / 2, 0, -Math.PI / 2]}
+            />
+            <animated.group
+              name="YASKAWA_AR2010_J02"
+              position={[0.76, 0, 0]}
+              rotation={[-Math.PI, 0, 0]}
+            >
+              <group
+                name="link_3"
+                position={[-0.76, 0, -0.15]}
+                rotation={[-Math.PI / 2, 0, -Math.PI / 2]}
+              >
+                <mesh
+                  name="shape003"
+                  castShadow
+                  receiveShadow
+                  geometry={nodes.shape003.geometry}
+                  material={materials.yaskawa_black}
+                />
+                <mesh
+                  name="shape003_1"
+                  castShadow
+                  receiveShadow
+                  geometry={nodes.shape003_1.geometry}
+                  material={materials.yaskawa_blue}
+                />
+              </group>
+              <animated.group
+                name="YASKAWA_AR2010_J03"
+                position={[0.2, 0, 0]}
+                rotation={[-Math.PI / 2, 0, 0]}
+              >
+                <mesh
+                  name="link_4"
+                  castShadow
+                  receiveShadow
+                  geometry={nodes.link_4.geometry}
+                  material={materials.yaskawa_blue}
+                  position={[-0.96, 0.15, 0]}
+                  rotation={[0, 0, -Math.PI / 2]}
+                />
+                <animated.group
+                  name="YASKAWA_AR2010_J04"
+                  position={[0, -1.082, 0]}
+                  rotation={[Math.PI / 2, 0, 0]}
+                >
+                  <mesh
+                    name="link_5"
+                    castShadow
+                    receiveShadow
+                    geometry={nodes.link_5.geometry}
+                    material={materials.yaskawa_blue}
+                    position={[-0.96, 0, -1.232]}
+                    rotation={[-Math.PI / 2, 0, -Math.PI / 2]}
+                  />
+                  <animated.group
+                    name="YASKAWA_AR2010_J05"
+                    rotation={[-Math.PI / 2, 0, 0]}
+                  >
+                    <mesh
+                      name="link_6"
+                      castShadow
+                      receiveShadow
+                      geometry={nodes.link_6.geometry}
+                      material={materials.yaskawa_metalsilver}
+                      position={[-0.96, 1.232, 0]}
+                      rotation={[0, 0, -Math.PI / 2]}
+                    />
+                    <group
+                      name="YASKAWA_AR2010_FLG"
+                      position={[0, -0.1, 0]}
+                      rotation={[-Math.PI, 0, 0]}
+                    />
+                  </animated.group>
+                </animated.group>
+              </animated.group>
+            </animated.group>
+          </animated.group>
+        </animated.group>
       </group>
-    </>
+    </group>
   )
 }
