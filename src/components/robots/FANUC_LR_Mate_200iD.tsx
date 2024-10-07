@@ -10,7 +10,11 @@ FANUC_LR_Mate_200iD.config = {
   rotationOffsets: [0, Math.PI / 2, 0, 0, 0, 0],
 }
 
-export function FANUC_LR_Mate_200iD({ modelURL, ...props }: RobotModelProps) {
+export function FANUC_LR_Mate_200iD({
+  modelURL,
+  flangeRef,
+  ...props
+}: RobotModelProps) {
   const { nodes, materials } = useGLTF(modelURL) as any
   return (
     <group {...props} dispose={null}>
@@ -56,6 +60,7 @@ export function FANUC_LR_Mate_200iD({ modelURL, ...props }: RobotModelProps) {
                     rotation={[-Math.PI / 2, 0, 0]}
                   >
                     <group
+                      ref={flangeRef}
                       name="FANUC_LRMATE-200ID_FLG"
                       position={[0, -0.08, 0]}
                       rotation={[-Math.PI, 0, 0]}

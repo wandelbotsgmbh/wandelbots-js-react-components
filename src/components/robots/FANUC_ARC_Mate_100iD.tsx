@@ -6,7 +6,11 @@ FANUC_ARC_Mate_100iD.config = {
   rotationOffsets: [0, Math.PI / 2, 0, 0, 0, 0],
 }
 
-export function FANUC_ARC_Mate_100iD({ modelURL, ...props }: RobotModelProps) {
+export function FANUC_ARC_Mate_100iD({
+  modelURL,
+  flangeRef,
+  ...props
+}: RobotModelProps) {
   const gltf = useGLTF(modelURL) as any
   const nodes = gltf.nodes
   const materials = gltf.materials
@@ -38,6 +42,7 @@ export function FANUC_ARC_Mate_100iD({ modelURL, ...props }: RobotModelProps) {
                         rotation={[-Math.PI / 2, 0, 0]}
                       >
                         <group
+                          ref={flangeRef}
                           name="M10iD_FLG"
                           position={[0, -0.075, 0]}
                           rotation={[-Math.PI, 0, 0]}

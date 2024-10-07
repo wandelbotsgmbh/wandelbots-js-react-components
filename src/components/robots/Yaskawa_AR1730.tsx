@@ -7,7 +7,11 @@ Yaskawa_AR1730.config = {
   rotationSign: [1, -1, 1, 1, 1, 1],
 }
 
-export function Yaskawa_AR1730({ modelURL, ...props }: RobotModelProps) {
+export function Yaskawa_AR1730({
+  modelURL,
+  flangeRef,
+  ...props
+}: RobotModelProps) {
   const gltf = useGLTF(modelURL) as any
 
   const nodes = gltf.nodes
@@ -43,6 +47,7 @@ export function Yaskawa_AR1730({ modelURL, ...props }: RobotModelProps) {
                       rotation={[-Math.PI / 2, 0, 0]}
                     >
                       <group
+                        ref={flangeRef}
                         name="AR1730_FLG"
                         position={[0, -0.1, 0]}
                         rotation={[-Math.PI, 0, 0]}

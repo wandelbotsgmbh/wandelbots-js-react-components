@@ -6,7 +6,11 @@ KUKA_KR16_R2010_2.config = {
   rotationOffsets: [0, 0, -Math.PI / 2, 0, 0, 0],
 }
 
-export function KUKA_KR16_R2010_2({ modelURL, ...props }: RobotModelProps) {
+export function KUKA_KR16_R2010_2({
+  modelURL,
+  flangeRef,
+  ...props
+}: RobotModelProps) {
   const { nodes, materials } = useGLTF(modelURL) as any
 
   return (
@@ -58,6 +62,7 @@ export function KUKA_KR16_R2010_2({ modelURL, ...props }: RobotModelProps) {
                     rotation={[-Math.PI / 2, 0, 0]}
                   >
                     <animated.group
+                      ref={flangeRef}
                       name="KUKA_KR16R2010_2_J05"
                       rotation={[-Math.PI / 2, 0, -Math.PI]}
                     >

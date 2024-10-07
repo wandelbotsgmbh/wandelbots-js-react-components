@@ -6,7 +6,11 @@ ABB_1300_115_10.config = {
   rotationOffsets: [0, -Math.PI / 2, 0, 0, 0, 0],
 }
 
-export function ABB_1300_115_10({ modelURL, ...props }: RobotModelProps) {
+export function ABB_1300_115_10({
+  modelURL,
+  flangeRef,
+  ...props
+}: RobotModelProps) {
   const gltf = useGLTF(modelURL) as any
   const nodes = gltf.nodes
   const materials = gltf.materials
@@ -46,6 +50,7 @@ export function ABB_1300_115_10({ modelURL, ...props }: RobotModelProps) {
                     rotation={[Math.PI / 2, 0, -Math.PI]}
                   >
                     <group
+                      ref={flangeRef}
                       name="ABB_IRB_1300_115_10_FLG"
                       position={[0, 0.092, 0]}
                     />

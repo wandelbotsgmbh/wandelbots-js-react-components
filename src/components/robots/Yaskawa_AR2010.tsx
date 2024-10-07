@@ -6,7 +6,11 @@ Yaskawa_AR2010.config = {
   rotationOffsets: [0, -Math.PI / 2, 0, 0, 0, 0],
 }
 
-export function Yaskawa_AR2010({ modelURL, ...props }: RobotModelProps) {
+export function Yaskawa_AR2010({
+  modelURL,
+  flangeRef,
+  ...props
+}: RobotModelProps) {
   const gltf = useGLTF(modelURL) as any
   const nodes = gltf.nodes
   const materials = gltf.materials
@@ -142,6 +146,7 @@ export function Yaskawa_AR2010({ modelURL, ...props }: RobotModelProps) {
                       rotation={[0, 0, -Math.PI / 2]}
                     />
                     <group
+                      ref={flangeRef}
                       name="YASKAWA_AR2010_FLG"
                       position={[0, -0.1, 0]}
                       rotation={[-Math.PI, 0, 0]}

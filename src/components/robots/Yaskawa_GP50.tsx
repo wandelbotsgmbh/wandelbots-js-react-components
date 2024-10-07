@@ -6,7 +6,11 @@ Yaskawa_GP50.config = {
   rotationOffsets: [0, -Math.PI / 2, 0, 0, 0, 0],
 }
 
-export function Yaskawa_GP50({ modelURL, ...props }: RobotModelProps) {
+export function Yaskawa_GP50({
+  modelURL,
+  flangeRef,
+  ...props
+}: RobotModelProps) {
   const gltf = useGLTF(modelURL) as any
 
   const nodes = gltf.nodes
@@ -218,6 +222,7 @@ export function Yaskawa_GP50({ modelURL, ...props }: RobotModelProps) {
                         rotation={[0, 0, -Math.PI / 2]}
                       />
                       <group
+                        ref={flangeRef}
                         name="YASKAWA_GP50_FLG"
                         position={[0, -0.175, 0]}
                         rotation={[-Math.PI, 0, 0]}
