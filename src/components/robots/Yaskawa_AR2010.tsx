@@ -4,7 +4,6 @@ import type { RobotModelProps } from "./types"
 
 Yaskawa_AR2010.config = {
   rotationOffsets: [0, -Math.PI / 2, 0, 0, 0, 0],
-  rotationSign: [1, 1, 1, 1, 1, 1],
 }
 
 export function Yaskawa_AR2010({ modelURL, ...props }: RobotModelProps) {
