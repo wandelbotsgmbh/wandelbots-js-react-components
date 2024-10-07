@@ -28,7 +28,7 @@ function SupportedRobotScene(
           a: 760,
           d: 0,
           alpha: 3.1415926535897931,
-          theta: 1.5707963267948966,
+          theta: -1.5707963267948966,
           reverse_rotation_direction: false,
         },
         {
