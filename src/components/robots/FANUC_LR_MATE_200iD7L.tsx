@@ -6,6 +6,10 @@ import { animated } from "@react-spring/three"
 import { useGLTF } from "@react-three/drei"
 import type { RobotModelProps } from "./types"
 
+FANUC_LR_MATE_200iD7L.config = {
+  rotationOffsets: [0, Math.PI / 2, 0, 0, 0, 0],
+}
+
 export function FANUC_LR_MATE_200iD7L({ modelURL, ...props }: RobotModelProps) {
   const { nodes, materials } = useGLTF(modelURL) as any
   return (
