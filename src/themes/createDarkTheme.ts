@@ -124,7 +124,7 @@ export function createDarkTheme(): Theme {
       MuiDivider: {
         styleOverrides: {
           root: {
-            border: "1px solid",
+            height: "1px",
           },
         },
       },
