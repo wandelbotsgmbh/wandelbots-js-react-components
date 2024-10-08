@@ -48,15 +48,11 @@ export function UniversalRobots_UR5e({
                           <>
                             <mesh
                               name="C-1000255"
-                              castShadow
-                              receiveShadow
                               geometry={nodes["C-1000255"].geometry}
                               material={materials.Black}
                             />
                             <mesh
                               name="C-1000255_1"
-                              castShadow
-                              receiveShadow
                               geometry={nodes["C-1000255_1"].geometry}
                               material={materials.Metal}
                             />
@@ -70,29 +66,21 @@ export function UniversalRobots_UR5e({
                         <>
                           <mesh
                             name="C-1000253"
-                            castShadow
-                            receiveShadow
                             geometry={nodes["C-1000253"].geometry}
                             material={materials.Blue}
                           />
                           <mesh
                             name="C-1000253_1"
-                            castShadow
-                            receiveShadow
                             geometry={nodes["C-1000253_1"].geometry}
                             material={materials.Black}
                           />
                           <mesh
                             name="C-1000253_2"
-                            castShadow
-                            receiveShadow
                             geometry={nodes["C-1000253_2"].geometry}
                             material={materials.Metal}
                           />
                           <mesh
                             name="C-1000253_3"
-                            castShadow
-                            receiveShadow
                             geometry={nodes["C-1000253_3"].geometry}
                             material={materials.DarkGray}
                           />
@@ -103,29 +91,21 @@ export function UniversalRobots_UR5e({
                       <>
                         <mesh
                           name="C-1000251"
-                          castShadow
-                          receiveShadow
                           geometry={nodes["C-1000251"].geometry}
                           material={materials.Blue}
                         />
                         <mesh
                           name="C-1000251_1"
-                          castShadow
-                          receiveShadow
                           geometry={nodes["C-1000251_1"].geometry}
                           material={materials.Black}
                         />
                         <mesh
                           name="C-1000251_2"
-                          castShadow
-                          receiveShadow
                           geometry={nodes["C-1000251_2"].geometry}
                           material={materials.Metal}
                         />
                         <mesh
                           name="C-1000251_3"
-                          castShadow
-                          receiveShadow
                           geometry={nodes["C-1000251_3"].geometry}
                           material={materials.DarkGray}
                         />
@@ -136,36 +116,26 @@ export function UniversalRobots_UR5e({
                     <>
                       <mesh
                         name="C-1000250"
-                        castShadow
-                        receiveShadow
                         geometry={nodes["C-1000250"].geometry}
                         material={materials.Black}
                       />
                       <mesh
                         name="C-1000250_1"
-                        castShadow
-                        receiveShadow
                         geometry={nodes["C-1000250_1"].geometry}
                         material={materials.DarkGray}
                       />
                       <mesh
                         name="C-1000250_2"
-                        castShadow
-                        receiveShadow
                         geometry={nodes["C-1000250_2"].geometry}
                         material={materials.Blue}
                       />
                       <mesh
                         name="C-1000250_3"
-                        castShadow
-                        receiveShadow
                         geometry={nodes["C-1000250_3"].geometry}
                         material={materials.Metal}
                       />
                       <mesh
                         name="C-1000250_4"
-                        castShadow
-                        receiveShadow
                         geometry={nodes["C-1000250_4"].geometry}
                         material={materials.Metal}
                       />
@@ -176,36 +146,26 @@ export function UniversalRobots_UR5e({
                   <>
                     <mesh
                       name="C-1000249"
-                      castShadow
-                      receiveShadow
                       geometry={nodes["C-1000249"].geometry}
                       material={materials.Metal}
                     />
                     <mesh
                       name="C-1000249_1"
-                      castShadow
-                      receiveShadow
                       geometry={nodes["C-1000249_1"].geometry}
                       material={materials.Black}
                     />
                     <mesh
                       name="C-1000249_2"
-                      castShadow
-                      receiveShadow
                       geometry={nodes["C-1000249_2"].geometry}
                       material={materials.DarkGray}
                     />
                     <mesh
                       name="C-1000249_3"
-                      castShadow
-                      receiveShadow
                       geometry={nodes["C-1000249_3"].geometry}
                       material={materials.Blue}
                     />
                     <mesh
                       name="C-1000249_4"
-                      castShadow
-                      receiveShadow
                       geometry={nodes["C-1000249_4"].geometry}
                       material={materials.Metal}
                     />
@@ -216,29 +176,21 @@ export function UniversalRobots_UR5e({
                 <>
                   <mesh
                     name="C-1000248"
-                    castShadow
-                    receiveShadow
                     geometry={nodes["C-1000248"].geometry}
                     material={materials.DarkGray}
                   />
                   <mesh
                     name="C-1000248_1"
-                    castShadow
-                    receiveShadow
                     geometry={nodes["C-1000248_1"].geometry}
                     material={materials.Black}
                   />
                   <mesh
                     name="C-1000248_2"
-                    castShadow
-                    receiveShadow
                     geometry={nodes["C-1000248_2"].geometry}
                     material={materials.Blue}
                   />
                   <mesh
                     name="C-1000248_3"
-                    castShadow
-                    receiveShadow
                     geometry={nodes["C-1000248_3"].geometry}
                     material={materials.Metal}
                   />
@@ -249,15 +201,11 @@ export function UniversalRobots_UR5e({
               <>
                 <mesh
                   name="C-1000257"
-                  castShadow
-                  receiveShadow
                   geometry={nodes["C-1000257"].geometry}
                   material={materials.Black}
                 />
                 <mesh
                   name="C-1000257_1"
-                  castShadow
-                  receiveShadow
                   geometry={nodes["C-1000257_1"].geometry}
                   material={materials.Metal}
                 />

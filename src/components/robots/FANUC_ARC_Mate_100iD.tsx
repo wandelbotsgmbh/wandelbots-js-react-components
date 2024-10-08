@@ -49,8 +49,6 @@ export function FANUC_ARC_Mate_100iD({
                         />
                         <mesh
                           name="M10iD_L06"
-                          castShadow
-                          receiveShadow
                           geometry={nodes.M10iD_L06.geometry}
                           material={materials.Fanuc_BlackMetal_AO}
                           position={[-0.835, 0.775, 0]}
@@ -59,8 +57,6 @@ export function FANUC_ARC_Mate_100iD({
                       </animated.group>
                       <mesh
                         name="M10iD_L05"
-                        castShadow
-                        receiveShadow
                         geometry={nodes.M10iD_L05.geometry}
                         material={materials.Fanuc_BlackMetal_AO}
                         position={[-0.835, 0, -0.775]}
@@ -74,15 +70,11 @@ export function FANUC_ARC_Mate_100iD({
                     >
                       <mesh
                         name="Mesh_654"
-                        castShadow
-                        receiveShadow
                         geometry={nodes.Mesh_654.geometry}
                         material={materials.Fanuc_Yellow_Textured_AO}
                       />
                       <mesh
                         name="Mesh_654_1"
-                        castShadow
-                        receiveShadow
                         geometry={nodes.Mesh_654_1.geometry}
                         material={materials.Fanuc_BlackMetal_AO}
                       />
@@ -95,22 +87,16 @@ export function FANUC_ARC_Mate_100iD({
                   >
                     <mesh
                       name="Mesh_378"
-                      castShadow
-                      receiveShadow
                       geometry={nodes.Mesh_378.geometry}
                       material={materials.Material_1_AO}
                     />
                     <mesh
                       name="Mesh_378_1"
-                      castShadow
-                      receiveShadow
                       geometry={nodes.Mesh_378_1.geometry}
                       material={materials.Fanuc_Yellow_Textured_AO}
                     />
                     <mesh
                       name="Mesh_378_2"
-                      castShadow
-                      receiveShadow
                       geometry={nodes.Mesh_378_2.geometry}
                       material={materials.Fanuc_BlackMetal_AO}
                     />
@@ -123,15 +109,11 @@ export function FANUC_ARC_Mate_100iD({
                 >
                   <mesh
                     name="Mesh_358"
-                    castShadow
-                    receiveShadow
                     geometry={nodes.Mesh_358.geometry}
                     material={materials.Fanuc_Yellow_Textured_AO}
                   />
                   <mesh
                     name="Mesh_358_1"
-                    castShadow
-                    receiveShadow
                     geometry={nodes.Mesh_358_1.geometry}
                     material={materials.Fanuc_BlackMetal_AO}
                   />
@@ -140,22 +122,16 @@ export function FANUC_ARC_Mate_100iD({
               <group name="M10iD_L01">
                 <mesh
                   name="Mesh_356"
-                  castShadow
-                  receiveShadow
                   geometry={nodes.Mesh_356.geometry}
                   material={materials.Fanuc_Yellow_Textured_AO}
                 />
                 <mesh
                   name="Mesh_356_1"
-                  castShadow
-                  receiveShadow
                   geometry={nodes.Mesh_356_1.geometry}
                   material={materials.Material_1_AO}
                 />
                 <mesh
                   name="Mesh_356_2"
-                  castShadow
-                  receiveShadow
                   geometry={nodes.Mesh_356_2.geometry}
                   material={materials.Fanuc_BlackMetal_AO}
                 />
@@ -163,8 +139,6 @@ export function FANUC_ARC_Mate_100iD({
             </animated.group>
             <mesh
               name="M10iD_L00"
-              castShadow
-              receiveShadow
               geometry={nodes.M10iD_L00.geometry}
               material={materials.Fanuc_BlackMetal_AO}
               rotation={[-Math.PI / 2, 0, 0]}

@@ -31,8 +31,6 @@ export function UniversalRobots_UR3CB({
                     >
                       <mesh
                         name="UR3_05"
-                        castShadow
-                        receiveShadow
                         geometry={nodes.UR3_05.geometry}
                         material={materials.Standard}
                       />
@@ -48,8 +46,6 @@ export function UniversalRobots_UR3CB({
                         />
                         <mesh
                           name="UR3_L06"
-                          castShadow
-                          receiveShadow
                           geometry={nodes.UR3_L06.geometry}
                           material={materials.Standard}
                         />
@@ -57,40 +53,30 @@ export function UniversalRobots_UR3CB({
                     </animated.group>
                     <mesh
                       name="UR3_L04"
-                      castShadow
-                      receiveShadow
                       geometry={nodes.UR3_L04.geometry}
                       material={materials.Standard}
                     />
                   </animated.group>
                   <mesh
                     name="UR3_L03"
-                    castShadow
-                    receiveShadow
                     geometry={nodes.UR3_L03.geometry}
                     material={materials.Standard}
                   />
                 </animated.group>
                 <mesh
                   name="UR3_L02"
-                  castShadow
-                  receiveShadow
                   geometry={nodes.UR3_L02.geometry}
                   material={materials.Standard}
                 />
               </animated.group>
               <mesh
                 name="UR3_L01"
-                castShadow
-                receiveShadow
                 geometry={nodes.UR3_L01.geometry}
                 material={materials.Standard}
               />
             </animated.group>
             <mesh
               name="UR3_L00"
-              castShadow
-              receiveShadow
               geometry={nodes.UR3_L00.geometry}
               material={materials.Standard}
               rotation={[-Math.PI / 2, 0, 0]}

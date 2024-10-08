@@ -53,56 +53,42 @@ export function Yaskawa_AR900({
                         />
                         <mesh
                           name="AR900_L06"
-                          castShadow
-                          receiveShadow
                           geometry={nodes.AR900_L06.geometry}
                           material={materials["#BBA474.001"]}
                         />
                       </animated.group>
                       <mesh
                         name="AR900_L05"
-                        castShadow
-                        receiveShadow
                         geometry={nodes.AR900_L05.geometry}
                         material={materials["#0056b9.001"]}
                       />
                     </animated.group>
                     <mesh
                       name="AR900_L04"
-                      castShadow
-                      receiveShadow
                       geometry={nodes.AR900_L04.geometry}
                       material={materials["#0056b9.001"]}
                     />
                   </animated.group>
                   <mesh
                     name="AR900_L03"
-                    castShadow
-                    receiveShadow
                     geometry={nodes.AR900_L03.geometry}
                     material={materials["#0056b9.001"]}
                   />
                 </animated.group>
                 <mesh
                   name="AR900_L02"
-                  castShadow
-                  receiveShadow
                   geometry={nodes.AR900_L02.geometry}
                   material={materials["#0056b9.001"]}
                 />
               </animated.group>
               <mesh
                 name="AR900_L01"
-                castShadow
-                receiveShadow
                 geometry={nodes.AR900_L01.geometry}
                 material={materials["#0056b9.001"]}
               />
             </animated.group>
             <mesh
               name="AR900_L00"
-              castShadow
-              receiveShadow
               geometry={nodes.AR900_L00.geometry}
               material={materials["#0056b9.001"]}
               rotation={[-Math.PI / 2, 0, 0]}

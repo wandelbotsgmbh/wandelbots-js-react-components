@@ -22,22 +22,16 @@ export function FANUC_LR_MATE_200iD7L({
         <group name="link_0">
           <mesh
             name="visuals_0"
-            castShadow
-            receiveShadow
             geometry={nodes.visuals_0.geometry}
             material={materials.fanuc_metal_black}
           />
           <mesh
             name="visuals_0_1"
-            castShadow
-            receiveShadow
             geometry={nodes.visuals_0_1.geometry}
             material={materials.fanuc_metal_black}
           />
           <mesh
             name="visuals_0_2"
-            castShadow
-            receiveShadow
             geometry={nodes.visuals_0_2.geometry}
             material={materials.fanuc_aluminium_black}
           />
@@ -74,8 +68,6 @@ export function FANUC_LR_MATE_200iD7L({
                     />
                     <mesh
                       name="link_6"
-                      castShadow
-                      receiveShadow
                       geometry={nodes.link_6.geometry}
                       material={materials.fanuc_metal_black}
                       position={[-0.475, 0.47, 0]}
@@ -89,22 +81,16 @@ export function FANUC_LR_MATE_200iD7L({
                   >
                     <mesh
                       name="visuals_5"
-                      castShadow
-                      receiveShadow
                       geometry={nodes.visuals_5.geometry}
                       material={materials.fanuc_yellow}
                     />
                     <mesh
                       name="visuals_5_1"
-                      castShadow
-                      receiveShadow
                       geometry={nodes.visuals_5_1.geometry}
                       material={materials.fanuc_stainless_steel}
                     />
                     <mesh
                       name="visuals_5_2"
-                      castShadow
-                      receiveShadow
                       geometry={nodes.visuals_5_2.geometry}
                       material={materials.fanuc_metal_black}
                     />
@@ -117,15 +103,11 @@ export function FANUC_LR_MATE_200iD7L({
                 >
                   <mesh
                     name="visuals_4"
-                    castShadow
-                    receiveShadow
                     geometry={nodes.visuals_4.geometry}
                     material={materials.fanuc_yellow}
                   />
                   <mesh
                     name="visuals_4_1"
-                    castShadow
-                    receiveShadow
                     geometry={nodes.visuals_4_1.geometry}
                     material={materials.fanuc_aluminium_black}
                   />
@@ -138,15 +120,11 @@ export function FANUC_LR_MATE_200iD7L({
               >
                 <mesh
                   name="visuals_3"
-                  castShadow
-                  receiveShadow
                   geometry={nodes.visuals_3.geometry}
                   material={materials.fanuc_yellow}
                 />
                 <mesh
                   name="visuals_3_1"
-                  castShadow
-                  receiveShadow
                   geometry={nodes.visuals_3_1.geometry}
                   material={materials.fanuc_stainless_steel}
                 />
@@ -154,8 +132,6 @@ export function FANUC_LR_MATE_200iD7L({
             </animated.group>
             <mesh
               name="link_2"
-              castShadow
-              receiveShadow
               geometry={nodes.link_2.geometry}
               material={materials.fanuc_yellow}
               position={[0, 0, -0.05]}
@@ -165,15 +141,11 @@ export function FANUC_LR_MATE_200iD7L({
           <group name="link_1">
             <mesh
               name="visuals_1"
-              castShadow
-              receiveShadow
               geometry={nodes.visuals_1.geometry}
               material={materials.fanuc_yellow}
             />
             <mesh
               name="visuals_1_1"
-              castShadow
-              receiveShadow
               geometry={nodes.visuals_1_1.geometry}
               material={materials.fanuc_stainless_steel}
             />

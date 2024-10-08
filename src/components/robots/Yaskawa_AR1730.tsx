@@ -54,8 +54,6 @@ export function Yaskawa_AR1730({
                       />
                       <mesh
                         name="AR1730_L06"
-                        castShadow
-                        receiveShadow
                         geometry={nodes.AR1730_L06.geometry}
                         material={materials.Metal}
                         rotation={[Math.PI / 2, -Math.PI / 2, 0]}
@@ -63,8 +61,6 @@ export function Yaskawa_AR1730({
                     </animated.group>
                     <mesh
                       name="AR1730_L05"
-                      castShadow
-                      receiveShadow
                       geometry={nodes.AR1730_L05.geometry}
                       material={materials.Blue}
                       rotation={[Math.PI / 2, 0, Math.PI / 2]}
@@ -77,15 +73,11 @@ export function Yaskawa_AR1730({
                   >
                     <mesh
                       name="_R_AXIS_SW0001002"
-                      castShadow
-                      receiveShadow
                       geometry={nodes._R_AXIS_SW0001002.geometry}
                       material={materials.Blue}
                     />
                     <mesh
                       name="_R_AXIS_SW0001002_1"
-                      castShadow
-                      receiveShadow
                       geometry={nodes._R_AXIS_SW0001002_1.geometry}
                       material={materials.White}
                     />
@@ -97,15 +89,11 @@ export function Yaskawa_AR1730({
                 >
                   <mesh
                     name="_U_AXIS_SW0001002"
-                    castShadow
-                    receiveShadow
                     geometry={nodes._U_AXIS_SW0001002.geometry}
                     material={materials.Blue}
                   />
                   <mesh
                     name="_U_AXIS_SW0001002_1"
-                    castShadow
-                    receiveShadow
                     geometry={nodes._U_AXIS_SW0001002_1.geometry}
                     material={materials.Black}
                   />
@@ -113,8 +101,6 @@ export function Yaskawa_AR1730({
               </animated.group>
               <mesh
                 name="AR1730_L02"
-                castShadow
-                receiveShadow
                 geometry={nodes.AR1730_L02.geometry}
                 material={materials.Blue}
                 position={[0, -0.157, 0]}
@@ -128,15 +114,11 @@ export function Yaskawa_AR1730({
             >
               <mesh
                 name="_S_AXIS_SW0001002"
-                castShadow
-                receiveShadow
                 geometry={nodes._S_AXIS_SW0001002.geometry}
                 material={materials.Blue}
               />
               <mesh
                 name="_S_AXIS_SW0001002_1"
-                castShadow
-                receiveShadow
                 geometry={nodes._S_AXIS_SW0001002_1.geometry}
                 material={materials.Black}
               />
@@ -144,8 +126,6 @@ export function Yaskawa_AR1730({
           </animated.group>
           <mesh
             name="AR1730_L00"
-            castShadow
-            receiveShadow
             geometry={nodes.AR1730_L00.geometry}
             material={materials.Blue}
             position={[0, -0.505, 0]}

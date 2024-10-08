@@ -21,8 +21,6 @@ export function FANUC_CRX20iAL({
         <group name="Scene">
           <mesh
             name="link_0"
-            castShadow
-            receiveShadow
             geometry={nodes.link_0.geometry}
             material={materials.fanuc_metal_black}
           />
@@ -55,8 +53,6 @@ export function FANUC_CRX20iAL({
                       />
                       <mesh
                         name="link_6"
-                        castShadow
-                        receiveShadow
                         geometry={nodes.link_6.geometry}
                         material={materials.fanuc_metal_black}
                         position={[-0.71, 0.54, -0.15]}
@@ -70,15 +66,11 @@ export function FANUC_CRX20iAL({
                     >
                       <mesh
                         name="shape053"
-                        castShadow
-                        receiveShadow
                         geometry={nodes.shape053.geometry}
                         material={materials.fanuc_white}
                       />
                       <mesh
                         name="shape053_1"
-                        castShadow
-                        receiveShadow
                         geometry={nodes.shape053_1.geometry}
                         material={materials.fanuc_green}
                       />
@@ -91,22 +83,16 @@ export function FANUC_CRX20iAL({
                   >
                     <mesh
                       name="shape054"
-                      castShadow
-                      receiveShadow
                       geometry={nodes.shape054.geometry}
                       material={materials.fanuc_white}
                     />
                     <mesh
                       name="shape054_1"
-                      castShadow
-                      receiveShadow
                       geometry={nodes.shape054_1.geometry}
                       material={materials.fanuc_red}
                     />
                     <mesh
                       name="shape054_2"
-                      castShadow
-                      receiveShadow
                       geometry={nodes.shape054_2.geometry}
                       material={materials.fanuc_metal_black}
                     />
@@ -119,15 +105,11 @@ export function FANUC_CRX20iAL({
                 >
                   <mesh
                     name="shape009"
-                    castShadow
-                    receiveShadow
                     geometry={nodes.shape009.geometry}
                     material={materials.fanuc_green}
                   />
                   <mesh
                     name="shape009_1"
-                    castShadow
-                    receiveShadow
                     geometry={nodes.shape009_1.geometry}
                     material={materials.fanuc_white}
                   />
@@ -135,8 +117,6 @@ export function FANUC_CRX20iAL({
               </animated.group>
               <mesh
                 name="link_2"
-                castShadow
-                receiveShadow
                 geometry={nodes.link_2.geometry}
                 material={materials.fanuc_white}
                 rotation={[-Math.PI / 2, 0, -Math.PI / 2]}
@@ -145,15 +125,11 @@ export function FANUC_CRX20iAL({
             <group name="link_1" position={[0, 0.245, 0]}>
               <mesh
                 name="shape005"
-                castShadow
-                receiveShadow
                 geometry={nodes.shape005.geometry}
                 material={materials.fanuc_white}
               />
               <mesh
                 name="shape005_1"
-                castShadow
-                receiveShadow
                 geometry={nodes.shape005_1.geometry}
                 material={materials.fanuc_green}
               />

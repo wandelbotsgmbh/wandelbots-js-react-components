@@ -23,22 +23,16 @@ export function Yaskawa_GP50({
           <group name="link_0">
             <mesh
               name="shape439"
-              castShadow
-              receiveShadow
               geometry={nodes.shape439.geometry}
               material={materials.yaskawa_blue}
             />
             <mesh
               name="shape439_1"
-              castShadow
-              receiveShadow
               geometry={nodes.shape439_1.geometry}
               material={materials.yaskawa_metalsilver}
             />
             <mesh
               name="shape439_2"
-              castShadow
-              receiveShadow
               geometry={nodes.shape439_2.geometry}
               material={materials.yaskawa_black}
             />
@@ -47,43 +41,31 @@ export function Yaskawa_GP50({
             <group name="link_1" position={[0, 0.54, 0]}>
               <mesh
                 name="shape320"
-                castShadow
-                receiveShadow
                 geometry={nodes.shape320.geometry}
                 material={materials.yaskawa_blue}
               />
               <mesh
                 name="shape320_1"
-                castShadow
-                receiveShadow
                 geometry={nodes.shape320_1.geometry}
                 material={materials.yaskawa_black}
               />
               <mesh
                 name="shape320_2"
-                castShadow
-                receiveShadow
                 geometry={nodes.shape320_2.geometry}
                 material={materials.yaskawa_metalsilver}
               />
               <mesh
                 name="shape320_3"
-                castShadow
-                receiveShadow
                 geometry={nodes.shape320_3.geometry}
                 material={materials.yaskawa_black}
               />
               <mesh
                 name="shape320_4"
-                castShadow
-                receiveShadow
                 geometry={nodes.shape320_4.geometry}
                 material={materials.yaskawa_white}
               />
               <mesh
                 name="shape320_5"
-                castShadow
-                receiveShadow
                 geometry={nodes.shape320_5.geometry}
                 material={materials.yaskawa_black}
               />
@@ -100,29 +82,21 @@ export function Yaskawa_GP50({
               >
                 <mesh
                   name="shape440"
-                  castShadow
-                  receiveShadow
                   geometry={nodes.shape440.geometry}
                   material={materials.yaskawa_blue}
                 />
                 <mesh
                   name="shape440_1"
-                  castShadow
-                  receiveShadow
                   geometry={nodes.shape440_1.geometry}
                   material={materials.yaskawa_white}
                 />
                 <mesh
                   name="shape440_2"
-                  castShadow
-                  receiveShadow
                   geometry={nodes.shape440_2.geometry}
                   material={materials.yaskawa_metalsilver}
                 />
                 <mesh
                   name="shape440_3"
-                  castShadow
-                  receiveShadow
                   geometry={nodes.shape440_3.geometry}
                   material={materials.yaskawa_black}
                 />
@@ -139,43 +113,31 @@ export function Yaskawa_GP50({
                 >
                   <mesh
                     name="shape341"
-                    castShadow
-                    receiveShadow
                     geometry={nodes.shape341.geometry}
                     material={materials.yaskawa_blue}
                   />
                   <mesh
                     name="shape341_1"
-                    castShadow
-                    receiveShadow
                     geometry={nodes.shape341_1.geometry}
                     material={materials.yaskawa_white}
                   />
                   <mesh
                     name="shape341_2"
-                    castShadow
-                    receiveShadow
                     geometry={nodes.shape341_2.geometry}
                     material={materials.yaskawa_black}
                   />
                   <mesh
                     name="shape341_3"
-                    castShadow
-                    receiveShadow
                     geometry={nodes.shape341_3.geometry}
                     material={materials.yaskawa_black}
                   />
                   <mesh
                     name="shape341_4"
-                    castShadow
-                    receiveShadow
                     geometry={nodes.shape341_4.geometry}
                     material={materials.yaskawa_metalsilver}
                   />
                   <mesh
                     name="shape341_5"
-                    castShadow
-                    receiveShadow
                     geometry={nodes.shape341_5.geometry}
                     material={materials.yaskawa_metalsilver}
                   />
@@ -187,8 +149,6 @@ export function Yaskawa_GP50({
                 >
                   <mesh
                     name="link_4"
-                    castShadow
-                    receiveShadow
                     geometry={nodes.link_4.geometry}
                     material={materials.yaskawa_blue}
                     position={[-1.08, 0.145, 0]}
@@ -201,8 +161,6 @@ export function Yaskawa_GP50({
                   >
                     <mesh
                       name="link_5"
-                      castShadow
-                      receiveShadow
                       geometry={nodes.link_5.geometry}
                       material={materials.yaskawa_blue}
                       position={[-1.08, 0, -1.17]}
@@ -214,8 +172,6 @@ export function Yaskawa_GP50({
                     >
                       <mesh
                         name="link_6"
-                        castShadow
-                        receiveShadow
                         geometry={nodes.link_6.geometry}
                         material={materials.yaskawa_metalsilver}
                         position={[-1.08, 1.17, 0]}

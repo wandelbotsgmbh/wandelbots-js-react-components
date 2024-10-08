@@ -59,15 +59,11 @@ export function KUKA_KR270_R2700({
                         <group name="visuals006">
                           <mesh
                             name="visuals006_1"
-                            castShadow
-                            receiveShadow
                             geometry={nodes.visuals006_1.geometry}
                             material={materials.material_Material_Farbe__1_}
                           />
                           <mesh
                             name="visuals006_2"
-                            castShadow
-                            receiveShadow
                             geometry={nodes.visuals006_2.geometry}
                             material={materials.material_Material_Metall}
                           />
@@ -81,8 +77,6 @@ export function KUKA_KR270_R2700({
                     >
                       <mesh
                         name="visuals005"
-                        castShadow
-                        receiveShadow
                         geometry={nodes.visuals005.geometry}
                         material={materials.material_Material_Farbe}
                       />
@@ -95,8 +89,6 @@ export function KUKA_KR270_R2700({
                   >
                     <mesh
                       name="visuals004"
-                      castShadow
-                      receiveShadow
                       geometry={nodes.visuals004.geometry}
                       material={materials.material_Material_Farbe}
                     />
@@ -110,29 +102,21 @@ export function KUKA_KR270_R2700({
                   <group name="visuals003">
                     <mesh
                       name="visuals003_1"
-                      castShadow
-                      receiveShadow
                       geometry={nodes.visuals003_1.geometry}
                       material={materials.material_Material_Farbe__1_}
                     />
                     <mesh
                       name="visuals003_2"
-                      castShadow
-                      receiveShadow
                       geometry={nodes.visuals003_2.geometry}
                       material={materials.material_Material_Farbe__2_}
                     />
                     <mesh
                       name="visuals003_3"
-                      castShadow
-                      receiveShadow
                       geometry={nodes.visuals003_3.geometry}
                       material={materials.material_Material_Metall}
                     />
                     <mesh
                       name="visuals003_4"
-                      castShadow
-                      receiveShadow
                       geometry={nodes.visuals003_4.geometry}
                       material={materials.material_Material_Farbe}
                     />
@@ -143,29 +127,21 @@ export function KUKA_KR270_R2700({
                 <group name="visuals002">
                   <mesh
                     name="visuals002_1"
-                    castShadow
-                    receiveShadow
                     geometry={nodes.visuals002_1.geometry}
                     material={materials.material_Material_Farbe}
                   />
                   <mesh
                     name="visuals002_2"
-                    castShadow
-                    receiveShadow
                     geometry={nodes.visuals002_2.geometry}
                     material={materials.material_Material_Farbe__1_}
                   />
                   <mesh
                     name="visuals002_3"
-                    castShadow
-                    receiveShadow
                     geometry={nodes.visuals002_3.geometry}
                     material={materials.material_Material_Metall}
                   />
                   <mesh
                     name="visuals002_4"
-                    castShadow
-                    receiveShadow
                     geometry={nodes.visuals002_4.geometry}
                     material={materials.material_Material_Farbe__2_}
                   />
@@ -176,29 +152,21 @@ export function KUKA_KR270_R2700({
               <group name="visuals001">
                 <mesh
                   name="visuals001_1"
-                  castShadow
-                  receiveShadow
                   geometry={nodes.visuals001_1.geometry}
                   material={materials.material_Material_Metall}
                 />
                 <mesh
                   name="visuals001_2"
-                  castShadow
-                  receiveShadow
                   geometry={nodes.visuals001_2.geometry}
                   material={materials.material_Material_Farbe__1_}
                 />
                 <mesh
                   name="visuals001_3"
-                  castShadow
-                  receiveShadow
                   geometry={nodes.visuals001_3.geometry}
                   material={materials.material_Material_Farbe__2_}
                 />
                 <mesh
                   name="visuals001_4"
-                  castShadow
-                  receiveShadow
                   geometry={nodes.visuals001_4.geometry}
                   material={materials.material_Material_Farbe}
                 />
@@ -209,15 +177,11 @@ export function KUKA_KR270_R2700({
             <group name="visuals">
               <mesh
                 name="visuals_1"
-                castShadow
-                receiveShadow
                 geometry={nodes.visuals_1.geometry}
                 material={materials.material_Material_Metall}
               />
               <mesh
                 name="visuals_2"
-                castShadow
-                receiveShadow
                 geometry={nodes.visuals_2.geometry}
                 material={materials.material_Material_Farbe__1_}
               />

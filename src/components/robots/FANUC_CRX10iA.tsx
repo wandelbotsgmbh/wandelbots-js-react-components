@@ -47,8 +47,6 @@ export function FANUC_CRX10iA({
                       />
                       <mesh
                         name="CRX10iA_L06"
-                        castShadow
-                        receiveShadow
                         geometry={nodes.CRX10iA_L06.geometry}
                         material={materials.Fanuc_BlackMetal}
                         position={[0, -0.16, 0]}
@@ -62,15 +60,11 @@ export function FANUC_CRX10iA({
                     >
                       <mesh
                         name="J5CASING_UNIT001"
-                        castShadow
-                        receiveShadow
                         geometry={nodes.J5CASING_UNIT001.geometry}
                         material={materials.Fanuc_WhitePlastic}
                       />
                       <mesh
                         name="J5CASING_UNIT001_1"
-                        castShadow
-                        receiveShadow
                         geometry={nodes.J5CASING_UNIT001_1.geometry}
                         material={materials.Fanuc_Green}
                       />
@@ -83,22 +77,16 @@ export function FANUC_CRX10iA({
                   >
                     <mesh
                       name="NAME_LABEL_CRX_10iA"
-                      castShadow
-                      receiveShadow
                       geometry={nodes.NAME_LABEL_CRX_10iA.geometry}
                       material={materials.Fanuc_RedPlastic}
                     />
                     <mesh
                       name="NAME_LABEL_CRX_10iA_1"
-                      castShadow
-                      receiveShadow
                       geometry={nodes.NAME_LABEL_CRX_10iA_1.geometry}
                       material={materials.Fanuc_BlackPlastic}
                     />
                     <mesh
                       name="NAME_LABEL_CRX_10iA_2"
-                      castShadow
-                      receiveShadow
                       geometry={nodes.NAME_LABEL_CRX_10iA_2.geometry}
                       material={materials.Fanuc_WhitePlastic}
                     />
@@ -106,8 +94,6 @@ export function FANUC_CRX10iA({
                 </animated.group>
                 <mesh
                   name="CRX10iA_L03"
-                  castShadow
-                  receiveShadow
                   geometry={nodes.CRX10iA_L03.geometry}
                   material={materials.Fanuc_WhitePlastic}
                   rotation={[-Math.PI / 2, 0, -Math.PI / 2]}
@@ -115,8 +101,6 @@ export function FANUC_CRX10iA({
               </animated.group>
               <mesh
                 name="CRX10iA_L02"
-                castShadow
-                receiveShadow
                 geometry={nodes.CRX10iA_L02.geometry}
                 material={materials.Fanuc_WhitePlastic}
                 rotation={[-Math.PI / 2, 0, -Math.PI / 2]}
@@ -125,22 +109,16 @@ export function FANUC_CRX10iA({
             <group name="CRX10iA_L01" position={[0, -0.117, 0]}>
               <mesh
                 name="J2BASE_UNIT001"
-                castShadow
-                receiveShadow
                 geometry={nodes.J2BASE_UNIT001.geometry}
                 material={materials.Fanuc_Green}
               />
               <mesh
                 name="J2BASE_UNIT001_1"
-                castShadow
-                receiveShadow
                 geometry={nodes.J2BASE_UNIT001_1.geometry}
                 material={materials.Fanuc_WhitePlastic}
               />
               <mesh
                 name="J2BASE_UNIT001_2"
-                castShadow
-                receiveShadow
                 geometry={nodes.J2BASE_UNIT001_2.geometry}
                 material={materials.Fanuc_GreenLED}
               />
@@ -148,8 +126,6 @@ export function FANUC_CRX10iA({
           </animated.group>
           <mesh
             name="CRX10iA_L00"
-            castShadow
-            receiveShadow
             geometry={nodes.CRX10iA_L00.geometry}
             material={materials.Fanuc_BlackMetal}
             position={[0, -0.245, 0]}
