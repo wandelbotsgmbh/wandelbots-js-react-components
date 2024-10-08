@@ -31,7 +31,7 @@ export function ABB_1200_07_7({ modelURL, ...props }: RobotModelProps) {
           />
         </group>
         <animated.group name="ABB_IRB1200_J00">
-          <animated.group
+          <group
             name="ABB_IRB1200_J01"
             position={[0, 0.399, 0]}
             rotation={[-Math.PI / 2, -Math.PI / 2, 0]}
@@ -159,7 +159,7 @@ export function ABB_1200_07_7({ modelURL, ...props }: RobotModelProps) {
                 material={materials.abb_metal_polished}
               />
             </group>
-          </animated.group>
+          </group>
           <group name="visuals001">
             <mesh
               name="visuals001_1"
