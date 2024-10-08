@@ -17,29 +17,21 @@ export function Yaskawa_AR2010({ modelURL, ...props }: RobotModelProps) {
         <group name="link_0">
           <mesh
             name="shape"
-            castShadow
-            receiveShadow
             geometry={nodes.shape.geometry}
             material={materials.yaskawa_black}
           />
           <mesh
             name="shape_1"
-            castShadow
-            receiveShadow
             geometry={nodes.shape_1.geometry}
             material={materials.yaskawa_metalsilver}
           />
           <mesh
             name="shape_2"
-            castShadow
-            receiveShadow
             geometry={nodes.shape_2.geometry}
             material={materials.yaskawa_blue}
           />
           <mesh
             name="shape_3"
-            castShadow
-            receiveShadow
             geometry={nodes.shape_3.geometry}
             material={materials.yaskawa_metalsilver}
           />
@@ -48,15 +40,11 @@ export function Yaskawa_AR2010({ modelURL, ...props }: RobotModelProps) {
           <group name="link_1">
             <mesh
               name="shape001"
-              castShadow
-              receiveShadow
               geometry={nodes.shape001.geometry}
               material={materials.yaskawa_black}
             />
             <mesh
               name="shape001_1"
-              castShadow
-              receiveShadow
               geometry={nodes.shape001_1.geometry}
               material={materials.yaskawa_blue}
             />
@@ -68,8 +56,6 @@ export function Yaskawa_AR2010({ modelURL, ...props }: RobotModelProps) {
           >
             <mesh
               name="link_2"
-              castShadow
-              receiveShadow
               geometry={nodes.link_2.geometry}
               material={materials.yaskawa_blue}
               position={[0, 0, 0.15]}
@@ -87,15 +73,11 @@ export function Yaskawa_AR2010({ modelURL, ...props }: RobotModelProps) {
               >
                 <mesh
                   name="shape003"
-                  castShadow
-                  receiveShadow
                   geometry={nodes.shape003.geometry}
                   material={materials.yaskawa_black}
                 />
                 <mesh
                   name="shape003_1"
-                  castShadow
-                  receiveShadow
                   geometry={nodes.shape003_1.geometry}
                   material={materials.yaskawa_blue}
                 />
@@ -107,8 +89,6 @@ export function Yaskawa_AR2010({ modelURL, ...props }: RobotModelProps) {
               >
                 <mesh
                   name="link_4"
-                  castShadow
-                  receiveShadow
                   geometry={nodes.link_4.geometry}
                   material={materials.yaskawa_blue}
                   position={[-0.96, 0.15, 0]}
@@ -121,8 +101,6 @@ export function Yaskawa_AR2010({ modelURL, ...props }: RobotModelProps) {
                 >
                   <mesh
                     name="link_5"
-                    castShadow
-                    receiveShadow
                     geometry={nodes.link_5.geometry}
                     material={materials.yaskawa_blue}
                     position={[-0.96, 0, -1.232]}
@@ -134,8 +112,6 @@ export function Yaskawa_AR2010({ modelURL, ...props }: RobotModelProps) {
                   >
                     <mesh
                       name="link_6"
-                      castShadow
-                      receiveShadow
                       geometry={nodes.link_6.geometry}
                       material={materials.yaskawa_metalsilver}
                       position={[-0.96, 1.232, 0]}

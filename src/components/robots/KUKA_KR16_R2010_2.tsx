@@ -16,22 +16,16 @@ export function KUKA_KR16_R2010_2({ modelURL, ...props }: RobotModelProps) {
           <group name="link_0">
             <mesh
               name="visuals_0"
-              castShadow
-              receiveShadow
               geometry={nodes.visuals_0.geometry}
               material={materials.material_Material_Metall}
             />
             <mesh
               name="visuals_0_1"
-              castShadow
-              receiveShadow
               geometry={nodes.visuals_0_1.geometry}
               material={materials.material_Material_Farbe__2_}
             />
             <mesh
               name="visuals_0_2"
-              castShadow
-              receiveShadow
               geometry={nodes.visuals_0_2.geometry}
               material={materials.material_Material_Metall}
             />
@@ -63,8 +57,6 @@ export function KUKA_KR16_R2010_2({ modelURL, ...props }: RobotModelProps) {
                     >
                       <mesh
                         name="link_6"
-                        castShadow
-                        receiveShadow
                         geometry={nodes.link_6.geometry}
                         material={materials.material_Material_Farbe__2_}
                         position={[0.67, 2, 0]}
@@ -73,8 +65,6 @@ export function KUKA_KR16_R2010_2({ modelURL, ...props }: RobotModelProps) {
                     </animated.group>
                     <mesh
                       name="link_5"
-                      castShadow
-                      receiveShadow
                       geometry={nodes.link_5.geometry}
                       material={materials.material_Material_Farbe}
                       position={[-0.67, 0, 2]}
@@ -83,8 +73,6 @@ export function KUKA_KR16_R2010_2({ modelURL, ...props }: RobotModelProps) {
                   </animated.group>
                   <mesh
                     name="link_4"
-                    castShadow
-                    receiveShadow
                     geometry={nodes.link_4.geometry}
                     material={materials.material_Material_Farbe}
                     position={[-0.67, 1.14, 0]}
@@ -98,22 +86,16 @@ export function KUKA_KR16_R2010_2({ modelURL, ...props }: RobotModelProps) {
                 >
                   <mesh
                     name="visuals_3"
-                    castShadow
-                    receiveShadow
                     geometry={nodes.visuals_3.geometry}
                     material={materials.material_Material_Farbe}
                   />
                   <mesh
                     name="visuals_3_1"
-                    castShadow
-                    receiveShadow
                     geometry={nodes.visuals_3_1.geometry}
                     material={materials.material_Material_Metall}
                   />
                   <mesh
                     name="visuals_3_2"
-                    castShadow
-                    receiveShadow
                     geometry={nodes.visuals_3_2.geometry}
                     material={materials.material_Material_Farbe__2_}
                   />
@@ -126,15 +108,11 @@ export function KUKA_KR16_R2010_2({ modelURL, ...props }: RobotModelProps) {
               >
                 <mesh
                   name="visuals_2"
-                  castShadow
-                  receiveShadow
                   geometry={nodes.visuals_2.geometry}
                   material={materials.material_Material_Farbe}
                 />
                 <mesh
                   name="visuals_2_1"
-                  castShadow
-                  receiveShadow
                   geometry={nodes.visuals_2_1.geometry}
                   material={materials.material_Material_Metall}
                 />
@@ -143,22 +121,16 @@ export function KUKA_KR16_R2010_2({ modelURL, ...props }: RobotModelProps) {
             <group name="link_1">
               <mesh
                 name="visuals_1"
-                castShadow
-                receiveShadow
                 geometry={nodes.visuals_1.geometry}
                 material={materials.material_Material_Farbe}
               />
               <mesh
                 name="visuals_1_1"
-                castShadow
-                receiveShadow
                 geometry={nodes.visuals_1_1.geometry}
                 material={materials.material_Material_Farbe__2_}
               />
               <mesh
                 name="visuals_1_2"
-                castShadow
-                receiveShadow
                 geometry={nodes.visuals_1_2.geometry}
                 material={materials.material_Material_Metall}
               />
