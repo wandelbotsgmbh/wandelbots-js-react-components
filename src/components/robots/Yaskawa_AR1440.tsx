@@ -50,16 +50,12 @@ export function Yaskawa_AR1440({ modelURL, ...props }: RobotModelProps) {
                         ></group>
                         <mesh
                           name="AR1440_L06_CAD"
-                          castShadow
-                          receiveShadow
                           geometry={nodes.AR1440_L06_CAD.geometry}
                           material={materials.metall}
                         />
                       </animated.group>
                       <mesh
                         name="AR1440_L05_CAD"
-                        castShadow
-                        receiveShadow
                         geometry={nodes.AR1440_L05_CAD.geometry}
                         material={materials.yaskawaBlueMetall}
                       />
@@ -67,15 +63,11 @@ export function Yaskawa_AR1440({ modelURL, ...props }: RobotModelProps) {
                     <group name="AR1440_L04_CAD">
                       <mesh
                         name="AR1440_L04_CAD001"
-                        castShadow
-                        receiveShadow
                         geometry={nodes.AR1440_L04_CAD001.geometry}
                         material={materials.yaskawaBlueMetall}
                       />
                       <mesh
                         name="AR1440_L04_CAD001_1"
-                        castShadow
-                        receiveShadow
                         geometry={nodes.AR1440_L04_CAD001_1.geometry}
                         material={materials.white}
                       />
@@ -84,15 +76,11 @@ export function Yaskawa_AR1440({ modelURL, ...props }: RobotModelProps) {
                   <group name="AR1440_L03_CAD">
                     <mesh
                       name="AR1440_L03_CAD001"
-                      castShadow
-                      receiveShadow
                       geometry={nodes.AR1440_L03_CAD001.geometry}
                       material={materials.yaskawaBlueMetall}
                     />
                     <mesh
                       name="AR1440_L03_CAD001_1"
-                      castShadow
-                      receiveShadow
                       geometry={nodes.AR1440_L03_CAD001_1.geometry}
                       material={materials.blackMetall}
                     />
@@ -100,8 +88,6 @@ export function Yaskawa_AR1440({ modelURL, ...props }: RobotModelProps) {
                 </animated.group>
                 <mesh
                   name="AR1440_L02_CAD"
-                  castShadow
-                  receiveShadow
                   geometry={nodes.AR1440_L02_CAD.geometry}
                   material={materials.yaskawaBlueMetall}
                 />
@@ -109,15 +95,11 @@ export function Yaskawa_AR1440({ modelURL, ...props }: RobotModelProps) {
               <group name="AR1440_L01_CAD">
                 <mesh
                   name="AR1440_L01_CAD001"
-                  castShadow
-                  receiveShadow
                   geometry={nodes.AR1440_L01_CAD001.geometry}
                   material={materials.yaskawaBlueMetall}
                 />
                 <mesh
                   name="AR1440_L01_CAD001_1"
-                  castShadow
-                  receiveShadow
                   geometry={nodes.AR1440_L01_CAD001_1.geometry}
                   material={materials.blackMetall}
                 />
@@ -125,8 +107,6 @@ export function Yaskawa_AR1440({ modelURL, ...props }: RobotModelProps) {
             </animated.group>
             <mesh
               name="AR1440_L00_CAD"
-              castShadow
-              receiveShadow
               geometry={nodes.AR1440_L00_CAD.geometry}
               material={materials.yaskawaBlueMetall}
               position={[0, 0, 0.45]}

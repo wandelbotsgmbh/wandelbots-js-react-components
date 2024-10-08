@@ -44,8 +44,6 @@ export function FANUC_ARC_Mate_120iD({ modelURL, ...props }: RobotModelProps) {
                         />
                         <mesh
                           name="M20iD25_L06"
-                          castShadow
-                          receiveShadow
                           geometry={nodes.M20iD25_L06.geometry}
                           material={materials.Fanuc_BlackMetal_AO}
                           position={[0, -0.09, 0]}
@@ -54,8 +52,6 @@ export function FANUC_ARC_Mate_120iD({ modelURL, ...props }: RobotModelProps) {
                       </animated.group>
                       <mesh
                         name="M20iD25_L05"
-                        castShadow
-                        receiveShadow
                         geometry={nodes.M20iD25_L05.geometry}
                         material={materials.Fanuc_BlackMetal_AO}
                         rotation={[Math.PI, Math.PI / 2, 0]}
@@ -68,15 +64,11 @@ export function FANUC_ARC_Mate_120iD({ modelURL, ...props }: RobotModelProps) {
                     >
                       <mesh
                         name="Mesh_2"
-                        castShadow
-                        receiveShadow
                         geometry={nodes.Mesh_2.geometry}
                         material={materials.Fanuc_Yellow_Textured_AO}
                       />
                       <mesh
                         name="Mesh_2_1"
-                        castShadow
-                        receiveShadow
                         geometry={nodes.Mesh_2_1.geometry}
                         material={materials.Fanuc_BlackMetal_AO}
                       />
@@ -89,22 +81,16 @@ export function FANUC_ARC_Mate_120iD({ modelURL, ...props }: RobotModelProps) {
                   >
                     <mesh
                       name="Mesh_15"
-                      castShadow
-                      receiveShadow
                       geometry={nodes.Mesh_15.geometry}
                       material={materials.Fanuc_BlackMetal_AO}
                     />
                     <mesh
                       name="Mesh_15_1"
-                      castShadow
-                      receiveShadow
                       geometry={nodes.Mesh_15_1.geometry}
                       material={materials.Fanuc_Yellow_Textured_AO}
                     />
                     <mesh
                       name="Mesh_15_2"
-                      castShadow
-                      receiveShadow
                       geometry={nodes.Mesh_15_2.geometry}
                       material={materials.Material_9_AO}
                     />
@@ -117,15 +103,11 @@ export function FANUC_ARC_Mate_120iD({ modelURL, ...props }: RobotModelProps) {
                 >
                   <mesh
                     name="Mesh_37"
-                    castShadow
-                    receiveShadow
                     geometry={nodes.Mesh_37.geometry}
                     material={materials.Fanuc_BlackMetal_AO}
                   />
                   <mesh
                     name="Mesh_37_1"
-                    castShadow
-                    receiveShadow
                     geometry={nodes.Mesh_37_1.geometry}
                     material={materials.Fanuc_Yellow_Textured_AO}
                   />
@@ -134,22 +116,16 @@ export function FANUC_ARC_Mate_120iD({ modelURL, ...props }: RobotModelProps) {
               <group name="M20iD25_L01" rotation={[-Math.PI / 2, 0, 0]}>
                 <mesh
                   name="Mesh_45"
-                  castShadow
-                  receiveShadow
                   geometry={nodes.Mesh_45.geometry}
                   material={materials.Material_9_AO}
                 />
                 <mesh
                   name="Mesh_45_1"
-                  castShadow
-                  receiveShadow
                   geometry={nodes.Mesh_45_1.geometry}
                   material={materials.Fanuc_Yellow_Textured_AO}
                 />
                 <mesh
                   name="Mesh_45_2"
-                  castShadow
-                  receiveShadow
                   geometry={nodes.Mesh_45_2.geometry}
                   material={materials.Fanuc_BlackMetal_AO}
                 />
@@ -157,8 +133,6 @@ export function FANUC_ARC_Mate_120iD({ modelURL, ...props }: RobotModelProps) {
             </animated.group>
             <mesh
               name="M20iD25_L00"
-              castShadow
-              receiveShadow
               geometry={nodes.M20iD25_L00.geometry}
               material={materials.Fanuc_BlackMetal_AO}
               position={[0, -0.425, 0]}

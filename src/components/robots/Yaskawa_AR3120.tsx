@@ -49,8 +49,6 @@ export function Yaskawa_AR3120({ modelURL, ...props }: RobotModelProps) {
                       />
                       <mesh
                         name="AR3120_L06"
-                        castShadow
-                        receiveShadow
                         geometry={nodes.AR3120_L06.geometry}
                         material={materials["Metal.001"]}
                         rotation={[Math.PI / 2, -Math.PI / 2, 0]}
@@ -58,8 +56,6 @@ export function Yaskawa_AR3120({ modelURL, ...props }: RobotModelProps) {
                     </animated.group>
                     <mesh
                       name="AR3120_L05"
-                      castShadow
-                      receiveShadow
                       geometry={nodes.AR3120_L05.geometry}
                       material={materials["Blue.001"]}
                       rotation={[Math.PI / 2, 0, Math.PI / 2]}
@@ -71,15 +67,11 @@ export function Yaskawa_AR3120({ modelURL, ...props }: RobotModelProps) {
                   >
                     <mesh
                       name="R_AXIS_GP20HL001"
-                      castShadow
-                      receiveShadow
                       geometry={nodes.R_AXIS_GP20HL001.geometry}
                       material={materials["Blue.001"]}
                     />
                     <mesh
                       name="R_AXIS_GP20HL001_1"
-                      castShadow
-                      receiveShadow
                       geometry={nodes.R_AXIS_GP20HL001_1.geometry}
                       material={materials["White.001"]}
                     />
@@ -88,15 +80,11 @@ export function Yaskawa_AR3120({ modelURL, ...props }: RobotModelProps) {
                 <group name="AR3120_L03" rotation={[Math.PI, 0, -Math.PI / 2]}>
                   <mesh
                     name="Mesh_3001"
-                    castShadow
-                    receiveShadow
                     geometry={nodes.Mesh_3001.geometry}
                     material={materials["Blue.001"]}
                   />
                   <mesh
                     name="Mesh_3001_1"
-                    castShadow
-                    receiveShadow
                     geometry={nodes.Mesh_3001_1.geometry}
                     material={materials["Black.001"]}
                   />
@@ -104,8 +92,6 @@ export function Yaskawa_AR3120({ modelURL, ...props }: RobotModelProps) {
               </animated.group>
               <mesh
                 name="AR3120_L02"
-                castShadow
-                receiveShadow
                 geometry={nodes.AR3120_L02.geometry}
                 material={materials["Blue.001"]}
                 position={[0, -0.146, 0]}
@@ -119,15 +105,11 @@ export function Yaskawa_AR3120({ modelURL, ...props }: RobotModelProps) {
             >
               <mesh
                 name="S_AXIS_GP20HL001"
-                castShadow
-                receiveShadow
                 geometry={nodes.S_AXIS_GP20HL001.geometry}
                 material={materials["Blue.001"]}
               />
               <mesh
                 name="S_AXIS_GP20HL001_1"
-                castShadow
-                receiveShadow
                 geometry={nodes.S_AXIS_GP20HL001_1.geometry}
                 material={materials["Black.001"]}
               />
@@ -135,8 +117,6 @@ export function Yaskawa_AR3120({ modelURL, ...props }: RobotModelProps) {
           </animated.group>
           <mesh
             name="AR3120_L00"
-            castShadow
-            receiveShadow
             geometry={nodes.AR3120_L00.geometry}
             material={materials["Blue.001"]}
             position={[0, -0.54, 0]}

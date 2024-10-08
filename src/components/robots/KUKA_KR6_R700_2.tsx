@@ -15,15 +15,11 @@ export function KUKA_KR6_R700_2({ modelURL, ...props }: RobotModelProps) {
         <group name="link_0">
           <mesh
             name="visuals_0"
-            castShadow
-            receiveShadow
             geometry={nodes.visuals_0.geometry}
             material={materials.kuka_metal}
           />
           <mesh
             name="visuals_0_1"
-            castShadow
-            receiveShadow
             geometry={nodes.visuals_0_1.geometry}
             material={materials.kuka_black}
           />
@@ -60,8 +56,6 @@ export function KUKA_KR6_R700_2({ modelURL, ...props }: RobotModelProps) {
                     />
                     <mesh
                       name="link_6"
-                      castShadow
-                      receiveShadow
                       geometry={nodes.link_6.geometry}
                       material={materials.kuka_black}
                       position={[0.425, 0.725, 0]}
@@ -70,8 +64,6 @@ export function KUKA_KR6_R700_2({ modelURL, ...props }: RobotModelProps) {
                   </animated.group>
                   <mesh
                     name="link_5"
-                    castShadow
-                    receiveShadow
                     geometry={nodes.link_5.geometry}
                     material={materials.kuka_white}
                     position={[-0.425, 0, 0.725]}
@@ -85,15 +77,11 @@ export function KUKA_KR6_R700_2({ modelURL, ...props }: RobotModelProps) {
                 >
                   <mesh
                     name="visuals_4"
-                    castShadow
-                    receiveShadow
                     geometry={nodes.visuals_4.geometry}
                     material={materials.kuka_white}
                   />
                   <mesh
                     name="visuals_4_1"
-                    castShadow
-                    receiveShadow
                     geometry={nodes.visuals_4_1.geometry}
                     material={materials.kuka_orange}
                   />
@@ -101,8 +89,6 @@ export function KUKA_KR6_R700_2({ modelURL, ...props }: RobotModelProps) {
               </animated.group>
               <mesh
                 name="link_3"
-                castShadow
-                receiveShadow
                 geometry={nodes.link_3.geometry}
                 material={materials.kuka_white}
                 position={[-0.4, 0, 0.36]}
@@ -116,15 +102,11 @@ export function KUKA_KR6_R700_2({ modelURL, ...props }: RobotModelProps) {
             >
               <mesh
                 name="visuals_2"
-                castShadow
-                receiveShadow
                 geometry={nodes.visuals_2.geometry}
                 material={materials.kuka_white}
               />
               <mesh
                 name="visuals_2_1"
-                castShadow
-                receiveShadow
                 geometry={nodes.visuals_2_1.geometry}
                 material={materials.kuka_orange}
               />
@@ -132,8 +114,6 @@ export function KUKA_KR6_R700_2({ modelURL, ...props }: RobotModelProps) {
           </animated.group>
           <mesh
             name="link_1"
-            castShadow
-            receiveShadow
             geometry={nodes.link_1.geometry}
             material={materials.kuka_white}
           />
