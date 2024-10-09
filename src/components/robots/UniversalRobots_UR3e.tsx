@@ -2,7 +2,11 @@ import { animated } from "@react-spring/three"
 import { useGLTF } from "@react-three/drei"
 import type { RobotModelProps } from "./types"
 
-export function UniversalRobots_UR3e({ modelURL, ...props }: RobotModelProps) {
+export function UniversalRobots_UR3e({
+  modelURL,
+  flangeRef,
+  ...props
+}: RobotModelProps) {
   const gltf = useGLTF(modelURL) as any
   const nodes = gltf.nodes
   const materials = gltf.materials
@@ -189,6 +193,7 @@ export function UniversalRobots_UR3e({ modelURL, ...props }: RobotModelProps) {
                       />
                     </group>
                     <group
+                      ref={flangeRef}
                       name="UNIVERSALROBOTS_UR3E_FLG"
                       position={[0, 0.092, 0]}
                     />

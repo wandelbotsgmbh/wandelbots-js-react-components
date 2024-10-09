@@ -4,6 +4,7 @@ import type { RobotModelProps } from "./types"
 
 export function UniversalRobots_UR10CB({
   modelURL,
+  flangeRef,
   ...props
 }: RobotModelProps) {
   const gltf = useGLTF(modelURL) as any
@@ -215,6 +216,7 @@ export function UniversalRobots_UR10CB({
                       />
                     </group>
                     <group
+                      ref={flangeRef}
                       name="UNIVERSALROBOTS_UR10CB_FLG"
                       position={[0, 0.116, 0]}
                       rotation={[-Math.PI / 2, 0, 0]}

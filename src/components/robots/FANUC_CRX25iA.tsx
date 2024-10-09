@@ -6,7 +6,11 @@ FANUC_CRX25iA.config = {
   rotationOffsets: [0, Math.PI / 2, 0, 0, 0, 0],
 }
 
-export function FANUC_CRX25iA({ modelURL, ...props }: RobotModelProps) {
+export function FANUC_CRX25iA({
+  modelURL,
+  flangeRef,
+  ...props
+}: RobotModelProps) {
   const gltf = useGLTF(modelURL) as any
   const nodes = gltf.nodes
   const materials = gltf.materials
@@ -49,6 +53,7 @@ export function FANUC_CRX25iA({ modelURL, ...props }: RobotModelProps) {
                       rotation={[-Math.PI / 2, 0, 0]}
                     >
                       <group
+                        ref={flangeRef}
                         name="CRX25iA_FLG"
                         position={[0, -0.18, 0]}
                         rotation={[-Math.PI, 0, 0]}

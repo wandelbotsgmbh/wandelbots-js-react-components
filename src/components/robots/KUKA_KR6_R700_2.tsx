@@ -7,7 +7,11 @@ KUKA_KR6_R700_2.config = {
   rotationSign: [-1, 1, 1, 1, 1, 1],
 }
 
-export function KUKA_KR6_R700_2({ modelURL, ...props }: RobotModelProps) {
+export function KUKA_KR6_R700_2({
+  modelURL,
+  flangeRef,
+  ...props
+}: RobotModelProps) {
   const { nodes, materials } = useGLTF(modelURL) as any
   return (
     <group {...props} dispose={null}>
@@ -50,6 +54,7 @@ export function KUKA_KR6_R700_2({ modelURL, ...props }: RobotModelProps) {
                     rotation={[-Math.PI / 2, 0, -Math.PI]}
                   >
                     <group
+                      ref={flangeRef}
                       name="KUKA_KR6R700-2_FLG"
                       position={[0, -0.09, 0]}
                       rotation={[-Math.PI, 0, 0]}

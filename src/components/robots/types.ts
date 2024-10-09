@@ -1,7 +1,9 @@
 import type { GroupProps } from "@react-three/fiber"
+import type { Group } from "three"
 
 export type RobotModelProps = {
   modelURL: string
+  flangeRef?: React.MutableRefObject<Group>
 } & GroupProps
 
 /**

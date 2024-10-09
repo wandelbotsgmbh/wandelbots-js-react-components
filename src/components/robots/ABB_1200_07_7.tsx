@@ -6,7 +6,11 @@ ABB_1200_07_7.config = {
   rotationOffsets: [0, -Math.PI / 2, 0, 0, 0, 0],
 }
 
-export function ABB_1200_07_7({ modelURL, ...props }: RobotModelProps) {
+export function ABB_1200_07_7({
+  modelURL,
+  flangeRef,
+  ...props
+}: RobotModelProps) {
   const gltf = useGLTF(modelURL) as any
   const nodes = gltf.nodes
   const materials = gltf.materials
@@ -47,7 +51,11 @@ export function ABB_1200_07_7({ modelURL, ...props }: RobotModelProps) {
                     name="ABB_IRB1200_J05"
                     rotation={[Math.PI / 2, 0, -Math.PI]}
                   >
-                    <group name="ABB_IRB1200_FLG" position={[0, 0.082, 0]} />
+                    <group
+                      ref={flangeRef}
+                      name="ABB_IRB1200_FLG"
+                      position={[0, 0.082, 0]}
+                    />
                     <mesh
                       name="visuals006"
                       geometry={nodes.visuals006.geometry}
