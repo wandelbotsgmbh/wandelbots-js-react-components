@@ -66,7 +66,7 @@ function SupportedRobotScene(
 
 export const RobotStory: StoryObj<typeof SupportedRobotScene> = {
   args: {
-    modelFromController: "UniversalRobots_UR3",
+    modelFromController: "UniversalRobots_UR3CB",
   },
   render: (args) => <SupportedRobotScene {...args} />,
   name: "UniversalRobots_UR3CB",
