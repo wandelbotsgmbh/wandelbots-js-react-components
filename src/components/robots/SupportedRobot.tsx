@@ -167,6 +167,9 @@ export const SupportedRobot = externalizeComponent(
       case "UniversalRobots_UR3e":
         Robot = UniversalRobots_UR3e
         break
+      case "UniversalRobots_UR5":
+        Robot = UniversalRobots_UR5CB
+        break
       case "UniversalRobots_UR5CB":
         Robot = UniversalRobots_UR5CB
         break
