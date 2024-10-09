@@ -1,4 +1,4 @@
-import { Typography, useTheme } from "@mui/material"
+import { Stack, Typography, useTheme } from "@mui/material"
 import Slider from "@mui/material/Slider"
 import isNumber from "lodash-es/isNumber"
 import { observer } from "mobx-react-lite"
@@ -26,18 +26,7 @@ export const VelocitySlider = observer((props: VelocitySliderProps) => {
   }
 
   return (
-    <>
-      <Typography
-        sx={{
-          textAlign: "center",
-          fontSize: "14px",
-          opacity: 0.8,
-          lineHeight: 1,
-          color: theme.palette.text.primary,
-        }}
-      >
-        {valueLabelFormat(props.velocity)}
-      </Typography>
+    <Stack direction="row" gap={2}>
       <Slider
         value={props.velocity}
         color="secondary"
@@ -54,6 +43,26 @@ export const VelocitySlider = observer((props: VelocitySliderProps) => {
           },
         }}
       />
-    </>
+      <div
+        style={{
+          padding: "6px 12px",
+          background: theme.palette.backgroundPaperElevation?.[8],
+          borderRadius: "10px",
+        }}
+      >
+        <Typography
+          sx={{
+            textAlign: "center",
+            fontSize: "14px",
+            opacity: 0.8,
+            lineHeight: 1,
+            color: theme.palette.text.primary,
+            whiteSpace: "nowrap",
+          }}
+        >
+          {valueLabelFormat(props.velocity)}
+        </Typography>
+      </div>
+    </Stack>
   )
 })

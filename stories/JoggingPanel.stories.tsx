@@ -1,18 +1,32 @@
-import { Box, useTheme } from "@mui/material"
+import { Stack, useTheme } from "@mui/material"
 import type { Meta, StoryObj } from "@storybook/react"
 import { JoggingPanel, type JoggingPanelProps } from "../src/index"
 
 const JoggingPanelWrapper = (props: JoggingPanelProps) => {
   const theme = useTheme()
   return (
-    <Box
+    <Stack
+      direction="row"
+      gap={2}
       sx={{
-        backgroundColor: theme.palette.backgroundPaperElevation?.[5],
         maxWidth: "min-content",
       }}
     >
-      <JoggingPanel {...props} />
-    </Box>
+      <JoggingPanel
+        {...props}
+        sx={{
+          width: "320px",
+          backgroundColor: theme.palette.backgroundPaperElevation?.[5],
+        }}
+      />
+      <JoggingPanel
+        {...props}
+        sx={{
+          width: "460px",
+          backgroundColor: theme.palette.backgroundPaperElevation?.[5],
+        }}
+      />
+    </Stack>
   )
 }
 

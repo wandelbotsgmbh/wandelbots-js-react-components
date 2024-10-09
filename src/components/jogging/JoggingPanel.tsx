@@ -1,4 +1,4 @@
-import { Stack, Tab, Tabs } from "@mui/material"
+import { Stack, Tab, Tabs, type SxProps } from "@mui/material"
 import { NovaClient } from "@wandelbots/wandelbots-js"
 import { isString } from "lodash-es"
 import { runInAction } from "mobx"
@@ -22,6 +22,7 @@ export type JoggingPanelProps = {
   children?: React.ReactNode
   /** Set this to true to disable jogging UI temporarily e.g. when a program is executing */
   locked?: boolean
+  sx?: SxProps
 }
 
 /**
@@ -80,10 +81,9 @@ export const JoggingPanel = externalizeComponent(
       <Stack
         sx={{
           maxWidth: "460px",
-          minWidth: "350px",
-          overflowY: "auto",
+          minWidth: "320px",
           position: "relative",
-          height: "100%",
+          ...props.sx,
         }}
       >
         {state.joggingStore ? (
@@ -155,7 +155,7 @@ const JoggingPanelInner = observer(
     }
 
     return (
-      <Stack flexGrow={1} height="100%">
+      <Stack flexGrow={1} sx={{ overflow: "hidden" }}>
         {/* Tab selection */}
         <Tabs
           value={store.tabIndex}
@@ -173,7 +173,11 @@ const JoggingPanelInner = observer(
         </Tabs>
 
         {/* Current tab content */}
-        <Stack flexGrow={1} position="relative">
+        <Stack
+          flexGrow={1}
+          position="relative"
+          sx={{ overflowY: "auto", overflowX: "hidden" }}
+        >
           {renderTabContent()}
         </Stack>
       </Stack>

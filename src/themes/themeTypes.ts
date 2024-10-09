@@ -17,7 +17,12 @@ export interface AxisControlComponentColors {
   color?: string
   borderColor?: string
   backgroundColor?: string
-  buttonBackgroundColor?: string
+  buttonBackgroundColor?: {
+    default?: string
+    pressed?: string
+    disabled?: string
+    hovered?: string
+  }
 }
 
 interface NovaComponentsExtension {
