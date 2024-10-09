@@ -21,8 +21,12 @@ export const JoggingCartesianValues = observer(
       if (!poseHolderRef.current) {
         return
       }
+      const newPoseContent = getCurrentPoseString()
+      if (poseHolderRef.current.textContent === newPoseContent) {
+        return
+      }
 
-      poseHolderRef.current.textContent = getCurrentPoseString()
+      poseHolderRef.current.textContent = newPoseContent
     })
 
     return (
