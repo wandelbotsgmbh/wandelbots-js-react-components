@@ -21,7 +21,7 @@ export type JoggingPanelProps = {
   /** Callback with the jogging panel's state store for further customization/config */
   onSetup?: (store: JoggingStore) => void
   /** Any children will go at the bottom of the panel under the default contents */
-  renderChildren?: (tabId: JoggingPanelTabId) => React.ReactNode
+  children?: React.ReactNode
   /** Set this to true to disable jogging UI temporarily e.g. when a program is executing */
   locked?: boolean
   sx?: SxProps
@@ -91,7 +91,7 @@ export const JoggingPanel = externalizeComponent(
         {state.joggingStore ? (
           <JoggingPanelInner
             store={state.joggingStore}
-            renderChildren={props.renderChildren}
+            children={props.children}
           ></JoggingPanelInner>
         ) : (
           <LoadingCover message="Loading jogging" error={state.loadingError} />
@@ -104,10 +104,10 @@ export const JoggingPanel = externalizeComponent(
 const JoggingPanelInner = observer(
   ({
     store,
-    renderChildren,
+    children,
   }: {
     store: JoggingStore
-    renderChildren?: (tabId: JoggingPanelTabId) => React.ReactNode
+    children?: React.ReactNode
     childrenJoint?: React.ReactNode
   }) => {
     // Jogger is only active as long as the tab is focused
@@ -141,8 +141,6 @@ const JoggingPanelInner = observer(
         if (store.activationState !== "inactive") store.activate()
       },
     )
-
-    const children = renderChildren ? renderChildren(store.currentTab.id) : null
 
     function renderTabContent() {
       if (store.currentTab.id === "cartesian") {

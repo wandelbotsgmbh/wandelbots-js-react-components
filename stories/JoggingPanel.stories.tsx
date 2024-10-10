@@ -1,9 +1,16 @@
 import { Stack, Typography, useTheme } from "@mui/material"
 import type { Meta, StoryObj } from "@storybook/react"
-import { JoggingPanel, type JoggingPanelProps } from "../src/index"
+import { runInAction } from "mobx"
+import { observer, useLocalObservable } from "mobx-react-lite"
+import {
+  JoggingPanel,
+  type JoggingPanelProps,
+  type JoggingStore,
+} from "../src/index"
 
 const JoggingPanelWrapper = (props: JoggingPanelProps) => {
   const theme = useTheme()
+
   return (
     <Stack
       direction="row"
@@ -19,48 +26,7 @@ const JoggingPanelWrapper = (props: JoggingPanelProps) => {
           backgroundColor: theme.palette.backgroundPaperElevation?.[5],
         }}
       />
-      <JoggingPanel
-        {...props}
-        sx={{
-          width: "460px",
-          backgroundColor: theme.palette.backgroundPaperElevation?.[5],
-        }}
-        renderChildren={(tabId) => {
-          if (tabId === "cartesian") {
-            return (
-              <Stack
-                alignItems="center"
-                justifyContent="center"
-                sx={{
-                  background: theme.palette.backgroundPaperElevation?.[7],
-                  borderRadius: "16px",
-                  minHeight: "200px",
-                }}
-              >
-                <Typography color={theme.palette.text.primary}>
-                  Children Cartesian
-                </Typography>
-              </Stack>
-            )
-          }
-
-          return (
-            <Stack
-              alignItems="center"
-              justifyContent="center"
-              sx={{
-                background: theme.palette.backgroundPaperElevation?.[7],
-                borderRadius: "16px",
-                minHeight: "200px",
-              }}
-            >
-              <Typography color={theme.palette.text.primary}>
-                Children Joint
-              </Typography>
-            </Stack>
-          )
-        }}
-      />
+      <ChildrenDemoJoggingPanel props={props} />
     </Stack>
   )
 }
@@ -85,3 +51,40 @@ export const Default: StoryObj<typeof JoggingPanel> = {
     },
   },
 }
+
+const ChildrenDemoJoggingPanel = observer(
+  ({ props }: { props: JoggingPanelProps }) => {
+    const theme = useTheme()
+
+    const state = useLocalObservable(() => ({
+      joggingStore: null as JoggingStore | null,
+    }))
+
+    return (
+      <JoggingPanel
+        {...props}
+        sx={{
+          width: "460px",
+          backgroundColor: theme.palette.backgroundPaperElevation?.[5],
+        }}
+        onSetup={(store) => runInAction(() => (state.joggingStore = store))}
+      >
+        {state.joggingStore && (
+          <Stack
+            alignItems="center"
+            justifyContent="center"
+            sx={{
+              background: theme.palette.backgroundPaperElevation?.[7],
+              borderRadius: "16px",
+              minHeight: "200px",
+            }}
+          >
+            <Typography color={theme.palette.text.primary}>
+              {`${state.joggingStore.currentTab.id} children`}
+            </Typography>
+          </Stack>
+        )}
+      </JoggingPanel>
+    )
+  },
+)
