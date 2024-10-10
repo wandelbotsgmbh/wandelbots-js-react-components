@@ -1,5 +1,4 @@
 import {
-  Button,
   Divider,
   Stack,
   ToggleButton,
@@ -16,7 +15,6 @@ import RotationIcon from "../../icons/rotation.svg"
 import { useReaction } from "../utils/hooks"
 import { JoggingActivationRequired } from "./JoggingActivationRequired"
 import { JoggingCartesianAxisControl } from "./JoggingCartesianAxisControl"
-import { JoggingCartesianValues } from "./JoggingCartesianValues"
 import { JoggingJointLimitDetector } from "./JoggingJointLimitDetector"
 import { JoggingOptions } from "./JoggingOptions"
 import type { DiscreteIncrementOption, JoggingStore } from "./JoggingStore"
@@ -270,19 +268,7 @@ export const JoggingCartesianTab = observer(
         {/* Show message if joint limits reached */}
         <JoggingJointLimitDetector store={store} />
 
-        <Divider />
-
-        {/* Show Wandelscript string for the current coords */}
-        <Stack
-          direction="row"
-          gap={"12px"}
-          sx={{ minWidth: 0, overflow: "hidden" }}
-        >
-          <JoggingCartesianValues store={store} />
-          <Button variant="contained" color="secondary">
-            Save
-          </Button>
-        </Stack>
+        {children && <Divider />}
 
         {/* Custom content */}
 

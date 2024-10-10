@@ -1,4 +1,4 @@
-import { Stack, useTheme } from "@mui/material"
+import { Stack, Typography, useTheme } from "@mui/material"
 import type { Meta, StoryObj } from "@storybook/react"
 import { JoggingPanel, type JoggingPanelProps } from "../src/index"
 
@@ -25,7 +25,19 @@ const JoggingPanelWrapper = (props: JoggingPanelProps) => {
           width: "460px",
           backgroundColor: theme.palette.backgroundPaperElevation?.[5],
         }}
-      />
+      >
+        <Stack
+          alignItems="center"
+          justifyContent="center"
+          sx={{
+            background: theme.palette.backgroundPaperElevation?.[7],
+            borderRadius: "16px",
+            minHeight: "200px",
+          }}
+        >
+          <Typography color={theme.palette.text.primary}>Children</Typography>
+        </Stack>
+      </JoggingPanel>
     </Stack>
   )
 }

@@ -1,9 +1,8 @@
-import { Button, Divider, Stack } from "@mui/material"
+import { Divider, Stack } from "@mui/material"
 import { radiansToDegrees } from "@wandelbots/wandelbots-js"
 import { observer } from "mobx-react-lite"
 import type { ReactNode } from "react"
 import { JoggingActivationRequired } from "./JoggingActivationRequired"
-import { JoggingCartesianValues } from "./JoggingCartesianValues"
 import { JoggingJointLimitDetector } from "./JoggingJointLimitDetector"
 import { JoggingJointRotationControl } from "./JoggingJointRotationControl"
 import type { JoggingStore } from "./JoggingStore"
@@ -80,19 +79,7 @@ export const JoggingJointTab = observer(
         </Stack>
         <JoggingJointLimitDetector store={store} />
 
-        <Divider />
-
-        {/* Show Wandelscript string for the current coords */}
-        <Stack
-          direction="row"
-          gap={"12px"}
-          sx={{ minWidth: 0, overflow: "hidden" }}
-        >
-          <JoggingCartesianValues store={store} />
-          <Button variant="contained" color="secondary">
-            Save
-          </Button>
-        </Stack>
+        {children && <Divider />}
 
         {/* Custom content */}
         {children}

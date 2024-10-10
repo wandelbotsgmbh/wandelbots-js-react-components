@@ -1,18 +1,19 @@
 import { Stack } from "@mui/material"
-import { poseToWandelscriptString } from "@wandelbots/wandelbots-js"
+import {
+  MotionStreamConnection,
+  poseToWandelscriptString,
+} from "@wandelbots/wandelbots-js"
 import { observer } from "mobx-react-lite"
 import { useRef } from "react"
 import { CopyableText } from "../CopyableText"
 import { useAnimationFrame } from "../utils/hooks"
-import type { JoggingStore } from "./JoggingStore"
 
-export const JoggingCartesianValues = observer(
-  ({ store }: { store: JoggingStore }) => {
+export const PoseCartesianValues = observer(
+  ({ motionStream }: { motionStream: MotionStreamConnection }) => {
     const poseHolderRef = useRef<HTMLDivElement>(null)
 
     function getCurrentPoseString() {
-      const tcpPose =
-        store.jogger.motionStream.rapidlyChangingMotionState.tcp_pose
+      const tcpPose = motionStream.rapidlyChangingMotionState.tcp_pose
       if (!tcpPose) return ""
       return poseToWandelscriptString(tcpPose)
     }
