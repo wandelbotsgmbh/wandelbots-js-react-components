@@ -9,6 +9,7 @@ import { FANUC_CRX20iAL } from "./FANUC_CRX20iAL"
 import { FANUC_CRX25iA } from "./FANUC_CRX25iA"
 import { FANUC_CRX25iAL } from "./FANUC_CRX25iAL"
 import { FANUC_LR_Mate_200iD } from "./FANUC_LR_Mate_200iD"
+import { FANUC_LR_Mate_200iD4S } from "./FANUC_LR_Mate_200iD4S"
 import { FANUC_LR_MATE_200iD7L } from "./FANUC_LR_MATE_200iD7L"
 import { KUKA_KR16_R2010_2 } from "./KUKA_KR16_R2010_2"
 import { KUKA_KR210_R2700 } from "./KUKA_KR210_R2700"
@@ -220,6 +221,9 @@ export const SupportedRobot = externalizeComponent(
         break
       case "FANUC_LR_Mate_200iD":
         Robot = FANUC_LR_Mate_200iD
+        break
+      case "FANUC_LR_Mate_200iD4S":
+        Robot = FANUC_LR_Mate_200iD4S
         break
       case "FANUC_LR_Mate_200iD7L":
         Robot = FANUC_LR_MATE_200iD7L
