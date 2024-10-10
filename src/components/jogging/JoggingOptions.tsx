@@ -1,7 +1,7 @@
 import { Box, MenuItem } from "@mui/material"
 import { observer } from "mobx-react-lite"
 import { useTranslation } from "react-i18next"
-import AdornedSelect from "../../experimental/utils/AdornedSelect"
+import AdornedSelect from "../experimental/utils/AdornedSelect"
 import {
   ORIENTATION_IDS,
   type IncrementOptionId,
