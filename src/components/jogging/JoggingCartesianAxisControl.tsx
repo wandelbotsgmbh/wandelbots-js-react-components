@@ -85,8 +85,9 @@ export const JoggingCartesianAxisControl = externalizeComponent(
         }
       }
 
-      function onPointerUp() {
+      function onPointerUpOrOut() {
         setBorderColor(colors?.borderColor)
+        stopJogging()
       }
 
       return (
@@ -95,14 +96,8 @@ export const JoggingCartesianAxisControl = externalizeComponent(
             disabled={disabled}
             disableRipple
             onPointerDown={(ev: React.PointerEvent) => onPointerDown(ev, "-")}
-            onPointerUp={() => {
-              onPointerUp()
-              stopJogging()
-            }}
-            onPointerOut={() => {
-              onPointerUp()
-              stopJogging()
-            }}
+            onPointerUp={onPointerUpOrOut}
+            onPointerOut={onPointerUpOrOut}
             size="large"
             sx={{
               ...SxAxisControlButton,
@@ -164,14 +159,8 @@ export const JoggingCartesianAxisControl = externalizeComponent(
             disableRipple
             disabled={disabled}
             onPointerDown={(ev: React.PointerEvent) => onPointerDown(ev, "+")}
-            onPointerUp={() => {
-              onPointerUp()
-              stopJogging()
-            }}
-            onPointerOut={() => {
-              onPointerUp()
-              stopJogging()
-            }}
+            onPointerUp={onPointerUpOrOut}
+            onPointerOut={onPointerUpOrOut}
             size="large"
             sx={{
               ...SxAxisControlButton,
