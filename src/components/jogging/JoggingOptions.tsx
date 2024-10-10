@@ -12,6 +12,17 @@ import {
 export const JoggingOptions = observer(({ store }: { store: JoggingStore }) => {
   const { t } = useTranslation()
 
+  function translateOrientation(orientation: OrientationId): string {
+    switch (orientation) {
+      case "coordsys":
+        return t("Jogging.Orientation.coordsys")
+      case "tool":
+        return t("Jogging.Orientation.tool")
+      default:
+        return orientation
+    }
+  }
+
   return (
     <Box
       sx={{
@@ -82,7 +93,7 @@ export const JoggingOptions = observer(({ store }: { store: JoggingStore }) => {
       >
         {ORIENTATION_IDS.map((orientationId) => (
           <MenuItem key={orientationId} value={orientationId}>
-            {orientationId}
+            {translateOrientation(orientationId)}
           </MenuItem>
         ))}
       </AdornedSelect>
