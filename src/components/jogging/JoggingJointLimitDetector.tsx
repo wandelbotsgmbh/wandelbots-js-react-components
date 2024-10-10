@@ -38,13 +38,16 @@ export const JoggingJointLimitDetector = ({
     if (limitReached) jointLimitReachedIndices.push(index)
   }
 
+  if (jointLimitReachedIndices.length === 0) {
+    return null
+  }
   return (
     <Typography
       color="error"
       sx={{
         margin: "0.5rem 1rem",
         textAlign: "center",
-        visibility: jointLimitReachedIndices.length ? "visible" : "hidden",
+        visibility: jointLimitReachedIndices.length ? "visible" : "collapse",
       }}
     >
       {t("Jogging.JointLimitsReached.lb", {

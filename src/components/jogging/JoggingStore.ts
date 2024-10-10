@@ -31,6 +31,9 @@ export type DiscreteIncrementOption = (typeof discreteIncrementOptions)[number]
 export type IncrementOption = (typeof incrementOptions)[number]
 export type IncrementOptionId = IncrementOption["id"]
 
+export const ORIENTATION_IDS = ["coordsys", "tool"]
+export type OrientationId = (typeof ORIENTATION_IDS)[number]
+
 export class JoggingStore {
   selectedTabId: "cartesian" | "joint" | "debug" = "cartesian"
 
@@ -69,7 +72,7 @@ export class JoggingStore {
    * When in tool orientation, the robot moves in a direction relative to the
    * attached tool rotation.
    */
-  selectedOrientation: "coordsys" | "tool" = "coordsys"
+  selectedOrientation: OrientationId = "coordsys"
 
   /**
    * Id of selected increment amount for jogging. Options are defined by robot pad.
@@ -426,7 +429,7 @@ export class JoggingStore {
     this.selectedTcpId = id
   }
 
-  setSelectedOrientation(orientation: "coordsys" | "tool") {
+  setSelectedOrientation(orientation: OrientationId) {
     this.selectedOrientation = orientation
   }
 

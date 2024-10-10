@@ -1,7 +1,8 @@
-import { Typography, useTheme } from "@mui/material"
+import { Stack, Typography, useTheme, type SxProps } from "@mui/material"
 import Slider from "@mui/material/Slider"
 import isNumber from "lodash-es/isNumber"
 import { observer } from "mobx-react-lite"
+import type { ReactNode } from "react"
 
 type VelocitySliderProps = {
   min: number
@@ -9,15 +10,12 @@ type VelocitySliderProps = {
   velocity: number
   onVelocityChange: (newVelocity: number) => void
   disabled?: boolean
-  valueLabelFormat?: (value: number) => string
+  renderValue?: (value: number) => ReactNode
 }
 
 /** A slider for controlling the movement velocity of a robot */
 export const VelocitySlider = observer((props: VelocitySliderProps) => {
   const theme = useTheme()
-
-  const valueLabelFormat =
-    props.valueLabelFormat || ((value: number) => `${value}`)
 
   function onSliderChange(_event: Event, newVelocity: number | number[]) {
     if (newVelocity === props.velocity || !isNumber(newVelocity)) return
@@ -26,18 +24,7 @@ export const VelocitySlider = observer((props: VelocitySliderProps) => {
   }
 
   return (
-    <>
-      <Typography
-        sx={{
-          textAlign: "center",
-          fontSize: "14px",
-          opacity: 0.8,
-          lineHeight: 1,
-          color: theme.palette.text.primary,
-        }}
-      >
-        {valueLabelFormat(props.velocity)}
-      </Typography>
+    <Stack direction="row" gap={2}>
       <Slider
         value={props.velocity}
         color="secondary"
@@ -54,6 +41,48 @@ export const VelocitySlider = observer((props: VelocitySliderProps) => {
           },
         }}
       />
-    </>
+      {props.renderValue ? (
+        props.renderValue(props.velocity)
+      ) : (
+        <VelocitySliderLabel value={props.velocity.toString()} />
+      )}
+    </Stack>
   )
 })
+
+type VelocitySliderLabelProps = {
+  value: string
+  sx?: SxProps
+}
+
+export function VelocitySliderLabel({ value, sx }: VelocitySliderLabelProps) {
+  const theme = useTheme()
+  return (
+    <Stack
+      direction={"row"}
+      justifyContent={"center"}
+      gap={"5px"}
+      sx={{
+        padding: "6px 12px",
+        background: theme.palette.backgroundPaperElevation?.[8],
+        borderRadius: "10px",
+        minWidth: "111px",
+        ...sx,
+      }}
+    >
+      <Typography
+        component="span"
+        sx={{
+          textAlign: "right",
+          fontSize: "14px",
+          opacity: 0.8,
+          lineHeight: 1,
+          color: theme.palette.text.primary,
+          whiteSpace: "nowrap",
+        }}
+      >
+        {value}
+      </Typography>
+    </Stack>
+  )
+}

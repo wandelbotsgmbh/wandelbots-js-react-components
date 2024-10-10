@@ -1,7 +1,7 @@
-import { makeErrorMessage } from "./utils/errorHandling"
 import { capitalize, CircularProgress, Stack, useTheme } from "@mui/material"
 import { lowerFirst } from "lodash-es"
 import { useEffect, useState } from "react"
+import { makeErrorMessage } from "./utils/errorHandling"
 
 export const LoadingCover = (props: {
   message?: string
@@ -11,6 +11,7 @@ export const LoadingCover = (props: {
   const softTimeout = props.softTimeout || 3000
 
   const [showSlowLoadingMessage, setShowSlowLoadingMessage] = useState(false)
+  const theme = useTheme()
 
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -26,6 +27,7 @@ export const LoadingCover = (props: {
       height="100%"
       alignItems="center"
       justifyContent="center"
+      sx={{ color: theme.palette.text.primary }}
     >
       {props.error ? (
         <LoadingErrorMessage
@@ -40,7 +42,7 @@ export const LoadingCover = (props: {
             sx={{
               visibility: showSlowLoadingMessage ? "visible" : "hidden",
               marginTop: "1rem",
-              color: "gray",
+              color: theme.palette.text.secondary,
             }}
           >
             {"This is taking longer than expected..."}

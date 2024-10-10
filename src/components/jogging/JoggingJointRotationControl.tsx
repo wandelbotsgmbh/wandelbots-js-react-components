@@ -1,6 +1,6 @@
 import ChevronLeft from "@mui/icons-material/ChevronLeft"
 import ChevronRight from "@mui/icons-material/ChevronRight"
-import { IconButton, Slider, Typography } from "@mui/material"
+import { IconButton, Slider, Typography, useTheme } from "@mui/material"
 import Stack from "@mui/material/Stack"
 import throttle from "lodash-es/throttle"
 import { observer, useLocalObservable } from "mobx-react-lite"
@@ -33,6 +33,12 @@ export const JoggingJointRotationControl = externalizeComponent(
     }: JoggingJointRotationControlProps) => {
       const { t } = useTranslation()
       const [currentValue, setCurrentValue] = useState<number | undefined>()
+      const theme = useTheme()
+
+      const pressedButtonStyle = {
+        background: theme.palette.backgroundPaperElevation?.[4],
+        color: theme.palette.backgroundPaperElevation?.[11],
+      }
 
       const state = useLocalObservable(() => ({
         activeJoggingDir: null as "-" | "+" | null,
@@ -92,22 +98,30 @@ export const JoggingJointRotationControl = externalizeComponent(
         <Stack
           height="64px"
           width="100%"
-          maxWidth="300px"
+          maxWidth="260px"
           direction="row"
           {...rest}
           sx={{
             "& .MuiIconButton-root": {
               width: "52px",
-              color: "white",
+              color: theme.palette.text.primary,
               alignContent: "center",
-              backgroundColor: "#38445A",
-              "&:disabled": {
-                opacity: 0.5,
-                backgroundColor: "#38445A",
-              },
+              backgroundColor: theme.palette.backgroundPaperElevation?.[11],
               "& svg": {
                 width: "42px",
                 height: "42px",
+              },
+
+              "&.Mui-disabled": {
+                backgroundColor: theme.palette.backgroundPaperElevation?.[11],
+                color: theme.palette.action.disabled,
+                opacity: 1,
+              },
+              "&:hover": {
+                backgroundColor: theme.palette.backgroundPaperElevation?.[9],
+              },
+              "&:active": {
+                ...pressedButtonStyle,
               },
             },
           }}
@@ -117,10 +131,10 @@ export const JoggingJointRotationControl = externalizeComponent(
             onPointerUp={onPointerUp}
             onPointerOut={onPointerOut}
             disabled={disabled}
+            disableRipple
             sx={{
               borderRadius: "16px 0px 0px 16px",
-              backgroundColor:
-                state.activeJoggingDir === "-" ? "#495975" : undefined,
+              ...(state.activeJoggingDir === "-" ? pressedButtonStyle : {}),
             }}
           >
             <ChevronLeft />
@@ -134,10 +148,8 @@ export const JoggingJointRotationControl = externalizeComponent(
               borderStyle: "solid",
               borderLeftWidth: 0,
               borderRightWidth: 0,
-              borderTopWidth: "4px",
-              borderBottomWidth: "4px",
-              backgroundColor: "#38445A",
-              borderColor: "#38445A",
+              border: "none",
+              backgroundColor: theme.palette.backgroundPaperElevation?.[11],
               paddingLeft: "20px",
               paddingRight: "20px",
               zIndex: 1,
@@ -146,9 +158,13 @@ export const JoggingJointRotationControl = externalizeComponent(
             <Typography
               sx={{
                 fontSize: "15px",
+                fontWeight: 700,
                 position: "relative",
                 top: "5px",
-                color: "white",
+
+                color: disabled
+                  ? theme.palette.action.disabled
+                  : theme.palette.text.primary,
               }}
             >
               {formatDegrees(currentValue)}
@@ -167,16 +183,21 @@ export const JoggingJointRotationControl = externalizeComponent(
                 },
                 "& .MuiSlider-thumb": {
                   width: "5px",
-                  height: "10px",
+                  height: "12px",
                   borderRadius: "2px",
+                  color: disabled
+                    ? theme.palette.action.disabled
+                    : theme.palette.text.primary,
                 },
                 "& .MuiSlider-markLabel": {
                   top: "20px",
                   fontSize: "12px",
-                  color: "white",
+                  color: disabled
+                    ? theme.palette.action.disabled
+                    : theme.palette.text.secondary,
                 },
                 "& .MuiSlider-rail": {
-                  backgroundColor: "#1F283A",
+                  backgroundColor: theme.palette.backgroundPaperElevation?.[5],
                   opacity: 1,
                 },
               }}
@@ -201,12 +222,10 @@ export const JoggingJointRotationControl = externalizeComponent(
             onPointerUp={onPointerUp}
             onPointerOut={onPointerOut}
             disabled={disabled}
+            disableRipple
             sx={{
               borderRadius: "0px 16px 16px 0px",
-              backgroundColor:
-                state.activeJoggingDir === "+"
-                  ? "#495975 !important"
-                  : "#38445A",
+              ...(state.activeJoggingDir === "+" ? pressedButtonStyle : {}),
             }}
           >
             <ChevronRight />
