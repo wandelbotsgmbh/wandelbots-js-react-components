@@ -31,11 +31,11 @@ export function UniversalRobots_UR10e({
                     >
                       <animated.group
                         name="UR10e_J06"
+                        ref={flangeRef}
                         position={[0, 0.12, 0]}
                         rotation={[-Math.PI / 2, 0, 0]}
                       >
                         <animated.group
-                          ref={flangeRef}
                           name="UR10e_FLG"
                           position={[1.184, -0.174, 0.061]}
                           rotation={[-Math.PI / 2, 0, 0]}
