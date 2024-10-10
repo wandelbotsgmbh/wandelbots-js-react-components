@@ -28,6 +28,8 @@ import { Yaskawa_AR3120 } from "./Yaskawa_AR3120"
 import { Yaskawa_AR900 } from "./Yaskawa_AR900"
 import { Yaskawa_GP50 } from "./Yaskawa_GP50"
 
+import { version } from "../../../package.json"
+
 import type { GroupProps } from "@react-three/fiber"
 import type {
   DHParameter,
@@ -58,7 +60,11 @@ export type SupportedRobotProps = {
 } & GroupProps
 
 export function defaultGetModel(modelFromController: string): string {
-  return `https://cdn.jsdelivr.net/gh/wandelbotsgmbh/wandelbots-js-react-components/public/models/${modelFromController}.glb`
+  let useVersion = version
+  if (version.startsWith("0.")) {
+    useVersion = ""
+  }
+  return `https://cdn.jsdelivr.net/gh/wandelbotsgmbh/wandelbots-js-react-components${useVersion ? `@${useVersion}` : ""}/public/models/${modelFromController}.glb`
 }
 
 export const SupportedRobot = externalizeComponent(
