@@ -6,7 +6,11 @@ FANUC_CRX20iAL.config = {
   rotationOffsets: [0, Math.PI / 2, 0, 0, 0, 0],
 }
 
-export function FANUC_CRX20iAL({ modelURL, ...props }: RobotModelProps) {
+export function FANUC_CRX20iAL({
+  modelURL,
+  flangeRef,
+  ...props
+}: RobotModelProps) {
   const gltf = useGLTF(modelURL) as any
   const nodes = gltf.nodes
   const materials = gltf.materials
@@ -17,8 +21,6 @@ export function FANUC_CRX20iAL({ modelURL, ...props }: RobotModelProps) {
         <group name="Scene">
           <mesh
             name="link_0"
-            castShadow
-            receiveShadow
             geometry={nodes.link_0.geometry}
             material={materials.fanuc_metal_black}
           />
@@ -44,14 +46,13 @@ export function FANUC_CRX20iAL({ modelURL, ...props }: RobotModelProps) {
                       rotation={[-Math.PI / 2, 0, 0]}
                     >
                       <animated.group
+                        ref={flangeRef}
                         name="FANUC_CRX20iAL_FLG"
                         position={[0, -0.16, 0]}
                         rotation={[-Math.PI, 0, 0]}
                       />
                       <mesh
                         name="link_6"
-                        castShadow
-                        receiveShadow
                         geometry={nodes.link_6.geometry}
                         material={materials.fanuc_metal_black}
                         position={[-0.71, 0.54, -0.15]}
@@ -65,15 +66,11 @@ export function FANUC_CRX20iAL({ modelURL, ...props }: RobotModelProps) {
                     >
                       <mesh
                         name="shape053"
-                        castShadow
-                        receiveShadow
                         geometry={nodes.shape053.geometry}
                         material={materials.fanuc_white}
                       />
                       <mesh
                         name="shape053_1"
-                        castShadow
-                        receiveShadow
                         geometry={nodes.shape053_1.geometry}
                         material={materials.fanuc_green}
                       />
@@ -86,22 +83,16 @@ export function FANUC_CRX20iAL({ modelURL, ...props }: RobotModelProps) {
                   >
                     <mesh
                       name="shape054"
-                      castShadow
-                      receiveShadow
                       geometry={nodes.shape054.geometry}
                       material={materials.fanuc_white}
                     />
                     <mesh
                       name="shape054_1"
-                      castShadow
-                      receiveShadow
                       geometry={nodes.shape054_1.geometry}
                       material={materials.fanuc_red}
                     />
                     <mesh
                       name="shape054_2"
-                      castShadow
-                      receiveShadow
                       geometry={nodes.shape054_2.geometry}
                       material={materials.fanuc_metal_black}
                     />
@@ -114,15 +105,11 @@ export function FANUC_CRX20iAL({ modelURL, ...props }: RobotModelProps) {
                 >
                   <mesh
                     name="shape009"
-                    castShadow
-                    receiveShadow
                     geometry={nodes.shape009.geometry}
                     material={materials.fanuc_green}
                   />
                   <mesh
                     name="shape009_1"
-                    castShadow
-                    receiveShadow
                     geometry={nodes.shape009_1.geometry}
                     material={materials.fanuc_white}
                   />
@@ -130,8 +117,6 @@ export function FANUC_CRX20iAL({ modelURL, ...props }: RobotModelProps) {
               </animated.group>
               <mesh
                 name="link_2"
-                castShadow
-                receiveShadow
                 geometry={nodes.link_2.geometry}
                 material={materials.fanuc_white}
                 rotation={[-Math.PI / 2, 0, -Math.PI / 2]}
@@ -140,15 +125,11 @@ export function FANUC_CRX20iAL({ modelURL, ...props }: RobotModelProps) {
             <group name="link_1" position={[0, 0.245, 0]}>
               <mesh
                 name="shape005"
-                castShadow
-                receiveShadow
                 geometry={nodes.shape005.geometry}
                 material={materials.fanuc_white}
               />
               <mesh
                 name="shape005_1"
-                castShadow
-                receiveShadow
                 geometry={nodes.shape005_1.geometry}
                 material={materials.fanuc_green}
               />

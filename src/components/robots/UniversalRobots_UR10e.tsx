@@ -2,7 +2,11 @@ import { animated } from "@react-spring/three"
 import { useGLTF } from "@react-three/drei"
 import type { RobotModelProps } from "./types"
 
-export function UniversalRobots_UR10e({ modelURL, ...props }: RobotModelProps) {
+export function UniversalRobots_UR10e({
+  modelURL,
+  flangeRef,
+  ...props
+}: RobotModelProps) {
   const gltf = useGLTF(modelURL) as any
   const nodes = gltf.nodes
   const materials = gltf.materials
@@ -31,6 +35,7 @@ export function UniversalRobots_UR10e({ modelURL, ...props }: RobotModelProps) {
                         rotation={[-Math.PI / 2, 0, 0]}
                       >
                         <animated.group
+                          ref={flangeRef}
                           name="UR10e_FLG"
                           position={[1.184, -0.174, 0.061]}
                           rotation={[-Math.PI / 2, 0, 0]}
@@ -39,15 +44,11 @@ export function UniversalRobots_UR10e({ modelURL, ...props }: RobotModelProps) {
                             name="C-1000493"
                             geometry={nodes["C-1000493"].geometry}
                             material={materials.Black}
-                            castShadow
-                            receiveShadow
                           />
                           <mesh
                             name="C-1000493_1"
                             geometry={nodes["C-1000493_1"].geometry}
                             material={materials.Metal}
-                            castShadow
-                            receiveShadow
                           />
                         </animated.group>
 
@@ -65,29 +66,21 @@ export function UniversalRobots_UR10e({ modelURL, ...props }: RobotModelProps) {
                           name="C-1000492"
                           geometry={nodes["C-1000492"].geometry}
                           material={materials.DarkGray}
-                          castShadow
-                          receiveShadow
                         />
                         <mesh
                           name="C-1000492_1"
                           geometry={nodes["C-1000492_1"].geometry}
                           material={materials.Black}
-                          castShadow
-                          receiveShadow
                         />
                         <mesh
                           name="C-1000492_2"
                           geometry={nodes["C-1000492_2"].geometry}
                           material={materials.Blue}
-                          castShadow
-                          receiveShadow
                         />
                         <mesh
                           name="C-1000492_3"
                           geometry={nodes["C-1000492_3"].geometry}
                           material={materials.Screw}
-                          castShadow
-                          receiveShadow
                         />
                       </group>
                     </animated.group>
@@ -100,29 +93,21 @@ export function UniversalRobots_UR10e({ modelURL, ...props }: RobotModelProps) {
                         name="C-1000491"
                         geometry={nodes["C-1000491"].geometry}
                         material={materials.DarkGray}
-                        castShadow
-                        receiveShadow
                       />
                       <mesh
                         name="C-1000491_1"
                         geometry={nodes["C-1000491_1"].geometry}
                         material={materials.Blue}
-                        castShadow
-                        receiveShadow
                       />
                       <mesh
                         name="C-1000491_2"
                         geometry={nodes["C-1000491_2"].geometry}
                         material={materials.Black}
-                        castShadow
-                        receiveShadow
                       />
                       <mesh
                         name="C-1000491_3"
                         geometry={nodes["C-1000491_3"].geometry}
                         material={materials.Screw}
-                        castShadow
-                        receiveShadow
                       />
                     </group>
                   </animated.group>
@@ -135,29 +120,21 @@ export function UniversalRobots_UR10e({ modelURL, ...props }: RobotModelProps) {
                       name="C-1000490"
                       geometry={nodes["C-1000490"].geometry}
                       material={materials.Metal}
-                      castShadow
-                      receiveShadow
                     />
                     <mesh
                       name="C-1000490_1"
                       geometry={nodes["C-1000490_1"].geometry}
                       material={materials.Black}
-                      castShadow
-                      receiveShadow
                     />
                     <mesh
                       name="C-1000490_2"
                       geometry={nodes["C-1000490_2"].geometry}
                       material={materials.DarkGray}
-                      castShadow
-                      receiveShadow
                     />
                     <mesh
                       name="C-1000490_3"
                       geometry={nodes["C-1000490_3"].geometry}
                       material={materials.Blue}
-                      castShadow
-                      receiveShadow
                     />
                   </group>
                 </animated.group>
@@ -170,36 +147,26 @@ export function UniversalRobots_UR10e({ modelURL, ...props }: RobotModelProps) {
                     name="C-1000489"
                     geometry={nodes["C-1000489"].geometry}
                     material={materials.Blue}
-                    castShadow
-                    receiveShadow
                   />
                   <mesh
                     name="C-1000489_1"
                     geometry={nodes["C-1000489_1"].geometry}
                     material={materials.Black}
-                    castShadow
-                    receiveShadow
                   />
                   <mesh
                     name="C-1000489_2"
                     geometry={nodes["C-1000489_2"].geometry}
                     material={materials.DarkGray}
-                    castShadow
-                    receiveShadow
                   />
                   <mesh
                     name="C-1000489_3"
                     geometry={nodes["C-1000489_3"].geometry}
                     material={materials.Screw}
-                    castShadow
-                    receiveShadow
                   />
                   <mesh
                     name="C-1000489_4"
                     geometry={nodes["C-1000489_4"].geometry}
                     material={materials.Metal}
-                    castShadow
-                    receiveShadow
                   />
                 </animated.group>
               </animated.group>
@@ -208,29 +175,21 @@ export function UniversalRobots_UR10e({ modelURL, ...props }: RobotModelProps) {
                   name="C-1000488"
                   geometry={nodes["C-1000488"].geometry}
                   material={materials.Black}
-                  castShadow
-                  receiveShadow
                 />
                 <mesh
                   name="C-1000488_1"
                   geometry={nodes["C-1000488_1"].geometry}
                   material={materials.Blue}
-                  castShadow
-                  receiveShadow
                 />
                 <mesh
                   name="C-1000488_2"
                   geometry={nodes["C-1000488_2"].geometry}
                   material={materials.Screw}
-                  castShadow
-                  receiveShadow
                 />
                 <mesh
                   name="C-1000488_3"
                   geometry={nodes["C-1000488_3"].geometry}
                   material={materials.DarkGray}
-                  castShadow
-                  receiveShadow
                 />
               </group>
             </animated.group>
@@ -239,15 +198,11 @@ export function UniversalRobots_UR10e({ modelURL, ...props }: RobotModelProps) {
                 name="C-1000487"
                 geometry={nodes["C-1000487"].geometry}
                 material={materials.Black}
-                castShadow
-                receiveShadow
               />
               <mesh
                 name="C-1000487_1"
                 geometry={nodes["C-1000487_1"].geometry}
                 material={materials.Metal}
-                castShadow
-                receiveShadow
               />
             </group>
           </group>

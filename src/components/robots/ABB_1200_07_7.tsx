@@ -6,7 +6,11 @@ ABB_1200_07_7.config = {
   rotationOffsets: [0, -Math.PI / 2, 0, 0, 0, 0],
 }
 
-export function ABB_1200_07_7({ modelURL, ...props }: RobotModelProps) {
+export function ABB_1200_07_7({
+  modelURL,
+  flangeRef,
+  ...props
+}: RobotModelProps) {
   const gltf = useGLTF(modelURL) as any
   const nodes = gltf.nodes
   const materials = gltf.materials
@@ -17,21 +21,17 @@ export function ABB_1200_07_7({ modelURL, ...props }: RobotModelProps) {
         <group name="visuals">
           <mesh
             name="visuals_1"
-            castShadow
-            receiveShadow
             geometry={nodes.visuals_1.geometry}
             material={materials.abb_metal_polished}
           />
           <mesh
             name="visuals_2"
-            castShadow
-            receiveShadow
             geometry={nodes.visuals_2.geometry}
             material={materials.abb_white}
           />
         </group>
         <animated.group name="ABB_IRB1200_J00">
-          <animated.group
+          <group
             name="ABB_IRB1200_J01"
             position={[0, 0.399, 0]}
             rotation={[-Math.PI / 2, -Math.PI / 2, 0]}
@@ -51,11 +51,13 @@ export function ABB_1200_07_7({ modelURL, ...props }: RobotModelProps) {
                     name="ABB_IRB1200_J05"
                     rotation={[Math.PI / 2, 0, -Math.PI]}
                   >
-                    <group name="ABB_IRB1200_FLG" position={[0, 0.082, 0]} />
+                    <group
+                      ref={flangeRef}
+                      name="ABB_IRB1200_FLG"
+                      position={[0, 0.082, 0]}
+                    />
                     <mesh
                       name="visuals006"
-                      castShadow
-                      receiveShadow
                       geometry={nodes.visuals006.geometry}
                       material={materials.abb_metal_black}
                       position={[0.791, -0.351, 0]}
@@ -69,15 +71,11 @@ export function ABB_1200_07_7({ modelURL, ...props }: RobotModelProps) {
                   >
                     <mesh
                       name="visuals005_1"
-                      castShadow
-                      receiveShadow
                       geometry={nodes.visuals005_1.geometry}
                       material={materials.abb_metal_polished}
                     />
                     <mesh
                       name="visuals005_2"
-                      castShadow
-                      receiveShadow
                       geometry={nodes.visuals005_2.geometry}
                       material={materials.abb_white}
                     />
@@ -90,22 +88,16 @@ export function ABB_1200_07_7({ modelURL, ...props }: RobotModelProps) {
                 >
                   <mesh
                     name="visuals004_1"
-                    castShadow
-                    receiveShadow
                     geometry={nodes.visuals004_1.geometry}
                     material={materials.abb_metal_polished}
                   />
                   <mesh
                     name="visuals004_2"
-                    castShadow
-                    receiveShadow
                     geometry={nodes.visuals004_2.geometry}
                     material={materials.abb_white}
                   />
                   <mesh
                     name="visuals004_3"
-                    castShadow
-                    receiveShadow
                     geometry={nodes.visuals004_3.geometry}
                     material={materials.abb_red}
                   />
@@ -118,22 +110,16 @@ export function ABB_1200_07_7({ modelURL, ...props }: RobotModelProps) {
               >
                 <mesh
                   name="visuals003_1"
-                  castShadow
-                  receiveShadow
                   geometry={nodes.visuals003_1.geometry}
                   material={materials.abb_white}
                 />
                 <mesh
                   name="visuals003_2"
-                  castShadow
-                  receiveShadow
                   geometry={nodes.visuals003_2.geometry}
                   material={materials.abb_red}
                 />
                 <mesh
                   name="visuals003_3"
-                  castShadow
-                  receiveShadow
                   geometry={nodes.visuals003_3.geometry}
                   material={materials.abb_metal_polished}
                 />
@@ -146,32 +132,24 @@ export function ABB_1200_07_7({ modelURL, ...props }: RobotModelProps) {
             >
               <mesh
                 name="visuals002_1"
-                castShadow
-                receiveShadow
                 geometry={nodes.visuals002_1.geometry}
                 material={materials.abb_white}
               />
               <mesh
                 name="visuals002_2"
-                castShadow
-                receiveShadow
                 geometry={nodes.visuals002_2.geometry}
                 material={materials.abb_metal_polished}
               />
             </group>
-          </animated.group>
+          </group>
           <group name="visuals001">
             <mesh
               name="visuals001_1"
-              castShadow
-              receiveShadow
               geometry={nodes.visuals001_1.geometry}
               material={materials.abb_white}
             />
             <mesh
               name="visuals001_2"
-              castShadow
-              receiveShadow
               geometry={nodes.visuals001_2.geometry}
               material={materials.abb_metal_polished}
             />

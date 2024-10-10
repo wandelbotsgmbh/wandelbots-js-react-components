@@ -1,12 +1,14 @@
 import { type GroupProps } from "@react-three/fiber"
 
 import type { ConnectedMotionGroup } from "@wandelbots/wandelbots-js"
+import type { Group } from "three"
 import { defaultGetModel, SupportedRobot } from "./SupportedRobot"
 
 export type RobotProps = {
   connectedMotionGroup: ConnectedMotionGroup
   getModel?: (modelFromController: string) => string
   isGhost?: boolean
+  flangeRef?: React.MutableRefObject<Group>
 } & GroupProps
 
 /**
@@ -24,6 +26,7 @@ export function Robot({
   connectedMotionGroup,
   getModel = defaultGetModel,
   isGhost = false,
+  flangeRef,
   ...props
 }: RobotProps) {
   if (!connectedMotionGroup.dhParameters) {
@@ -39,6 +42,7 @@ export function Robot({
       dhParameters={connectedMotionGroup.dhParameters}
       getModel={getModel}
       isGhost={isGhost}
+      flangeRef={flangeRef}
       {...props}
     />
   )

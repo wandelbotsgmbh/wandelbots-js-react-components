@@ -10,7 +10,11 @@ FANUC_LR_Mate_200iD.config = {
   rotationOffsets: [0, Math.PI / 2, 0, 0, 0, 0],
 }
 
-export function FANUC_LR_Mate_200iD({ modelURL, ...props }: RobotModelProps) {
+export function FANUC_LR_Mate_200iD({
+  modelURL,
+  flangeRef,
+  ...props
+}: RobotModelProps) {
   const { nodes, materials } = useGLTF(modelURL) as any
   return (
     <group {...props} dispose={null}>
@@ -18,15 +22,11 @@ export function FANUC_LR_Mate_200iD({ modelURL, ...props }: RobotModelProps) {
         <group name="link_0">
           <mesh
             name="shape002"
-            castShadow
-            receiveShadow
             geometry={nodes.shape002.geometry}
             material={materials.fanuc_metal_black_AO}
           />
           <mesh
             name="shape002_1"
-            castShadow
-            receiveShadow
             geometry={nodes.shape002_1.geometry}
             material={materials.fanuc_stainless_steel_AO}
           />
@@ -56,14 +56,13 @@ export function FANUC_LR_Mate_200iD({ modelURL, ...props }: RobotModelProps) {
                     rotation={[-Math.PI / 2, 0, 0]}
                   >
                     <group
+                      ref={flangeRef}
                       name="FANUC_LRMATE-200ID_FLG"
                       position={[0, -0.08, 0]}
                       rotation={[-Math.PI, 0, 0]}
                     />
                     <mesh
                       name="link_6"
-                      castShadow
-                      receiveShadow
                       geometry={nodes.link_6.geometry}
                       material={materials.fanuc_metal_black_AO}
                       position={[-0.365, 0.385, 0]}
@@ -72,8 +71,6 @@ export function FANUC_LR_Mate_200iD({ modelURL, ...props }: RobotModelProps) {
                   </animated.group>
                   <mesh
                     name="link_5"
-                    castShadow
-                    receiveShadow
                     geometry={nodes.link_5.geometry}
                     material={materials.fanuc_yellow_AO}
                     position={[-0.365, 0, -0.385]}
@@ -87,15 +84,11 @@ export function FANUC_LR_Mate_200iD({ modelURL, ...props }: RobotModelProps) {
                 >
                   <mesh
                     name="shape010"
-                    castShadow
-                    receiveShadow
                     geometry={nodes.shape010.geometry}
                     material={materials.fanuc_yellow_AO}
                   />
                   <mesh
                     name="shape010_1"
-                    castShadow
-                    receiveShadow
                     geometry={nodes.shape010_1.geometry}
                     material={materials.fanuc_aluminium_black_AO}
                   />
@@ -103,8 +96,6 @@ export function FANUC_LR_Mate_200iD({ modelURL, ...props }: RobotModelProps) {
               </animated.group>
               <mesh
                 name="link_3"
-                castShadow
-                receiveShadow
                 geometry={nodes.link_3.geometry}
                 material={materials.fanuc_yellow_AO}
                 position={[-0.33, 0, -0.05]}
@@ -113,8 +104,6 @@ export function FANUC_LR_Mate_200iD({ modelURL, ...props }: RobotModelProps) {
             </animated.group>
             <mesh
               name="link_2"
-              castShadow
-              receiveShadow
               geometry={nodes.link_2.geometry}
               material={materials.fanuc_yellow_AO}
               position={[0, 0, -0.05]}
@@ -123,8 +112,6 @@ export function FANUC_LR_Mate_200iD({ modelURL, ...props }: RobotModelProps) {
           </animated.group>
           <mesh
             name="link_1"
-            castShadow
-            receiveShadow
             geometry={nodes.link_1.geometry}
             material={materials.fanuc_yellow_AO}
           />

@@ -2,7 +2,11 @@ import { animated } from "@react-spring/three"
 import { useGLTF } from "@react-three/drei"
 import type { RobotModelProps } from "./types"
 
-export function UniversalRobots_UR5CB({ modelURL, ...props }: RobotModelProps) {
+export function UniversalRobots_UR5CB({
+  modelURL,
+  flangeRef,
+  ...props
+}: RobotModelProps) {
   const gltf = useGLTF(modelURL) as any
   const nodes = gltf.nodes
   const materials = gltf.materials
@@ -14,29 +18,21 @@ export function UniversalRobots_UR5CB({ modelURL, ...props }: RobotModelProps) {
           <group name="link_1">
             <mesh
               name="visuals_1"
-              castShadow
-              receiveShadow
               geometry={nodes.visuals_1.geometry}
               material={materials.universalrobots_darkgrey}
             />
             <mesh
               name="visuals_1_1"
-              castShadow
-              receiveShadow
               geometry={nodes.visuals_1_1.geometry}
               material={materials.universalrobots_black}
             />
             <mesh
               name="visuals_1_2"
-              castShadow
-              receiveShadow
               geometry={nodes.visuals_1_2.geometry}
               material={materials.universalrobots_aluminum}
             />
             <mesh
               name="visuals_1_3"
-              castShadow
-              receiveShadow
               geometry={nodes.visuals_1_3.geometry}
               material={materials.universalrobots_lightblue}
             />
@@ -53,36 +49,26 @@ export function UniversalRobots_UR5CB({ modelURL, ...props }: RobotModelProps) {
             >
               <mesh
                 name="visuals_2"
-                castShadow
-                receiveShadow
                 geometry={nodes.visuals_2.geometry}
                 material={materials.universalrobots_stainlesssteel}
               />
               <mesh
                 name="visuals_2_1"
-                castShadow
-                receiveShadow
                 geometry={nodes.visuals_2_1.geometry}
                 material={materials.universalrobots_lightblue}
               />
               <mesh
                 name="visuals_2_2"
-                castShadow
-                receiveShadow
                 geometry={nodes.visuals_2_2.geometry}
                 material={materials.universalrobots_aluminum}
               />
               <mesh
                 name="visuals_2_3"
-                castShadow
-                receiveShadow
                 geometry={nodes.visuals_2_3.geometry}
                 material={materials.universalrobots_black}
               />
               <mesh
                 name="visuals_2_4"
-                castShadow
-                receiveShadow
                 geometry={nodes.visuals_2_4.geometry}
                 material={materials.universalrobots_darkgrey}
               />
@@ -98,36 +84,26 @@ export function UniversalRobots_UR5CB({ modelURL, ...props }: RobotModelProps) {
               >
                 <mesh
                   name="visuals_3"
-                  castShadow
-                  receiveShadow
                   geometry={nodes.visuals_3.geometry}
                   material={materials.universalrobots_lightblue}
                 />
                 <mesh
                   name="visuals_3_1"
-                  castShadow
-                  receiveShadow
                   geometry={nodes.visuals_3_1.geometry}
                   material={materials.universalrobots_black}
                 />
                 <mesh
                   name="visuals_3_2"
-                  castShadow
-                  receiveShadow
                   geometry={nodes.visuals_3_2.geometry}
                   material={materials.universalrobots_aluminum}
                 />
                 <mesh
                   name="visuals_3_3"
-                  castShadow
-                  receiveShadow
                   geometry={nodes.visuals_3_3.geometry}
                   material={materials.universalrobots_darkgrey}
                 />
                 <mesh
                   name="visuals_3_4"
-                  castShadow
-                  receiveShadow
                   geometry={nodes.visuals_3_4.geometry}
                   material={materials.universalrobots_stainlesssteel}
                 />
@@ -143,29 +119,21 @@ export function UniversalRobots_UR5CB({ modelURL, ...props }: RobotModelProps) {
                 >
                   <mesh
                     name="visuals_4"
-                    castShadow
-                    receiveShadow
                     geometry={nodes.visuals_4.geometry}
                     material={materials.universalrobots_darkgrey}
                   />
                   <mesh
                     name="visuals_4_1"
-                    castShadow
-                    receiveShadow
                     geometry={nodes.visuals_4_1.geometry}
                     material={materials.universalrobots_aluminum}
                   />
                   <mesh
                     name="visuals_4_2"
-                    castShadow
-                    receiveShadow
                     geometry={nodes.visuals_4_2.geometry}
                     material={materials.universalrobots_lightblue}
                   />
                   <mesh
                     name="visuals_4_3"
-                    castShadow
-                    receiveShadow
                     geometry={nodes.visuals_4_3.geometry}
                     material={materials.universalrobots_black}
                   />
@@ -182,29 +150,21 @@ export function UniversalRobots_UR5CB({ modelURL, ...props }: RobotModelProps) {
                   >
                     <mesh
                       name="visuals_5"
-                      castShadow
-                      receiveShadow
                       geometry={nodes.visuals_5.geometry}
                       material={materials.universalrobots_darkgrey}
                     />
                     <mesh
                       name="visuals_5_1"
-                      castShadow
-                      receiveShadow
                       geometry={nodes.visuals_5_1.geometry}
                       material={materials.universalrobots_lightblue}
                     />
                     <mesh
                       name="visuals_5_2"
-                      castShadow
-                      receiveShadow
                       geometry={nodes.visuals_5_2.geometry}
                       material={materials.universalrobots_aluminum}
                     />
                     <mesh
                       name="visuals_5_3"
-                      castShadow
-                      receiveShadow
                       geometry={nodes.visuals_5_3.geometry}
                       material={materials.universalrobots_black}
                     />
@@ -216,14 +176,13 @@ export function UniversalRobots_UR5CB({ modelURL, ...props }: RobotModelProps) {
                   >
                     <mesh
                       name="link_6"
-                      castShadow
-                      receiveShadow
                       geometry={nodes.link_6.geometry}
                       material={materials.universalrobots_stainlesssteel}
                       position={[0.817, -0.109, -0.005]}
                       rotation={[-Math.PI / 2, 0, 0]}
                     />
                     <group
+                      ref={flangeRef}
                       name="UNIVERSALROBOTS_UR5CB_FLG"
                       position={[0, 0.082, 0]}
                     />
@@ -235,8 +194,6 @@ export function UniversalRobots_UR5CB({ modelURL, ...props }: RobotModelProps) {
         </animated.group>
         <mesh
           name="link_0"
-          castShadow
-          receiveShadow
           geometry={nodes.link_0.geometry}
           material={materials.universalrobots_aluminum}
         />

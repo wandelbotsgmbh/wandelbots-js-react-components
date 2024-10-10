@@ -6,7 +6,11 @@ KUKA_KR210_R2700.config = {
   rotationOffsets: [0, 0, -Math.PI / 2, 0, 0, 0],
 }
 
-export function KUKA_KR210_R2700({ modelURL, ...props }: RobotModelProps) {
+export function KUKA_KR210_R2700({
+  modelURL,
+  flangeRef,
+  ...props
+}: RobotModelProps) {
   const gltf = useGLTF(modelURL) as any
 
   const nodes = gltf.nodes
@@ -43,6 +47,7 @@ export function KUKA_KR210_R2700({ modelURL, ...props }: RobotModelProps) {
                         rotation={[Math.PI / 2, 0, 0]}
                       >
                         <group
+                          ref={flangeRef}
                           name="flange"
                           position={[0, -0.215, 0]}
                           rotation={[-Math.PI, 0, 0]}
@@ -54,8 +59,6 @@ export function KUKA_KR210_R2700({ modelURL, ...props }: RobotModelProps) {
                         >
                           <mesh
                             name="visuals006"
-                            castShadow
-                            receiveShadow
                             geometry={nodes.visuals006.geometry}
                             material={materials.material_Material_Metall_black}
                           />
@@ -69,15 +72,11 @@ export function KUKA_KR210_R2700({ modelURL, ...props }: RobotModelProps) {
                         <group name="visuals005">
                           <mesh
                             name="visuals005_1"
-                            castShadow
-                            receiveShadow
                             geometry={nodes.visuals005_1.geometry}
                             material={materials.material_Material_metal_black}
                           />
                           <mesh
                             name="visuals005_2"
-                            castShadow
-                            receiveShadow
                             geometry={nodes.visuals005_2.geometry}
                             material={materials.material_Material_kuka_orange}
                           />
@@ -92,15 +91,11 @@ export function KUKA_KR210_R2700({ modelURL, ...props }: RobotModelProps) {
                       <group name="visuals004">
                         <mesh
                           name="visuals004_1"
-                          castShadow
-                          receiveShadow
                           geometry={nodes.visuals004_1.geometry}
                           material={materials.material_Material_metal_black}
                         />
                         <mesh
                           name="visuals004_2"
-                          castShadow
-                          receiveShadow
                           geometry={nodes.visuals004_2.geometry}
                           material={materials.material_Material_kuka_orange}
                         />
@@ -115,50 +110,36 @@ export function KUKA_KR210_R2700({ modelURL, ...props }: RobotModelProps) {
                     <group name="visuals003">
                       <mesh
                         name="visuals003_1"
-                        castShadow
-                        receiveShadow
                         geometry={nodes.visuals003_1.geometry}
                         material={materials.material_Material_rubber}
                       />
                       <mesh
                         name="visuals003_2"
-                        castShadow
-                        receiveShadow
                         geometry={nodes.visuals003_2.geometry}
                         material={materials.material_Material_aluminium}
                       />
                       <mesh
                         name="visuals003_3"
-                        castShadow
-                        receiveShadow
                         geometry={nodes.visuals003_3.geometry}
                         material={materials.material_Material_metal_black}
                       />
                       <mesh
                         name="visuals003_4"
-                        castShadow
-                        receiveShadow
                         geometry={nodes.visuals003_4.geometry}
                         material={materials.material_Material_kuka_black}
                       />
                       <mesh
                         name="visuals003_5"
-                        castShadow
-                        receiveShadow
                         geometry={nodes.visuals003_5.geometry}
                         material={materials.material_Material_Rubber_black}
                       />
                       <mesh
                         name="visuals003_6"
-                        castShadow
-                        receiveShadow
                         geometry={nodes.visuals003_6.geometry}
                         material={materials.material_Material_kuka_orange}
                       />
                       <mesh
                         name="visuals003_7"
-                        castShadow
-                        receiveShadow
                         geometry={nodes.visuals003_7.geometry}
                         material={materials.material_Material_stainless_steel}
                       />
@@ -173,22 +154,16 @@ export function KUKA_KR210_R2700({ modelURL, ...props }: RobotModelProps) {
                   <group name="visuals002">
                     <mesh
                       name="visuals002_1"
-                      castShadow
-                      receiveShadow
                       geometry={nodes.visuals002_1.geometry}
                       material={materials.material_Material_metal_black}
                     />
                     <mesh
                       name="visuals002_2"
-                      castShadow
-                      receiveShadow
                       geometry={nodes.visuals002_2.geometry}
                       material={materials.material_Material_Rubber_black}
                     />
                     <mesh
                       name="visuals002_3"
-                      castShadow
-                      receiveShadow
                       geometry={nodes.visuals002_3.geometry}
                       material={materials.material_Material_kuka_orange}
                     />
@@ -199,50 +174,36 @@ export function KUKA_KR210_R2700({ modelURL, ...props }: RobotModelProps) {
                 <group name="visuals001">
                   <mesh
                     name="visuals001_1"
-                    castShadow
-                    receiveShadow
                     geometry={nodes.visuals001_1.geometry}
                     material={materials.material_Material_kuka_black}
                   />
                   <mesh
                     name="visuals001_2"
-                    castShadow
-                    receiveShadow
                     geometry={nodes.visuals001_2.geometry}
                     material={materials.material_Material_kuka_orange}
                   />
                   <mesh
                     name="visuals001_3"
-                    castShadow
-                    receiveShadow
                     geometry={nodes.visuals001_3.geometry}
                     material={materials.material_Material_rubber}
                   />
                   <mesh
                     name="visuals001_4"
-                    castShadow
-                    receiveShadow
                     geometry={nodes.visuals001_4.geometry}
                     material={materials.material_Material_metal_black}
                   />
                   <mesh
                     name="visuals001_5"
-                    castShadow
-                    receiveShadow
                     geometry={nodes.visuals001_5.geometry}
                     material={materials.material_Material_aluminium}
                   />
                   <mesh
                     name="visuals001_6"
-                    castShadow
-                    receiveShadow
                     geometry={nodes.visuals001_6.geometry}
                     material={materials.material_Material_rubber_black}
                   />
                   <mesh
                     name="visuals001_7"
-                    castShadow
-                    receiveShadow
                     geometry={nodes.visuals001_7.geometry}
                     material={materials.material_Material_stainless_steel}
                   />
@@ -253,15 +214,11 @@ export function KUKA_KR210_R2700({ modelURL, ...props }: RobotModelProps) {
               <group name="visuals">
                 <mesh
                   name="visuals_1"
-                  castShadow
-                  receiveShadow
                   geometry={nodes.visuals_1.geometry}
                   material={materials.material_Material_kuka_black}
                 />
                 <mesh
                   name="visuals_2"
-                  castShadow
-                  receiveShadow
                   geometry={nodes.visuals_2.geometry}
                   material={materials.material_Material_metal_black}
                 />
