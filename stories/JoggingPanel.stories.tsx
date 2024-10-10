@@ -25,19 +25,42 @@ const JoggingPanelWrapper = (props: JoggingPanelProps) => {
           width: "460px",
           backgroundColor: theme.palette.backgroundPaperElevation?.[5],
         }}
-      >
-        <Stack
-          alignItems="center"
-          justifyContent="center"
-          sx={{
-            background: theme.palette.backgroundPaperElevation?.[7],
-            borderRadius: "16px",
-            minHeight: "200px",
-          }}
-        >
-          <Typography color={theme.palette.text.primary}>Children</Typography>
-        </Stack>
-      </JoggingPanel>
+        renderChildren={(tabId) => {
+          if (tabId === "cartesian") {
+            return (
+              <Stack
+                alignItems="center"
+                justifyContent="center"
+                sx={{
+                  background: theme.palette.backgroundPaperElevation?.[7],
+                  borderRadius: "16px",
+                  minHeight: "200px",
+                }}
+              >
+                <Typography color={theme.palette.text.primary}>
+                  Children Cartesian
+                </Typography>
+              </Stack>
+            )
+          }
+
+          return (
+            <Stack
+              alignItems="center"
+              justifyContent="center"
+              sx={{
+                background: theme.palette.backgroundPaperElevation?.[7],
+                borderRadius: "16px",
+                minHeight: "200px",
+              }}
+            >
+              <Typography color={theme.palette.text.primary}>
+                Children Joint
+              </Typography>
+            </Stack>
+          )
+        }}
+      />
     </Stack>
   )
 }
