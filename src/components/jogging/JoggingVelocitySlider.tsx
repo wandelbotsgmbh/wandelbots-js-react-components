@@ -1,6 +1,6 @@
 import { observer, useLocalObservable } from "mobx-react-lite"
 import { useTranslation } from "react-i18next"
-import { VelocitySlider } from "../VelocitySlider"
+import { VelocitySlider, VelocitySliderLabel } from "../VelocitySlider"
 import type { JoggingStore } from "./JoggingStore"
 
 export const JoggingVelocitySlider = observer(
@@ -26,7 +26,15 @@ export const JoggingVelocitySlider = observer(
         max={store.maxVelocityInCurrentUnits}
         onVelocityChange={store.setVelocityFromSlider}
         disabled={store.isLocked}
-        valueLabelFormat={state.valueLabelFormat}
+        renderValue={(value) => (
+          <VelocitySliderLabel
+            value={state.valueLabelFormat(value)}
+            sx={{
+              minWidth:
+                store.currentMotionType === "translate" ? "111px" : "90px",
+            }}
+          />
+        )}
       />
     )
   },
