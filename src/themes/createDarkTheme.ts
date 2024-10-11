@@ -124,7 +124,7 @@ export function createDarkTheme(): Theme {
       MuiDivider: {
         styleOverrides: {
           root: {
-            border: "1px solid",
+            height: "1px",
           },
         },
       },
@@ -206,19 +206,34 @@ export function createDarkTheme(): Theme {
           X: {
             backgroundColor: "rgba(215, 66, 56, 1)",
             borderColor: "rgba(215, 66, 56, 1)",
-            buttonBackgroundColor: "rgba(241, 77, 66, 1)",
+            buttonBackgroundColor: {
+              default: "rgba(241, 77, 66, 1)",
+              pressed: "rgba(138, 41, 35, 1)",
+              hovered: "rgba(241, 77, 66, 1)",
+              disabled: "rgba(241, 77, 66, 1)",
+            },
             color: "rgba(255, 255, 255, 1)",
           },
           Y: {
             backgroundColor: "rgba(20, 151, 108, 1)",
             borderColor: "rgba(20, 151, 108, 1)",
-            buttonBackgroundColor: "rgba(28, 188, 135, 1)",
+            buttonBackgroundColor: {
+              default: "rgba(28, 188, 135, 1)",
+              pressed: "rgba(11, 89, 63, 1)",
+              disabled: "rgba(28, 188, 135, 1)",
+              hovered: "rgba(28, 188, 135, 1)",
+            },
             color: "rgba(255, 255, 255, 1)",
           },
           Z: {
             backgroundColor: "rgba(1, 87, 155, 1)",
             borderColor: "rgba(1, 87, 155, 1)",
-            buttonBackgroundColor: "rgba(2, 136, 209, 1)",
+            buttonBackgroundColor: {
+              default: "rgba(2, 136, 209, 1)",
+              pressed: "rgba(2, 64, 114, 1)",
+              disabled: "rgba(2, 136, 209, 1)",
+              hovered: "rgba(2, 136, 209, 1)",
+            },
             color: "rgba(255, 255, 255, 1)",
           },
         },
