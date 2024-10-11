@@ -9,7 +9,8 @@ import { FANUC_CRX20iAL } from "./FANUC_CRX20iAL"
 import { FANUC_CRX25iA } from "./FANUC_CRX25iA"
 import { FANUC_CRX25iAL } from "./FANUC_CRX25iAL"
 import { FANUC_LR_Mate_200iD } from "./FANUC_LR_Mate_200iD"
-import { FANUC_LR_MATE_200iD7L } from "./FANUC_LR_MATE_200iD7L"
+import { FANUC_LR_Mate_200iD4S } from "./FANUC_LR_Mate_200iD4S"
+import { FANUC_LR_Mate_200iD7L } from "./FANUC_LR_Mate_200iD7L"
 import { KUKA_KR16_R2010_2 } from "./KUKA_KR16_R2010_2"
 import { KUKA_KR210_R2700 } from "./KUKA_KR210_R2700"
 import { KUKA_KR270_R2700 } from "./KUKA_KR270_R2700"
@@ -26,6 +27,8 @@ import { Yaskawa_AR2010 } from "./Yaskawa_AR2010"
 import { Yaskawa_AR3120 } from "./Yaskawa_AR3120"
 import { Yaskawa_AR900 } from "./Yaskawa_AR900"
 import { Yaskawa_GP50 } from "./Yaskawa_GP50"
+
+import { version } from "../../../package.json"
 
 import type { GroupProps } from "@react-three/fiber"
 import type {
@@ -57,7 +60,11 @@ export type SupportedRobotProps = {
 } & GroupProps
 
 export function defaultGetModel(modelFromController: string): string {
-  return `https://cdn.jsdelivr.net/gh/wandelbotsgmbh/wandelbots-js-react-components/public/models/${modelFromController}.glb`
+  let useVersion = version
+  if (version.startsWith("0.")) {
+    useVersion = ""
+  }
+  return `https://cdn.jsdelivr.net/gh/wandelbotsgmbh/wandelbots-js-react-components${useVersion ? `@${useVersion}` : ""}/public/models/${modelFromController}.glb`
 }
 
 export const SupportedRobot = externalizeComponent(
@@ -221,8 +228,11 @@ export const SupportedRobot = externalizeComponent(
       case "FANUC_LR_Mate_200iD":
         Robot = FANUC_LR_Mate_200iD
         break
+      case "FANUC_LR_Mate_200iD4S":
+        Robot = FANUC_LR_Mate_200iD4S
+        break
       case "FANUC_LR_Mate_200iD7L":
-        Robot = FANUC_LR_MATE_200iD7L
+        Robot = FANUC_LR_Mate_200iD7L
         break
       case "FANUC_ARC_Mate_120iD":
         Robot = FANUC_ARC_Mate_120iD
