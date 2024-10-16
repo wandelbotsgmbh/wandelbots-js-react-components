@@ -4,6 +4,7 @@ import type { RobotModelProps } from "./types"
 
 KUKA_KR20_R1810_2.config = {
   rotationOffsets: [0, 0, -Math.PI / 2, 0, 0, 0],
+  rotationSign: [-1, 1, 1, 1, 1, 1],
 }
 
 export function KUKA_KR20_R1810_2({
