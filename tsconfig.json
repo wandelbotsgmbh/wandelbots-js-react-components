@@ -3,11 +3,9 @@
   // https://github.com/pmndrs/drei/blob/master/tsconfig.json
   "compilerOptions": {
     "target": "es6",
-    "lib": [
-      "es2019",
-      "dom"
-    ],
+    "lib": ["es2019", "dom"],
     "outDir": "dist",
+    "rootDir": "src",
     "module": "preserve",
     "moduleResolution": "bundler",
     "jsx": "react-jsx",
@@ -23,10 +21,6 @@
   "mdx": {
     "checkMdx": true
   },
-  "include": [
-    "src"
-  ],
-  "exclude": [
-    "node_modules"
-  ]
+  "include": ["src/"],
+  "exclude": ["node_modules"]
 }

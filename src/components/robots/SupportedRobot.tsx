@@ -28,6 +28,7 @@ import { Yaskawa_AR2010 } from "./Yaskawa_AR2010"
 import { Yaskawa_AR3120 } from "./Yaskawa_AR3120"
 import { Yaskawa_AR900 } from "./Yaskawa_AR900"
 import { Yaskawa_GP50 } from "./Yaskawa_GP50"
+import { Yaskawa_GP88 } from "./Yaskawa_GP88"
 
 import { version } from "../../../package.json"
 
@@ -210,6 +211,9 @@ export const SupportedRobot = externalizeComponent(
         break
       case "Yaskawa_GP50":
         Robot = Yaskawa_GP50
+        break
+      case "Yaskawa_GP88":
+        Robot = Yaskawa_GP88
         break
       case "FANUC_CRX10iA":
         Robot = FANUC_CRX10iA
