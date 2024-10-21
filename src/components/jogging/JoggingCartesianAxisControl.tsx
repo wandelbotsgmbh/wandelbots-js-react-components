@@ -83,6 +83,9 @@ export const JoggingCartesianAxisControl = externalizeComponent(
         path: { fill: colors.color },
         alignContent: "center",
         fontSize: "37px",
+        svg: {
+          pointerEvents: "none",
+        },
       }
 
       const SxAxisControlButtonDefault = {
