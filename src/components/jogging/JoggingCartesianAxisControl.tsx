@@ -74,7 +74,6 @@ export const JoggingCartesianAxisControl = externalizeComponent(
       const borderColor = pressed
         ? colors.buttonBackgroundColor?.pressed
         : colors.borderColor
-      console.log(pressed)
 
       const SxAxisControlButtonBase = {
         width: "55px",
