@@ -5,6 +5,7 @@ import { ABB_1300_115_10 } from "./ABB_1300_115_10"
 import { FANUC_ARC_Mate_100iD } from "./FANUC_ARC_Mate_100iD"
 import { FANUC_ARC_Mate_120iD } from "./FANUC_ARC_Mate_120iD"
 import { FANUC_CRX10iA } from "./FANUC_CRX10iA"
+import { FANUC_CRX10iAL } from "./FANUC_CRX10iAL"
 import { FANUC_CRX20iAL } from "./FANUC_CRX20iAL"
 import { FANUC_CRX25iA } from "./FANUC_CRX25iA"
 import { FANUC_CRX25iAL } from "./FANUC_CRX25iAL"
@@ -18,6 +19,7 @@ import { KUKA_KR270_R2700 } from "./KUKA_KR270_R2700"
 import { KUKA_KR6_R700_2 } from "./KUKA_KR6_R700_2"
 import { UniversalRobots_UR10CB } from "./UniversalRobots_UR10CB"
 import { UniversalRobots_UR10e } from "./UniversalRobots_UR10e"
+import { UniversalRobots_UR16e } from "./UniversalRobots_UR16e"
 import { UniversalRobots_UR3CB } from "./UniversalRobots_UR3CB"
 import { UniversalRobots_UR3e } from "./UniversalRobots_UR3e"
 import { UniversalRobots_UR5CB } from "./UniversalRobots_UR5CB"
@@ -43,7 +45,6 @@ import { ErrorBoundary } from "react-error-boundary"
 import * as THREE from "three"
 import { externalizeComponent } from "../../externalizeComponent"
 import ConsoleFilter from "../ConsoleFilter"
-import { FANUC_CRX10iAL } from "./FANUC_CRX10iAL"
 import RobotAnimator from "./RobotAnimator"
 import type { RobotModelComponent } from "./types"
 
@@ -190,6 +191,9 @@ export const SupportedRobot = externalizeComponent(
         break
       case "UniversalRobots_UR10e":
         Robot = UniversalRobots_UR10e
+        break
+      case "UniversalRobots_UR16e":
+        Robot = UniversalRobots_UR16e
         break
       case "Yaskawa_AR900":
         Robot = Yaskawa_AR900
