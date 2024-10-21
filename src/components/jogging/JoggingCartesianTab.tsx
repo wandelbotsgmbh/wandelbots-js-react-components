@@ -76,7 +76,7 @@ export const JoggingCartesianTab = observer(
 
       await store.withMotionLock(async () => {
         try {
-          store.setIncrementJogging({
+          store.setCurrentIncrementJog({
             axis: opts.axis,
             direction: opts.direction,
           })
@@ -98,10 +98,8 @@ export const JoggingCartesianTab = observer(
                     distanceRads: degreesToRadians(increment.degrees),
                   },
           })
-        } catch (runError) {
-          throw runError
         } finally {
-          store.setIncrementJogging(null)
+          store.setCurrentIncrementJog(null)
         }
       })
     }
@@ -166,18 +164,6 @@ export const JoggingCartesianTab = observer(
       })
     }
 
-    function getActiveJoggingDirection(
-      axis: JoggingAxis,
-    ): JoggingDirection | undefined {
-      if (!store.incrementJogging) {
-        return undefined
-      }
-      if (store.incrementJogging.axis !== axis) {
-        return undefined
-      }
-      return store.incrementJogging.direction
-    }
-
     return (
       <Stack flexGrow={1} gap={2} sx={{ padding: "18px 24px" }}>
         <Stack gap={2}>
@@ -222,7 +208,11 @@ export const JoggingCartesianTab = observer(
                     key={axis.id}
                     colors={axis.colors}
                     disabled={store.isLocked}
-                    activeJoggingDirection={getActiveJoggingDirection(axis.id)}
+                    activeJoggingDirection={
+                      store.incrementJogInProgress?.axis === axis.id
+                        ? store.incrementJogInProgress.direction
+                        : undefined
+                    }
                     label={
                       <>
                         {axis.icon}
