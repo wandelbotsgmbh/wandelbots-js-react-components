@@ -212,7 +212,7 @@ export function createDarkTheme(): Theme {
               hovered: "rgba(241, 77, 66, 1)",
               disabled: "rgba(241, 77, 66, 1)",
             },
-            color: "rgba(255, 255, 255, 1)",
+            color: "rgba(255, 198, 198, 1)",
           },
           Y: {
             backgroundColor: "rgba(20, 151, 108, 1)",
@@ -223,7 +223,7 @@ export function createDarkTheme(): Theme {
               disabled: "rgba(28, 188, 135, 1)",
               hovered: "rgba(28, 188, 135, 1)",
             },
-            color: "rgba(255, 255, 255, 1)",
+            color: "rgba(215, 255, 242, 1)",
           },
           Z: {
             backgroundColor: "rgba(1, 87, 155, 1)",
@@ -234,7 +234,7 @@ export function createDarkTheme(): Theme {
               disabled: "rgba(2, 136, 209, 1)",
               hovered: "rgba(2, 136, 209, 1)",
             },
-            color: "rgba(255, 255, 255, 1)",
+            color: "rgba(210, 239, 255, 1)",
           },
         },
       },
