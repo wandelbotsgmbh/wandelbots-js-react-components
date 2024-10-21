@@ -49,10 +49,12 @@ export const JoggingCartesianAxisControl = externalizeComponent(
       const forceRenderPressed =
         renderIncrementPressed || renderDecrementPressed
 
+      // pressed represents the user or synthetically press state
       const [pressed, setPressed] = useState(forceRenderPressed)
+      const pointerDown = useRef(false)
 
       useEffect(() => {
-        setPressed(pressed || forceRenderPressed)
+        setPressed(pointerDown.current || forceRenderPressed)
       }, [forceRenderPressed])
 
       const valueContainerRef = useRef<HTMLParagraphElement>(null)
@@ -118,6 +120,7 @@ export const JoggingCartesianAxisControl = externalizeComponent(
         if (disabled) {
           return
         }
+        pointerDown.current = true
         setPressed(true)
         if (ev.button === 0) {
           startJogging(direction)
@@ -126,6 +129,7 @@ export const JoggingCartesianAxisControl = externalizeComponent(
 
       function onPointerUpOrOut() {
         if (!forceRenderPressed) {
+          pointerDown.current = false
           setPressed(false)
         }
         stopJogging()
