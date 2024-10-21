@@ -76,12 +76,10 @@ export const JoggingCartesianTab = observer(
 
       await store.withMotionLock(async () => {
         try {
-          store.incrementJogging = {
-            jogging: {
-              axis: opts.axis,
-              direction: opts.direction,
-            },
-          }
+          store.setIncrementJogging({
+            axis: opts.axis,
+            direction: opts.direction,
+          })
           await store.jogger.runIncrementalCartesianMotion({
             currentTcpPose: tcpPose,
             currentJoints: jointPosition,
@@ -103,7 +101,7 @@ export const JoggingCartesianTab = observer(
         } catch (runError) {
           throw runError
         } finally {
-          store.incrementJogging.jogging = undefined
+          store.setIncrementJogging(null)
         }
       })
     }
@@ -171,13 +169,13 @@ export const JoggingCartesianTab = observer(
     function getActiveJoggingDirection(
       axis: JoggingAxis,
     ): JoggingDirection | undefined {
-      if (!store.incrementJogging.jogging) {
+      if (!store.incrementJogging) {
         return undefined
       }
-      if (store.incrementJogging.jogging.axis !== axis) {
+      if (store.incrementJogging.axis !== axis) {
         return undefined
       }
-      return store.incrementJogging.jogging.direction
+      return store.incrementJogging.direction
     }
 
     return (
