@@ -9,9 +9,6 @@ import type { AxisControlComponentColors } from "../../themes/themeTypes"
 import { useAnimationFrame } from "../utils/hooks"
 import type { JoggingDirection } from "./JoggingStore"
 
-/**
- * @param activeJoggingDirection Indicates if the robot is jogging and in which direction along the axis of this button
- */
 type JoggingCartesianAxisControlProps = {
   colors?: AxisControlComponentColors
   label: ReactNode
@@ -19,6 +16,9 @@ type JoggingCartesianAxisControlProps = {
   startJogging: (direction: JoggingDirection) => void
   stopJogging: () => void
   disabled?: boolean
+  /**
+   * Indicates if the robot is jogging and in which direction along the axis of this button
+   */
   activeJoggingDirection?: JoggingDirection
 } & React.ComponentProps<typeof Stack>
 
