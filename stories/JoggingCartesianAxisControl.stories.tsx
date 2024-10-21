@@ -13,9 +13,9 @@ const meta: Meta<typeof JoggingCartesianAxisControl> = {
   args: {
     label: "X",
     disabled: false,
-    renderDecrementPressed: false,
-    renderIncrementPressed: false,
+    activeJoggingDirection: "+",
   },
+
   render: function Component(args) {
     const joggingDirRef = useRef<"+" | "-" | null>(null)
     const joggingValueRef = useRef(0)

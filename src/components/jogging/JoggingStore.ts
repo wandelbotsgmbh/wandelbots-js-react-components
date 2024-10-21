@@ -27,12 +27,21 @@ const incrementOptions = [
   ...discreteIncrementOptions,
 ] as const
 
+export type JoggingAxis = "x" | "y" | "z"
+export type JoggingDirection = "+" | "-"
 export type DiscreteIncrementOption = (typeof discreteIncrementOptions)[number]
 export type IncrementOption = (typeof incrementOptions)[number]
 export type IncrementOptionId = IncrementOption["id"]
 
 export const ORIENTATION_IDS = ["coordsys", "tool"]
 export type OrientationId = (typeof ORIENTATION_IDS)[number]
+
+export type IncrementalJoggingState = {
+  jogging?: {
+    direction: JoggingDirection
+    axis: JoggingAxis
+  }
+}
 
 export class JoggingStore {
   selectedTabId: "cartesian" | "joint" | "debug" = "cartesian"
@@ -88,7 +97,9 @@ export class JoggingStore {
   selectedCartesianMotionType: "translate" | "rotate" = "translate"
 
   /** True when the API is busy doing a planned increment jog motion */
-  incrementJoggingInProgress = false
+  incrementJogging: IncrementalJoggingState = {
+    jogging: undefined,
+  }
 
   /** How fast the robot goes when doing cartesian translate jogging in mm/s */
   translationVelocityMmPerSec: number = 10
@@ -437,8 +448,8 @@ export class JoggingStore {
     this.selectedIncrementId = id
   }
 
-  setIncrementJoggingInProgress(inProgress: boolean) {
-    this.incrementJoggingInProgress = inProgress
+  setIncrementJogging(incrementJogging: IncrementalJoggingState) {
+    this.incrementJogging = incrementJogging
   }
 
   setVelocityFromSlider(velocity: number) {

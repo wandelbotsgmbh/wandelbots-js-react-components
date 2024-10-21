@@ -7,18 +7,19 @@ import JogMinus from "../../icons/jog-minus.svg"
 import JogPlus from "../../icons/jog-plus.svg"
 import type { AxisControlComponentColors } from "../../themes/themeTypes"
 import { useAnimationFrame } from "../utils/hooks"
+import type { JoggingDirection } from "./JoggingStore"
 
-type Direction = "+" | "-"
-
+/**
+ * @param activeJoggingDirection Indicates if the robot is jogging and in which direction along the axis of this button
+ */
 type JoggingCartesianAxisControlProps = {
   colors?: AxisControlComponentColors
   label: ReactNode
   getDisplayedValue: () => string
-  startJogging: (direction: Direction) => void
+  startJogging: (direction: JoggingDirection) => void
   stopJogging: () => void
   disabled?: boolean
-  renderIncrementPressed?: boolean
-  renderDecrementPressed?: boolean
+  activeJoggingDirection?: JoggingDirection
 } & React.ComponentProps<typeof Stack>
 
 /** A input widget to control an individual cartesian axis */
@@ -31,8 +32,7 @@ export const JoggingCartesianAxisControl = externalizeComponent(
       startJogging,
       stopJogging,
       disabled,
-      renderDecrementPressed,
-      renderIncrementPressed,
+      activeJoggingDirection,
       ...rest
     }: JoggingCartesianAxisControlProps) => {
       useAnimationFrame(() => {
@@ -44,25 +44,15 @@ export const JoggingCartesianAxisControl = externalizeComponent(
       })
       const theme = useTheme()
 
+      const renderIncrementPressed = activeJoggingDirection === "+"
+      const renderDecrementPressed = activeJoggingDirection === "-"
       const forceRenderPressed =
         renderIncrementPressed || renderDecrementPressed
-      console.log(
-        renderIncrementPressed,
-        renderDecrementPressed,
-        forceRenderPressed,
-      )
-      const [borderColor, setBorderColor] = useState(
-        forceRenderPressed
-          ? colors?.buttonBackgroundColor?.pressed
-          : colors?.borderColor,
-      )
+
+      const [pressed, setPressed] = useState(forceRenderPressed)
 
       useEffect(() => {
-        setBorderColor(
-          forceRenderPressed
-            ? colors?.buttonBackgroundColor?.pressed
-            : colors?.borderColor,
-        )
+        setPressed(pressed || forceRenderPressed)
       }, [forceRenderPressed])
 
       const valueContainerRef = useRef<HTMLParagraphElement>(null)
@@ -81,9 +71,15 @@ export const JoggingCartesianAxisControl = externalizeComponent(
         }
       }
 
+      const borderColor = pressed
+        ? colors.buttonBackgroundColor?.pressed
+        : colors.borderColor
+      console.log(pressed)
+
       const SxAxisControlButtonBase = {
         width: "55px",
         color: colors.color,
+        path: { fill: colors.color },
         alignContent: "center",
         fontSize: "37px",
       }
@@ -96,6 +92,8 @@ export const JoggingCartesianAxisControl = externalizeComponent(
         },
         "&:active": {
           backgroundColor: colors.buttonBackgroundColor?.pressed,
+          color: colors.backgroundColor,
+          path: { fill: colors.backgroundColor },
         },
         ":disabled": {
           backgroundColor: colors.buttonBackgroundColor?.disabled,
@@ -106,17 +104,22 @@ export const JoggingCartesianAxisControl = externalizeComponent(
       const SxAxisControlButtonPressed = {
         ...SxAxisControlButtonBase,
         backgroundColor: colors.buttonBackgroundColor?.pressed,
+        color: colors.backgroundColor,
+        path: { fill: colors.backgroundColor },
         ":disabled": {
           backgroundColor: colors.buttonBackgroundColor?.pressed,
           "svg path": { fill: theme.palette.action.disabled },
         },
       }
 
-      function onPointerDown(ev: React.PointerEvent, direction: Direction) {
+      function onPointerDown(
+        ev: React.PointerEvent,
+        direction: JoggingDirection,
+      ) {
         if (disabled) {
           return
         }
-        setBorderColor(colors?.buttonBackgroundColor?.pressed)
+        setPressed(true)
         if (ev.button === 0) {
           startJogging(direction)
         }
@@ -124,7 +127,7 @@ export const JoggingCartesianAxisControl = externalizeComponent(
 
       function onPointerUpOrOut() {
         if (!forceRenderPressed) {
-          setBorderColor(colors?.borderColor)
+          setPressed(false)
         }
         stopJogging()
       }
