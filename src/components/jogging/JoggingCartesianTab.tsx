@@ -17,14 +17,19 @@ import { JoggingActivationRequired } from "./JoggingActivationRequired"
 import { JoggingCartesianAxisControl } from "./JoggingCartesianAxisControl"
 import { JoggingJointLimitDetector } from "./JoggingJointLimitDetector"
 import { JoggingOptions } from "./JoggingOptions"
-import type { DiscreteIncrementOption, JoggingStore } from "./JoggingStore"
+import type {
+  DiscreteIncrementOption,
+  JoggingAxis,
+  JoggingDirection,
+  JoggingStore,
+} from "./JoggingStore"
 import { JoggingToggleButtonGroup } from "./JoggingToggleButtonGroup"
 import { JoggingVelocitySlider } from "./JoggingVelocitySlider"
 
 type JoggingCartesianOpts = {
-  axis: "x" | "y" | "z"
+  axis: JoggingAxis
   motionType: "translate" | "rotate"
-  direction: "-" | "+"
+  direction: JoggingDirection
 }
 
 export const JoggingCartesianTab = observer(
@@ -70,24 +75,32 @@ export const JoggingCartesianTab = observer(
       if (!tcpPose) return
 
       await store.withMotionLock(async () => {
-        await store.jogger.runIncrementalCartesianMotion({
-          currentTcpPose: tcpPose,
-          currentJoints: jointPosition,
-          coordSystemId: store.activeCoordSystemId,
-          velocityInRelevantUnits: store.velocityInCurrentUnits,
-          axis: opts.axis,
-          direction: opts.direction,
-          motion:
-            store.selectedCartesianMotionType === "translate"
-              ? {
-                  type: "translate",
-                  distanceMm: increment.mm,
-                }
-              : {
-                  type: "rotate",
-                  distanceRads: degreesToRadians(increment.degrees),
-                },
-        })
+        try {
+          store.setCurrentIncrementJog({
+            axis: opts.axis,
+            direction: opts.direction,
+          })
+          await store.jogger.runIncrementalCartesianMotion({
+            currentTcpPose: tcpPose,
+            currentJoints: jointPosition,
+            coordSystemId: store.activeCoordSystemId,
+            velocityInRelevantUnits: store.velocityInCurrentUnits,
+            axis: opts.axis,
+            direction: opts.direction,
+            motion:
+              store.selectedCartesianMotionType === "translate"
+                ? {
+                    type: "translate",
+                    distanceMm: increment.mm,
+                  }
+                : {
+                    type: "rotate",
+                    distanceRads: degreesToRadians(increment.degrees),
+                  },
+          })
+        } finally {
+          store.setCurrentIncrementJog(null)
+        }
       })
     }
 
@@ -195,6 +208,11 @@ export const JoggingCartesianTab = observer(
                     key={axis.id}
                     colors={axis.colors}
                     disabled={store.isLocked}
+                    activeJoggingDirection={
+                      store.incrementJogInProgress?.axis === axis.id
+                        ? store.incrementJogInProgress.direction
+                        : undefined
+                    }
                     label={
                       <>
                         {axis.icon}

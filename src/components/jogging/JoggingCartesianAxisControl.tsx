@@ -7,16 +7,17 @@ import JogMinus from "../../icons/jog-minus.svg"
 import JogPlus from "../../icons/jog-plus.svg"
 import type { AxisControlComponentColors } from "../../themes/themeTypes"
 import { useAnimationFrame } from "../utils/hooks"
-
-type Direction = "+" | "-"
+import type { JoggingDirection } from "./JoggingStore"
 
 type JoggingCartesianAxisControlProps = {
   colors?: AxisControlComponentColors
   label: ReactNode
   getDisplayedValue: () => string
-  startJogging: (direction: Direction) => void
+  startJogging: (direction: JoggingDirection) => void
   stopJogging: () => void
   disabled?: boolean
+  /** If set, the corresponding button will be rendered in the pressed state */
+  activeJoggingDirection?: JoggingDirection
 } & React.ComponentProps<typeof Stack>
 
 /** A input widget to control an individual cartesian axis */
@@ -29,6 +30,7 @@ export const JoggingCartesianAxisControl = externalizeComponent(
       startJogging,
       stopJogging,
       disabled,
+      activeJoggingDirection,
       ...rest
     }: JoggingCartesianAxisControlProps) => {
       useAnimationFrame(() => {
@@ -39,7 +41,13 @@ export const JoggingCartesianAxisControl = externalizeComponent(
         element.textContent = displayValue
       })
       const theme = useTheme()
-      const [borderColor, setBorderColor] = useState(colors?.borderColor)
+
+      const [localActiveJoggingDirection, setLocalActiveJoggingDirection] =
+        useState<JoggingDirection | null>(null)
+
+      // Handle both controlled and uncontrolled states
+      const showJoggingDirection =
+        activeJoggingDirection || localActiveJoggingDirection
 
       const valueContainerRef = useRef<HTMLParagraphElement>(null)
 
@@ -57,17 +65,31 @@ export const JoggingCartesianAxisControl = externalizeComponent(
         }
       }
 
-      const SxAxisControlButton = {
+      const borderColor = showJoggingDirection
+        ? colors.buttonBackgroundColor?.pressed
+        : colors.borderColor
+
+      const sxAxisControlButtonBase = {
         width: "55px",
-        backgroundColor: colors.buttonBackgroundColor?.default,
         color: colors.color,
+        path: { fill: colors.color },
         alignContent: "center",
         fontSize: "37px",
+        svg: {
+          pointerEvents: "none",
+        },
+      }
+
+      const sxAxisControlButtonDefault = {
+        ...sxAxisControlButtonBase,
+        backgroundColor: colors.buttonBackgroundColor?.default,
         "&:hover": {
           backgroundColor: colors.buttonBackgroundColor?.hovered,
         },
         "&:active": {
           backgroundColor: colors.buttonBackgroundColor?.pressed,
+          color: colors.backgroundColor,
+          path: { fill: colors.backgroundColor },
         },
         ":disabled": {
           backgroundColor: colors.buttonBackgroundColor?.disabled,
@@ -75,18 +97,33 @@ export const JoggingCartesianAxisControl = externalizeComponent(
         },
       }
 
-      function onPointerDown(ev: React.PointerEvent, direction: Direction) {
+      const sxAxisControlButtonPressed = {
+        ...sxAxisControlButtonBase,
+        backgroundColor: colors.buttonBackgroundColor?.pressed,
+        color: colors.backgroundColor,
+        path: { fill: colors.backgroundColor },
+        ":disabled": {
+          backgroundColor: colors.buttonBackgroundColor?.pressed,
+          "svg path": { fill: theme.palette.action.disabled },
+        },
+      }
+
+      function onPointerDown(
+        ev: React.PointerEvent,
+        direction: JoggingDirection,
+      ) {
         if (disabled) {
           return
         }
-        setBorderColor(colors?.buttonBackgroundColor?.pressed)
+
         if (ev.button === 0) {
+          setLocalActiveJoggingDirection(direction)
           startJogging(direction)
         }
       }
 
       function onPointerUpOrOut() {
-        setBorderColor(colors?.borderColor)
+        setLocalActiveJoggingDirection(null)
         stopJogging()
       }
 
@@ -100,7 +137,9 @@ export const JoggingCartesianAxisControl = externalizeComponent(
             onPointerOut={onPointerUpOrOut}
             size="large"
             sx={{
-              ...SxAxisControlButton,
+              ...(showJoggingDirection === "-"
+                ? sxAxisControlButtonPressed
+                : sxAxisControlButtonDefault),
               borderRadius: "16px 0px 0px 16px",
               borderLeft: `2px solid ${borderColor ?? "#fff"}`,
               borderBottom: `2px solid ${borderColor ?? "#fff"}`,
@@ -163,7 +202,9 @@ export const JoggingCartesianAxisControl = externalizeComponent(
             onPointerOut={onPointerUpOrOut}
             size="large"
             sx={{
-              ...SxAxisControlButton,
+              ...(showJoggingDirection === "+"
+                ? sxAxisControlButtonPressed
+                : sxAxisControlButtonDefault),
               borderRadius: "0px 16px 16px 0px",
               borderRight: `2px solid ${borderColor ?? "#fff"}`,
               borderBottom: `2px solid ${borderColor ?? "#fff"}`,
