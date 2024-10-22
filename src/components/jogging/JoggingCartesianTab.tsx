@@ -250,6 +250,11 @@ export const JoggingCartesianTab = observer(
                     key={axis.id}
                     colors={axis.colors}
                     disabled={store.isLocked}
+                    activeJoggingDirection={
+                      store.incrementJogInProgress?.axis === axis.id
+                        ? store.incrementJogInProgress.direction
+                        : undefined
+                    }
                     label={
                       <>
                         <RotationIcon />
