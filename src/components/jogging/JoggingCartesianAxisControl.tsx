@@ -1,7 +1,7 @@
 import { IconButton, Typography, useTheme } from "@mui/material"
 import Stack from "@mui/material/Stack"
 import { observer } from "mobx-react-lite"
-import React, { useRef, useState, type ReactNode } from "react"
+import React, { useEffect, useRef, useState, type ReactNode } from "react"
 import { externalizeComponent } from "../../externalizeComponent"
 import JogMinus from "../../icons/jog-minus.svg"
 import JogPlus from "../../icons/jog-plus.svg"
@@ -45,6 +45,14 @@ export const JoggingCartesianAxisControl = externalizeComponent(
       const [localActiveJoggingDirection, setLocalActiveJoggingDirection] =
         useState<JoggingDirection | null>(null)
 
+      // Trigger pointer "release" events because e.g. firefox does not trigger pointer events as soon as a component is disabled
+      useEffect(() => {
+        if (!disabled) {
+          return
+        }
+        onPointerUpOrOut()
+      }, [disabled])
+
       // Handle both controlled and uncontrolled states
       const showJoggingDirection =
         activeJoggingDirection || localActiveJoggingDirection
@@ -83,10 +91,10 @@ export const JoggingCartesianAxisControl = externalizeComponent(
       const sxAxisControlButtonDefault = {
         ...sxAxisControlButtonBase,
         backgroundColor: colors.buttonBackgroundColor?.default,
-        "&:hover": {
+        ":hover": {
           backgroundColor: colors.buttonBackgroundColor?.hovered,
         },
-        "&:active": {
+        ":active": {
           backgroundColor: colors.buttonBackgroundColor?.pressed,
           color: colors.backgroundColor,
           path: { fill: colors.backgroundColor },
