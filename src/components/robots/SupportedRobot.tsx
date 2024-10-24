@@ -204,13 +204,25 @@ export const SupportedRobot = externalizeComponent(
       case "Yaskawa_AR1440":
         Robot = Yaskawa_AR1440
         break
+      case "Yaskawa_GP12":
+        Robot = Yaskawa_AR1440
+        break
       case "Yaskawa_AR1730":
+        Robot = Yaskawa_AR1730
+        break
+      case "Yaskawa_GP25":
         Robot = Yaskawa_AR1730
         break
       case "Yaskawa_AR2010":
         Robot = Yaskawa_AR2010
         break
+      case "Yaskawa_GP25_12":
+        Robot = Yaskawa_AR3120
+        break
       case "Yaskawa_AR3120":
+        Robot = Yaskawa_AR3120
+        break
+      case "Yaskawa_GP20HL":
         Robot = Yaskawa_AR3120
         break
       case "Yaskawa_GP50":
@@ -246,10 +258,19 @@ export const SupportedRobot = externalizeComponent(
       case "FANUC_ARC_Mate_120iD":
         Robot = FANUC_ARC_Mate_120iD
         break
+      case "FANUC_M20iD25":
+        Robot = FANUC_ARC_Mate_120iD
+        break
       case "FANUC_ARC_Mate_120iD35":
         Robot = FANUC_ARC_Mate_120iD
         break
+      case "FANUC_M20iD35":
+        Robot = FANUC_ARC_Mate_120iD
+        break
       case "FANUC_ARC_Mate_100iD":
+        Robot = FANUC_ARC_Mate_100iD
+        break
+      case "FANUC_M10iD12":
         Robot = FANUC_ARC_Mate_100iD
         break
       case "KUKA_KR210_R2700":
