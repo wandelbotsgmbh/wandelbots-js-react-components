@@ -26,7 +26,8 @@
     "tsc": "tsc --pretty --noEmit -p stories/tsconfig.json",
     "test": "npm run build",
     "build": "rimraf dist && vite build && tsc --declaration --emitDeclarationOnly",
-    "build-storybook": "storybook build"
+    "build-storybook": "storybook build",
+    "build:models": "python3 scripts/generate_supported_robots.py && prettier src/components/robots/getRobotModel.ts --write"
   },
   "repository": {
     "type": "git",

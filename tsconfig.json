@@ -18,6 +18,9 @@
     "declarationMap": true,
     "verbatimModuleSyntax": true
   },
+  "paths": {
+    "@/*": ["./src/*"]
+  },
   "mdx": {
     "checkMdx": true
   },
