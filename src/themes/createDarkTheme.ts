@@ -121,13 +121,6 @@ export function createDarkTheme(): Theme {
           },
         ],
       },
-      MuiDivider: {
-        styleOverrides: {
-          root: {
-            height: "1px",
-          },
-        },
-      },
       MuiTab: {
         styleOverrides: {
           root: {
