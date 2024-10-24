@@ -1,12 +1,14 @@
 import type { StoryObj } from "@storybook/react"
+import { Euler, Vector3, WebGLRenderer } from "three"
 import { SupportedRobot } from "../../src"
+import type { MotionGroupStateResponse } from "@wandelbots/wandelbots-js"
 import { rapidlyChangingMotionState } from "./motionState"
 import { sharedStoryConfig } from "./robotStoryConfig"
 
 export default {
   ...sharedStoryConfig,
   tags: ["!autodocs"],
-  title: "3D View/Robot/Supported Models/Yaskawa_GP25",
+  title: "3D View/Robot/Supported Models/FANUC_M20iD25",
 }
 
 function SupportedRobotScene(
@@ -66,8 +68,8 @@ function SupportedRobotScene(
 
 export const RobotStory: StoryObj<typeof SupportedRobotScene> = {
   args: {
-    modelFromController: "Yaskawa_AR1730",
+    modelFromController: "FANUC_ARC_Mate_120iD",
   },
   render: (args) => <SupportedRobotScene {...args} />,
-  name: "Yaskawa_GP25",
+  name: "FANUC_M20iD25",
 }

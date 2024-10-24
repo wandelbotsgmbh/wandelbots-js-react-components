@@ -6,7 +6,7 @@ import { sharedStoryConfig } from "./robotStoryConfig"
 export default {
   ...sharedStoryConfig,
   tags: ["!autodocs"],
-  title: "3D View/Robot/Supported Models/Yaskawa_GP25",
+  title: "3D View/Robot/Supported Models/FANUC_M20iD35",
 }
 
 function SupportedRobotScene(
@@ -66,8 +66,8 @@ function SupportedRobotScene(
 
 export const RobotStory: StoryObj<typeof SupportedRobotScene> = {
   args: {
-    modelFromController: "Yaskawa_AR1730",
+    modelFromController: "FANUC_ARC_Mate_120iD",
   },
   render: (args) => <SupportedRobotScene {...args} />,
-  name: "Yaskawa_GP25",
+  name: "FANUC_M20iD35",
 }
