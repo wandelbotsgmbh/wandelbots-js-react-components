@@ -66,7 +66,7 @@ export type SupportedRobotModel =
   | "Yaskawa_GP50"
   | "Yaskawa_AR2010"
 
-export function getSupportedRobot(modelName: SupportedRobotModel) {
+export function getRobotModel(modelName: SupportedRobotModel) {
   switch (modelName) {
     case "KUKA_KR270_R2700":
       return KUKA_KR270_R2700

@@ -1,6 +1,3 @@
-// This file has been automatically generated using 'npm run build:models'
-// DO NOT MODIFY
-
 import type { StoryObj } from "@storybook/react"
 import { SupportedRobot } from "../../src/"
 import { rapidlyChangingMotionState } from "./motionState"
@@ -9,7 +6,7 @@ import { sharedStoryConfig } from "./robotStoryConfig"
 export default {
   ...sharedStoryConfig,
   tags: ["!autodocs"],
-  title: "3D View/Robot/Supported Models/FANUC_CRX25iAL",
+  title: "{{PAGE_TITLE}}",
 }
 
 function SupportedRobotScene(
@@ -19,15 +16,15 @@ function SupportedRobotScene(
     <SupportedRobot
       {...props}
       rapidlyChangingMotionState={rapidlyChangingMotionState}
-      dhParameters={JSON.parse("[]")}
+      dhParameters={JSON.parse("{{DH_PARAMETERS}}")}
     />
   )
 }
 
 export const RobotStory: StoryObj<typeof SupportedRobotScene> = {
   args: {
-    modelFromController: "FANUC_CRX25iAL",
+    modelFromController: "{{ROBOT_MODEL_NAME}}",
   },
   render: (args) => <SupportedRobotScene {...args} />,
-  name: "FANUC_CRX25iAL",
+  name: "{{ROBOT_MODEL_NAME}}",
 }

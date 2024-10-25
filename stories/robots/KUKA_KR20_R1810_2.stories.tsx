@@ -1,5 +1,8 @@
+// This file has been automatically generated using 'npm run build:models'
+// DO NOT MODIFY
+
 import type { StoryObj } from "@storybook/react"
-import { SupportedRobot } from "../../src"
+import { SupportedRobot } from "../../src/"
 import { rapidlyChangingMotionState } from "./motionState"
 import { sharedStoryConfig } from "./robotStoryConfig"
 
@@ -16,50 +19,7 @@ function SupportedRobotScene(
     <SupportedRobot
       {...props}
       rapidlyChangingMotionState={rapidlyChangingMotionState}
-      dhParameters={[
-        {
-          a: 160,
-          d: 520,
-          alpha: -1.5707963267948966,
-          theta: 0,
-          reverse_rotation_direction: false,
-        },
-        {
-          a: 780,
-          d: 0,
-          alpha: 0,
-          theta: 0,
-          reverse_rotation_direction: false,
-        },
-        {
-          a: 150,
-          d: 0,
-          alpha: 1.5707963267948966,
-          theta: -1.5707963267948966,
-          reverse_rotation_direction: false,
-        },
-        {
-          a: 0,
-          d: -860,
-          alpha: -1.5707963267948966,
-          theta: 0,
-          reverse_rotation_direction: false,
-        },
-        {
-          a: 0,
-          d: 0,
-          alpha: 1.5707963267948966,
-          theta: 0,
-          reverse_rotation_direction: false,
-        },
-        {
-          a: 0,
-          d: -153,
-          alpha: 3.1415926535897931,
-          theta: 3.1415926535897931,
-          reverse_rotation_direction: false,
-        },
-      ]}
+      dhParameters={JSON.parse("[]")}
     />
   )
 }
