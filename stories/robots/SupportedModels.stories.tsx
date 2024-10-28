@@ -1,4 +1,7 @@
 import type { StoryObj } from "@storybook/react"
+import { useCallback } from "react"
+import * as THREE from "three"
+import { type Group } from "three"
 import { SupportedRobot } from "../../src"
 import { rapidlyChangingMotionState } from "./motionState"
 import { getDHParams, sharedStoryConfig } from "./robotStoryConfig"
@@ -12,11 +15,23 @@ export default {
 function SupportedRobotScene(
   props: React.ComponentProps<typeof SupportedRobot>,
 ) {
+  const flangeRef = useCallback((node: Group) => {
+    const geometry = new THREE.SphereGeometry(0.01, 32, 16)
+    const material = new THREE.MeshBasicMaterial({ color: 0xffff00 })
+    const sphere = new THREE.Mesh(geometry, material)
+    console.log(sphere)
+
+    node.add(sphere)
+  }, [])
+
   return (
-    <SupportedRobot
-      {...props}
-      rapidlyChangingMotionState={rapidlyChangingMotionState}
-    />
+    <>
+      <SupportedRobot
+        {...props}
+        flangeRef={flangeRef}
+        rapidlyChangingMotionState={rapidlyChangingMotionState}
+      />
+    </>
   )
 }
 

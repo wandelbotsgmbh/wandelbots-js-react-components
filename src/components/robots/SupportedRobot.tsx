@@ -27,7 +27,7 @@ export type SupportedRobotProps = {
   dhParameters: DHParameter[]
   getModel?: (modelFromController: string) => string
   isGhost?: boolean
-  flangeRef?: React.MutableRefObject<THREE.Group>
+  flangeRef?: React.Ref<THREE.Group>
 } & GroupProps
 
 export function defaultGetModel(modelFromController: string): string {
