@@ -16,8 +16,6 @@ export function GenericRobot({
   const gltf = useGLTF(modelURL)
 
   const renderNode = (node: Object3D): React.ReactNode => {
-    console.log(node.name)
-
     if (isMesh(node)) {
       return (
         <mesh
