@@ -8,6 +8,15 @@ function isMesh(node: Object3D): node is Mesh {
   return node.type === "Mesh"
 }
 
+// FIXME: Robots currently missing a _FLG group
+// KUKA_KR210_R2700
+// KUKA_KR270_R2700
+// KUKA_KR16_R2010
+
+function isFlange(node: Object3D): boolean {
+  return node.name.endsWith("_FLG")
+}
+
 export function GenericRobot({
   modelURL,
   flangeRef,
@@ -34,6 +43,7 @@ export function GenericRobot({
           key={node.uuid}
           position={node.position}
           rotation={node.rotation}
+          ref={isFlange(node) ? flangeRef : undefined}
         >
           {node.children.map(renderNode)}
         </animated.group>
