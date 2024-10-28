@@ -1,8 +1,29 @@
 // sharedStoryConfig.tsx
 import type { Meta } from "@storybook/react"
+import type { DHParameter } from "@wandelbots/wandelbots-js"
 import { Vector3 } from "three"
 import { defaultGetModel, SupportedRobot } from "../../src"
 import { Setup } from "../../src/Setup"
+
+type RobotJsonConfig = {
+  dhParameters: {
+    a: string
+    d: string
+    alpha: string
+    theta: string
+    reverseRotationDirection: string
+  }[]
+}
+
+export function getDHParams(jsonConfig: RobotJsonConfig): DHParameter[] {
+  return jsonConfig.dhParameters.map((json) => ({
+    a: parseFloat(json.a),
+    d: parseFloat(json.d),
+    alpha: parseFloat(json.alpha),
+    theta: parseFloat(json.theta),
+    reverseRotationDirection: json.reverseRotationDirection === "1",
+  }))
+}
 
 export const sharedStoryConfig = {
   tags: ["!dev"],
