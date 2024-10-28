@@ -1,5 +1,36 @@
 import { Suspense, useCallback, useEffect, useRef } from "react"
 
+import { ABB_1200_07_7 } from "./ABB_1200_07_7"
+import { FANUC_ARC_Mate_100iD } from "./FANUC_ARC_Mate_100iD"
+import { FANUC_ARC_Mate_120iD } from "./FANUC_ARC_Mate_120iD"
+import { FANUC_CRX10iA } from "./FANUC_CRX10iA"
+import { FANUC_CRX10iAL } from "./FANUC_CRX10iAL"
+import { FANUC_CRX20iAL } from "./FANUC_CRX20iAL"
+import { FANUC_CRX25iA } from "./FANUC_CRX25iA"
+import { FANUC_CRX25iAL } from "./FANUC_CRX25iAL"
+import { FANUC_LR_Mate_200iD } from "./FANUC_LR_Mate_200iD"
+import { FANUC_LR_Mate_200iD4S } from "./FANUC_LR_Mate_200iD4S"
+import { FANUC_LR_Mate_200iD7L } from "./FANUC_LR_Mate_200iD7L"
+import { KUKA_KR16_R2010_2 } from "./KUKA_KR16_R2010_2"
+import { KUKA_KR20_R1810_2 } from "./KUKA_KR20_R1810_2"
+import { KUKA_KR210_R2700 } from "./KUKA_KR210_R2700"
+import { KUKA_KR270_R2700 } from "./KUKA_KR270_R2700"
+import { KUKA_KR6_R700_2 } from "./KUKA_KR6_R700_2"
+import { UniversalRobots_UR10CB } from "./UniversalRobots_UR10CB"
+import { UniversalRobots_UR10e } from "./UniversalRobots_UR10e"
+import { UniversalRobots_UR16e } from "./UniversalRobots_UR16e"
+import { UniversalRobots_UR3CB } from "./UniversalRobots_UR3CB"
+import { UniversalRobots_UR3e } from "./UniversalRobots_UR3e"
+import { UniversalRobots_UR5CB } from "./UniversalRobots_UR5CB"
+import { UniversalRobots_UR5e } from "./UniversalRobots_UR5e"
+import { Yaskawa_AR1440 } from "./Yaskawa_AR1440"
+import { Yaskawa_AR1730 } from "./Yaskawa_AR1730"
+import { Yaskawa_AR2010 } from "./Yaskawa_AR2010"
+import { Yaskawa_AR3120 } from "./Yaskawa_AR3120"
+import { Yaskawa_AR900 } from "./Yaskawa_AR900"
+import { Yaskawa_GP50 } from "./Yaskawa_GP50"
+import { Yaskawa_GP88 } from "./Yaskawa_GP88"
+
 import { version } from "../../../package.json"
 
 import type { GroupProps } from "@react-three/fiber"
@@ -139,7 +170,113 @@ export const SupportedRobot = externalizeComponent(
       }
     }, [isGhost])
 
-    Robot = GenericRobot
+    switch (modelFromController) {
+      case "UniversalRobots_UR3CB":
+        Robot = UniversalRobots_UR3CB
+        break
+      case "UniversalRobots_UR3e":
+        Robot = UniversalRobots_UR3e
+        break
+      case "UniversalRobots_UR5":
+        Robot = UniversalRobots_UR5CB
+        break
+      case "UniversalRobots_UR5CB":
+        Robot = UniversalRobots_UR5CB
+        break
+      case "UniversalRobots_UR5e":
+        Robot = UniversalRobots_UR5e
+        break
+      case "UniversalRobots_UR10CB":
+        Robot = UniversalRobots_UR10CB
+        break
+      case "UniversalRobots_UR10e":
+        Robot = UniversalRobots_UR10e
+        break
+      case "UniversalRobots_UR16e":
+        Robot = UniversalRobots_UR16e
+        break
+      case "Yaskawa_AR900":
+        Robot = Yaskawa_AR900
+        break
+      case "Yaskawa_GP7":
+        Robot = Yaskawa_AR900
+        break
+      case "Yaskawa_AR1440":
+        Robot = Yaskawa_AR1440
+        break
+      case "Yaskawa_AR1730":
+        Robot = Yaskawa_AR1730
+        break
+      case "Yaskawa_AR2010":
+        Robot = Yaskawa_AR2010
+        break
+      case "Yaskawa_AR3120":
+        Robot = Yaskawa_AR3120
+        break
+      case "Yaskawa_GP50":
+        Robot = Yaskawa_GP50
+        break
+      case "Yaskawa_GP88":
+        Robot = Yaskawa_GP88
+        break
+      case "FANUC_CRX10iA":
+        Robot = FANUC_CRX10iA
+        break
+      case "FANUC_CRX10iAL":
+        Robot = FANUC_CRX10iAL
+        break
+      case "FANUC_CRX20iAL":
+        Robot = FANUC_CRX20iAL
+        break
+      case "FANUC_CRX25iA":
+        Robot = FANUC_CRX25iA
+        break
+      case "FANUC_CRX25iAL":
+        Robot = FANUC_CRX25iAL
+        break
+      case "FANUC_LR_Mate_200iD":
+        Robot = FANUC_LR_Mate_200iD
+        break
+      case "FANUC_LR_Mate_200iD4S":
+        Robot = FANUC_LR_Mate_200iD4S
+        break
+      case "FANUC_LR_Mate_200iD7L":
+        Robot = FANUC_LR_Mate_200iD7L
+        break
+      case "FANUC_ARC_Mate_120iD":
+        Robot = FANUC_ARC_Mate_120iD
+        break
+      case "FANUC_ARC_Mate_120iD35":
+        Robot = FANUC_ARC_Mate_120iD
+        break
+      case "FANUC_ARC_Mate_100iD":
+        Robot = FANUC_ARC_Mate_100iD
+        break
+      case "KUKA_KR210_R2700":
+        Robot = KUKA_KR210_R2700
+        break
+      case "KUKA_KR270_R2700":
+        Robot = KUKA_KR270_R2700
+        break
+      case "KUKA_KR16_R2010_2":
+        Robot = KUKA_KR16_R2010_2
+        break
+      case "KUKA_KR20_R1810_2":
+        Robot = KUKA_KR20_R1810_2
+        break
+      case "KUKA_KR6_R700_2":
+        Robot = KUKA_KR6_R700_2
+        break
+      case "ABB_1200_07_7":
+        Robot = ABB_1200_07_7
+        break
+      case "ABB_1300_115_10":
+        Robot = GenericRobot
+        break
+      default:
+        console.warn(`Unknown robot type: ${modelFromController}`)
+        Robot = null
+    }
 
     return (
       <ErrorBoundary
@@ -164,9 +301,10 @@ export const SupportedRobot = externalizeComponent(
             {Robot ? (
               <RobotAnimator
                 rapidlyChangingMotionState={rapidlyChangingMotionState}
-                robotConfig={Robot.config}
+                dhParameters={dhParameters}
+                // robotConfig={Robot.config}
               >
-                <Robot
+                <GenericRobot
                   modelURL={getModel(modelFromController)}
                   flangeRef={flangeRef}
                   {...props}

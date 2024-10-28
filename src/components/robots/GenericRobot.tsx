@@ -1,16 +1,8 @@
 import { animated } from "@react-spring/three"
 import { useGLTF } from "@react-three/drei"
-import type { Group, Mesh } from "three"
+import type { Mesh } from "three"
 import { type Object3D } from "three"
 import type { RobotModelProps } from "./types"
-
-GenericRobot.config = {
-  rotationOffsets: [0, -Math.PI / 2, 0, 0, 0, 0],
-}
-
-function isGroup(node: Object3D): node is Group {
-  return node.type === "Group"
-}
 
 function isMesh(node: Object3D): node is Mesh {
   return node.type === "Mesh"
@@ -24,6 +16,8 @@ export function GenericRobot({
   const gltf = useGLTF(modelURL)
 
   const renderNode = (node: Object3D): React.ReactNode => {
+    console.log(node.name)
+
     if (isMesh(node)) {
       return (
         <mesh
