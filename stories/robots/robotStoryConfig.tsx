@@ -15,7 +15,24 @@ type RobotJsonConfig = {
   }[]
 }
 
-export function getDHParams(jsonConfig: RobotJsonConfig): DHParameter[] {
+export async function getDHParams(
+  modelFromController: string,
+): Promise<DHParameter[]> {
+  const [manufacturer, ...rest] = modelFromController.split("_")
+  let modelWithoutManufacturer = rest.join("_")
+
+  if (manufacturer === "FANUC") {
+    // FIXME standardize model names
+    modelWithoutManufacturer = modelWithoutManufacturer.replace(
+      "ARC_Mate_",
+      "LR_Mate_",
+    )
+  }
+
+  const jsonConfig = (await import(
+    `./robotConfig/jsonV2/${manufacturer}/${modelWithoutManufacturer}.json`
+  )) as RobotJsonConfig
+
   return jsonConfig.dhParameters.map((json) => ({
     a: parseFloat(json.a),
     d: parseFloat(json.d),
