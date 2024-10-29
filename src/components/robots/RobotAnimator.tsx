@@ -11,14 +11,12 @@ import {
   getAllJointsByName,
   type RobotSceneJoint,
 } from "../utils/robotTreeQuery"
-import type { RobotModelConfig } from "./types"
 
 type RobotAnimatorProps = {
   rapidlyChangingMotionState: MotionGroupStateResponse
   dhParameters: DHParameter[]
   onRotationChanged?: (joints: THREE.Object3D[], jointValues: number[]) => void
   jointCollector?: (rootObject: THREE.Object3D) => RobotSceneJoint[]
-  robotConfig?: RobotModelConfig
   children: React.ReactNode
 }
 
@@ -27,7 +25,6 @@ export default function RobotAnimator({
   dhParameters,
   jointCollector,
   onRotationChanged,
-  robotConfig,
   children,
 }: RobotAnimatorProps) {
   Globals.assign({ frameLoop: "always" })
