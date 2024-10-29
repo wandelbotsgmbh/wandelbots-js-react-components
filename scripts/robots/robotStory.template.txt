@@ -1,0 +1,17 @@
+import type { StoryObj } from "@storybook/react"
+import { sharedStoryConfig } from "../components/robotStoryConfig"
+import SupportedRobotScene from "../components/SupportedRobotScene"
+
+export default {
+  ...sharedStoryConfig,
+  tags: ["!autodocs"],
+  title: "{{PAGE_TITLE}}",
+}
+
+export const RobotStory: StoryObj<typeof SupportedRobotScene> = {
+  args: {
+    modelFromController: "{{ROBOT_MODEL_NAME}}",
+  },
+  render: (args) => <SupportedRobotScene {...args} />,
+  name: "{{ROBOT_MODEL_NAME}}",
+}

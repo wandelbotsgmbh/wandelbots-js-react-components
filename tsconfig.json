@@ -16,11 +16,13 @@
     "forceConsistentCasingInFileNames": true,
     "declaration": true,
     "declarationMap": true,
-    "verbatimModuleSyntax": true
+    "verbatimModuleSyntax": true,
+    "paths": {
+      "@/*": ["./src/*"],
+      "@/stories/*": ["./stories/*"]
+    }
   },
-  "paths": {
-    "@/*": ["./src/*"]
-  },
+
   "mdx": {
     "checkMdx": true
   },

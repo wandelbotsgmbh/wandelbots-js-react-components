@@ -29,6 +29,7 @@ export type SupportedRobotProps = {
   getModel?: (modelFromController: string) => string
   isGhost?: boolean
   flangeRef?: React.MutableRefObject<THREE.Group>
+  renderDHRobotWhileLoading?: boolean
 } & GroupProps
 
 export function defaultGetModel(modelFromController: string): string {
@@ -47,6 +48,7 @@ export const SupportedRobot = externalizeComponent(
     getModel = defaultGetModel,
     isGhost = false,
     flangeRef,
+    renderDHRobotWhileLoading,
     ...props
   }: SupportedRobotProps) => {
     let Robot: RobotModelComponent | null = null
@@ -154,14 +156,11 @@ export const SupportedRobot = externalizeComponent(
           />
         }
       >
-        <Suspense
-          fallback={
-            <DHRobot
-              rapidlyChangingMotionState={rapidlyChangingMotionState}
-              dhParameters={dhParameters}
-              {...props}
-            />
-          }
+        <ModelLoadFallback
+          renderDHRobot={renderDHRobotWhileLoading}
+          rapidlyChangingMotionState={rapidlyChangingMotionState}
+          dhParameters={dhParameters}
+          {...props}
         >
           <group ref={setRobotRef}>
             {Robot ? (
@@ -182,9 +181,26 @@ export const SupportedRobot = externalizeComponent(
               />
             )}
           </group>
-        </Suspense>
+        </ModelLoadFallback>
         <ConsoleFilter />
       </ErrorBoundary>
     )
   },
 )
+
+type ModelLoadFallbackProps = {
+  renderDHRobot?: boolean
+  children: React.ReactNode
+} & DHRobotProps
+
+function ModelLoadFallback({
+  renderDHRobot,
+  children,
+  ...props
+}: ModelLoadFallbackProps) {
+  if (!renderDHRobot) {
+    return children
+  }
+
+  return <Suspense fallback={<DHRobot {...props} />}>{children}</Suspense>
+}

@@ -53,7 +53,7 @@ def generated_robot_models_types(robot_dir: str, models: list[tuple[str, str]]):
 def generated_robot_models_stories(models: list[tuple[str, str]], stories_dir: str):
   template_story_content = None
 
-  with open("scripts/robots/RobotStoryTemplate.stories.tsx", "r") as template_story_file:
+  with open("scripts/robots/robotStory.template.txt", "r") as template_story_file:
      template_story_content = "".join(template_story_file.readlines())
 
   if not template_story_content:
@@ -79,7 +79,42 @@ if __name__ == "__main__":
   robot_dir = "src/components/robots"
 
   models = get_robot_model_files(f"{robot_dir}/models")
-  generated_robot_models_types(robot_dir=robot_dir, models=models)
-  generated_robot_models_stories(models=models, stories_dir="stories/robots")
+  # generated_robot_models_types(robot_dir=robot_dir, models=models)
+  # generated_robot_models_stories(models=models, stories_dir="stories/robots/models")
+
+  group_template = None
+  test_template = None
+  with open("scripts/robots/robotModelTest.template.txt", "r") as test_template_file:
+    test_template = "".join(test_template_file.readlines())
+  with open("scripts/robots/robotModelGroup.template.txt", "r") as groupe_template_file:
+    group_template = "".join(groupe_template_file.readlines())
+  
+  if test_template is None:
+    raise FileNotFoundError("Story template not found")
+  
+  if group_template is None:
+    raise FileNotFoundError("Test group template not found")
+  
+  tests_code = ""
+  for _, model_name in models:
+      # Only lowercase and "_" -> "-" allowed
+      story_url_model_name = model_name.lower().replace("_", "-")
+      print(story_url_model_name)
+      test_code = test_template
+      test_code = test_code.replace("{{ROBOT_MODEL_TEST_NAME}}", model_name)
+      # Base URL is handled in test config
+      test_code = test_code.replace("{{STORY_URL}}", f"\"/iframe.html?args=&id=3d-view-robot-supported-models-{story_url_model_name}--robot-story&viewMode=story\"")
+      test_code += "\n"
+      tests_code += test_code
+      
+  group_code = group_template
+  group_code = group_code.replace("{{ROBOT_MODEL_TESTS}}", tests_code)
+
+
+  with open("tests/robotModels.spec.ts", "w") as robots_model_test_file:
+    write_disclaimer(robots_model_test_file)
+    robots_model_test_file.write(group_code)
+    
+    
 
   

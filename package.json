@@ -27,7 +27,7 @@
     "test": "npm run build",
     "build": "rimraf dist && vite build && tsc --declaration --emitDeclarationOnly",
     "build-storybook": "storybook build",
-    "build:models": "python3 scripts/robots/generate_supported_robots.py && prettier src/components/robots/getRobotModel.ts --write"
+    "build:models": "python3 scripts/robots/generate_supported_robots.py && prettier src/components/robots/getRobotModel.ts --write && prettier tests/robotModels.spec.ts --write"
   },
   "repository": {
     "type": "git",
@@ -44,6 +44,7 @@
     "@emotion/react": "^11.13.3",
     "@emotion/styled": "^11.13.0",
     "@mui/material": "^5.16.7",
+    "@playwright/test": "^1.48.1",
     "@rollup/plugin-commonjs": "^26.0.1",
     "@rollup/plugin-json": "^6.1.0",
     "@rollup/plugin-node-resolve": "^15.2.3",
@@ -59,6 +60,7 @@
     "@storybook/types": "^8.2.9",
     "@svgr/rollup": "^8.1.0",
     "@types/lodash-es": "^4.17.12",
+    "@types/node": "^22.8.0",
     "@types/react": "^18.3.5",
     "@types/three": "^0.168.0",
     "@vitejs/plugin-react": "^4.3.1",

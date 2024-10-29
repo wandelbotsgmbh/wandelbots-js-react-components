@@ -9,3 +9,7 @@ storybook-static
 
 # Local Netlify folder
 .netlify
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/

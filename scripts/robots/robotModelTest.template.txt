@@ -1,0 +1,9 @@
+test("{{ROBOT_MODEL_TEST_NAME}}_LoadModel_ModelLoadsSuccessfully", async ({
+  page,
+}) => {
+  await page.goto({{STORY_URL}})
+
+  await page.waitForLoadState("networkidle")
+  await page.waitForSelector("canvas")
+  await expect(page).toHaveScreenshot({ timeout: 30 * 1000 })
+})

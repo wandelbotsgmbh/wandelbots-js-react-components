@@ -1,0 +1,8 @@
+import { expect, test } from "@playwright/test"
+
+
+test.describe("SupportedRobot", () => {
+  test.describe.configure({ mode: "serial" })
+
+  {{ROBOT_MODEL_TESTS}}
+})
