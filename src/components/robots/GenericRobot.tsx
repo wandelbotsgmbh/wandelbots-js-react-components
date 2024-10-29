@@ -46,8 +46,6 @@ export function GenericRobot({
     }
   }
 
-  console.log("GENERICROBOT RENDERING")
-
   return (
     <group {...props} dispose={null}>
       {renderNode(gltf.scene)}
