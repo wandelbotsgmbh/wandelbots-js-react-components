@@ -96,12 +96,6 @@ KUKA_KR16_R2010_2.storyName = "KUKA_KR16_R2010_2"
 export const KUKA_KR20_R1810_2 = robotStory("KUKA_KR20_R1810_2")
 KUKA_KR20_R1810_2.storyName = "KUKA_KR20_R1810_2"
 
-export const KUKA_KR210_R2700 = robotStory("KUKA_KR210_R2700")
-KUKA_KR210_R2700.storyName = "KUKA_KR210_R2700"
-
-export const KUKA_KR270_R2700 = robotStory("KUKA_KR270_R2700")
-KUKA_KR270_R2700.storyName = "KUKA_KR270_R2700"
-
 export const UniversalRobots_UR3 = robotStory("UniversalRobots_UR3")
 UniversalRobots_UR3.storyName = "UniversalRobots_UR3"
 
