@@ -3,6 +3,7 @@ import type { Group } from "three"
 
 export type RobotModelProps = {
   modelURL: string
+  onModelLoaded?: () => void
   flangeRef?: React.Ref<Group>
 } & GroupProps
 

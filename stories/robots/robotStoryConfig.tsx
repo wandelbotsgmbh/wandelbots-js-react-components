@@ -42,6 +42,10 @@ export async function getDHParams(
   }))
 }
 
+export function nextAnimationFrame(): Promise<void> {
+  return new Promise((resolve) => requestAnimationFrame(() => resolve()))
+}
+
 export const sharedStoryConfig = {
   tags: ["!dev"],
   component: SupportedRobot,

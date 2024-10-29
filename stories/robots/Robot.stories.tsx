@@ -1,14 +1,11 @@
 import type { StoryObj } from "@storybook/react"
-import { Euler, Vector3, WebGLRenderer } from "three"
+import { expect, fn, waitFor } from "@storybook/test"
+import type { ConnectedMotionGroup } from "@wandelbots/wandelbots-js"
+import { NovaClient } from "@wandelbots/wandelbots-js"
+import { useEffect, useState } from "react"
 import type { SupportedRobot } from "../../src"
 import { Robot } from "../../src"
-import type { ConnectedMotionGroup } from "@wandelbots/wandelbots-js"
-import {
-  NovaClient,
-  type MotionGroupStateResponse,
-} from "@wandelbots/wandelbots-js"
-import { sharedStoryConfig } from "./robotStoryConfig"
-import { useEffect, useState } from "react"
+import { nextAnimationFrame, sharedStoryConfig } from "./robotStoryConfig"
 
 export default {
   ...sharedStoryConfig,
@@ -41,7 +38,17 @@ function SupportedRobotScene(
 }
 
 export const RobotStory: StoryObj<typeof SupportedRobotScene> = {
-  args: {},
+  args: {
+    onModelLoaded: fn(),
+  },
+  play: async ({ args }) => {
+    await waitFor(() => expect(args.onModelLoaded).toHaveBeenCalled(), {
+      timeout: 5000,
+    })
+
+    await nextAnimationFrame()
+  },
+
   render: (args) => <SupportedRobotScene {...args} />,
   name: "Robot",
 }

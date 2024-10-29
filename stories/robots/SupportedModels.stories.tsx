@@ -1,10 +1,15 @@
 import type { StoryObj } from "@storybook/react"
+import { expect, fn, waitFor } from "@storybook/test"
 import { useCallback } from "react"
 import * as THREE from "three"
 import { type Group } from "three"
 import { SupportedRobot } from "../../src"
 import { rapidlyChangingMotionState } from "./motionState"
-import { getDHParams, sharedStoryConfig } from "./robotStoryConfig"
+import {
+  getDHParams,
+  nextAnimationFrame,
+  sharedStoryConfig,
+} from "./robotStoryConfig"
 
 export default {
   ...sharedStoryConfig,
@@ -40,6 +45,14 @@ function robotStory(
   return {
     args: {
       modelFromController,
+      onModelLoaded: fn(),
+    },
+    play: async ({ args }) => {
+      await waitFor(() => expect(args.onModelLoaded).toHaveBeenCalled(), {
+        timeout: 5000,
+      })
+
+      await nextAnimationFrame()
     },
     render: (args, { loaded: { dhParameters } }) => (
       <SupportedRobotScene {...args} dhParameters={dhParameters} />

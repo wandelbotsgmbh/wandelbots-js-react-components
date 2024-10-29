@@ -1,5 +1,6 @@
 import { animated } from "@react-spring/three"
 import { useGLTF } from "@react-three/drei"
+import { useEffect } from "react"
 import type { Mesh } from "three"
 import { type Object3D } from "three"
 import type { RobotModelProps } from "./types"
@@ -15,9 +16,16 @@ function isFlange(node: Object3D): boolean {
 export function GenericRobot({
   modelURL,
   flangeRef,
+  onModelLoaded,
   ...props
 }: RobotModelProps) {
   const gltf = useGLTF(modelURL)
+
+  useEffect(() => {
+    if (onModelLoaded && gltf.scene) {
+      onModelLoaded()
+    }
+  }, [gltf])
 
   const renderNode = (node: Object3D): React.ReactNode => {
     if (isMesh(node)) {

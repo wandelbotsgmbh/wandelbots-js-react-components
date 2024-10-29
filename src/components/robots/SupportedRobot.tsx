@@ -25,9 +25,10 @@ export type SupportedRobotProps = {
   rapidlyChangingMotionState: MotionGroupStateResponse
   modelFromController: string
   dhParameters: DHParameter[]
-  getModel?: (modelFromController: string) => string
   isGhost?: boolean
   flangeRef?: React.Ref<THREE.Group>
+  getModel?: (modelFromController: string) => string
+  onModelLoaded?: () => void
 } & GroupProps
 
 export function defaultGetModel(modelFromController: string): string {
@@ -46,6 +47,7 @@ export const SupportedRobot = externalizeComponent(
     getModel = defaultGetModel,
     isGhost = false,
     flangeRef,
+    onModelLoaded,
     ...props
   }: SupportedRobotProps) => {
     const robotRef = useRef<THREE.Group>()
@@ -162,6 +164,7 @@ export const SupportedRobot = externalizeComponent(
             >
               <GenericRobot
                 modelURL={getModel(modelFromController)}
+                onModelLoaded={onModelLoaded}
                 flangeRef={flangeRef}
                 {...props}
               />
