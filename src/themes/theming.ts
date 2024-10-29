@@ -1,6 +1,10 @@
 "use client"
 
-import type { Theme, ThemeOptions } from "@mui/material/styles"
+import {
+  createTheme,
+  type Theme,
+  type ThemeOptions,
+} from "@mui/material/styles"
 import { createDarkTheme } from "./createDarkTheme"
 import { createLightTheme } from "./createLightTheme"
 
@@ -18,5 +22,8 @@ export function createNovaMuiTheme(opts: ThemeOptions): Theme {
       window.matchMedia?.("(prefers-color-scheme: light)")?.matches
     isDark = !browserPrefersLight
   }
-  return isDark ? createDarkTheme() : createLightTheme()
+
+  const baseTheme = isDark ? createDarkTheme() : createLightTheme()
+
+  return createTheme(baseTheme, opts)
 }
