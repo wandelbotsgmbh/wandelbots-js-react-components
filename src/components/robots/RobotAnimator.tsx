@@ -1,6 +1,9 @@
 import { Globals, useSpring } from "@react-spring/three"
 import { useThree } from "@react-three/fiber"
-import type { MotionGroupStateResponse } from "@wandelbots/wandelbots-api-client"
+import type {
+  DHParameter,
+  MotionGroupStateResponse,
+} from "@wandelbots/wandelbots-api-client"
 import React, { useRef } from "react"
 import type * as THREE from "three"
 import { useAutorun } from "../utils/hooks"
@@ -8,21 +11,20 @@ import {
   getAllJointsByName,
   type RobotSceneJoint,
 } from "../utils/robotTreeQuery"
-import type { RobotModelConfig } from "./types"
 
 type RobotAnimatorProps = {
   rapidlyChangingMotionState: MotionGroupStateResponse
+  dhParameters: DHParameter[]
   onRotationChanged?: (joints: THREE.Object3D[], jointValues: number[]) => void
   jointCollector?: (rootObject: THREE.Object3D) => RobotSceneJoint[]
-  robotConfig?: RobotModelConfig
   children: React.ReactNode
 }
 
 export default function RobotAnimator({
   rapidlyChangingMotionState,
+  dhParameters,
   jointCollector,
   onRotationChanged,
-  robotConfig,
   children,
 }: RobotAnimatorProps) {
   Globals.assign({ frameLoop: "always" })
@@ -47,9 +49,6 @@ export default function RobotAnimator({
     setSpring.start(Object.assign({}, jointValues.current) as any)
   }
 
-  const rotationSign = robotConfig?.rotationSign || [1, 1, 1, 1, 1, 1]
-  const rotationOffsets = robotConfig?.rotationOffsets || [0, 0, 0, 0, 0, 0]
-
   function setRotation() {
     const updatedJointValues = jointObjects.current.map((_, objectIndex) =>
       (axisValues as any)[objectIndex].get(),
@@ -59,9 +58,12 @@ export default function RobotAnimator({
       onRotationChanged(jointObjects.current, updatedJointValues)
     } else {
       for (const [index, object] of jointObjects.current.entries()) {
+        const dhParam = dhParameters[index]
+        const rotationOffset = dhParam.theta || 0
+        const rotationSign = dhParam.reverse_rotation_direction ? -1 : 1
+
         object.rotation.y =
-          rotationSign[index]! * updatedJointValues[index]! +
-          rotationOffsets[index]!
+          rotationSign * updatedJointValues[index]! + rotationOffset
       }
     }
   }
