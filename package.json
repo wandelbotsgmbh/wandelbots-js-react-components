@@ -24,7 +24,11 @@
     "dev:build": "nodemon -V -w src -e '*' -x \"vite build && tsc --declaration --emitDeclarationOnly\"",
     "dev:wbjs": "nodemon --watch $WBJS_PATH -e tgz --exec 'npm install file:$WBJS_PATH && storybook dev -p 6006 --no-open'",
     "tsc": "tsc --pretty --noEmit -p stories/tsconfig.json",
-    "test": "npm run build",
+    "test": "run-s test:build-storybook test:test-built-storybook",
+    "test:build-storybook": "storybook build --quiet",
+    "test:test-built-storybook": "run-p --race test:storybook-server test:storybook-runner",
+    "test:storybook-server": "http-server storybook-static --port 9009 --silent",
+    "test:storybook-runner": "wait-on tcp:127.0.0.1:9009 && test-storybook --url http://127.0.0.1:9009",
     "build": "rimraf dist && vite build && tsc --declaration --emitDeclarationOnly",
     "build-storybook": "storybook build"
   },
@@ -61,6 +65,8 @@
     "@types/react": "^18.3.5",
     "@types/three": "^0.168.0",
     "@vitejs/plugin-react": "^4.3.1",
+    "http-server": "^14.1.1",
+    "jest-image-snapshot": "^6.4.0",
     "nodemon": "^3.1.4",
     "postcss": "^8.4.44",
     "prettier-eslint": "^16.3.0",
@@ -80,7 +86,8 @@
     "typescript": "^5.5.4",
     "vite": "^5.4.2",
     "vite-plugin-svgr": "^4.2.0",
-    "vitest": "^2.0.5"
+    "vitest": "^2.0.5",
+    "wait-on": "^8.0.1"
   },
   "peerDependencies": {
     "@emotion/react": "^11.11.1",
