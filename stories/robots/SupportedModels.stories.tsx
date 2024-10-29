@@ -19,7 +19,6 @@ function SupportedRobotScene(
     const geometry = new THREE.SphereGeometry(0.01, 32, 16)
     const material = new THREE.MeshBasicMaterial({ color: 0xffff00 })
     const sphere = new THREE.Mesh(geometry, material)
-    console.log(sphere)
 
     node.add(sphere)
   }, [])
