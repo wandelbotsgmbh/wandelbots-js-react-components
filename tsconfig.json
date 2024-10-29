@@ -18,8 +18,7 @@
     "declarationMap": true,
     "verbatimModuleSyntax": true,
     "paths": {
-      "@/*": ["./src/*"],
-      "@/stories/*": ["./stories/*"]
+      "@/*": ["./src/*"]
     }
   },
 
