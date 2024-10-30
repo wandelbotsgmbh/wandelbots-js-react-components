@@ -5,11 +5,7 @@ import * as THREE from "three"
 import { type Group } from "three"
 import { SupportedRobot } from "../../src"
 import { rapidlyChangingMotionState } from "./motionState"
-import {
-  getDHParams,
-  nextAnimationFrame,
-  sharedStoryConfig,
-} from "./robotStoryConfig"
+import { getDHParams, sharedStoryConfig } from "./robotStoryConfig"
 
 export default {
   ...sharedStoryConfig,
@@ -20,11 +16,13 @@ export default {
 function SupportedRobotScene(
   props: React.ComponentProps<typeof SupportedRobot>,
 ) {
-  const flangeRef = useCallback((node: Group) => {
+  const flangeRef = useCallback((node: Group | null) => {
+    if (!node) return
+
+    // Add yellow sphere to illustrate flange position of story robots
     const geometry = new THREE.SphereGeometry(0.01, 32, 16)
     const material = new THREE.MeshBasicMaterial({ color: 0xffff00 })
     const sphere = new THREE.Mesh(geometry, material)
-
     node.add(sphere)
   }, [])
 
@@ -48,11 +46,16 @@ function robotStory(
       onModelLoaded: fn(),
     },
     play: async ({ args }) => {
-      await waitFor(() => expect(args.onModelLoaded).toHaveBeenCalled(), {
-        timeout: 5000,
-      })
-
-      await nextAnimationFrame()
+      await waitFor(
+        () =>
+          expect(
+            args.onModelLoaded,
+            `Failed to load model for ${args.modelFromController}`,
+          ).toHaveBeenCalled(),
+        {
+          timeout: 5000,
+        },
+      )
     },
     render: (args, { loaded: { dhParameters } }) => (
       <SupportedRobotScene {...args} dhParameters={dhParameters} />

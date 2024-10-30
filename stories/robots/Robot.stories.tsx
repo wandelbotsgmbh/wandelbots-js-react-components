@@ -5,7 +5,7 @@ import { NovaClient } from "@wandelbots/wandelbots-js"
 import { useEffect, useState } from "react"
 import type { SupportedRobot } from "../../src"
 import { Robot } from "../../src"
-import { nextAnimationFrame, sharedStoryConfig } from "./robotStoryConfig"
+import { sharedStoryConfig } from "./robotStoryConfig"
 
 export default {
   ...sharedStoryConfig,
@@ -42,11 +42,16 @@ export const RobotStory: StoryObj<typeof SupportedRobotScene> = {
     onModelLoaded: fn(),
   },
   play: async ({ args }) => {
-    await waitFor(() => expect(args.onModelLoaded).toHaveBeenCalled(), {
-      timeout: 5000,
-    })
-
-    await nextAnimationFrame()
+    await waitFor(
+      () =>
+        expect(
+          args.onModelLoaded,
+          `Failed to load model for example ur5e`,
+        ).toHaveBeenCalled(),
+      {
+        timeout: 5000,
+      },
+    )
   },
 
   render: (args) => <SupportedRobotScene {...args} />,

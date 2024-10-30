@@ -26,7 +26,7 @@ export type SupportedRobotProps = {
   modelFromController: string
   dhParameters: DHParameter[]
   isGhost?: boolean
-  flangeRef?: React.Ref<THREE.Group>
+  flangeRef?: React.Ref<THREE.Group | null>
   getModel?: (modelFromController: string) => string
   onModelLoaded?: () => void
 } & GroupProps
@@ -147,6 +147,7 @@ export const SupportedRobot = externalizeComponent(
             {...props}
           />
         }
+        onError={(err) => console.error(err)}
       >
         <Suspense
           fallback={
