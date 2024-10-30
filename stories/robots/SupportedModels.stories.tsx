@@ -89,11 +89,29 @@ FANUC_LR_Mate_200iD7L.storyName = "FANUC_LR_Mate_200iD7L"
 export const KUKA_KR6_R700_2 = robotStory("KUKA_KR6_R700_2")
 KUKA_KR6_R700_2.storyName = "KUKA_KR6_R700_2"
 
+export const KUKA_KR6_R700_C4SR_FLR = robotStory("KUKA_KR6_R700_C4SR_FLR")
+KUKA_KR6_R700_C4SR_FLR.storyName = "KUKA_KR6_R700_C4SR_FLR"
+
+export const KUKA_KR6_R900_2 = robotStory("KUKA_KR6_R900_2")
+KUKA_KR6_R900_2.storyName = "KUKA_KR6_R900_2"
+
+export const KUKA_KR16_R1610_2 = robotStory("KUKA_KR16_R1610_2")
+KUKA_KR16_R1610_2.storyName = "KUKA_KR16_R1610_2"
+
 export const KUKA_KR16_R2010_2 = robotStory("KUKA_KR16_R2010_2")
 KUKA_KR16_R2010_2.storyName = "KUKA_KR16_R2010_2"
 
 export const KUKA_KR20_R1810_2 = robotStory("KUKA_KR20_R1810_2")
 KUKA_KR20_R1810_2.storyName = "KUKA_KR20_R1810_2"
+
+export const KUKA_KR210_R2700_2 = robotStory("KUKA_KR210_R2700_2")
+KUKA_KR210_R2700_2.storyName = "KUKA_KR210_R2700_2"
+
+export const KUKA_KR210_R3100_2 = robotStory("KUKA_KR210_R3100_2")
+KUKA_KR210_R3100_2.storyName = "KUKA_KR210_R3100_2"
+
+export const KUKA_KR210_R3300_2K = robotStory("KUKA_KR210_R3300_2K")
+KUKA_KR210_R3300_2K.storyName = "KUKA_KR210_R3300_2K"
 
 export const UniversalRobots_UR3 = robotStory("UniversalRobots_UR3")
 UniversalRobots_UR3.storyName = "UniversalRobots_UR3"
@@ -112,6 +130,9 @@ UniversalRobots_UR10e.storyName = "UniversalRobots_UR10e"
 
 export const UniversalRobots_UR16e = robotStory("UniversalRobots_UR16e")
 UniversalRobots_UR16e.storyName = "UniversalRobots_UR16e"
+
+export const UniversalRobots_UR20 = robotStory("UniversalRobots_UR20")
+UniversalRobots_UR20.storyName = "UniversalRobots_UR20"
 
 export const Yaskawa_AR900 = robotStory("Yaskawa_AR900")
 Yaskawa_AR900.storyName = "Yaskawa_AR900"
