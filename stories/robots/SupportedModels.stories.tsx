@@ -110,8 +110,8 @@ KUKA_KR210_R2700_2.storyName = "KUKA_KR210_R2700_2"
 export const KUKA_KR210_R3100_2 = robotStory("KUKA_KR210_R3100_2")
 KUKA_KR210_R3100_2.storyName = "KUKA_KR210_R3100_2"
 
-export const KUKA_KR210_R3300_2K = robotStory("KUKA_KR210_R3300_2K")
-KUKA_KR210_R3300_2K.storyName = "KUKA_KR210_R3300_2K"
+export const KUKA_KR210_R3300_2 = robotStory("KUKA_KR210_R3300_2")
+KUKA_KR210_R3300_2.storyName = "KUKA_KR210_R3300_2"
 
 export const UniversalRobots_UR3 = robotStory("UniversalRobots_UR3")
 UniversalRobots_UR3.storyName = "UniversalRobots_UR3"
@@ -131,8 +131,8 @@ UniversalRobots_UR10e.storyName = "UniversalRobots_UR10e"
 export const UniversalRobots_UR16e = robotStory("UniversalRobots_UR16e")
 UniversalRobots_UR16e.storyName = "UniversalRobots_UR16e"
 
-export const UniversalRobots_UR20 = robotStory("UniversalRobots_UR20")
-UniversalRobots_UR20.storyName = "UniversalRobots_UR20"
+export const UniversalRobots_UR20e = robotStory("UniversalRobots_UR20e")
+UniversalRobots_UR20e.storyName = "UniversalRobots_UR20e"
 
 export const Yaskawa_AR900 = robotStory("Yaskawa_AR900")
 Yaskawa_AR900.storyName = "Yaskawa_AR900"
