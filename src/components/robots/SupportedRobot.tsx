@@ -13,9 +13,9 @@ import { ErrorBoundary } from "react-error-boundary"
 import * as THREE from "three"
 import { externalizeComponent } from "../../externalizeComponent"
 import ConsoleFilter from "../ConsoleFilter"
-import { getRobotModel, type SupportedRobotModel } from "./getRobotModel"
+import { GenericRobot } from "./GenericRobot"
+import { type SupportedRobotModel } from "./getRobotModel"
 import RobotAnimator from "./RobotAnimator"
-import type { RobotModelComponent } from "./types"
 
 export type DHRobotProps = {
   rapidlyChangingMotionState: MotionGroupStateResponse
@@ -24,15 +24,17 @@ export type DHRobotProps = {
 
 export type SupportedRobotProps = {
   rapidlyChangingMotionState: MotionGroupStateResponse
-  modelFromController: string
+  modelFromController: SupportedRobotModel
   dhParameters: DHParameter[]
-  getModel?: (modelFromController: string) => string
+  getModel?: (modelFromController: SupportedRobotModel) => string
   isGhost?: boolean
-  flangeRef?: React.MutableRefObject<THREE.Group>
   renderDHRobotWhileLoading?: boolean
+  flangeRef?: React.Ref<THREE.Group>
 } & GroupProps
 
-export function defaultGetModel(modelFromController: string): string {
+export function defaultGetModel(
+  modelFromController: SupportedRobotModel,
+): string {
   let useVersion = version
   if (version.startsWith("0.")) {
     useVersion = ""
@@ -51,8 +53,6 @@ export const SupportedRobot = externalizeComponent(
     renderDHRobotWhileLoading,
     ...props
   }: SupportedRobotProps) => {
-    let Robot: RobotModelComponent | null = null
-
     const robotRef = useRef<THREE.Group>()
 
     const setRobotRef = useCallback(
@@ -141,11 +141,6 @@ export const SupportedRobot = externalizeComponent(
       }
     }, [isGhost])
 
-    Robot = getRobotModel(modelFromController as SupportedRobotModel)
-    if (!Robot) {
-      console.warn(`Unknown robot type: ${modelFromController}`)
-    }
-
     return (
       <ErrorBoundary
         fallback={
@@ -163,23 +158,16 @@ export const SupportedRobot = externalizeComponent(
           {...props}
         >
           <group ref={setRobotRef}>
-            {Robot ? (
-              <RobotAnimator
-                rapidlyChangingMotionState={rapidlyChangingMotionState}
-                robotConfig={Robot.config}
-              >
-                <Robot
-                  modelURL={getModel(modelFromController)}
-                  flangeRef={flangeRef}
-                  {...props}
-                />
-              </RobotAnimator>
-            ) : (
-              <DHRobot
-                rapidlyChangingMotionState={rapidlyChangingMotionState}
-                dhParameters={dhParameters}
+            <RobotAnimator
+              rapidlyChangingMotionState={rapidlyChangingMotionState}
+              dhParameters={dhParameters}
+            >
+              <GenericRobot
+                modelURL={getModel(modelFromController)}
+                flangeRef={flangeRef}
+                {...props}
               />
-            )}
+            </RobotAnimator>
           </group>
         </ModelLoadFallback>
         <ConsoleFilter />

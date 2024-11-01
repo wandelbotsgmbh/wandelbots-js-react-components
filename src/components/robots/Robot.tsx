@@ -8,7 +8,7 @@ export type RobotProps = {
   connectedMotionGroup: ConnectedMotionGroup
   getModel?: (modelFromController: string) => string
   isGhost?: boolean
-  flangeRef?: React.MutableRefObject<Group>
+  flangeRef?: React.Ref<Group>
 } & GroupProps
 
 /**

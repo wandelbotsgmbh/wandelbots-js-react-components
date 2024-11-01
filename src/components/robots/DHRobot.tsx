@@ -93,6 +93,7 @@ export function DHRobot({
     <>
       <RobotAnimator
         rapidlyChangingMotionState={rapidlyChangingMotionState}
+        dhParameters={dhParameters}
         jointCollector={jointCollector}
         onRotationChanged={setRotation}
       >
