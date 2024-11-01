@@ -27,7 +27,7 @@
     "test": "npm run build",
     "build": "rimraf dist && vite build && tsc --declaration --emitDeclarationOnly",
     "build-storybook": "storybook build",
-    "build:models": "python3 scripts/robots/generate_supported_robots.py && prettier src/components/robots/getRobotModel.ts --write && prettier tests/robotModels.spec.ts --write"
+    "build:models": "python3 scripts/robots/generate_supported_robots.py && prettier src/components/robots/SupportedRobotModel.ts --write && prettier tests/robotModels.spec.ts --write"
   },
   "repository": {
     "type": "git",

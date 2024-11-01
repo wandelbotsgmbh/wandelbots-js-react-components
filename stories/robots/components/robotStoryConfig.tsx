@@ -1,4 +1,5 @@
 // sharedStoryConfig.tsx
+import type { SupportedRobotModel } from "@/components/robots/SupportedRobotModel"
 import type { Meta } from "@storybook/react"
 import type { DHParameter } from "@wandelbots/wandelbots-js"
 import { Vector3 } from "three"
@@ -16,7 +17,7 @@ type RobotJsonConfig = {
 }
 
 export async function getDHParams(
-  modelFromController: string,
+  modelFromController: SupportedRobotModel,
 ): Promise<DHParameter[]> {
   const [manufacturer, ...rest] = modelFromController.split("_")
   let modelWithoutManufacturer = rest.join("_")
@@ -30,7 +31,7 @@ export async function getDHParams(
   }
 
   const jsonConfig = (await import(
-    `./robotConfig/jsonV2/${manufacturer}/${modelWithoutManufacturer}.json`
+    `../robotConfig/jsonV2/${manufacturer}/${modelWithoutManufacturer}.json`
   )) as RobotJsonConfig
 
   return jsonConfig.dhParameters.map((json) => ({
@@ -46,7 +47,7 @@ export const sharedStoryConfig = {
   tags: ["!dev"],
   component: SupportedRobot,
   args: {
-    getModel: (modelFromController: string) => {
+    getModel: (modelFromController: SupportedRobotModel) => {
       // Fetch from local models in development storybook rather than CDN
       if (process.env.NODE_ENV === "development") {
         return `/models/${modelFromController}.glb`

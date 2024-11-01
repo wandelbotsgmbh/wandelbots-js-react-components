@@ -1,10 +1,11 @@
+import type { SupportedRobotModel } from "@/components/robots/SupportedRobotModel"
 import type { StoryObj } from "@storybook/react"
 import { useCallback } from "react"
 import * as THREE from "three"
 import { type Group } from "three"
 import { SupportedRobot } from "../../src"
-import { rapidlyChangingMotionState } from "./motionState"
-import { getDHParams, sharedStoryConfig } from "./robotStoryConfig"
+import { rapidlyChangingMotionState } from "./components/motionState"
+import { getDHParams, sharedStoryConfig } from "./components/robotStoryConfig"
 
 export default {
   ...sharedStoryConfig,
@@ -35,7 +36,7 @@ function SupportedRobotScene(
 }
 
 function robotStory(
-  modelFromController: string,
+  modelFromController: SupportedRobotModel,
 ): StoryObj<typeof SupportedRobotScene> {
   return {
     args: {

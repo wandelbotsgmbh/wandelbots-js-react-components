@@ -4,7 +4,7 @@ import os
 def get_robot_model_files(root_dir: str) -> list[tuple[str, str]]:
   model_files = []
   for root , _, files in os.walk(root_dir):
-    model_files += [(root, file.removesuffix(".tsx")) for file in files if file.endswith(".tsx")]
+    model_files += [(root, file.removesuffix(".glb")) for file in files if file.endswith(".glb")]
   return model_files
 
 
@@ -20,35 +20,14 @@ def write_disclaimer(file):
 
 def generated_robot_models_types(robot_dir: str, models: list[tuple[str, str]]):
   model_names = [model[1] for model in models]
-  with open(f"{robot_dir}/getRobotModel.ts", "w") as model_file:
+  with open(f"{robot_dir}/SupportedRobotModel.ts", "w") as model_file:
     # Disclaimer comments
     write_disclaimer(model_file)
-    
-
-    # Import statements
-    for model_path, model_name in models:
-      model_file.write(f"import {{ {model_name} }} from \"./{model_path.removeprefix(f"{robot_dir}/")}/{model_name}\"\n")
 
     write_newline(model_file, 2)
     
     # SupportedRobotModel Type def
     model_file.write(f"export type SupportedRobotModel = {" | ".join([f"\"{name}\"" for name in model_names])}")
-
-    write_newline(model_file, 2)
-
-    # getRobotModel function
-    model_file.write("export function getRobotModel(modelName: SupportedRobotModel) {")
-    write_newline(model_file)
-    model_file.write("switch(modelName) {")
-    write_newline(model_file)
-    for model_name in model_names:
-      model_file.write(f"case \"{model_name}\": return {model_name}")
-      write_newline(model_file)
-    model_file.write("default: return null")
-    write_newline(model_file)
-    model_file.write("}")
-    write_newline(model_file)
-    model_file.write("}")
 
 def generated_robot_models_stories(models: list[tuple[str, str]], stories_dir: str):
   template_story_content = None
@@ -110,7 +89,8 @@ if __name__ == "__main__":
 
   robot_dir = "src/components/robots"
 
-  models = get_robot_model_files(f"{robot_dir}/models")
+  models = get_robot_model_files("public/models")
+  print(f"Found {len(models)} models")
   generated_robot_models_types(robot_dir=robot_dir, models=models)
   generated_robot_models_stories(models=models, stories_dir="stories/robots/models")
   generate_playwright_tests(models=models, tests_dir="tests/")

@@ -14,8 +14,8 @@ import * as THREE from "three"
 import { externalizeComponent } from "../../externalizeComponent"
 import ConsoleFilter from "../ConsoleFilter"
 import { GenericRobot } from "./GenericRobot"
-import { type SupportedRobotModel } from "./getRobotModel"
 import RobotAnimator from "./RobotAnimator"
+import { type SupportedRobotModel } from "./SupportedRobotModel"
 
 export type DHRobotProps = {
   rapidlyChangingMotionState: MotionGroupStateResponse
