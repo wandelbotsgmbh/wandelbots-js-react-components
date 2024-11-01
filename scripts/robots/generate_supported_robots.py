@@ -73,15 +73,7 @@ def generated_robot_models_stories(models: list[tuple[str, str]], stories_dir: s
       story_content = story_content.replace("{{DH_PARAMETERS}}", "[]")
       story_file.write(story_content)
 
-
-if __name__ == "__main__":
-
-  robot_dir = "src/components/robots"
-
-  models = get_robot_model_files(f"{robot_dir}/models")
-  # generated_robot_models_types(robot_dir=robot_dir, models=models)
-  # generated_robot_models_stories(models=models, stories_dir="stories/robots/models")
-
+def generate_playwright_tests(models: list[tuple[str, str]], tests_dir="tests/"):
   group_template = None
   test_template = None
   with open("scripts/robots/robotModelTest.template.txt", "r") as test_template_file:
@@ -99,7 +91,6 @@ if __name__ == "__main__":
   for _, model_name in models:
       # Only lowercase and "_" -> "-" allowed
       story_url_model_name = model_name.lower().replace("_", "-")
-      print(story_url_model_name)
       test_code = test_template
       test_code = test_code.replace("{{ROBOT_MODEL_TEST_NAME}}", model_name)
       # Base URL is handled in test config
@@ -111,9 +102,20 @@ if __name__ == "__main__":
   group_code = group_code.replace("{{ROBOT_MODEL_TESTS}}", tests_code)
 
 
-  with open("tests/robotModels.spec.ts", "w") as robots_model_test_file:
+  with open(f"{tests_dir}/robotModels.spec.ts", "w") as robots_model_test_file:
     write_disclaimer(robots_model_test_file)
     robots_model_test_file.write(group_code)
+
+if __name__ == "__main__":
+
+  robot_dir = "src/components/robots"
+
+  models = get_robot_model_files(f"{robot_dir}/models")
+  generated_robot_models_types(robot_dir=robot_dir, models=models)
+  generated_robot_models_stories(models=models, stories_dir="stories/robots/models")
+  generate_playwright_tests(models=models, tests_dir="tests/")
+
+  
     
     
 
