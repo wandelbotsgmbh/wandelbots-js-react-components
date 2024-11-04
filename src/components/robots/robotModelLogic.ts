@@ -50,7 +50,7 @@ export function isJoint(node: Object3D): node is Group {
 /**
  * Validates that the loaded GLTF file has six joints and a flange group.
  */
-export function parseRobotModel(gltf: GLTF): { gltf: GLTF } {
+export function parseRobotModel(gltf: GLTF, filename: string): { gltf: GLTF } {
   let flange: Object3D | undefined
   const joints: Group[] = []
 
@@ -64,7 +64,7 @@ export function parseRobotModel(gltf: GLTF): { gltf: GLTF } {
     if (isFlange(node)) {
       if (flange) {
         throw Error(
-          `Found multiple flange groups in robot model; first ${flange.name} then ${node.name}. Only one _FLG group is allowed.`,
+          `Found multiple flange groups in robot model ${filename}; first ${flange.name} then ${node.name}. Only one _FLG group is allowed.`,
         )
       }
 
@@ -82,13 +82,13 @@ export function parseRobotModel(gltf: GLTF): { gltf: GLTF } {
 
   if (!isSixJoints(joints)) {
     throw Error(
-      `Expected to find 6 joint groups in robot model with names _J01, _J02 etc, found ${joints.length}. Only 6-joint robot models are currently supported.`,
+      `Expected to find 6 joint groups in robot model ${filename} with names _J01, _J02 etc, found ${joints.length}. Only 6-joint robot models are currently supported.`,
     )
   }
 
   if (!flange) {
     throw Error(
-      "No flange group found in robot model. Flange must be identified with a name ending in _FLG.",
+      `No flange group found in robot model ${filename}. Flange must be identified with a name ending in _FLG.`,
     )
   }
 

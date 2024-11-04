@@ -6,6 +6,7 @@ import type {
 import { Suspense, useCallback, useEffect, useState } from "react"
 import { DHRobot } from "./DHRobot"
 
+import { ErrorBoundary } from "react-error-boundary"
 import type * as THREE from "three"
 import { externalizeComponent } from "../../externalizeComponent"
 import ConsoleFilter from "../ConsoleFilter"
@@ -56,17 +57,27 @@ export const SupportedRobot = externalizeComponent(
       }
     }, [robotGroup, isGhost])
 
+    const dhrobot = (
+      <DHRobot
+        rapidlyChangingMotionState={rapidlyChangingMotionState}
+        dhParameters={dhParameters}
+        {...props}
+      />
+    )
+
     return (
-      <>
-        <Suspense
-          fallback={
-            <DHRobot
-              rapidlyChangingMotionState={rapidlyChangingMotionState}
-              dhParameters={dhParameters}
-              {...props}
-            />
+      <ErrorBoundary
+        fallback={dhrobot}
+        onError={(err) => {
+          if (err.message.includes("404: Not Found")) {
+            // Missing model; show the fallback for now
+            console.error(err)
+          } else {
+            throw err
           }
-        >
+        }}
+      >
+        <Suspense fallback={dhrobot}>
           <group ref={setRobotRef}>
             <RobotAnimator
               rapidlyChangingMotionState={rapidlyChangingMotionState}
@@ -82,7 +93,7 @@ export const SupportedRobot = externalizeComponent(
           </group>
         </Suspense>
         <ConsoleFilter />
-      </>
+      </ErrorBoundary>
     )
   },
 )

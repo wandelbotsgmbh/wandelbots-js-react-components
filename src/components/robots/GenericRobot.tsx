@@ -26,7 +26,10 @@ export function GenericRobot({
   postModelRender,
   ...props
 }: RobotModelProps) {
-  const { gltf } = parseRobotModel(useGLTF(modelURL))
+  const { gltf } = parseRobotModel(
+    useGLTF(modelURL),
+    modelURL.split("/").pop() || modelURL,
+  )
 
   const groupRef: React.RefCallback<Group> = useCallback(
     (group) => {

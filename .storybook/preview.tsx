@@ -10,11 +10,6 @@ const preview: Preview = {
   parameters: {
     docs: {
       container: DocsContainer,
-      // Set to true to enable automatic play function testing
-      // in the dev server; not true by default because the
-      // expects there tend to override other errors with a less
-      // helpful messsage
-      // story: { autoplay: true },
     },
 
     // Duplicate functionality with storybook-dark-mode
