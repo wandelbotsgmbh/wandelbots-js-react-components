@@ -120,6 +120,9 @@ UniversalRobots_UR3e.storyName = "UniversalRobots_UR3e"
 export const UniversalRobots_UR5 = robotStory("UniversalRobots_UR5")
 UniversalRobots_UR5.storyName = "UniversalRobots_UR5"
 
+export const UniversalRobots_UR5e = robotStory("UniversalRobots_UR5e")
+UniversalRobots_UR5e.storyName = "UniversalRobots_UR5e"
+
 export const UniversalRobots_UR10 = robotStory("UniversalRobots_UR10")
 UniversalRobots_UR10.storyName = "UniversalRobots_UR10"
 

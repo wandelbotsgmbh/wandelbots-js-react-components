@@ -4,6 +4,7 @@ import type { GroupProps } from "@react-three/fiber"
 import React, { useCallback } from "react"
 import type { Group, Mesh } from "three"
 import { type Object3D } from "three"
+import { isFlange, parseRobotModel } from "./robotModelLogic"
 
 export type RobotModelProps = {
   modelURL: string
@@ -19,17 +20,13 @@ function isMesh(node: Object3D): node is Mesh {
   return node.type === "Mesh"
 }
 
-function isFlange(node: Object3D): boolean {
-  return node.name.endsWith("_FLG")
-}
-
 export function GenericRobot({
   modelURL,
   flangeRef,
   postModelRender,
   ...props
 }: RobotModelProps) {
-  const gltf = useGLTF(modelURL)
+  const { gltf } = parseRobotModel(useGLTF(modelURL))
 
   const groupRef: React.RefCallback<Group> = useCallback(
     (group) => {
@@ -40,36 +37,41 @@ export function GenericRobot({
     [modelURL],
   )
 
-  const renderNode = (node: Object3D): React.ReactNode => {
-    if (isMesh(node)) {
-      return (
-        <mesh
-          name={node.name}
-          key={node.uuid}
-          geometry={node.geometry}
-          material={node.material}
-          position={node.position}
-          rotation={node.rotation}
-        />
-      )
-    } else {
-      return (
-        <animated.group
-          name={node.name}
-          key={node.uuid}
-          position={node.position}
-          rotation={node.rotation}
-          ref={isFlange(node) ? flangeRef : undefined}
-        >
-          {node.children.map(renderNode)}
-        </animated.group>
-      )
+  function renderScene(scene: Object3D): React.ReactNode {
+    function renderNode(node: Object3D): React.ReactNode {
+      if (isMesh(node)) {
+        return (
+          <mesh
+            name={node.name}
+            key={node.uuid}
+            geometry={node.geometry}
+            material={node.material}
+            position={node.position}
+            rotation={node.rotation}
+          />
+        )
+      } else {
+        return (
+          <animated.group
+            name={node.name}
+            key={node.uuid}
+            position={node.position}
+            rotation={node.rotation}
+            ref={isFlange(node) ? flangeRef : undefined}
+          >
+            {node.children.map(renderNode)}
+          </animated.group>
+        )
+      }
     }
+
+    const result = renderNode(scene)
+    return result
   }
 
   return (
     <group {...props} dispose={null} ref={groupRef}>
-      {renderNode(gltf.scene)}
+      {renderScene(gltf.scene)}
     </group>
   )
 }
