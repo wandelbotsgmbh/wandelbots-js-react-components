@@ -16,7 +16,7 @@ export default {
 function SupportedRobotScene(
   props: React.ComponentProps<typeof SupportedRobot>,
 ) {
-  const flangeRef = useCallback((node: Group | null) => {
+  const flangeRef: React.RefCallback<Group> = useCallback((node) => {
     if (!node) return
 
     // Add yellow sphere to illustrate flange position of story robots
@@ -43,13 +43,13 @@ function robotStory(
   return {
     args: {
       modelFromController,
-      onModelLoaded: fn(),
+      postModelRender: fn(),
     },
     play: async ({ args }) => {
       await waitFor(
         () =>
           expect(
-            args.onModelLoaded,
+            args.postModelRender,
             `Failed to load model for ${args.modelFromController}`,
           ).toHaveBeenCalled(),
         {

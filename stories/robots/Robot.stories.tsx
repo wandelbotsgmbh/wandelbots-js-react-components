@@ -39,13 +39,13 @@ function SupportedRobotScene(
 
 export const RobotStory: StoryObj<typeof SupportedRobotScene> = {
   args: {
-    onModelLoaded: fn(),
+    postModelRender: fn(),
   },
   play: async ({ args }) => {
     await waitFor(
       () =>
         expect(
-          args.onModelLoaded,
+          args.postModelRender,
           `Failed to load model for example ur5e`,
         ).toHaveBeenCalled(),
       {
