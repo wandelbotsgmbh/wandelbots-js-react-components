@@ -26,7 +26,7 @@
     "tsc": "tsc --pretty --noEmit -p stories/tsconfig.json",
     "test": "test-storybook --url http://127.0.0.1:6006 --index-json --browsers chromium",
     "ci:test": "run-s ci:test:build ci:test:built",
-    "ci:test:build": "storybook build --quiet",
+    "ci:test:build": "storybook build --quiet --test",
     "ci:test:built": "run-p --race ci:test:server ci:test:runner",
     "ci:test:server": "http-server storybook-static --port 9009 --silent",
     "ci:test:runner": "wait-on tcp:127.0.0.1:9009 && test-storybook --url http://127.0.0.1:9009 --index-json --browsers chromium",
