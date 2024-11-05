@@ -6,6 +6,8 @@ import dedent from "ts-dedent"
 
 export const ROBOT_STORIES_REGEX = /SupportedModels.stories.tsx$/
 
+// Robot models hidden from the story index for now
+
 /** Generates lines of CSF code defining stories for each robot model .glb file */
 export const generateRobotStories = async () => {
   const modelsDir = path.resolve(__dirname, "../public/models")
