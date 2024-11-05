@@ -6,7 +6,14 @@ import dedent from "ts-dedent"
 
 export const ROBOT_STORIES_REGEX = /SupportedModels.stories.tsx$/
 
-// Robot models hidden from the story index for now
+// FIXME - this is for backwards compatibility, don't add new stuff here
+// remove once all models are compatible and don't throw errors in the test
+const HIDDEN_ROBOTS = [
+  "KUKA_KR16_R1610_2",
+  "KUKA_KR210_R2700",
+  "KUKA_KR270_R2700",
+  "FANUC_M20iD35",
+]
 
 /** Generates lines of CSF code defining stories for each robot model .glb file */
 export const generateRobotStories = async () => {
@@ -21,6 +28,7 @@ export const generateRobotStories = async () => {
 
   for await (const modelFile of modelFiles) {
     const modelName = modelFile.split("/").pop()!.split(".")[0]!
+    if (HIDDEN_ROBOTS.includes(modelName)) continue
 
     modelCsfAdditions.push(dedent`
       export const ${modelName} = robotStory("${modelName}")

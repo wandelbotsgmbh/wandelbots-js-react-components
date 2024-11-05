@@ -66,7 +66,6 @@ const config: StorybookConfig = {
       createIndex: async (fileName, opts) => {
         const baseCsf = readFileSync(fileName, "utf-8")
         const generatedCsf = baseCsf + "\n\n" + (await generateRobotStories())
-        console.log(generatedCsf)
 
         return loadCsf(generatedCsf, {
           ...opts,
