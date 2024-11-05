@@ -82,7 +82,7 @@ function FitToCamera({ children }: { children: ReactNode }) {
       {children}
       <OrbitControls
         camera={camera}
-        target={targetSphere.center}
+        target={targetSphere.center.add(new Vector3(0, -0.1, 0))}
         minDistance={lockZoom ? targetSphere.radius * 3 : targetSphere.radius}
         maxDistance={lockZoom ? targetSphere.radius * 3 : 3}
       />
