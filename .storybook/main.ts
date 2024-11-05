@@ -1,9 +1,11 @@
 import { loadCsf } from "@storybook/csf-tools"
 import type { StorybookConfig } from "@storybook/react-vite"
-import { glob } from "fs/promises"
-import path from "path"
+import { readFileSync } from "node:fs"
 import type { Indexer } from "storybook/internal/types"
-import { dedent } from "ts-dedent"
+import {
+  generateRobotStories,
+  robotStoryGenerationVitePlugin,
+} from "./robotStoryGeneration"
 
 const config: StorybookConfig = {
   stories: [
@@ -49,43 +51,27 @@ const config: StorybookConfig = {
     },
   },
 
+  viteFinal: (config: any) => {
+    const { plugins = [] } = config
+    plugins.push(robotStoryGenerationVitePlugin())
+    config.plugins = plugins
+    return config
+  },
+
   // Generate a robot model story for each .glb file in the public/models directory
-  // Adapted from https://stackblitz.com/edit/github-h2rgfk-2j2bg3?file=.storybook%2Fregression%2Findexer.ts
+  // Adapted from https://github.com/storybookjs/storybook/issues/25554
   experimental_indexers: async (existingIndexers) => {
     const customIndexer: Indexer = {
       test: /SupportedModels.stories.tsx$/,
       createIndex: async (fileName, opts) => {
-        console.log(fileName)
-        const modelsDir = path.resolve(__dirname, "../public/models")
-        const modelFiles = glob(path.join(modelsDir, "*.glb"))
+        const baseCsf = readFileSync(fileName, "utf-8")
+        const generatedCsf = baseCsf + "\n\n" + (await generateRobotStories())
+        console.log(generatedCsf)
 
-        let csfContent = dedent`
-          import { sharedStoryConfig, robotStory } from "./robotStoryConfig"
-
-          export default {
-            ...sharedStoryConfig,
-            tags: ["!autodocs"],
-            title: "3D View/Robot/Supported Models",
-          }
-        `
-
-        for await (const modelFile of modelFiles) {
-          console.log(modelFile)
-          const modelName = modelFile.split("/").pop()!.split(".")[0]!
-
-          csfContent += "\n\n"
-          csfContent += dedent`
-            export const ${modelName} = robotStory("${modelName}")
-            ${modelName}.storyName = "${modelName}"
-          `
-        }
-
-        console.log(csfContent)
-
-        const result = loadCsf(csfContent, { ...opts, fileName }).parse()
-          .indexInputs
-        console.log(result)
-        return result
+        return loadCsf(generatedCsf, {
+          ...opts,
+          fileName,
+        }).parse().indexInputs
       },
     }
 

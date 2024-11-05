@@ -1,0 +1,46 @@
+import { createUnplugin } from "unplugin"
+
+import fs, { glob } from "node:fs/promises"
+import path from "node:path"
+import dedent from "ts-dedent"
+
+export const ROBOT_STORIES_REGEX = /SupportedModels.stories.tsx$/
+
+/** Generates lines of CSF code defining stories for each robot model .glb file */
+export const generateRobotStories = async () => {
+  const modelsDir = path.resolve(__dirname, "../public/models")
+  const modelFiles = glob(path.join(modelsDir, "*.glb"))
+
+  const importStanza = dedent`
+    import { robotStory } from "./robotStoryConfig"
+  `
+
+  const modelCsfAdditions: string[] = []
+
+  for await (const modelFile of modelFiles) {
+    const modelName = modelFile.split("/").pop()!.split(".")[0]!
+
+    modelCsfAdditions.push(dedent`
+      export const ${modelName} = robotStory("${modelName}")
+      ${modelName}.storyName = "${modelName}"
+    `)
+  }
+
+  return importStanza + "\n\n" + modelCsfAdditions.join("\n\n")
+}
+
+export const unplugin = createUnplugin((options) => {
+  return {
+    name: "unplugin-robot-stories",
+    enforce: "pre",
+    loadInclude(id) {
+      return ROBOT_STORIES_REGEX.test(id)
+    },
+    async load(fileName) {
+      const src = await fs.readFile(fileName, "utf-8")
+      return src + "\n" + (await generateRobotStories())
+    },
+  }
+})
+
+export const robotStoryGenerationVitePlugin = unplugin.vite
