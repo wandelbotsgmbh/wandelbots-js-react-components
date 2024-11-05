@@ -1,9 +1,11 @@
 // sharedStoryConfig.tsx
-import type { Meta } from "@storybook/react"
+import type { Meta, StoryObj } from "@storybook/react"
+import { expect, fn, waitFor } from "@storybook/test"
 import type { DHParameter } from "@wandelbots/wandelbots-js"
 import { Vector3 } from "three"
 import { defaultGetModel, SupportedRobot } from "../../src"
 import { Setup } from "../../src/Setup"
+import { SupportedRobotScene } from "./SupportedRobotScene"
 
 type RobotJsonConfig = {
   dhParameters: {
@@ -80,3 +82,35 @@ export const sharedStoryConfig = {
     ),
   ],
 } satisfies Meta<typeof SupportedRobot>
+
+export function robotStory(
+  modelFromController: string,
+): StoryObj<typeof SupportedRobotScene> {
+  return {
+    args: {
+      modelFromController,
+      postModelRender: fn(),
+    },
+    play: async ({ args }) => {
+      await waitFor(
+        () =>
+          expect(
+            args.postModelRender,
+            `Failed to load model for ${args.modelFromController}`,
+          ).toHaveBeenCalled(),
+        {
+          timeout: 5000,
+        },
+      )
+    },
+    render: (args, { loaded: { dhParameters } }) => (
+      <SupportedRobotScene {...args} dhParameters={dhParameters} />
+    ),
+    name: modelFromController,
+    loaders: [
+      async () => ({
+        dhParameters: await getDHParams(modelFromController),
+      }),
+    ],
+  }
+}
