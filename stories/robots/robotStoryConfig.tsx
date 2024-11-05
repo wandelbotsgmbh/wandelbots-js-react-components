@@ -45,8 +45,8 @@ export const sharedStoryConfig = {
   component: SupportedRobot,
   args: {
     getModel: (modelFromController: string) => {
-      // Fetch from local models in development storybook rather than CDN
-      if (process.env.NODE_ENV === "development") {
+      // Fetch from local models in development or testing storybook rather than CDN
+      if (process.env.NODE_ENV === "development" || navigator.webdriver) {
         return `/models/${modelFromController}.glb`
       } else {
         return defaultGetModel(modelFromController)
