@@ -25,6 +25,7 @@ export const JoggingOptions = observer(({ store }: { store: JoggingStore }) => {
 
   return (
     <Box
+      component="div"
       sx={{
         display: "grid",
         gap: "16px",

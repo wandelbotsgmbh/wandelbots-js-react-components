@@ -97,7 +97,7 @@
   "peerDependencies": {
     "@emotion/react": "^11.11.1",
     "@emotion/styled": "^11.11.0",
-    "@mui/material": ">=5",
+    "@mui/material": "^5",
     "@react-spring/three": ">=9",
     "@react-three/drei": ">=9",
     "@react-three/fiber": ">=8",
