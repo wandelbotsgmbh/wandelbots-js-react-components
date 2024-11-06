@@ -1,10 +1,12 @@
+import { Canvas } from "@react-three/fiber"
 import type { StoryObj } from "@storybook/react"
 import { expect, fn, waitFor } from "@storybook/test"
 import type { ConnectedMotionGroup } from "@wandelbots/wandelbots-js"
 import { NovaClient } from "@wandelbots/wandelbots-js"
 import { useEffect, useState } from "react"
 import type { SupportedRobot } from "../../src"
-import { Robot } from "../../src"
+import { PresetEnvironment, Robot } from "../../src"
+import { OrbitControlsAround } from "./OrbitControlsAround"
 import { sharedStoryConfig } from "./robotStoryConfig"
 
 export default {
@@ -34,7 +36,26 @@ function SupportedRobotScene(
     return null
   }
 
-  return <Robot connectedMotionGroup={connectedMotionGroup} {...props} />
+  return (
+    <div
+      style={{
+        width: "100%",
+        height: "100vh",
+        minHeight: "400px",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+      }}
+    >
+      <Canvas shadows>
+        <PresetEnvironment />
+
+        <OrbitControlsAround>
+          <Robot connectedMotionGroup={connectedMotionGroup} {...props} />
+        </OrbitControlsAround>
+      </Canvas>
+    </div>
+  )
 }
 
 export const RobotStory: StoryObj<typeof SupportedRobotScene> = {

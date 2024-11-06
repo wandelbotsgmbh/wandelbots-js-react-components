@@ -1,17 +1,10 @@
-import { OrbitControls } from "@react-three/drei"
-import { Canvas, useThree } from "@react-three/fiber"
-import React, { useCallback, useState, type ReactNode } from "react"
+import { Canvas } from "@react-three/fiber"
+import React, { useCallback } from "react"
 import type { Group } from "three"
-import {
-  Box3,
-  Mesh,
-  MeshBasicMaterial,
-  Sphere,
-  SphereGeometry,
-  Vector3,
-} from "three"
+import { Mesh, MeshBasicMaterial, SphereGeometry } from "three"
 import { PresetEnvironment, SupportedRobot } from "../../src"
 import { rapidlyChangingMotionState } from "./motionState"
+import { OrbitControlsAround } from "./OrbitControlsAround"
 
 /**
  * Renders a single robot model with orbit controls targeting it
@@ -44,48 +37,14 @@ export function SupportedRobotScene(
       <Canvas shadows>
         <PresetEnvironment />
 
-        <FitToCamera>
+        <OrbitControlsAround>
           <SupportedRobot
             {...props}
             flangeRef={flangeRef}
             rapidlyChangingMotionState={rapidlyChangingMotionState}
           />
-        </FitToCamera>
+        </OrbitControlsAround>
       </Canvas>
     </div>
-  )
-}
-
-function FitToCamera({ children }: { children: ReactNode }) {
-  const { scene, camera } = useThree()
-  const [targetSphere, setTargetSphere] = useState(new Sphere())
-  const [lockZoom, setLockZoom] = useState(true)
-
-  const groupRef: React.RefCallback<Group> = useCallback(
-    (group) => {
-      if (!group) return
-
-      const bbox = new Box3().setFromObject(scene)
-      const center = bbox.getCenter(new Vector3())
-      const bsphere = bbox.getBoundingSphere(new Sphere(center))
-      setTargetSphere(bsphere)
-
-      setTimeout(() => {
-        setLockZoom(false)
-      }, 100)
-    },
-    [camera],
-  )
-
-  return (
-    <group ref={groupRef}>
-      {children}
-      <OrbitControls
-        camera={camera}
-        target={targetSphere.center.add(new Vector3(0, -0.1, 0))}
-        minDistance={lockZoom ? targetSphere.radius * 3 : targetSphere.radius}
-        maxDistance={lockZoom ? targetSphere.radius * 3 : 3}
-      />
-    </group>
   )
 }
