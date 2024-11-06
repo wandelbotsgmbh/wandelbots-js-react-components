@@ -22,7 +22,7 @@ export function collectJoints(rootObject: Object3D): Object3D[] {
     return [root, ...root.children.flatMap((child) => getAllObjects(child))]
   }
 
-  return getAllObjects(rootObject).filter((o) => isJoint(o)) as Object3D[]
+  return getAllObjects(rootObject).filter((o) => isJoint(o))
 }
 
 /**

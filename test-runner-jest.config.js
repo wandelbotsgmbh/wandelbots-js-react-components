@@ -11,8 +11,8 @@ module.exports = {
   reporters: [
     "default",
 
-    // Shows a short list of failed tests at the end, so you don't have
-    // to scroll through pages of errors to find the filenames
+    // Shows a short list of failed tests at the end, so you don't
+    // have to scroll through pages of errors to find the filenames
     "jest-summary-reporter",
   ],
 
