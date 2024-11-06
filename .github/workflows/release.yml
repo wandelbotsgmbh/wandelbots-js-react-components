@@ -35,6 +35,10 @@ jobs:
       # Set the current version so the code knows where to get CDN robot models
       - run: echo "VITE_RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
 
+      - run: |
+          echo "Tag name from GITHUB_REF_NAME: $GITHUB_REF_NAME"
+          echo "Tag name from github.ref_name: ${{  github.ref_name }}"
+
       # Build the npm package
       - run: npm run build
 
