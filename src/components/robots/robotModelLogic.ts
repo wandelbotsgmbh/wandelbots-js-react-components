@@ -43,8 +43,8 @@ export function isFlange(node: Object3D) {
  * Checks if a specified threejs group represents a joint of a
  * robot, based on the _Jxx name ending convention.
  */
-export function isJoint(node: Object3D): node is Group {
-  return isGroup(node) && !!node.name.match(/_J[0-9]+$/)
+export function isJoint(node: Object3D) {
+  return !!node.name.match(/_J[0-9]+$/)
 }
 
 /**
@@ -52,12 +52,12 @@ export function isJoint(node: Object3D): node is Group {
  */
 export function parseRobotModel(gltf: GLTF, filename: string): { gltf: GLTF } {
   let flange: Object3D | undefined
-  const joints: Group[] = []
+  const joints: Object3D[] = []
 
   function isSixJoints(
-    joints: Group[],
-  ): joints is [Group, Group, Group, Group, Group, Group] {
-    return joints.length !== 6
+    joints: Object3D[],
+  ): joints is [Object3D, Object3D, Object3D, Object3D, Object3D, Object3D] {
+    return joints.length === 6
   }
 
   function parseNode(node: Object3D) {
