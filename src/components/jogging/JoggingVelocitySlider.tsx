@@ -14,7 +14,7 @@ export const JoggingVelocitySlider = observer(
             `v = ${t("Jogging.Cartesian.Translation.velocityMmPerSec.lb", { amount: value })}`
         } else {
           return (value: number) =>
-            `v = ${t("Jogging.Cartesian.Rotation.velocityDegPerSec.lb", { amount: value })}`
+            `ω = ${t("Jogging.Cartesian.Rotation.velocityDegPerSec.lb", { amount: value })}`
         }
       },
     }))
