@@ -1,10 +1,6 @@
-import type { Group, Object3D } from "three"
+import type { Object3D } from "three"
 import type { GLTF } from "three-stdlib"
 import { version } from "../../../package.json"
-
-export function isGroup(node: Object3D): node is Group {
-  return node.type === "Group"
-}
 
 export function defaultGetModel(modelFromController: string): string {
   let useVersion = version
@@ -18,7 +14,7 @@ export function defaultGetModel(modelFromController: string): string {
  * Finds all the joint groups in a GLTF tree, as identified
  * by the _Jxx name ending convention.
  */
-export function collectJoints(rootObject: Object3D): Group[] {
+export function collectJoints(rootObject: Object3D): Object3D[] {
   function getAllObjects(root: Object3D): Object3D[] {
     if (root.children.length === 0) {
       return [root]
@@ -26,9 +22,7 @@ export function collectJoints(rootObject: Object3D): Group[] {
     return [root, ...root.children.flatMap((child) => getAllObjects(child))]
   }
 
-  return getAllObjects(rootObject).filter(
-    (o) => isGroup(o) && isJoint(o),
-  ) as Group[]
+  return getAllObjects(rootObject).filter((o) => isJoint(o)) as Object3D[]
 }
 
 /**
