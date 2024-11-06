@@ -2,7 +2,7 @@
 import type { Meta, StoryObj } from "@storybook/react"
 import { expect, fn, waitFor } from "@storybook/test"
 import type { DHParameter } from "@wandelbots/wandelbots-js"
-import { defaultGetModel, SupportedRobot } from "../../src"
+import { SupportedRobot } from "../../src"
 import { SupportedRobotScene } from "./SupportedRobotScene"
 
 type RobotJsonConfig = {
@@ -43,12 +43,10 @@ export const sharedStoryConfig = {
   component: SupportedRobot,
   args: {
     getModel: (modelFromController: string) => {
-      // Fetch from local models in development or testing storybook rather than CDN
-      if (process.env.NODE_ENV === "development" || navigator.webdriver) {
-        return `/models/${modelFromController}.glb`
-      } else {
-        return defaultGetModel(modelFromController)
-      }
+      // Fetch from storybook rather than CDN to ensure version alignment
+      // FIXME - storybook should know what version of the package it is
+      // so it can test the CDN as well
+      return `./models/${modelFromController}.glb`
     },
   },
 } satisfies Meta<typeof SupportedRobot>
