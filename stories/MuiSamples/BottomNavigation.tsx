@@ -3,7 +3,7 @@ import LocationOnIcon from "@mui/icons-material/LocationOn"
 import RestoreIcon from "@mui/icons-material/Restore"
 import BottomNavigation from "@mui/material/BottomNavigation"
 import BottomNavigationAction from "@mui/material/BottomNavigationAction"
-import React, { type ChangeEvent } from "react"
+import React from "react"
 
 export default function BottomNavigationExample() {
   const [value, setValue] = React.useState(0)
@@ -11,7 +11,7 @@ export default function BottomNavigationExample() {
   return (
     <BottomNavigation
       value={value}
-      onChange={(_event: ChangeEvent, newValue: number) => {
+      onChange={(_event, newValue: number) => {
         setValue(newValue)
       }}
       showLabels

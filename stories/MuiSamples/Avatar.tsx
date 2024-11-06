@@ -5,7 +5,6 @@ import { Box, type Theme } from "@mui/material"
 import Avatar from "@mui/material/Avatar"
 import AvatarGroup from "@mui/material/AvatarGroup"
 import { deepOrange, deepPurple, green, pink } from "@mui/material/colors"
-import React from "react"
 
 const avatarSetStyle = {
   display: "flex",
@@ -18,12 +17,13 @@ const avatarSetStyle = {
 export default function AvatarExample() {
   return (
     <Box
+      component="div"
       sx={{
         display: "flex",
         justifyContent: "space-between",
       }}
     >
-      <Box sx={avatarSetStyle}>
+      <Box component="div" sx={avatarSetStyle}>
         <Avatar
           alt="Remy Sharp"
           src="https://material-ui.com/static/images/avatar/1.jpg"
@@ -37,7 +37,7 @@ export default function AvatarExample() {
           src="https://material-ui.com/static/images/avatar/3.jpg"
         />
       </Box>
-      <Box sx={avatarSetStyle}>
+      <Box component="div" sx={avatarSetStyle}>
         <Avatar>H</Avatar>
         <Avatar
           sx={{
@@ -58,7 +58,7 @@ export default function AvatarExample() {
           OP
         </Avatar>
       </Box>
-      <Box sx={avatarSetStyle}>
+      <Box component="div" sx={avatarSetStyle}>
         <Avatar
           alt="Remy Sharp"
           src="https://material-ui.com/static/images/avatar/1.jpg"
@@ -80,7 +80,7 @@ export default function AvatarExample() {
           }}
         />
       </Box>
-      <Box sx={avatarSetStyle}>
+      <Box component="div" sx={avatarSetStyle}>
         <Avatar>
           <FolderIcon />
         </Avatar>
@@ -101,7 +101,7 @@ export default function AvatarExample() {
           <AssignmentIcon />
         </Avatar>
       </Box>
-      <Box sx={avatarSetStyle}>
+      <Box component="div" sx={avatarSetStyle}>
         <AvatarGroup max={4}>
           <Avatar
             alt="Remy Sharp"

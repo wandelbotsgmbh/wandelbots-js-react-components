@@ -1,12 +1,10 @@
-import DoneIcon from "@mui/icons-material/Done";
-import FaceIcon from "@mui/icons-material/Face";
-import { Box, Typography } from "@mui/material";
-import Avatar from "@mui/material/Avatar";
-import Chip from "@mui/material/Chip";
-import React from "react";
+import DoneIcon from "@mui/icons-material/Done"
+import FaceIcon from "@mui/icons-material/Face"
+import { Box, Typography } from "@mui/material"
+import Avatar from "@mui/material/Avatar"
+import Chip from "@mui/material/Chip"
 
 export default function ChipExample() {
-
   const handleDelete = () => {
     console.info("You clicked the delete icon.")
   }
@@ -18,14 +16,17 @@ export default function ChipExample() {
   return (
     <>
       <Typography variant="h6">Default</Typography>
-      <Box sx={{
-        display: "flex",
-        justifyContent: "center",
-        flexWrap: "wrap",
-        "& > *": {
-          m: 0.5,
-        }
-      }}>
+      <Box
+        component="div"
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          flexWrap: "wrap",
+          "& > *": {
+            m: 0.5,
+          },
+        }}
+      >
         <Chip label="Basic" />
         <Chip label="Disabled" disabled />
         <Chip
@@ -86,14 +87,17 @@ export default function ChipExample() {
       </Box>
 
       <Typography variant="h6">Outlined</Typography>
-      <Box sx={{
-        display: "flex",
-        justifyContent: "center",
-        flexWrap: "wrap",
-        "& > *": {
-          m: 0.5,
-        }
-      }}>
+      <Box
+        component="div"
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          flexWrap: "wrap",
+          "& > *": {
+            m: 0.5,
+          },
+        }}
+      >
         <Chip variant="outlined" label="Basic" />
         <Chip variant="outlined" label="Disabled" disabled />
         <Chip

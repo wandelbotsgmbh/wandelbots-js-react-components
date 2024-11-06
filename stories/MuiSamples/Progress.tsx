@@ -1,14 +1,7 @@
 import CheckIcon from "@mui/icons-material/Check"
 import SaveIcon from "@mui/icons-material/Save"
-import type {
-  LinearProgressProps} from "@mui/material";
-import {
-  Box,
-  Button,
-  Fab,
-  LinearProgress,
-  Typography,
-} from "@mui/material"
+import type { LinearProgressProps } from "@mui/material"
+import { Box, Button, Fab, LinearProgress, Typography } from "@mui/material"
 import CircularProgress from "@mui/material/CircularProgress"
 import { green } from "@mui/material/colors"
 import React from "react"
@@ -39,6 +32,7 @@ export default function ProgressExample() {
     <>
       <Typography variant="h6">Circular</Typography>
       <Box
+        component="div"
         sx={{
           display: "flex",
           alignItems: "center",
@@ -50,6 +44,7 @@ export default function ProgressExample() {
         <CircularProgress />
         <CircularProgress color="secondary" />
         <Box
+          component="div"
           sx={{
             m: 1,
             position: "relative",
@@ -86,6 +81,7 @@ export default function ProgressExample() {
           )}
         </Box>
         <Box
+          component="div"
           sx={{
             m: 1,
             position: "relative",
@@ -127,6 +123,7 @@ export default function ProgressExample() {
 
       <Typography variant="h6">Linear</Typography>
       <Box
+        component="div"
         sx={{
           width: 1,
           "& > * + *": {
@@ -181,11 +178,11 @@ function LinearProgressWithLabel(
   props: LinearProgressProps & { value: number },
 ) {
   return (
-    <Box display="flex" alignItems="center">
-      <Box width="100%" mr={1}>
+    <Box component="div" display="flex" alignItems="center">
+      <Box component="div" width="100%" mr={1}>
         <LinearProgress variant="determinate" {...props} />
       </Box>
-      <Box minWidth={35}>
+      <Box component="div" minWidth={35}>
         <Typography variant="body2" color="textSecondary">{`${Math.round(
           props.value,
         )}%`}</Typography>
