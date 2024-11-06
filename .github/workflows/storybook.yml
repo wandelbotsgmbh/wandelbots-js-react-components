@@ -5,7 +5,7 @@ on:
   # Event for the workflow to run on
   push:
     branches:
-      - 'main' # Replace with the branch you want to deploy from
+      - '**' # Run on all branches
 
 permissions:
   contents: read
@@ -26,10 +26,14 @@ jobs:
         with:
           node-version: '22.x'
 
-      #👇 Add Storybook build and deploy to GitHub Pages as a step in the workflow
-      - uses: bitovi/github-actions-storybook-to-github-pages@v1.0.3
+      # Build Storybook
+      - run: npm ci
+      - run: npm run build-storybook
+
+      # Deploy to GitHub Pages
+      - name: Deploy Storybook to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
         with:
-          install_command: npm ci
-          build_command: npm run build-storybook
-          path: storybook-static # default: dist/storybook
-          checkout: false # default: true
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./storybook-static
+          destination_dir: ${{ github.ref_name == 'main' && '' || github.ref_name }}
