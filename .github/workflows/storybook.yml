@@ -42,6 +42,7 @@ jobs:
     strategy:
       matrix:
         branch: ${{ fromJSON(needs.build_matrix.outputs.json_branches) }}
+    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
         with:
