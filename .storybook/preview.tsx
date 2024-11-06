@@ -1,10 +1,10 @@
+import { CssBaseline, ThemeProvider } from "@mui/material"
 import type { Preview } from "@storybook/react"
-import { createTheme, ThemeProvider, CssBaseline } from "@mui/material"
 import React from "react"
-import { DocsContainer } from "./DocsContainer"
 import { useDarkMode } from "storybook-dark-mode"
-import "./global.css"
 import { createNovaMuiTheme } from "../src"
+import { DocsContainer } from "./DocsContainer"
+import "./global.css"
 
 const preview: Preview = {
   parameters: {

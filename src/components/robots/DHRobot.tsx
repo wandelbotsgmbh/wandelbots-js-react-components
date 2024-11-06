@@ -3,10 +3,6 @@ import type { DHParameter } from "@wandelbots/wandelbots-api-client"
 import type * as THREE from "three"
 import { Matrix4, Quaternion, Vector3 } from "three"
 import type { LineGeometry } from "three/examples/jsm/lines/LineGeometry.js"
-import {
-  getAllJointsByName,
-  type RobotSceneJoint,
-} from "../utils/robotTreeQuery"
 import RobotAnimator from "./RobotAnimator"
 import type { DHRobotProps } from "./SupportedRobot"
 
@@ -85,16 +81,11 @@ export function DHRobot({
     })
   }
 
-  function jointCollector(rootObject: THREE.Object3D): RobotSceneJoint[] {
-    return getAllJointsByName(rootObject, "^group_[0-9]+$")
-  }
-
   return (
     <>
       <RobotAnimator
         rapidlyChangingMotionState={rapidlyChangingMotionState}
         dhParameters={dhParameters}
-        jointCollector={jointCollector}
         onRotationChanged={setRotation}
       >
         <group {...props} name="Scene">
@@ -108,8 +99,9 @@ export function DHRobot({
               rapidlyChangingMotionState.state.joint_position.joints[index] ??
                 0,
             )
+            const jointName = `dhrobot_J0${index}`
             return (
-              <group name={`group_${index}`} key={"group_" + index}>
+              <group name={jointName} key={jointName}>
                 <Line
                   name={CHILD_LINE}
                   points={[a, b]}

@@ -5,39 +5,32 @@ import type {
   MotionGroupStateResponse,
 } from "@wandelbots/wandelbots-api-client"
 import React, { useRef } from "react"
-import type * as THREE from "three"
+import type { Group, Object3D } from "three"
 import { useAutorun } from "../utils/hooks"
-import {
-  getAllJointsByName,
-  type RobotSceneJoint,
-} from "../utils/robotTreeQuery"
+import { collectJoints } from "./robotModelLogic"
 
 type RobotAnimatorProps = {
   rapidlyChangingMotionState: MotionGroupStateResponse
   dhParameters: DHParameter[]
-  onRotationChanged?: (joints: THREE.Object3D[], jointValues: number[]) => void
-  jointCollector?: (rootObject: THREE.Object3D) => RobotSceneJoint[]
+  onRotationChanged?: (joints: Object3D[], jointValues: number[]) => void
   children: React.ReactNode
 }
 
 export default function RobotAnimator({
   rapidlyChangingMotionState,
   dhParameters,
-  jointCollector,
   onRotationChanged,
   children,
 }: RobotAnimatorProps) {
   Globals.assign({ frameLoop: "always" })
   const jointValues = useRef<number[]>([])
-  const jointObjects = useRef<THREE.Object3D[]>([])
+  const jointObjects = useRef<Object3D[]>([])
   const { invalidate } = useThree()
 
-  function setGroupRef(group: THREE.Group | null) {
+  function setGroupRef(group: Group | null) {
     if (!group) return
 
-    jointObjects.current = jointCollector
-      ? jointCollector(group)
-      : getAllJointsByName(group)
+    jointObjects.current = collectJoints(group)
 
     // Set initial position
     setRotation()
