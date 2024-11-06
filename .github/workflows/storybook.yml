@@ -56,7 +56,7 @@ jobs:
         run: npm run build-storybook
       - uses: actions/upload-artifact@v3
         with:
-          name: ${{ matrix.branch }}
+          name: ${{ matrix.branch | replace('/', '-') }}
           path: storybook-static/
 
   deploy:
@@ -84,8 +84,9 @@ jobs:
           branches=$(echo '${{ needs.build_matrix.outputs.json_branches }}' | jq -r '.[]')
           for branch in ${branches}
           do
-            mkdir -p -- $branch
-            mv ../branches/$branch/* ./$branch
+            sanitized_branch=$(echo $branch | sed 's/\//-/g')
+            mkdir -p -- $sanitized_branch
+            mv ../branches/$sanitized_branch/* ./$sanitized_branch
           done
           ls -lR
       - name: Upload artifact
