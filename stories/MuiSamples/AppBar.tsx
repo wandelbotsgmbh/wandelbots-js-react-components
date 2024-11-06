@@ -115,7 +115,7 @@ export default function AppBarExample({ onDrawerButtonClick }: Props) {
   )
 
   return (
-    <Box sx={{ flexGrow: 1 }}>
+    <Box component="div" sx={{ flexGrow: 1 }}>
       <Tooltip title={`<AppBar color="primary">`} placement="left" arrow>
         <AppBar position="static">
           <Toolbar>
@@ -138,6 +138,7 @@ export default function AppBarExample({ onDrawerButtonClick }: Props) {
               Material-UI
             </Typography>
             <Box
+              component="div"
               sx={{
                 position: "relative",
                 borderRadius: 1,
@@ -159,6 +160,7 @@ export default function AppBarExample({ onDrawerButtonClick }: Props) {
               }}
             >
               <Box
+                component="div"
                 sx={{
                   py: 0,
                   px: 2,
@@ -190,8 +192,9 @@ export default function AppBarExample({ onDrawerButtonClick }: Props) {
                 inputProps={{ "aria-label": "search" }}
               />
             </Box>
-            <Box sx={{ flexGrow: 1 }} />
+            <Box component="div" sx={{ flexGrow: 1 }} />
             <Box
+              component="div"
               sx={{
                 display: { xs: "none", md: "flex" },
               }}
@@ -227,6 +230,7 @@ export default function AppBarExample({ onDrawerButtonClick }: Props) {
               </IconButton>
             </Box>
             <Box
+              component="div"
               sx={{
                 display: { xs: "flex", md: "none" },
               }}

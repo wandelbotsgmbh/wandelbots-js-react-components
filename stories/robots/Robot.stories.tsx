@@ -1,14 +1,13 @@
+import { Canvas } from "@react-three/fiber"
 import type { StoryObj } from "@storybook/react"
-import { Euler, Vector3, WebGLRenderer } from "three"
-import type { SupportedRobot } from "../../src"
-import { Robot } from "../../src"
+import { expect, fn, waitFor } from "@storybook/test"
 import type { ConnectedMotionGroup } from "@wandelbots/wandelbots-js"
-import {
-  NovaClient,
-  type MotionGroupStateResponse,
-} from "@wandelbots/wandelbots-js"
-import { sharedStoryConfig } from "./robotStoryConfig"
+import { NovaClient } from "@wandelbots/wandelbots-js"
 import { useEffect, useState } from "react"
+import type { SupportedRobot } from "../../src"
+import { PresetEnvironment, Robot } from "../../src"
+import { OrbitControlsAround } from "./OrbitControlsAround"
+import { sharedStoryConfig } from "./robotStoryConfig"
 
 export default {
   ...sharedStoryConfig,
@@ -37,11 +36,45 @@ function SupportedRobotScene(
     return null
   }
 
-  return <Robot connectedMotionGroup={connectedMotionGroup} {...props} />
+  return (
+    <div
+      style={{
+        width: "100%",
+        height: "100vh",
+        minHeight: "400px",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+      }}
+    >
+      <Canvas shadows>
+        <PresetEnvironment />
+
+        <OrbitControlsAround>
+          <Robot connectedMotionGroup={connectedMotionGroup} {...props} />
+        </OrbitControlsAround>
+      </Canvas>
+    </div>
+  )
 }
 
 export const RobotStory: StoryObj<typeof SupportedRobotScene> = {
-  args: {},
+  args: {
+    postModelRender: fn(),
+  },
+  play: async ({ args }) => {
+    await waitFor(
+      () =>
+        expect(
+          args.postModelRender,
+          `Failed to load model for example ur5e`,
+        ).toHaveBeenCalled(),
+      {
+        timeout: 5000,
+      },
+    )
+  },
+
   render: (args) => <SupportedRobotScene {...args} />,
   name: "Robot",
 }
