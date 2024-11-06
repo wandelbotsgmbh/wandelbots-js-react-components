@@ -1,6 +1,7 @@
 import { createUnplugin } from "unplugin"
 
-import fs, { glob } from "node:fs/promises"
+import { glob } from "glob"
+import fs from "node:fs/promises"
 import path from "node:path"
 import dedent from "ts-dedent"
 
@@ -18,7 +19,7 @@ const HIDDEN_ROBOTS = [
 /** Generates lines of CSF code defining stories for each robot model .glb file */
 export const generateRobotStories = async () => {
   const modelsDir = path.resolve(__dirname, "../public/models")
-  const modelFiles = glob(path.join(modelsDir, "*.glb"))
+  const modelFiles = await glob(path.join(modelsDir, "*.glb"))
 
   const importStanza = dedent`
     import { robotStory } from "./robotStoryConfig"
@@ -26,7 +27,7 @@ export const generateRobotStories = async () => {
 
   const modelCsfAdditions: string[] = []
 
-  for await (const modelFile of modelFiles) {
+  for (const modelFile of modelFiles) {
     const modelName = modelFile.split("/").pop()!.split(".")[0]!
     if (HIDDEN_ROBOTS.includes(modelName)) continue
 
