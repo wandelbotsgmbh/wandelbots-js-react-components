@@ -1,13 +1,15 @@
 import type { Object3D } from "three"
 import type { GLTF } from "three-stdlib"
-import { version } from "../../../package.json"
 
+/**
+ * Default implementation of getModel which finds a url to retrieve
+ * the corresponding glb file for a given modelFromController name
+ *
+ * Default is to grab it from a public CDN wrapper of the github repo
+ */
 export function defaultGetModel(modelFromController: string): string {
-  let useVersion = version
-  if (version.startsWith("0.")) {
-    useVersion = ""
-  }
-  return `https://cdn.jsdelivr.net/gh/wandelbotsgmbh/wandelbots-js-react-components${useVersion ? `@${useVersion}` : ""}/public/models/${modelFromController}.glb`
+  const version = import.meta.env.VITE_RELEASE_VERSION
+  return `https://cdn.jsdelivr.net/gh/wandelbotsgmbh/wandelbots-js-react-components${version ? `@${version}` : ""}/public/models/${modelFromController}.glb`
 }
 
 /**

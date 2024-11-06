@@ -1,11 +1,8 @@
-# Workflow name
-name: Build and Publish Storybook to GitHub Pages
-
 on:
   # Event for the workflow to run on
   push:
     branches:
-      - 'main' # Replace with the branch you want to deploy from
+      - "main" # Replace with the branch you want to deploy from
 
 permissions:
   contents: read
@@ -24,7 +21,10 @@ jobs:
       # Set up Node
       - uses: actions/setup-node@v4
         with:
-          node-version: '22.x'
+          node-version: "22.x"
+
+      # Set the current version so the code knows where to get CDN robot models
+      - run: echo "VITE_RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
 
       #👇 Add Storybook build and deploy to GitHub Pages as a step in the workflow
       - uses: bitovi/github-actions-storybook-to-github-pages@v1.0.3

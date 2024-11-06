@@ -44,7 +44,7 @@ export const sharedStoryConfig = {
   args: {
     getModel: (modelFromController: string) => {
       // Fetch from local models in development or testing storybook rather than CDN
-      if (process.env.NODE_ENV === "development" || navigator.webdriver) {
+      if (import.meta.env.DEV || navigator.webdriver) {
         return `/models/${modelFromController}.glb`
       } else {
         return defaultGetModel(modelFromController)

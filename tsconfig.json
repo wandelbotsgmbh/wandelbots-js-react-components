@@ -27,7 +27,8 @@
     "checkMdx": true
   },
   "include": [
-    "src/"
+    "src/",
+    "vite-env.d.ts"
   ],
   "exclude": [
     "node_modules"

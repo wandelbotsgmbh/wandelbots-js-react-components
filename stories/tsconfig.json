@@ -3,5 +3,9 @@
   "compilerOptions": {
     "rootDir": "../"
   },
-  "include": ["../src", "."]
+  "include": [
+    "../src",
+    ".",
+    "../vite-env.d.ts"
+  ]
 }
