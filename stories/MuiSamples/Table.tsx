@@ -313,7 +313,7 @@ export default function TableExample() {
     rowsPerPage - Math.min(rowsPerPage, rows.length - page * rowsPerPage)
 
   return (
-    <Box sx={{ width: 1 }}>
+    <Box component="div" sx={{ width: 1 }}>
       <Paper sx={{ width: 1, mb: 1 }}>
         <EnhancedTableToolbar numSelected={selected.length} />
         <TableContainer>

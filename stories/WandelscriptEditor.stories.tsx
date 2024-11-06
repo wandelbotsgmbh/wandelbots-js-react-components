@@ -1,7 +1,8 @@
-import type { Meta, StoryObj } from "@storybook/react"
-import { WandelscriptEditor } from "../src"
 import { useArgs } from "@storybook/preview-api"
+import type { Meta, StoryObj } from "@storybook/react"
+import { expect, waitFor, within } from "@storybook/test"
 import type { editor } from "monaco-editor"
+import { WandelscriptEditor } from "../src"
 
 const meta: Meta<typeof WandelscriptEditor> = {
   title: "Wandelscript/WandelscriptEditor",
@@ -38,6 +39,17 @@ export const Editor: StoryObj<typeof WandelscriptEditor> = {
   tags: ["!dev"],
   args: {
     code: defaultCode,
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+
+    // Check that the code editor is rendered
+    await waitFor(
+      async () => expect(canvas.getByRole("code")).toBeInTheDocument(),
+      {
+        timeout: 10000,
+      },
+    )
   },
   render: function Component(args) {
     const [, setArgs] = useArgs()

@@ -1,11 +1,11 @@
-import FavoriteIcon from "@mui/icons-material/Favorite";
-import PersonPinIcon from "@mui/icons-material/PersonPin";
-import PhoneIcon from "@mui/icons-material/Phone";
-import Box from "@mui/material/Box";
-import Tab from "@mui/material/Tab";
-import Tabs from "@mui/material/Tabs";
-import Typography from "@mui/material/Typography";
-import React from "react";
+import FavoriteIcon from "@mui/icons-material/Favorite"
+import PersonPinIcon from "@mui/icons-material/PersonPin"
+import PhoneIcon from "@mui/icons-material/Phone"
+import Box from "@mui/material/Box"
+import Tab from "@mui/material/Tab"
+import Tabs from "@mui/material/Tabs"
+import Typography from "@mui/material/Typography"
+import React from "react"
 
 interface TabPanelProps {
   children?: React.ReactNode
@@ -25,7 +25,7 @@ function TabPanel(props: TabPanelProps) {
       {...other}
     >
       {value === index && (
-        <Box p={3}>
+        <Box component="div" p={3}>
           <Typography>{children}</Typography>
         </Box>
       )}
@@ -48,11 +48,14 @@ export default function TabsExample() {
   }
 
   return (
-    <Box sx={{
-      flexGrow: 1,
-      bgcolor: 'background.paper',
-    }}>
-      <Box position="static">
+    <Box
+      component="div"
+      sx={{
+        flexGrow: 1,
+        bgcolor: "background.paper",
+      }}
+    >
+      <Box component="div" position="static">
         <Tabs
           value={value}
           onChange={handleChange}
@@ -73,7 +76,7 @@ export default function TabsExample() {
         Item Three
       </TabPanel>
 
-      <Box position="static">
+      <Box component="div" position="static">
         <Tabs
           value={value}
           onChange={handleChange}
