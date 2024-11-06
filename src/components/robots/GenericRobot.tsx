@@ -40,41 +40,36 @@ export function GenericRobot({
     [modelURL],
   )
 
-  function renderScene(scene: Object3D): React.ReactNode {
-    function renderNode(node: Object3D): React.ReactNode {
-      if (isMesh(node)) {
-        return (
-          <mesh
-            name={node.name}
-            key={node.uuid}
-            geometry={node.geometry}
-            material={node.material}
-            position={node.position}
-            rotation={node.rotation}
-          />
-        )
-      } else {
-        return (
-          <animated.group
-            name={node.name}
-            key={node.uuid}
-            position={node.position}
-            rotation={node.rotation}
-            ref={isFlange(node) ? flangeRef : undefined}
-          >
-            {node.children.map(renderNode)}
-          </animated.group>
-        )
-      }
+  function renderNode(node: Object3D): React.ReactNode {
+    if (isMesh(node)) {
+      return (
+        <mesh
+          name={node.name}
+          key={node.uuid}
+          geometry={node.geometry}
+          material={node.material}
+          position={node.position}
+          rotation={node.rotation}
+        />
+      )
+    } else {
+      return (
+        <animated.group
+          name={node.name}
+          key={node.uuid}
+          position={node.position}
+          rotation={node.rotation}
+          ref={isFlange(node) ? flangeRef : undefined}
+        >
+          {node.children.map(renderNode)}
+        </animated.group>
+      )
     }
-
-    const result = renderNode(scene)
-    return result
   }
 
   return (
     <group {...props} dispose={null} ref={groupRef}>
-      {renderScene(gltf.scene)}
+      {renderNode(gltf.scene)}
     </group>
   )
 }
