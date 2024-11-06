@@ -62,8 +62,6 @@ export function robotStory(
       postModelRender: fn(),
     },
     play: async ({ args }) => {
-      // const canvas = within(canvasElement)
-
       await waitFor(
         () =>
           expect(
