@@ -26,7 +26,7 @@ export function collectJoints(rootObject: Object3D): Object3D[] {
 }
 
 /**
- * Checks if a specified threejs group represents the flange of a
+ * Checks if a specified threejs object represents the flange of a
  * robot, based on the _FLG name ending convention.
  */
 export function isFlange(node: Object3D) {
@@ -34,11 +34,11 @@ export function isFlange(node: Object3D) {
 }
 
 /**
- * Checks if a specified threejs group represents a joint of a
+ * Checks if a specified threejs object represents a joint of a
  * robot, based on the _Jxx name ending convention.
  */
 export function isJoint(node: Object3D) {
-  return !!node.name.match(/_J[0-9]+$/)
+  return /_J[0-9]+$/.test(node.name)
 }
 
 /**
