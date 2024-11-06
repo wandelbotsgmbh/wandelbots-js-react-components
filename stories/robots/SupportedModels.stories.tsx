@@ -98,8 +98,8 @@ FANUC_LR_Mate_200iD7L.storyName = "FANUC_LR_Mate_200iD7L"
 export const KUKA_KR6_R700_2 = robotStory("KUKA_KR6_R700_2")
 KUKA_KR6_R700_2.storyName = "KUKA_KR6_R700_2"
 
-export const KUKA_KR6_R700_C4SR_FLR = robotStory("KUKA_KR6_R700_C4SR_FLR")
-KUKA_KR6_R700_C4SR_FLR.storyName = "KUKA_KR6_R700_C4SR_FLR"
+export const KUKA_KR6_R700_SIXX = robotStory("KUKA_KR6_R700_SIXX")
+KUKA_KR6_R700_SIXX.storyName = "KUKA_KR6_R700_SIXX"
 
 export const KUKA_KR6_R900_2 = robotStory("KUKA_KR6_R900_2")
 KUKA_KR6_R900_2.storyName = "KUKA_KR6_R900_2"
