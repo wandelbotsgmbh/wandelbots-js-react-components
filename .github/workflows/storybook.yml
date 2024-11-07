@@ -75,14 +75,15 @@ jobs:
           fetch-depth: 0
       - name: Setup Pages
         uses: actions/configure-pages@v5
-      - run: gh run download ${{ vars.GITHUB_RUN_ID }} --dir branches
+      - run: gh run download ${{ vars.GITHUB_RUN_ID }} --dir public
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Create public folder
+      - name: Move content from /public/main to public
         run: |
-          mkdir -p public
-          mv branches/* public/
-          ls -lR public
+          mv public/main/* public/
+          rm -rf public/main
+      - name: List files in public folder
+        run: ls -lR public
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
