@@ -77,17 +77,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Create public folder
         run: |
-          branches=$(echo '${{ needs.build_matrix.outputs.json_branches }}' | jq -r '.[]')
-          i=0
-          for branch in ${branches}
-          do
-            mkdir -p -- $branch
-            mv ../branches/$i/* ./$branch
-
-            echo "<li><a href=\"./CV/${branch}\">${branch}</a></li>"
-
-            i=$((i+1))
-          done
           ls -lR
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
