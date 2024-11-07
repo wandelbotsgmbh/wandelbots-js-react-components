@@ -63,6 +63,9 @@ jobs:
     runs-on: ubuntu-latest
     name: Deploy
     if: always()
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     needs:
       - build_matrix
       - build
@@ -72,11 +75,20 @@ jobs:
           fetch-depth: 0
       - name: Setup Pages
         uses: actions/configure-pages@v5
-      - run: gh run download ${{ vars.GITHUB_RUN_ID }} --dir branches
+      - run: gh run download ${{ github.run_id }} --dir branches
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Create public folder
         run: |
+          mkdir -p public
+          cd public
+          branches=$(echo '${{ needs.build_matrix.outputs.json_branches }}' | jq -r '.[]')
+          for branch in ${branches}
+          do
+            sanitized_branch=$(echo $branch | sed 's/\//-/g')
+            mkdir -p -- $sanitized_branch
+            mv ../branches/${{ strategy.job-index }}/* ./$sanitized_branch
+          done
           ls -lR
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
