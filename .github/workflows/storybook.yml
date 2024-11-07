@@ -63,9 +63,6 @@ jobs:
     runs-on: ubuntu-latest
     name: Deploy
     if: always()
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     needs:
       - build_matrix
       - build
@@ -81,13 +78,20 @@ jobs:
       - name: Create public folder
         run: |
           mkdir public
+          mv .github/workflows/index.html ./public/index.html
           cd public
           branches=$(echo '${{ needs.build_matrix.outputs.json_branches }}' | jq -r '.[]')
+          i=0
           for branch in ${branches}
           do
             mkdir -p -- $branch
-            mv ../branches/$branch/* ./$branch
+            mv ../branches/$i/* ./$branch
+
+            echo "<li><a href=\"./CV/${branch}\">${branch}</a></li>" >> index.html
+
+            i=$((i+1))
           done
+          cat ../.github/workflows/index_suffix.html >> index.html
           ls -lR
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
