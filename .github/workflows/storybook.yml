@@ -77,8 +77,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Create public folder
         run: |
-          mv .github/workflows/index.html ./public/index.html
-          cd public
           branches=$(echo '${{ needs.build_matrix.outputs.json_branches }}' | jq -r '.[]')
           i=0
           for branch in ${branches}
@@ -86,11 +84,10 @@ jobs:
             mkdir -p -- $branch
             mv ../branches/$i/* ./$branch
 
-            echo "<li><a href=\"./CV/${branch}\">${branch}</a></li>" >> index.html
+            echo "<li><a href=\"./CV/${branch}\">${branch}</a></li>"
 
             i=$((i+1))
           done
-          cat ../.github/workflows/index_suffix.html >> index.html
           ls -lR
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
