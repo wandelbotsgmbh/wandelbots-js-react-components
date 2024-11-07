@@ -54,15 +54,21 @@ jobs:
         run: npm ci
       - name: Build Storybook
         run: npm run build-storybook
+      - name: Sanitize branch name
+        id: sanitize
+        run: echo "SANITIZED_BRANCH=$(echo ${{ matrix.branch }} | sed 's/\//-/g')" >> $GITHUB_ENV
       - uses: actions/upload-artifact@v3
         with:
-          name: ${{ strategy.job-index }}
+          name: ${{ env.SANITIZED_BRANCH }}
           path: storybook-static/
 
   deploy:
     runs-on: ubuntu-latest
     name: Deploy
     if: always()
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     needs:
       - build_matrix
       - build
@@ -72,21 +78,14 @@ jobs:
           fetch-depth: 0
       - name: Setup Pages
         uses: actions/configure-pages@v5
-      - run: gh run download ${{ vars.GITHUB_RUN_ID }} --dir branches
+      - run: gh run download ${{ github.run_id }} --dir branches
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Create public folder
         run: |
           mkdir -p public
-          cd public
-          branches=$(echo '${{ needs.build_matrix.outputs.json_branches }}' | jq -r '.[]')
-          for branch in ${branches}
-          do
-            sanitized_branch=$(echo $branch | sed 's/\//-/g')
-            mkdir -p -- $sanitized_branch
-            mv ../branches/${{ strategy.job-index }}/* ./$sanitized_branch
-          done
-          ls -lR
+          mv branches/* public/
+          ls -lR public
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
