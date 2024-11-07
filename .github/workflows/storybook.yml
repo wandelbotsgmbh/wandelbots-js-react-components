@@ -66,9 +66,6 @@ jobs:
     runs-on: ubuntu-latest
     name: Deploy
     if: always()
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     needs:
       - build_matrix
       - build
