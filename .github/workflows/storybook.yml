@@ -75,7 +75,7 @@ jobs:
           fetch-depth: 0
       - name: Setup Pages
         uses: actions/configure-pages@v5
-      - run: gh run download ${{ github.run_id }} --dir branches
+      - run: gh run download ${{ vars.GITHUB_RUN_ID }} --dir branches
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Create public folder
