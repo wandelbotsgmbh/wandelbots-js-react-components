@@ -75,19 +75,27 @@ jobs:
           fetch-depth: 0
       - name: Setup Pages
         uses: actions/configure-pages@v5
-      - name: Clean public folder
-        run: rm -rf public/*
       - name: Download artifacts
         uses: actions/download-artifact@v3
         with:
           name: ${{ env.SANITIZED_BRANCH }}
-          path: public/
+          path: public/       env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Move content from /public/main to public
         run: |
           rsync -a public/main/ public/
           rm -rf public/main
       - name: List files in public folder
         run: ls -lR public
+      - name: Generate overview.html
+        run: |
+          echo "<html><body><h1>Storybook Versions</h1><ul>" > public/overview.html
+          branches=$(echo ${{ needs.build_matrix.outputs.json_branches }} | jq -r '.[]')
+          for branch in $branches; do
+            sanitized_branch=$(echo $branch | sed 's/\//-/g')
+            echo "<li><a href=\"$sanitized_branch\">$branch</a></li>" >> public/overview.html
+          done
+          echo "</ul></body></html>" >> public/overview.html
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
