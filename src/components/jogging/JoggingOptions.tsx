@@ -15,9 +15,9 @@ export const JoggingOptions = observer(({ store }: { store: JoggingStore }) => {
   function translateOrientation(orientation: OrientationId): string {
     switch (orientation) {
       case "coordsys":
-        return t("Jogging.Orientation.coordsys")
+        return t("Jogging.Orientation.CoordinateSystem.hlb")
       case "tool":
-        return t("Jogging.Orientation.tool")
+        return t("Jogging.Orientation.Tool.hlb")
       default:
         return orientation
     }
@@ -41,7 +41,7 @@ export const JoggingOptions = observer(({ store }: { store: JoggingStore }) => {
       {/* Coordinate system */}
       <AdornedSelect
         labelId="jogging-coord-select"
-        labelValue={"Coordinate Sys."}
+        labelValue={t("Jogging.CoordinateSystem.hlb")}
         value={store.selectedCoordSystemId}
         size="small"
         variant="filled"
@@ -101,7 +101,7 @@ export const JoggingOptions = observer(({ store }: { store: JoggingStore }) => {
 
       {/* Increment selection */}
       <AdornedSelect
-        labelValue={"Increment"}
+        labelValue={t("Jogging.Increment.hlb")}
         labelId="jogging-increment-select"
         size="small"
         variant="filled"
@@ -112,7 +112,7 @@ export const JoggingOptions = observer(({ store }: { store: JoggingStore }) => {
         disabled={store.isLocked}
       >
         <MenuItem key="continuous" value="continuous">
-          {t("Jogging.Increment.Continuous.dd")}
+          {t("Jogging.Increment.Continuous.lb")}
         </MenuItem>
 
         {store.selectedOrientation === "tool"

@@ -8,11 +8,13 @@
   "Jogging.Cartesian.Translation.bt": "Translation",
   "Jogging.Cartesian.Rotation.bt": "Rotation",
   "Jogging.Joints.JointValues.lb": "Joint values",
-  "Jogging.Increment.Continuous.dd": "Continuous",
+  "Jogging.Increment.Continuous.lb": "Continuous",
   "Jogging.Cartesian.Orientation.lb": "Orientation",
   "Jogging.Activate.bt": "Activate jogging",
   "Jogging.Activating.lb": "Activating jogging",
   "Jogging.JointLimitsReached.lb": "Joint limit reached for joint {{jointNumbers}}",
-  "Jogging.Orientation.coordsys": "Base",
-  "Jogging.Orientation.tool": "Tool"
+  "Jogging.Orientation.CoordinateSystem.hlb": "Base",
+  "Jogging.Orientation.Tool.hlb": "Tool",
+  "Jogging.CoordinateSystem.hlb": "Coordinate system",
+  "Jogging.Increment.hlb": "Rotation per click"
 }
