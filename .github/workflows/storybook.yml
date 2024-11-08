@@ -75,12 +75,13 @@ jobs:
           fetch-depth: 0
       - name: Setup Pages
         uses: actions/configure-pages@v5
+      - name: Clean public folder
+        run: rm -rf public/*
       - name: Download artifacts
         uses: actions/download-artifact@v3
         with:
           name: ${{ env.SANITIZED_BRANCH }}
-          path: public/       env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          path: public/
       - name: Move content from /public/main to public
         run: |
           rsync -a public/main/ public/
