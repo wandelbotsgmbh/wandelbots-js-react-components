@@ -1,8 +1,6 @@
 import { Stack } from "@mui/material"
-import {
-  MotionStreamConnection,
-  poseToWandelscriptString,
-} from "@wandelbots/wandelbots-js"
+import type { MotionStreamConnection } from "@wandelbots/wandelbots-js"
+import { poseToWandelscriptString } from "@wandelbots/wandelbots-js"
 import { observer } from "mobx-react-lite"
 import { useRef } from "react"
 import { CopyableText } from "../CopyableText"

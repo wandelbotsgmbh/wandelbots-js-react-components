@@ -1,10 +1,10 @@
-import { Box } from "@mui/material";
-import Button from "@mui/material/Button";
-import Step from "@mui/material/Step";
-import StepLabel from "@mui/material/StepLabel";
-import Stepper from "@mui/material/Stepper";
-import Typography from "@mui/material/Typography";
-import React from "react";
+import { Box } from "@mui/material"
+import Button from "@mui/material/Button"
+import Step from "@mui/material/Step"
+import StepLabel from "@mui/material/StepLabel"
+import Stepper from "@mui/material/Stepper"
+import Typography from "@mui/material/Typography"
+import React from "react"
 
 function getSteps() {
   return ["Select campaign settings", "Create an ad group", "Create an ad"]
@@ -43,12 +43,12 @@ export default function StepperExample() {
       newSkipped.delete(activeStep)
     }
 
-    setActiveStep(prevActiveStep => prevActiveStep + 1)
+    setActiveStep((prevActiveStep) => prevActiveStep + 1)
     setSkipped(newSkipped)
   }
 
   const handleBack = () => {
-    setActiveStep(prevActiveStep => prevActiveStep - 1)
+    setActiveStep((prevActiveStep) => prevActiveStep - 1)
   }
 
   const handleSkip = () => {
@@ -58,8 +58,8 @@ export default function StepperExample() {
       throw new Error("You can't skip a step that isn't optional.")
     }
 
-    setActiveStep(prevActiveStep => prevActiveStep + 1)
-    setSkipped(prevSkipped => {
+    setActiveStep((prevActiveStep) => prevActiveStep + 1)
+    setSkipped((prevSkipped) => {
       const newSkipped = new Set(prevSkipped.values())
       newSkipped.add(activeStep)
       return newSkipped
@@ -71,7 +71,7 @@ export default function StepperExample() {
   }
 
   return (
-    <Box sx={{ width: 1 }}>
+    <Box component="div" sx={{ width: 1 }}>
       <Stepper activeStep={activeStep}>
         {steps.map((label, index) => {
           const stepProps: { completed?: boolean } = {}
@@ -103,9 +103,7 @@ export default function StepperExample() {
           </div>
         ) : (
           <div>
-            <Typography sx={{ my: 1 }}>
-              {getStepContent(activeStep)}
-            </Typography>
+            <Typography sx={{ my: 1 }}>{getStepContent(activeStep)}</Typography>
             <div>
               <Button
                 disabled={activeStep === 0}

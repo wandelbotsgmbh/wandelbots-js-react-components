@@ -24,9 +24,9 @@ const PaletteOverview: React.FC = () => {
   const theme = useTheme()
 
   return (
-    <Box sx={{ width: 1 }}>
+    <Box component="div" sx={{ width: 1 }}>
       {colorCategories.map((category) => (
-        <Box key={category} sx={{ mb: 2 }}>
+        <Box component="div" key={category} sx={{ mb: 2 }}>
           <Typography variant="h6" gutterBottom>
             {category.charAt(0).toUpperCase() + category.slice(1)}
           </Typography>
@@ -45,6 +45,7 @@ const PaletteOverview: React.FC = () => {
                   <Typography variant="body2">{shade}</Typography>
                   <Tooltip title={(theme.palette[category] as any)[shade]}>
                     <Box
+                      component="div"
                       sx={{
                         bgcolor: (theme.palette[category] as any)[shade],
                         width: 40,
@@ -61,6 +62,7 @@ const PaletteOverview: React.FC = () => {
                   <Typography variant="body2">{shade}</Typography>
                   <Tooltip title={(theme.paletteExt?.primary as any)?.[shade]}>
                     <Box
+                      component="div"
                       sx={{
                         bgcolor:
                           (theme.paletteExt?.primary as any)?.[shade] ??
@@ -81,6 +83,7 @@ const PaletteOverview: React.FC = () => {
                     title={(theme.paletteExt?.secondary as any)?.[shade]}
                   >
                     <Box
+                      component="div"
                       sx={{
                         bgcolor:
                           (theme.paletteExt?.secondary as any)?.[shade] ??

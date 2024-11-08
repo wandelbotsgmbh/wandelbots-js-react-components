@@ -1,25 +1,46 @@
 import { animated } from "@react-spring/three"
 import { useGLTF } from "@react-three/drei"
-import type { Mesh } from "three"
+import type { GroupProps } from "@react-three/fiber"
+import React, { useCallback } from "react"
+import type { Group, Mesh } from "three"
 import { type Object3D } from "three"
-import type { RobotModelProps } from "./types"
+import { isFlange, parseRobotModel } from "./robotModelLogic"
+
+export type RobotModelProps = {
+  modelURL: string
+  /**
+   * Called after a robot model has been loaded and
+   * rendered into the threejs scene
+   */
+  postModelRender?: () => void
+  flangeRef?: React.Ref<Group>
+} & GroupProps
 
 function isMesh(node: Object3D): node is Mesh {
   return node.type === "Mesh"
 }
 
-function isFlange(node: Object3D): boolean {
-  return node.name.endsWith("_FLG")
-}
-
 export function GenericRobot({
   modelURL,
   flangeRef,
+  postModelRender,
   ...props
 }: RobotModelProps) {
-  const gltf = useGLTF(modelURL)
+  const { gltf } = parseRobotModel(
+    useGLTF(modelURL),
+    modelURL.split("/").pop() || modelURL,
+  )
 
-  const renderNode = (node: Object3D): React.ReactNode => {
+  const groupRef: React.RefCallback<Group> = useCallback(
+    (group) => {
+      if (group && postModelRender) {
+        postModelRender()
+      }
+    },
+    [modelURL],
+  )
+
+  function renderNode(node: Object3D): React.ReactNode {
     if (isMesh(node)) {
       return (
         <mesh
@@ -47,7 +68,7 @@ export function GenericRobot({
   }
 
   return (
-    <group {...props} dispose={null}>
+    <group {...props} dispose={null} ref={groupRef}>
       {renderNode(gltf.scene)}
     </group>
   )

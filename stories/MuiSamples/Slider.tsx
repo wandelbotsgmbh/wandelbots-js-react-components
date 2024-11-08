@@ -1,10 +1,10 @@
-import VolumeDown from "@mui/icons-material/VolumeDown";
-import VolumeUp from "@mui/icons-material/VolumeUp";
-import { Box } from "@mui/material";
-import Grid from "@mui/material/Grid";
-import Slider from "@mui/material/Slider";
-import Typography from "@mui/material/Typography";
-import React from "react";
+import VolumeDown from "@mui/icons-material/VolumeDown"
+import VolumeUp from "@mui/icons-material/VolumeUp"
+import { Box } from "@mui/material"
+import Grid from "@mui/material/Grid"
+import Slider from "@mui/material/Slider"
+import Typography from "@mui/material/Typography"
+import React from "react"
 
 const marks = [
   {
@@ -30,7 +30,6 @@ function valuetext(value: number) {
 }
 
 export default function SliderExample() {
-
   const [value, setValue] = React.useState<number | number[]>(30)
 
   const handleChange = (event: Event, newValue: number | number[]) => {
@@ -38,7 +37,7 @@ export default function SliderExample() {
   }
 
   return (
-    <Box sx={{ width: 300 }}>
+    <Box component="div" sx={{ width: 300 }}>
       <Typography id="continuous-slider" gutterBottom>
         Volume
       </Typography>

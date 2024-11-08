@@ -1,10 +1,9 @@
-import { Box } from "@mui/material";
-import Typography from "@mui/material/Typography";
-import React from "react";
+import { Box } from "@mui/material"
+import Typography from "@mui/material/Typography"
 
 export default function TypographyExample() {
   return (
-    <Box sx={{ width: 1, maxWidth: 800 }}>
+    <Box component="div" sx={{ width: 1, maxWidth: 800 }}>
       <Typography variant="h1" component="h2" gutterBottom>
         h1. Heading
       </Typography>

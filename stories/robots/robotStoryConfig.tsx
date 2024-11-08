@@ -1,9 +1,9 @@
 // sharedStoryConfig.tsx
-import type { Meta } from "@storybook/react"
+import type { Meta, StoryObj } from "@storybook/react"
+import { expect, fn, waitFor } from "@storybook/test"
 import type { DHParameter } from "@wandelbots/wandelbots-js"
-import { Vector3 } from "three"
-import { defaultGetModel, SupportedRobot } from "../../src"
-import { Setup } from "../../src/Setup"
+import { SupportedRobot } from "../../src"
+import { SupportedRobotScene } from "./SupportedRobotScene"
 
 type RobotJsonConfig = {
   dhParameters: {
@@ -19,15 +19,7 @@ export async function getDHParams(
   modelFromController: string,
 ): Promise<DHParameter[]> {
   const [manufacturer, ...rest] = modelFromController.split("_")
-  let modelWithoutManufacturer = rest.join("_")
-
-  if (manufacturer === "FANUC") {
-    // FIXME standardize model names
-    modelWithoutManufacturer = modelWithoutManufacturer.replace(
-      "ARC_Mate_",
-      "LR_Mate_",
-    )
-  }
+  const modelWithoutManufacturer = rest.join("_")
 
   const jsonConfig = (await import(
     `./robotConfig/jsonV2/${manufacturer}/${modelWithoutManufacturer}.json`
@@ -42,37 +34,51 @@ export async function getDHParams(
   }))
 }
 
+export function nextAnimationFrame(): Promise<void> {
+  return new Promise((resolve) => requestAnimationFrame(() => resolve()))
+}
+
 export const sharedStoryConfig = {
   tags: ["!dev"],
   component: SupportedRobot,
   args: {
     getModel: (modelFromController: string) => {
-      // Fetch from local models in development storybook rather than CDN
-      if (process.env.NODE_ENV === "development") {
-        return `/models/${modelFromController}.glb`
-      } else {
-        return defaultGetModel(modelFromController)
-      }
+      // Fetch from storybook rather than CDN to ensure version alignment
+      // FIXME - storybook should know what version of the package it is
+      // so it can test the CDN as well
+      return `./models/${modelFromController}.glb`
     },
   },
-  decorators: [
-    (Story) => (
-      <div
-        style={{
-          width: "100%",
-          height: "100vh",
-          minHeight: "400px",
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-        }}
-      >
-        <Setup cameraPosition={new Vector3(0, 0, 3)}>
-          <group position={[0, -0.25, 0]}>
-            <Story />
-          </group>
-        </Setup>
-      </div>
-    ),
-  ],
 } satisfies Meta<typeof SupportedRobot>
+
+export function robotStory(
+  modelFromController: string,
+): StoryObj<typeof SupportedRobotScene> {
+  return {
+    args: {
+      modelFromController,
+      postModelRender: fn(),
+    },
+    play: async ({ args }) => {
+      await waitFor(
+        () =>
+          expect(
+            args.postModelRender,
+            `Failed to load model for ${args.modelFromController}`,
+          ).toHaveBeenCalled(),
+        {
+          timeout: 5000,
+        },
+      )
+    },
+    render: (args, { loaded: { dhParameters } }) => (
+      <SupportedRobotScene {...args} dhParameters={dhParameters} />
+    ),
+    name: modelFromController,
+    loaders: [
+      async () => ({
+        dhParameters: await getDHParams(modelFromController),
+      }),
+    ],
+  }
+}

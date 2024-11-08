@@ -1,13 +1,13 @@
-import AddIcon from "@mui/icons-material/Add";
-import MailIcon from "@mui/icons-material/Mail";
-import RemoveIcon from "@mui/icons-material/Remove";
-import { Box } from "@mui/material";
-import Badge from "@mui/material/Badge";
-import Button from "@mui/material/Button";
-import ButtonGroup from "@mui/material/ButtonGroup";
-import FormControlLabel from "@mui/material/FormControlLabel";
-import Switch from "@mui/material/Switch";
-import React from "react";
+import AddIcon from "@mui/icons-material/Add"
+import MailIcon from "@mui/icons-material/Mail"
+import RemoveIcon from "@mui/icons-material/Remove"
+import { Box } from "@mui/material"
+import Badge from "@mui/material/Badge"
+import Button from "@mui/material/Button"
+import ButtonGroup from "@mui/material/ButtonGroup"
+import FormControlLabel from "@mui/material/FormControlLabel"
+import Switch from "@mui/material/Switch"
+import React from "react"
 
 export default function BadgeExample() {
   const [count, setCount] = React.useState(1)
@@ -18,16 +18,19 @@ export default function BadgeExample() {
   }
 
   return (
-    <Box sx={{
-      display: "flex",
-      flexDirection: "column",
-      "& > *": {
-        mb: 2,
-      },
-      "& > div > span": {
-        mr: 4,
-      },
-    }}>
+    <Box
+      component="div"
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        "& > *": {
+          mb: 2,
+        },
+        "& > div > span": {
+          mr: 4,
+        },
+      }}
+    >
       <div>
         <Badge color="primary" badgeContent={count}>
           <MailIcon />
