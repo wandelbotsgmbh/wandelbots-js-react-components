@@ -82,19 +82,16 @@ jobs:
         with:
           name: ${{ env.SANITIZED_BRANCH }}
           path: public/
-      - name: Move content from /public/main to public
-        run: |
-          rsync -a public/main/ public/
-          rm -rf public/main
       - name: Generate overview.html
         run: |
           echo "<html><body><h1>Storybook Versions</h1><ul>" > public/overview.html
-          branches=$(echo ${{ needs.build_matrix.outputs.json_branches }} | jq -r '.[]')
-          for branch in $branches; do
-            sanitized_branch=$(echo $branch | sed 's/\//-/g')
-            echo "<li><a href=\"$sanitized_branch\">$branch</a></li>" >> public/overview.html
+          for dir in $(ls public); do
+            echo "<li><a href=\"$dir\">$dir</a></li>" >> public/overview.html
           done
           echo "</ul></body></html>" >> public/overview.html
+      - name: Move content from /public/main to public
+        run: |
+          rsync -a public/main/ public/
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
