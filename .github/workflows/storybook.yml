@@ -85,8 +85,6 @@ jobs:
         run: |
           rsync -a public/main/ public/
           rm -rf public/main
-      - name: List files in public folder
-        run: ls -lR public
       - name: Generate overview.html
         run: |
           echo "<html><body><h1>Storybook Versions</h1><ul>" > public/overview.html
