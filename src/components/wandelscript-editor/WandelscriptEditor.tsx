@@ -1,13 +1,17 @@
 import type { Monaco } from "@monaco-editor/react"
 import { lazy, Suspense, useRef, useState } from "react"
-import type { BundledLanguage, HighlighterGeneric } from "shiki"
-import type { BundledTheme } from "shiki"
+import type { BundledLanguage, BundledTheme, HighlighterGeneric } from "shiki"
 
-import wandelscriptTextmateGrammar from "./wandelscript.tmLanguage"
 import { useTheme } from "@mui/material"
-import type { editor } from "monaco-editor"
+import { editor } from "monaco-editor"
 import { externalizeComponent } from "../../externalizeComponent"
 import { LoadingCover } from "../LoadingCover"
+import wandelscriptTextmateGrammar from "./wandelscript.tmLanguage"
+
+type MonacoSetupData = {
+  monaco: Monaco
+  editor: editor.IStandaloneCodeEditor
+}
 
 type WandelscriptEditorProps = {
   /** The current Wandelscript content of the code editor (controlled component) */
@@ -20,7 +24,7 @@ type WandelscriptEditorProps = {
   /** Options for monaco editor */
   monacoOptions?: editor.IEditorOptions
   /** Callback to further configure monaco on startup if needed */
-  monacoSetup?: (monaco: Monaco) => void
+  monacoSetup?: (setupData: MonacoSetupData) => void
 }
 
 const Editor = lazy(() => import("@monaco-editor/react"))
@@ -38,7 +42,10 @@ export const WandelscriptEditor = externalizeComponent(
     const targetShikiTheme =
       theme.palette.mode === "dark" ? "dark-plus" : "light-plus"
 
-    async function setupEditor(monaco: Monaco) {
+    async function setupEditor(
+      monaco: Monaco,
+      editor: editor.IStandaloneCodeEditor,
+    ) {
       const [{ createHighlighter }, { shikiToMonaco }] = await Promise.all([
         import("shiki"),
         import("@shikijs/monaco"),
@@ -97,7 +104,7 @@ export const WandelscriptEditor = externalizeComponent(
       })
 
       if (props.monacoSetup) {
-        props.monacoSetup(monaco)
+        props.monacoSetup({ monaco, editor })
       }
 
       setActiveShikiTheme(targetShikiTheme)
@@ -107,8 +114,8 @@ export const WandelscriptEditor = externalizeComponent(
       <Suspense fallback={<LoadingCover />}>
         <Editor
           value={props.code}
-          onMount={(_editor, monaco) => {
-            setupEditor(monaco)
+          onMount={(editor, monaco) => {
+            setupEditor(monaco, editor)
           }}
           onChange={props.onChange}
           defaultLanguage="wandelscript"
