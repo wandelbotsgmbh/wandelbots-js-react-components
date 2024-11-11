@@ -61,6 +61,7 @@ export function VelocitySliderLabel({ value, sx }: VelocitySliderLabelProps) {
     <Stack
       direction={"row"}
       justifyContent={"center"}
+      alignItems={"center"}
       gap={"5px"}
       sx={{
         padding: "6px 12px",
@@ -76,7 +77,6 @@ export function VelocitySliderLabel({ value, sx }: VelocitySliderLabelProps) {
           textAlign: "right",
           fontSize: "14px",
           opacity: 0.8,
-          lineHeight: 1,
           color: theme.palette.text.primary,
           whiteSpace: "nowrap",
         }}
