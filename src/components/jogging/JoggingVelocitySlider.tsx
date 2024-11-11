@@ -30,8 +30,10 @@ export const JoggingVelocitySlider = observer(
           <VelocitySliderLabel
             value={state.valueLabelFormat(value)}
             sx={{
-              minWidth:
-                store.currentMotionType === "translate" ? "111px" : "90px",
+              minWidth: "111px",
+              span: {
+                transform: "translateY(-1.5px)",
+              },
             }}
           />
         )}
