@@ -8,12 +8,7 @@ import { tryParseJson } from "@wandelbots/wandelbots-js"
 import { countBy } from "lodash-es"
 import keyBy from "lodash-es/keyBy"
 import uniqueId from "lodash-es/uniqueId"
-import {
-  autorun,
-  makeAutoObservable,
-  runInAction,
-  type IReactionDisposer,
-} from "mobx"
+import { autorun, makeAutoObservable, type IReactionDisposer } from "mobx"
 
 const discreteIncrementOptions = [
   { id: "0.1", mm: 0.1, degrees: 0.05 },
@@ -43,12 +38,6 @@ export type IncrementJogInProgress = {
 
 export class JoggingStore {
   selectedTabId: "cartesian" | "joint" | "debug" = "cartesian"
-
-  /**
-   * Whether the user must manually interact to activate jogging, or
-   * if it can be done automatically
-   */
-  manualActivationRequired: boolean = true
 
   /**
    * State of the jogging panel. Starts as "inactive"
@@ -141,6 +130,18 @@ export class JoggingStore {
         ),
       ])
 
+    // Setting mode control makes jogging startup slightly faster
+    // on physical robots
+    // https://wandelbots.slack.com/archives/C06VA4J59PF/p1725523765976109?thread_ts=1725464963.859559&cid=C06VA4J59PF
+    try {
+      await jogger.nova.api.controller.setDefaultMode(
+        jogger.motionStream.controllerId,
+        "MODE_CONTROL",
+      )
+    } catch (err) {
+      console.error(err)
+    }
+
     return new JoggingStore(
       jogger,
       motionGroupSpec,
@@ -187,54 +188,18 @@ export class JoggingStore {
     return countBy(this.coordSystems, (cs) => cs.name)
   }
 
-  async deactivate(opts: { requireManualReactivation?: boolean } = {}) {
-    if (this.activationState === "inactive") return
+  async deactivateJogger() {
     const websocket = this.jogger.activeWebsocket
 
-    this.activationState = "inactive"
     this.jogger.setJoggingMode("increment")
 
     if (websocket) {
       await websocket.closed()
     }
-
-    // Closing websocket sometimes isn't enough to stop interference
-    try {
-      await this.jogger.nova.api.motionGroupJogging.stopJogging(
-        this.jogger.motionGroupId,
-      )
-    } catch (err) {
-      console.error(err)
-    }
-
-    if (opts.requireManualReactivation) {
-      runInAction(() => {
-        this.manualActivationRequired = true
-      })
-    }
   }
 
   /** Activate the jogger with current settings */
-  async activate(opts: { manual?: boolean } = {}) {
-    if (this.manualActivationRequired && !opts.manual) return
-
-    runInAction(() => {
-      this.activationState = "loading"
-      this.activationError = null
-    })
-
-    // Setting mode control makes jogging startup slightly faster
-    // on physical robots
-    // https://wandelbots.slack.com/archives/C06VA4J59PF/p1725523765976109?thread_ts=1725464963.859559&cid=C06VA4J59PF
-    try {
-      await this.jogger.nova.api.controller.setDefaultMode(
-        this.jogger.motionStream.controllerId,
-        "MODE_CONTROL",
-      )
-    } catch (err) {
-      console.error(err)
-    }
-
+  async activateJogger() {
     if (this.currentTab.id === "cartesian") {
       const cartesianJoggingOpts = {
         tcpId: this.selectedTcpId,
@@ -250,25 +215,16 @@ export class JoggingStore {
       this.jogger.setJoggingMode("joint")
     }
 
-    if (this.jogger.activeWebsocket) {
-      try {
-        this.jogger.stop()
-        await this.jogger.activeWebsocket.nextMessage()
-      } catch (err) {
-        runInAction(() => {
-          this.activationState = "inactive"
-          this.activationError = err
-        })
-        return
-      }
-    }
+    // if (this.jogger.activeWebsocket) {
+    //   try {
+    //     this.jogger.stop()
+    //     await this.jogger.activeWebsocket.nextMessage()
+    //   } catch (err) {
+    //     console.error(err)
+    //   }
+    // }
 
-    runInAction(() => {
-      this.activationState = "active"
-      if (opts.manual) {
-        this.manualActivationRequired = false
-      }
-    })
+    return this.jogger
   }
 
   loadFromLocalStorage() {
