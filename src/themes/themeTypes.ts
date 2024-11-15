@@ -1,3 +1,5 @@
+import type { editor } from "monaco-editor"
+
 type NovaColorPaletteExtension = {
   paletteExt?: {
     primary?: {
@@ -33,6 +35,9 @@ interface NovaComponentsExtension {
         Y?: AxisControlComponentColors
         Z?: AxisControlComponentColors
       }
+    }
+    WandelscriptEditor?: {
+      monacoTheme: editor.IStandaloneThemeData
     }
   }
 }
