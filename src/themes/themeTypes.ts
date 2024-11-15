@@ -36,8 +36,8 @@ interface NovaComponentsExtension {
         Z?: AxisControlComponentColors
       }
     }
-    CodeEditor?: {
-      theme: editor.IStandaloneThemeData
+    WandelscriptEditor?: {
+      monacoTheme: editor.IStandaloneThemeData
     }
   }
 }

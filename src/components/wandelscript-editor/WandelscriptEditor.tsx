@@ -1,13 +1,12 @@
 import type { Monaco } from "@monaco-editor/react"
 import { lazy, Suspense, useRef, useState } from "react"
-import type { BundledLanguage, HighlighterGeneric } from "shiki"
-import type { BundledTheme } from "shiki"
+import type { BundledLanguage, BundledTheme, HighlighterGeneric } from "shiki"
 
-import wandelscriptTextmateGrammar from "./wandelscript.tmLanguage"
 import { useTheme } from "@mui/material"
 import type { editor } from "monaco-editor"
 import { externalizeComponent } from "../../externalizeComponent"
 import { LoadingCover } from "../LoadingCover"
+import wandelscriptTextmateGrammar from "./wandelscript.tmLanguage"
 
 type WandelscriptEditorProps = {
   /** The current Wandelscript content of the code editor (controlled component) */
@@ -83,7 +82,7 @@ export const WandelscriptEditor = externalizeComponent(
       // but vscode colors
       monaco.editor.defineTheme(
         targetShikiTheme,
-        theme.componentsExt?.CodeEditor?.theme ?? {
+        theme.componentsExt?.WandelscriptEditor?.monacoTheme ?? {
           base: theme.palette.mode === "dark" ? "vs-dark" : "vs",
           inherit: true,
           rules: [],

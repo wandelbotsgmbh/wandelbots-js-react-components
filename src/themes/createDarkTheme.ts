@@ -231,8 +231,8 @@ export function createDarkTheme(): Theme {
           },
         },
       },
-      CodeEditor: {
-        theme: {
+      WandelscriptEditor: {
+        monacoTheme: {
           base: "vs-dark",
           inherit: true,
           rules: [
