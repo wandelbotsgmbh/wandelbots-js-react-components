@@ -233,7 +233,7 @@ export function createDarkTheme(): Theme {
       },
       CodeEditor: {
         theme: {
-          base: baseTheme.palette.mode === "dark" ? "vs-dark" : "vs",
+          base: "vs-dark",
           inherit: true,
           rules: [
             {
