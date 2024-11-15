@@ -81,20 +81,15 @@ export const WandelscriptEditor = externalizeComponent(
 
       // Override the generated shiki theme to use shiki syntax highlighting
       // but vscode colors
-      monaco.editor.defineTheme(targetShikiTheme, {
-        base: theme.palette.mode === "dark" ? "vs-dark" : "vs",
-        inherit: true,
-        rules: [],
-        colors:
-          theme.palette.mode === "dark"
-            ? {
-                "editor.background": "#262F42",
-                "editorLineNumber.foreground": "#797979",
-                "editorLineNumber.activeForeground": "#e9e9e9",
-                "editor.lineHighlightBorder": "#494949",
-              }
-            : {},
-      })
+      monaco.editor.defineTheme(
+        targetShikiTheme,
+        theme.componentsExt?.CodeEditor?.theme ?? {
+          base: theme.palette.mode === "dark" ? "vs-dark" : "vs",
+          inherit: true,
+          rules: [],
+          colors: {},
+        },
+      )
 
       if (props.monacoSetup) {
         props.monacoSetup(monaco)
