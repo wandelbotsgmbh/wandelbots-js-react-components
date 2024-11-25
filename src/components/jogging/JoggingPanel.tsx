@@ -25,6 +25,12 @@ export type JoggingPanelProps = {
   /** Set this to true to disable jogging UI temporarily e.g. when a program is executing */
   locked?: boolean
   sx?: SxProps
+
+  /**
+   * To preserve state while the jogging panel is hidden, you can create and pass a
+   * JoggingStore here and it will be used instead of creating a new one.
+   */
+  store?: JoggingStore
 }
 
 /**
@@ -48,8 +54,11 @@ export const JoggingPanel = externalizeComponent(
       })
 
       try {
-        const jogger = await nova.connectJogger(props.motionGroupId)
-        const joggingStore = await JoggingStore.loadFor(jogger)
+        let joggingStore = props.store
+        if (!joggingStore) {
+          const jogger = await nova.connectJogger(props.motionGroupId)
+          joggingStore = await JoggingStore.loadFor(jogger)
+        }
         runInAction(() => {
           state.joggingStore = joggingStore
         })
@@ -63,10 +72,12 @@ export const JoggingPanel = externalizeComponent(
 
     useEffect(() => {
       init()
-      return () => {
-        state.joggingStore?.dispose()
-      }
-    }, [props.nova, props.motionGroupId])
+      return props.store
+        ? () => null
+        : () => {
+            state.joggingStore?.dispose()
+          }
+    }, [props.store, props.nova, props.motionGroupId])
 
     useEffect(() => {
       const store = state.joggingStore
