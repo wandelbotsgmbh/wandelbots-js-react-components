@@ -6,12 +6,14 @@ on:
   push:
     branches:
       - main
+  pull_request:
+    types: [opened, synchronize, reopened]
 
 permissions:
   contents: read # for checkout
 
 jobs:
-  build-and-release:
+  build:
     runs-on: ubuntu-latest
     permissions:
       contents: write # to be able to publish a GitHub release
@@ -33,9 +35,86 @@ jobs:
         run: npm audit signatures
       - name: Build
         run: npm run build
-      # semantic-release skips non-configured branches or pull-requests
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifacts
+          path: dist/
+
+  build-and-release:
+    runs-on: ubuntu-latest
+    needs: build
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+    permissions:
+      contents: write # to be able to publish a GitHub release
+      issues: write # to be able to comment on released issues
+      pull-requests: write # to be able to comment on released pull requests
+      id-token: write # to enable use of OIDC for npm provenance
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "lts/*"
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-artifacts
+          path: dist/
       - name: Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: npx semantic-release
+
+  publish-snapshot:
+    runs-on: ubuntu-latest
+    needs: build
+    if: ${{ github.event_name == 'pull_request' }}
+    permissions:
+      contents: write # to be able to publish a GitHub release
+      issues: write # to be able to comment on released issues
+      pull-requests: write # to be able to comment on released pull requests
+      id-token: write # to enable use of OIDC for npm provenance
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "lts/*"
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-artifacts
+          path: dist/
+      - name: Configure npm authentication
+        run: echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
+      - name: Fetch latest release version
+        id: fetch_latest_release
+        run: |
+          LATEST_VERSION=$(curl -s https://api.github.com/repos/${{ github.repository }}/releases/latest | jq -r .tag_name)
+          echo "LATEST_VERSION=$LATEST_VERSION" >> $GITHUB_ENV
+      - name: Update package.json version
+        env:
+          LATEST_VERSION: ${{ env.LATEST_VERSION }}
+        run: |
+          # Extract the pull request number
+          PR_NUMBER=$(echo $GITHUB_REF | sed 's/refs\/pull\/\([0-9]*\)\/.*/\1/')
+          # Extract the branch name
+          BRANCH_NAME=$(echo $GITHUB_HEAD_REF | sed 's/\//-/g')
+          # Get the short commit SHA
+          COMMIT_SHA=$(echo $GITHUB_SHA | cut -c1-7)
+          # Create a snapshot version with branch name, PR number, and commit SHA
+          SNAPSHOT_VERSION="${LATEST_VERSION}-pr.${BRANCH_NAME}.${PR_NUMBER}.${COMMIT_SHA}"
+          # Update the package.json with the new version
+          jq --arg version "$SNAPSHOT_VERSION" '.version = $version' package.json > package.tmp.json && mv package.tmp.json package.json
+      - name: Publish snapshot to npm
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          # Publish the snapshot version
+          npm publish --tag snapshot
