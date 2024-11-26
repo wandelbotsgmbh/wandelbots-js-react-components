@@ -9,7 +9,7 @@ export type RobotProps = {
   connectedMotionGroup: ConnectedMotionGroup
   getModel?: (modelFromController: string) => string
   flangeRef?: React.Ref<Group>
-  transparentColor?: boolean
+  transparentColor?: string
 } & GroupProps
 
 /**
