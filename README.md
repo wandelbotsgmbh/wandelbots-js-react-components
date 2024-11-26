@@ -129,7 +129,7 @@ In case you want to use the application offline, you can download the models and
 export type ConnectecMotionGroupRobotProps = {
   connectedMotionGroup: ConnectedMotionGroup // The connected motion group from wandelbots-js
   getModel?: (modelFromController: string) => string // A function that returns the URL of the robot model
-  isGhost?: boolean // Whether the robot should be displayed transparently
+  transparentColor?: string // Whether the robot should be displayed transparently
 } & GroupProps
 ```
 
@@ -152,7 +152,7 @@ export type SupportedRobotProps = {
   modelFromController: string // The model name of the robot
   dhParameters: DHParameter[] // The DH parameters of the robot
   getModel?: (modelFromController: string) => string // A function that returns the URL of the robot model
-  isGhost?: boolean // Whether the robot should be displayed transparently
+  transparentColor?: string // Whether the robot should be displayed transparently
 } & GroupProps
 ```
 
