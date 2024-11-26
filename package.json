@@ -31,7 +31,8 @@
     "ci:test:server": "http-server storybook-static --port 9009 --silent",
     "ci:test:runner": "wait-on tcp:127.0.0.1:9009 && test-storybook --url http://127.0.0.1:9009 --index-json --browsers chromium",
     "build": "rimraf dist && vite build && tsc --declaration --emitDeclarationOnly",
-    "build-storybook": "storybook build"
+    "build-storybook": "storybook build",
+    "prepare": "husky"
   },
   "repository": {
     "type": "git",
@@ -70,6 +71,7 @@
     "add": "^2.0.6",
     "glob": "^11.0.0",
     "http-server": "^14.1.1",
+    "husky": "^9.1.7",
     "jest-simple-dot-reporter": "^1.0.5",
     "jest-summary-reporter": "^0.0.2",
     "nodemon": "^3.1.7",
