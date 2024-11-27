@@ -24,10 +24,10 @@ export type SupportedRobotProps = {
   rapidlyChangingMotionState: MotionGroupStateResponse
   modelFromController: string
   dhParameters: DHParameter[]
-  isGhost?: boolean
   flangeRef?: React.Ref<THREE.Group>
   getModel?: (modelFromController: string) => string
   postModelRender?: () => void
+  transparentColor?: string
 } & GroupProps
 
 export const SupportedRobot = externalizeComponent(
@@ -36,9 +36,9 @@ export const SupportedRobot = externalizeComponent(
     modelFromController,
     dhParameters,
     getModel = defaultGetModel,
-    isGhost = false,
     flangeRef,
     postModelRender,
+    transparentColor,
     ...props
   }: SupportedRobotProps) => {
     const [robotGroup, setRobotGroup] = useState<THREE.Group | null>(null)
@@ -50,12 +50,12 @@ export const SupportedRobot = externalizeComponent(
     useEffect(() => {
       if (!robotGroup) return
 
-      if (isGhost) {
-        applyGhostStyle(robotGroup)
+      if (transparentColor) {
+        applyGhostStyle(robotGroup, transparentColor)
       } else {
         removeGhostStyle(robotGroup)
       }
-    }, [robotGroup, isGhost])
+    }, [robotGroup, transparentColor])
 
     const dhrobot = (
       <DHRobot
