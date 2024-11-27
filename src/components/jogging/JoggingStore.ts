@@ -463,15 +463,23 @@ export class JoggingStore {
     this.selectedCartesianMotionType = type
   }
 
+  lock(id: string) {
+    this.locks.add(id)
+  }
+
+  unlock(id: string) {
+    this.locks.delete(id)
+  }
+
   /** Lock the UI until the given async callback resolves */
   async withMotionLock(fn: () => Promise<void>) {
     const lockId = uniqueId()
-    this.locks.add(lockId)
+    this.lock(lockId)
 
     try {
       return await fn()
     } finally {
-      this.locks.delete(lockId)
+      this.unlock(lockId)
     }
   }
 }

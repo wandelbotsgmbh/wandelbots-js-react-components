@@ -84,11 +84,11 @@ export const JoggingPanel = externalizeComponent(
       if (!store) return
 
       if (props.locked) {
-        store.locks.add("external")
+        store.lock("external")
       } else {
-        store.locks.delete("external")
+        store.unlock("external")
       }
-    }, [props.locked])
+    }, [state.joggingStore, props.locked])
 
     return (
       <Stack
