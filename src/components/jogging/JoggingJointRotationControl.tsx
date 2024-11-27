@@ -74,9 +74,6 @@ export const JoggingJointRotationControl = externalizeComponent(
       }
 
       function onPointerOut(ev: React.PointerEvent) {
-        // Prevent subelements of button from stopping jogging
-        if (ev.target !== ev.currentTarget) return
-
         state.stopJogging()
       }
 
@@ -137,7 +134,11 @@ export const JoggingJointRotationControl = externalizeComponent(
               ...(state.activeJoggingDir === "-" ? pressedButtonStyle : {}),
             }}
           >
-            <ChevronLeft />
+            <ChevronLeft
+              sx={{
+                "pointer-events": "none",
+              }}
+            />
           </IconButton>
 
           <Stack
@@ -228,7 +229,11 @@ export const JoggingJointRotationControl = externalizeComponent(
               ...(state.activeJoggingDir === "+" ? pressedButtonStyle : {}),
             }}
           >
-            <ChevronRight />
+            <ChevronRight
+              sx={{
+                "pointer-events": "none",
+              }}
+            />
           </IconButton>
         </Stack>
       )
