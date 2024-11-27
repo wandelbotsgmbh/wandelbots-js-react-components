@@ -37,6 +37,8 @@ jobs:
   build:
     runs-on: ubuntu-latest
     name: Build
+    env:
+      HUSKY: 0
     needs:
       - build_matrix
     strategy:
@@ -65,6 +67,8 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     name: Deploy
+    env:
+      HUSKY: 0
     if: always()
     needs:
       - build_matrix
