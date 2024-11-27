@@ -32,7 +32,7 @@
     "ci:test:runner": "wait-on tcp:127.0.0.1:9009 && test-storybook --url http://127.0.0.1:9009 --index-json --browsers chromium",
     "build": "rimraf dist && vite build && tsc --declaration --emitDeclarationOnly",
     "build-storybook": "storybook build",
-    "prepare": "husky"
+    "prepare": "husky || true"
   },
   "repository": {
     "type": "git",

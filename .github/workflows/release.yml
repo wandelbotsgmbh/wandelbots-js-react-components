@@ -44,6 +44,8 @@ jobs:
   build-and-release:
     runs-on: ubuntu-latest
     needs: build
+    env:
+      HUSKY: 0
     if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
     permissions:
       contents: write # to be able to publish a GitHub release
@@ -64,8 +66,6 @@ jobs:
         with:
           name: build-artifacts
           path: dist/
-      - name: Install dependencies
-        run: npm clean-install
       - name: Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -75,6 +75,8 @@ jobs:
   publish-snapshot:
     runs-on: ubuntu-latest
     needs: build
+    env:
+      HUSKY: 0
     if: ${{ github.event_name == 'pull_request' }}
     permissions:
       contents: write # to be able to publish a GitHub release
@@ -93,8 +95,6 @@ jobs:
         with:
           name: build-artifacts
           path: dist/
-      - name: Install dependencies
-        run: npm clean-install
       - name: Configure npm authentication
         run: echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
       - name: Fetch latest release version
