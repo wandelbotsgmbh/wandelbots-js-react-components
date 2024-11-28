@@ -22,7 +22,7 @@ export default {
         {
           name: "keyword.control.flow.wandelscript",
           match:
-            "\\b(move|via|to|interrupt|def|False|True|for|if|else|elif|while|return|switch|activate|deactivate|print)\\b",
+            "\\b(move|via|to|interrupt|def|False|True|for|if|else|elif|while|return|switch|activate|deactivate|print|and|or|not)\\b",
         },
       ],
     },

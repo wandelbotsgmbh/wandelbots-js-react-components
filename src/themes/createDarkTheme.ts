@@ -1,4 +1,4 @@
-import { createTheme, type Theme } from "@mui/material"
+import { createTheme, rgbToHex, type Theme } from "@mui/material"
 
 export function createDarkTheme(): Theme {
   const baseTheme = createTheme({
@@ -228,6 +228,27 @@ export function createDarkTheme(): Theme {
               hovered: "rgba(2, 136, 209, 1)",
             },
             color: "rgba(210, 239, 255, 1)",
+          },
+        },
+      },
+      WandelscriptEditor: {
+        monacoTheme: {
+          base: "vs-dark",
+          inherit: true,
+          rules: [
+            {
+              token: "keyword",
+              foreground: "#b349a9ff",
+            },
+          ],
+          colors: {
+            "editor.background": rgbToHex(
+              baseTheme.palette.backgroundPaperElevation?.[5] ?? "",
+            ),
+            "editor.foreground": "#d4d4d4",
+            "editorLineNumber.foreground": "#797979",
+            "editorLineNumber.activeForeground": "#e9e9e9",
+            "editor.lineHighlightBorder": "#e9e9e911",
           },
         },
       },

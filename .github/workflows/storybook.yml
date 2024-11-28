@@ -1,35 +1,105 @@
-# Workflow name
+# https://github.com/orgs/community/discussions/21582
 name: Build and Publish Storybook to GitHub Pages
 
 on:
   # Event for the workflow to run on
   push:
     branches:
-      - 'main' # Replace with the branch you want to deploy from
+      - '**' # Run on all branches
 
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
+  actions: read
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
 
 # List of jobs
 jobs:
-  deploy:
+  build_matrix:
     runs-on: ubuntu-latest
-    # Job steps
+    outputs:
+      json_branches: ${{ steps.generate-matrix.outputs.json_branches }}
     steps:
-      # Manual Checkout
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Generate Matrix
+        id: generate-matrix
+        run: |
+          branches=($(git branch -r | cut -c 3- | sed 's/origin\///g'))
+          json_branches=$(printf '%s\n' "${branches[@]}" | jq -R . | jq -s -c .)
+          echo "json_branches=${json_branches}" >> $GITHUB_OUTPUT
 
-      # Set up Node
+  build:
+    runs-on: ubuntu-latest
+    name: Build
+    env:
+      HUSKY: 0
+    needs:
+      - build_matrix
+    strategy:
+      matrix:
+        branch: ${{ fromJSON(needs.build_matrix.outputs.json_branches) }}
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ matrix.branch }}
       - uses: actions/setup-node@v4
         with:
-          node-version: '22.x'
-
-      #👇 Add Storybook build and deploy to GitHub Pages as a step in the workflow
-      - uses: bitovi/github-actions-storybook-to-github-pages@v1.0.3
+          node-version: 'lts/*'
+      - name: Install dependencies
+        run: npm ci
+      - name: Build Storybook
+        run: npm run build-storybook
+      - name: Sanitize branch name
+        id: sanitize
+        run: echo "SANITIZED_BRANCH=$(echo ${{ matrix.branch }} | sed 's/\//-/g')" >> $GITHUB_ENV
+      - uses: actions/upload-artifact@v3
         with:
-          install_command: npm ci
-          build_command: npm run build-storybook
-          path: storybook-static # default: dist/storybook
-          checkout: false # default: true
+          name: ${{ env.SANITIZED_BRANCH }}
+          path: storybook-static/
+
+  deploy:
+    runs-on: ubuntu-latest
+    name: Deploy
+    env:
+      HUSKY: 0
+    if: always()
+    needs:
+      - build_matrix
+      - build
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+      - name: Clean public folder
+        run: rm -rf public/*
+      - name: Download artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ env.SANITIZED_BRANCH }}
+          path: public/
+      - name: Generate overview.html
+        run: |
+          echo "<html><body><h1>Storybook Versions</h1><ul>" > public/overview.html
+          for dir in $(ls public); do
+            echo "<li><a href=\"$dir\">$dir</a></li>" >> public/overview.html
+          done
+          echo "</ul></body></html>" >> public/overview.html
+      - name: Move content from /public/main to public
+        run: |
+          rsync -a public/main/ public/
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./public/
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

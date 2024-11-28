@@ -8,8 +8,8 @@ import { defaultGetModel } from "./robotModelLogic"
 export type RobotProps = {
   connectedMotionGroup: ConnectedMotionGroup
   getModel?: (modelFromController: string) => string
-  isGhost?: boolean
   flangeRef?: React.Ref<Group>
+  transparentColor?: string
 } & GroupProps
 
 /**
@@ -26,8 +26,8 @@ export type RobotProps = {
 export function Robot({
   connectedMotionGroup,
   getModel = defaultGetModel,
-  isGhost = false,
   flangeRef,
+  transparentColor,
   ...props
 }: RobotProps) {
   if (!connectedMotionGroup.dhParameters) {
@@ -42,8 +42,8 @@ export function Robot({
       modelFromController={connectedMotionGroup.modelFromController || ""}
       dhParameters={connectedMotionGroup.dhParameters}
       getModel={getModel}
-      isGhost={isGhost}
       flangeRef={flangeRef}
+      transparentColor={transparentColor}
       {...props}
     />
   )
