@@ -37,7 +37,7 @@ export const JoggingJointTab = observer(
           sx={{ flexGrow: "1" }}
           id="JointControls"
         >
-          <Stack alignItems="center" gap="24px" sx={{ flexGrow: 1 }}>
+          <Stack alignItems="center" gap="24px">
             {store.jogger.motionStream.joints.map((joint) => {
               const jointLimits =
                 store.motionGroupSpec.mechanical_joint_limits?.[joint.index]
