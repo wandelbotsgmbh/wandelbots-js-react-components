@@ -1,8 +1,8 @@
-import type { SafetySetupSafetyZone } from "@wandelbots/wandelbots-js"
+import { type GroupProps } from "@react-three/fiber"
 import type { Geometry } from "@wandelbots/wandelbots-api-client"
+import type { SafetySetupSafetyZone } from "@wandelbots/wandelbots-js"
 import * as THREE from "three"
 import { ConvexGeometry } from "three-stdlib"
-import { type GroupProps } from "@react-three/fiber"
 
 export type SafetyZonesRendererProps = {
   safetyZones: SafetySetupSafetyZone[]
@@ -89,21 +89,19 @@ export function SafetyZonesRenderer({
             return null
           }
           return (
-            <>
-              <mesh key={`${index}-${i}`} geometry={convexGeometry}>
-                <meshStandardMaterial
-                  key={index}
-                  attach="material"
-                  color="#009f4d"
-                  opacity={0.2}
-                  depthTest={false}
-                  depthWrite={false}
-                  transparent
-                  polygonOffset
-                  polygonOffsetFactor={-i}
-                />
-              </mesh>
-            </>
+            <mesh key={`${index}-${i}`} geometry={convexGeometry}>
+              <meshStandardMaterial
+                key={index}
+                attach="material"
+                color="#009f4d"
+                opacity={0.2}
+                depthTest={false}
+                depthWrite={false}
+                transparent
+                polygonOffset
+                polygonOffsetFactor={-i}
+              />
+            </mesh>
           )
         })
       })}

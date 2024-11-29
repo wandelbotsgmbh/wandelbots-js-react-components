@@ -66,7 +66,7 @@ export const JoggingCartesianTab = observer(
       opts: JoggingCartesianOpts,
       increment: DiscreteIncrementOption,
     ) {
-      const jogger = await store.activateJogger()
+      const jogger = await store.activate()
 
       const tcpPose = jogger.motionStream.rapidlyChangingMotionState.tcp_pose
       const jointPosition =
@@ -99,7 +99,7 @@ export const JoggingCartesianTab = observer(
           })
         } finally {
           store.setCurrentIncrementJog(null)
-          await store.deactivateJogger()
+          await store.deactivate()
         }
       })
     }
@@ -107,7 +107,7 @@ export const JoggingCartesianTab = observer(
     async function startCartesianJogging(opts: JoggingCartesianOpts) {
       if (store.isLocked) return
 
-      const jogger = await store.activateJogger()
+      const jogger = await store.activate()
       if (store.activeDiscreteIncrement) {
         return runIncrementalCartesianJog(opts, store.activeDiscreteIncrement)
       }
@@ -134,7 +134,7 @@ export const JoggingCartesianTab = observer(
         return
       }
 
-      await store.deactivateJogger()
+      await store.deactivate()
     }
 
     const axisList = [

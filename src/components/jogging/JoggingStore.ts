@@ -188,7 +188,7 @@ export class JoggingStore {
     return countBy(this.coordSystems, (cs) => cs.name)
   }
 
-  async deactivateJogger() {
+  async deactivate() {
     const websocket = this.jogger.activeWebsocket
 
     this.jogger.setJoggingMode("increment")
@@ -199,7 +199,7 @@ export class JoggingStore {
   }
 
   /** Activate the jogger with current settings */
-  async activateJogger() {
+  async activate() {
     if (this.currentTab.id === "cartesian") {
       const cartesianJoggingOpts = {
         tcpId: this.selectedTcpId,
