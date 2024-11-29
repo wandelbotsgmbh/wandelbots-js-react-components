@@ -184,23 +184,28 @@ export const JoggingCartesianTab = observer(
           justifyContent="center"
           sx={{ flexGrow: "1" }}
         >
-          {/* Translate or rotate toggle */}
-          <JoggingToggleButtonGroup
-            value={store.selectedCartesianMotionType}
-            onChange={onMotionTypeChange}
-            exclusive
-            aria-label={t("Jogging.Cartesian.MotionType.lb")}
-            sx={{ justifyContent: "center" }}
+          <Stack
+            alignItems="center"
+            justifyContent="center"
+            gap="24px"
+            sx={{ flexGrow: 1 }}
           >
-            <ToggleButton value="translate">
-              {t("Jogging.Cartesian.Translation.bt")}
-            </ToggleButton>
-            <ToggleButton value="rotate">
-              {t("Jogging.Cartesian.Rotation.bt")}
-            </ToggleButton>
-          </JoggingToggleButtonGroup>
+            {/* Translate or rotate toggle */}
+            <JoggingToggleButtonGroup
+              value={store.selectedCartesianMotionType}
+              onChange={onMotionTypeChange}
+              exclusive
+              aria-label={t("Jogging.Cartesian.MotionType.lb")}
+              sx={{ justifyContent: "center" }}
+            >
+              <ToggleButton value="translate">
+                {t("Jogging.Cartesian.Translation.bt")}
+              </ToggleButton>
+              <ToggleButton value="rotate">
+                {t("Jogging.Cartesian.Rotation.bt")}
+              </ToggleButton>
+            </JoggingToggleButtonGroup>
 
-          <Stack alignItems="center" gap="24px" sx={{ flexGrow: 1 }}>
             {/* Cartesian translate jogging */}
             {store.selectedCartesianMotionType === "translate" &&
               axisList.map((axis) => (
