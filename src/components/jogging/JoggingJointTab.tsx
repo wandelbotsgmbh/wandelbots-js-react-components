@@ -13,6 +13,8 @@ export const JoggingJointTab = observer(
       joint: number
       direction: "-" | "+"
     }) {
+      await store.activate()
+
       await store.jogger.startJointRotation({
         joint: opts.joint,
         direction: opts.direction,
