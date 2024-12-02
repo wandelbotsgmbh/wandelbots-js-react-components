@@ -6,7 +6,6 @@ import { observer, useLocalObservable } from "mobx-react-lite"
 import { useEffect } from "react"
 import { externalizeComponent } from "../../externalizeComponent"
 import { LoadingCover } from "../LoadingCover"
-import { useReaction } from "../utils/hooks"
 import { JoggingCartesianTab } from "./JoggingCartesianTab"
 import { JoggingJointTab } from "./JoggingJointTab"
 import { JoggingStore } from "./JoggingStore"
@@ -121,38 +120,6 @@ const JoggingPanelInner = observer(
     children?: React.ReactNode
     childrenJoint?: React.ReactNode
   }) => {
-    // Jogger is only active as long as the tab is focused
-    useEffect(() => {
-      function deactivate() {
-        store.deactivate()
-      }
-
-      function activate() {
-        store.activate()
-      }
-
-      window.addEventListener("blur", deactivate)
-      window.addEventListener("focus", activate)
-
-      return () => {
-        window.removeEventListener("blur", deactivate)
-        window.removeEventListener("focus", activate)
-      }
-    })
-
-    // Update jogging mode on jogger based on user selections
-    useReaction(
-      () => [
-        store.currentTab.id,
-        store.selectedTcpId,
-        store.activeCoordSystemId,
-        store.activeDiscreteIncrement,
-      ],
-      () => {
-        if (store.activationState !== "inactive") store.activate()
-      },
-    )
-
     function renderTabContent() {
       if (store.currentTab.id === "cartesian") {
         return (

@@ -136,7 +136,7 @@ export const JoggingJointRotationControl = externalizeComponent(
           >
             <ChevronLeft
               sx={{
-                "pointer-events": "none",
+                pointerEvents: "none",
               }}
             />
           </IconButton>
@@ -231,7 +231,7 @@ export const JoggingJointRotationControl = externalizeComponent(
           >
             <ChevronRight
               sx={{
-                "pointer-events": "none",
+                pointerEvents: "none",
               }}
             />
           </IconButton>
