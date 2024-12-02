@@ -215,15 +215,6 @@ export class JoggingStore {
       this.jogger.setJoggingMode("joint")
     }
 
-    // if (this.jogger.activeWebsocket) {
-    //   try {
-    //     this.jogger.stop()
-    //     await this.jogger.activeWebsocket.nextMessage()
-    //   } catch (err) {
-    //     console.error(err)
-    //   }
-    // }
-
     return this.jogger
   }
 
