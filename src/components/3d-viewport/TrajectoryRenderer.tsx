@@ -1,5 +1,5 @@
 import { Line } from "@react-three/drei"
-import type { GetTrajectoryResponse } from "@wandelbots/wandelbots-api-client"
+import type { GetTrajectoryResponse } from "@wandelbots/wandelbots-js"
 import * as THREE from "three"
 
 export type TrajectoryRendererProps = {
