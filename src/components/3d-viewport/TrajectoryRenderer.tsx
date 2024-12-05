@@ -16,8 +16,8 @@ export function TrajectoryRenderer({
         if (point.tcp_pose) {
           return new THREE.Vector3(
             point.tcp_pose.position.x / 1000,
-            point.tcp_pose.position.y / 1000,
             point.tcp_pose.position.z / 1000,
+            -point.tcp_pose.position.y / 1000,
           )
         }
         return null
