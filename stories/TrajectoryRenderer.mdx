@@ -1,0 +1,51 @@
+import { Meta, Story } from '@storybook/blocks';
+import * as TrajectoryRenderer from './TrajectoryRenderer.stories';
+
+<Meta of={TrajectoryRenderer} />
+
+# Trajectory Renderer
+
+The `TrajectoryRenderer` component visualizes the planned trajectory of the robot.
+
+This component should be used with [wandelbots-js](https://github.com/wandelbotsgmbh/wandelbots-js). Pass the `GetTrajectoryResponse` from `NovaCellAPIClient.motion.getMotionTrajectory` to the component.
+If the Plan Motion or Plan Trajectory endpoint is used, an motion will be generated which afterwards can be fetched from the `listMotions` endpoint. That motion id can be used to fetch the trajectory.
+
+```tsx
+const motions = await apiClient.motion.listMotions()
+const trajectory = await apiClient.motion.getMotionTrajectory(
+    motions[0],
+    sampleTime,
+    responsesCoordinateSystem,
+  )
+  ...
+<TrajectoryRenderer trajectory={trajectory} />
+```
+
+If the motion is executed using Wandelscript and the `ProgramStateConnection` is used, the trajectory can be fetched from the `getLatestTrajectories` endpoint. A single Wandelscript can contain multiple motions. 
+The `getLatestTrajectories` endpoint returns the all the latest trajectories of the robot since the last call. If you call the endpoint directly after the motion is finished, you will get the trajectories of the last motion. 
+
+```tsx
+const [latestTrajectories, setLatestTrajectories] = useState<
+      GetTrajectoryResponse[]
+    >([])
+
+useEffect(() => {
+  autorun(() => {
+    if (store.executionState === "starting") {
+      setLatestTrajectories([])
+    }
+    if (store.executionState === "idle") {
+      getLatestTrajectories(wandelApp.nova.api).then(setLatestTrajectories)
+    }
+  })
+}, [])
+    
+...
+
+// in your render function
+{latestTrajectories.map((trajectory, index) => (
+  <TrajectoryRenderer key={index} trajectory={trajectory} />
+))}
+```
+
+<Story of={TrajectoryRenderer.TrajectoryRendererSt} />

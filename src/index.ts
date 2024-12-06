@@ -1,5 +1,6 @@
 export * from "./components/3d-viewport/PresetEnvironment"
 export * from "./components/3d-viewport/SafetyZonesRenderer"
+export * from "./components/3d-viewport/TrajectoryRenderer"
 export * from "./components/jogging/JoggingCartesianAxisControl"
 export * from "./components/jogging/JoggingJointRotationControl"
 export * from "./components/jogging/JoggingPanel"
