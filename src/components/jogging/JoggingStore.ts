@@ -340,19 +340,22 @@ export class JoggingStore {
     return (this.rotationVelocityDegPerSec * Math.PI) / 180
   }
 
-  get velocityInCurrentUnits() {
+  /** Selected velocity in mm/sec or deg/sec */
+  get velocityInDisplayUnits() {
     return this.currentMotionType === "translate"
       ? this.translationVelocityMmPerSec
       : this.rotationVelocityDegPerSec
   }
 
-  get minVelocityInCurrentUnits() {
+  /** Minimum selectable velocity in mm/sec or deg/sec */
+  get minVelocityInDisplayUnits() {
     return this.currentMotionType === "translate"
       ? this.minTranslationVelocityMmPerSec
       : this.minRotationVelocityDegPerSec
   }
 
-  get maxVelocityInCurrentUnits() {
+  /** Maximum selectable velocity in mm/sec or deg/sec */
+  get maxVelocityInDisplayUnits() {
     return this.currentMotionType === "translate"
       ? this.maxTranslationVelocityMmPerSec
       : this.maxRotationVelocityDegPerSec
