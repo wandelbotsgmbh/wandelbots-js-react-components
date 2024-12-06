@@ -83,7 +83,10 @@ export const JoggingCartesianTab = observer(
             currentTcpPose: tcpPose,
             currentJoints: jointPosition,
             coordSystemId: store.activeCoordSystemId,
-            velocityInRelevantUnits: store.velocityInCurrentUnits,
+            velocityInRelevantUnits:
+              store.selectedCartesianMotionType === "translate"
+                ? store.translationVelocityMmPerSec
+                : store.rotationVelocityRadsPerSec,
             axis: opts.axis,
             direction: opts.direction,
             motion:
