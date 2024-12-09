@@ -21,9 +21,9 @@ export const JoggingVelocitySlider = observer(
 
     return (
       <VelocitySlider
-        velocity={store.velocityInCurrentUnits}
-        min={store.minVelocityInCurrentUnits}
-        max={store.maxVelocityInCurrentUnits}
+        velocity={store.velocityInDisplayUnits}
+        min={store.minVelocityInDisplayUnits}
+        max={store.maxVelocityInDisplayUnits}
         onVelocityChange={store.setVelocityFromSlider}
         disabled={store.isLocked}
         renderValue={(value) => (
