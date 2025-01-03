@@ -31,9 +31,12 @@ export const generateRobotStories = async () => {
     const modelName = modelFile.split("/").pop()!.split(".")[0]!
     if (HIDDEN_ROBOTS.includes(modelName)) continue
 
+    // Standardize filename to valid JS variable name
+    const varName = modelName.replaceAll(/[^A-Za-z0-9_]/g, "_")
+
     modelCsfAdditions.push(dedent`
-      export const ${modelName} = robotStory("${modelName}")
-      ${modelName}.storyName = "${modelName}"
+      export const ${varName} = robotStory("${modelName}")
+      ${varName}.storyName = "${modelName}"
     `)
   }
 
