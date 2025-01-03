@@ -24,6 +24,7 @@ export const JoggingJointTab = observer(
 
     async function stopJointJogging() {
       await store.jogger.stop()
+      await store.deactivate()
     }
 
     return (
