@@ -277,7 +277,7 @@ export class JoggingStore {
       },
       {
         id: "joint",
-        label: "Joint",
+        label: "Joints",
       },
     ] as const
   }

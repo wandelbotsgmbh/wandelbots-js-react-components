@@ -10,7 +10,7 @@
   "Jogging.Joints.JointValues.lb": "Gelenkwerte",
   "Jogging.Increment.Continuous.dd": "Fortlaufend",
   "Jogging.Cartesian.Orientation.lb": "Orientierung",
-  "Jogging.JointLimitsReached.lb": "Joint-Limit für Joint {{jointNumbers}} erreicht",
-  "Jogging.Orientation.coordsys": "Base",
+  "Jogging.JointLimitsReached.lb": "Gelenkgrenzen für Gelenk {{jointNumbers}} erreicht",
+  "Jogging.Orientation.coordsys": "Base (Roboter)",
   "Jogging.Orientation.tool": "Tool"
 }
