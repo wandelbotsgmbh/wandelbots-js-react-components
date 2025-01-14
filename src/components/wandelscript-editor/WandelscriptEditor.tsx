@@ -1,5 +1,5 @@
 import type { Monaco } from "@monaco-editor/react"
-import { lazy, Suspense, useRef, useState } from "react"
+import { lazy, Suspense, useState } from "react"
 import type { BundledLanguage, BundledTheme, HighlighterGeneric } from "shiki"
 
 import { useTheme } from "@mui/material"
@@ -59,10 +59,6 @@ async function getShiki() {
 export const WandelscriptEditor = externalizeComponent(
   (props: WandelscriptEditorProps) => {
     const theme = useTheme()
-    const shikiHighlighterRef = useRef<HighlighterGeneric<
-      BundledLanguage,
-      BundledTheme
-    > | null>(null)
     const [activeShikiTheme, setActiveShikiTheme] =
       useState<BundledTheme>("dark-plus")
     const targetShikiTheme =
