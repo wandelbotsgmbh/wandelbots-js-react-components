@@ -48,7 +48,8 @@
   "devDependencies": {
     "@emotion/react": "^11.13.3",
     "@emotion/styled": "^11.13.0",
-    "@mui/material": "^5.16.7",
+    "@mui/icons-material": "^6.4.0",
+    "@mui/material": "^6.4.0",
     "@rollup/plugin-commonjs": "^28.0.1",
     "@rollup/plugin-json": "^6.1.0",
     "@rollup/plugin-node-resolve": "^15.3.0",
@@ -92,7 +93,7 @@
     "storybook-dark-mode": "^4.0.2",
     "storybook-preset-inline-svg": "^1.0.1",
     "ts-dedent": "^2.2.0",
-    "typescript": "^5.6.3",
+    "typescript": "^5.7.3",
     "unplugin": "^1.15.0",
     "vite": "^5.4.10",
     "vite-plugin-svgr": "^4.3.0",
@@ -102,7 +103,8 @@
   "peerDependencies": {
     "@emotion/react": "^11.11.1",
     "@emotion/styled": "^11.11.0",
-    "@mui/material": "^5",
+    "@mui/icons-material": "^6",
+    "@mui/material": "^6",
     "@react-spring/three": ">=9",
     "@react-three/drei": ">=9",
     "@react-three/fiber": ">=8",
@@ -118,8 +120,6 @@
   },
   "dependencies": {
     "@monaco-editor/react": "^4.6.0",
-    "@mui/icons-material": "^5.16.7",
-    "@mui/lab": "^5.0.0-alpha.173",
     "@shikijs/monaco": "^1.22.2",
     "@wandelbots/wandelbots-js": "^1.12.0",
     "i18next-browser-languagedetector": "^8.0.0",

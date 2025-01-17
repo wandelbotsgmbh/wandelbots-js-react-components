@@ -1,7 +1,8 @@
+import type { ToggleButtonGroupProps } from "@mui/material"
 import { styled, ToggleButtonGroup } from "@mui/material"
 
-export const JoggingToggleButtonGroup = styled(ToggleButtonGroup)(
-  ({ theme }) => ({
+export const JoggingToggleButtonGroup: React.ComponentType<ToggleButtonGroupProps> =
+  styled(ToggleButtonGroup)(({ theme }) => ({
     "&.MuiToggleButtonGroup-root": {
       background: theme.palette.backgroundPaperElevation?.[8],
       borderRadius: "8px",
@@ -21,5 +22,4 @@ export const JoggingToggleButtonGroup = styled(ToggleButtonGroup)(
         },
       },
     },
-  }),
-)
+  }))
