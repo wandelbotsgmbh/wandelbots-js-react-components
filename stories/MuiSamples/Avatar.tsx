@@ -103,7 +103,7 @@ export default function AvatarExample() {
       </Box>
       <Box component="div" sx={avatarSetStyle}>
         {/* @ts-expect-error Union type complexity issue in MUI v6 */}
-        <AvatarGroup max={4}>
+        <AvatarGroup max={4} someNonexistentProp>
           <Avatar
             alt="Remy Sharp"
             src="https://material-ui.com/static/images/avatar/1.jpg"
