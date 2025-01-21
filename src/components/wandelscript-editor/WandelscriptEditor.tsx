@@ -1,6 +1,11 @@
 import type { Monaco } from "@monaco-editor/react"
 import { lazy, Suspense, useState } from "react"
-import type { BundledLanguage, BundledTheme, HighlighterGeneric } from "shiki"
+import type {
+  BundledLanguage,
+  BundledTheme,
+  HighlighterGeneric,
+  ShikiInternal,
+} from "shiki"
 
 import { useTheme } from "@mui/material"
 import type { editor } from "monaco-editor"
@@ -48,7 +53,10 @@ async function getShiki() {
 
     preparedShiki = {
       shiki,
-      shikiToMonaco,
+      shikiToMonaco: shikiToMonaco as unknown as (
+        shiki: ShikiInternal<any, any>,
+        monaco: typeof import("monaco-editor"),
+      ) => void,
     }
   }
 
