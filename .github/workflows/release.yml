@@ -106,16 +106,21 @@ jobs:
         env:
           LATEST_VERSION: ${{ env.LATEST_VERSION }}
         run: |
+          # Clean base version (remove v prefix)
+          CLEAN_VERSION=$(echo $LATEST_VERSION | sed 's/^v//')
+          
           # Extract the pull request number
           PR_NUMBER=$(echo $GITHUB_REF | sed 's/refs\/pull\/\([0-9]*\)\/.*/\1/')
-          # Extract the branch name
-          BRANCH_NAME=$(echo $GITHUB_HEAD_REF | sed 's/\//-/g')
+          # Extract the branch name and clean it
+          BRANCH_NAME=$(echo $GITHUB_HEAD_REF | sed 's/\//-/g' | sed 's/[^a-zA-Z0-9.-]/-/g')
           # Get the short commit SHA
           COMMIT_SHA=$(echo $GITHUB_SHA | cut -c1-7)
-          # Create a snapshot version with branch name, PR number, and commit SHA
-          SNAPSHOT_VERSION="${LATEST_VERSION}-pr.${BRANCH_NAME}.${PR_NUMBER}.${COMMIT_SHA}"
+          # Create a snapshot version with cleaned components
+          SNAPSHOT_VERSION="${CLEAN_VERSION}-pr.${BRANCH_NAME}.${PR_NUMBER}.${COMMIT_SHA}"
+          # Clean final version string
+          FINAL_VERSION=$(echo $SNAPSHOT_VERSION | sed 's/[^a-zA-Z0-9.-]/-/g')
           # Update the package.json with the new version
-          jq --arg version "$SNAPSHOT_VERSION" '.version = $version' package.json > package.tmp.json && mv package.tmp.json package.json
+          jq --arg version "$FINAL_VERSION" '.version = $version' package.json > package.tmp.json && mv package.tmp.json package.json
       - name: Publish snapshot to npm
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
