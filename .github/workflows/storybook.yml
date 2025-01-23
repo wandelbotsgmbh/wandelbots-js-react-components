@@ -74,6 +74,8 @@ jobs:
       - build_matrix
       - build
     steps:
+      - name: Debug Branch Info
+        run: git branch -r
       - uses: actions/checkout@v4
         with:
           ref: ${{ matrix.branch }}
