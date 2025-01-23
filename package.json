@@ -61,7 +61,7 @@
     "@storybook/blocks": "^8.4.2",
     "@storybook/react": "^8.5.1",
     "@storybook/react-vite": "^8.4.2",
-    "@storybook/test": "^8.4.2",
+    "@storybook/test": "^8.5.1",
     "@storybook/test-runner": "^0.21.0",
     "@storybook/types": "^8.4.2",
     "@svgr/rollup": "^8.1.0",
@@ -122,7 +122,7 @@
   },
   "dependencies": {
     "@monaco-editor/react": "^4.6.0",
-    "@shikijs/monaco": "^1.22.2",
+    "@shikijs/monaco": "^2.1.0",
     "i18next-browser-languagedetector": "^8.0.0",
     "lodash-es": "^4.17.21",
     "mobx": "^6.13.5",
