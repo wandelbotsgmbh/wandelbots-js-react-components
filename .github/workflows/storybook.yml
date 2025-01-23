@@ -59,7 +59,7 @@ jobs:
       - name: Sanitize branch name
         id: sanitize
         run: echo "SANITIZED_BRANCH=$(echo ${{ matrix.branch }} | sed 's/\//-/g')" >> $GITHUB_ENV
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: ${{ env.SANITIZED_BRANCH }}
           path: storybook-static/
