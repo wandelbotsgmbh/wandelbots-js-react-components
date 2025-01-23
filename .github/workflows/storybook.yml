@@ -46,6 +46,8 @@ jobs:
         branch: ${{ fromJSON(needs.build_matrix.outputs.json_branches) }}
     continue-on-error: true
     steps:
+      - name: Debug Branch Info
+        run: git branch -r
       - uses: actions/checkout@v4
         with:
           ref: ${{ matrix.branch }}
@@ -74,11 +76,8 @@ jobs:
       - build_matrix
       - build
     steps:
-      - name: Debug Branch Info
-        run: git branch -r
       - uses: actions/checkout@v4
         with:
-          ref: ${{ matrix.branch }}
           fetch-depth: 0
       - name: Setup Pages
         uses: actions/configure-pages@v5
