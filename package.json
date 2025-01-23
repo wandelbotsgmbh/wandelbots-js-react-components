@@ -70,7 +70,7 @@
     "@types/three": "^0.172.0",
     "@vitejs/plugin-react": "^4.3.3",
     "add": "^2.0.6",
-    "glob": "^11.0.0",
+    "glob": "^11.0.1",
     "http-server": "^14.1.1",
     "husky": "^9.1.7",
     "jest-simple-dot-reporter": "^1.0.5",
