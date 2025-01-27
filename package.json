@@ -50,7 +50,7 @@
     "@emotion/styled": "^11.13.0",
     "@mui/icons-material": "^6.4.1",
     "@mui/material": "^6.4.0",
-    "@rollup/plugin-commonjs": "^28.0.1",
+    "@rollup/plugin-commonjs": "^28.0.2",
     "@rollup/plugin-json": "^6.1.0",
     "@rollup/plugin-node-resolve": "^15.3.0",
     "@rollup/plugin-terser": "^0.4.4",
