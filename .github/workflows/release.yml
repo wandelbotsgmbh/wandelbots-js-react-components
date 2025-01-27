@@ -121,6 +121,18 @@ jobs:
           FINAL_VERSION=$(echo $SNAPSHOT_VERSION | sed 's/[^a-zA-Z0-9.-]/-/g')
           # Update the package.json with the new version
           jq --arg version "$FINAL_VERSION" '.version = $version' package.json > package.tmp.json && mv package.tmp.json package.json
+      - name: Configure npm
+        run: |
+          echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
+          echo "registry=https://registry.npmjs.org/" >> ~/.npmrc
+          npm config set access public
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          
+      - name: Verify npm authentication
+        run: npm whoami
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
       - name: Publish snapshot to npm
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
