@@ -46,7 +46,7 @@
   "author": "Wandelbots",
   "license": "Apache-2.0",
   "devDependencies": {
-    "@emotion/react": "^11.13.3",
+    "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.13.0",
     "@mui/icons-material": "^6.4.1",
     "@mui/material": "^6.4.0",
