@@ -1,6 +1,11 @@
 import type { Monaco } from "@monaco-editor/react"
-import { lazy, Suspense, useRef, useState } from "react"
-import type { BundledLanguage, BundledTheme, HighlighterGeneric } from "shiki"
+import { lazy, Suspense, useState } from "react"
+import type {
+  BundledLanguage,
+  BundledTheme,
+  HighlighterGeneric,
+  ShikiInternal,
+} from "shiki"
 
 import { useTheme } from "@mui/material"
 import type { editor } from "monaco-editor"
@@ -24,25 +29,50 @@ type WandelscriptEditorProps = {
 
 const Editor = lazy(() => import("@monaco-editor/react"))
 
+let preparedShiki: {
+  shiki: HighlighterGeneric<BundledLanguage, BundledTheme>
+  shikiToMonaco: (
+    shiki: HighlighterGeneric<BundledLanguage, BundledTheme>,
+    monaco: Monaco,
+  ) => void
+} | null = null
+
+async function getShiki() {
+  if (!preparedShiki) {
+    const [{ createHighlighter }, { shikiToMonaco }] = await Promise.all([
+      import("shiki"),
+      import("@shikijs/monaco"),
+    ])
+
+    const shiki = await createHighlighter({
+      // Our textmate grammar doesn't quite conform to the expected type
+      // here; I'm not sure what the missing properties mean exactly
+      langs: [wandelscriptTextmateGrammar as any],
+      themes: ["dark-plus", "light-plus"],
+    })
+
+    preparedShiki = {
+      shiki,
+      shikiToMonaco: shikiToMonaco as unknown as (
+        shiki: ShikiInternal<any, any>,
+        monaco: typeof import("monaco-editor"),
+      ) => void,
+    }
+  }
+
+  return preparedShiki
+}
+
 /** A Monaco (VSCode-style) embedded code editor with Wandelscript syntax highlighting */
 export const WandelscriptEditor = externalizeComponent(
   (props: WandelscriptEditorProps) => {
     const theme = useTheme()
-    const shikiHighlighterRef = useRef<HighlighterGeneric<
-      BundledLanguage,
-      BundledTheme
-    > | null>(null)
     const [activeShikiTheme, setActiveShikiTheme] =
       useState<BundledTheme>("dark-plus")
     const targetShikiTheme =
       theme.palette.mode === "dark" ? "dark-plus" : "light-plus"
 
     async function setupEditor(monaco: Monaco) {
-      const [{ createHighlighter }, { shikiToMonaco }] = await Promise.all([
-        import("shiki"),
-        import("@shikijs/monaco"),
-      ])
-
       // Register and configure the Wandelscript language
       monaco.languages.register({ id: "wandelscript" })
 
@@ -64,19 +94,11 @@ export const WandelscriptEditor = externalizeComponent(
         ],
       })
 
+      const { shiki, shikiToMonaco } = await getShiki()
+
       // Monaco doesn't support TextMate grammar config directly, so we
       // use Shiki as an intermediary
-
-      if (!shikiHighlighterRef.current) {
-        shikiHighlighterRef.current = await createHighlighter({
-          // Our textmate grammar doesn't quite conform to the expected type
-          // here; I'm not sure what the missing properties mean exactly
-          langs: [wandelscriptTextmateGrammar as any],
-          themes: ["dark-plus", "light-plus"],
-        })
-      }
-
-      shikiToMonaco(shikiHighlighterRef.current, monaco)
+      shikiToMonaco(shiki, monaco)
 
       // Override the generated shiki theme to use shiki syntax highlighting
       // but vscode colors

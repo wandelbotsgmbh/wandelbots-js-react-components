@@ -1,0 +1,157 @@
+{
+  "dof": 6,
+  "dhParameters": [
+    {
+      "a": "50",
+      "d": "544",
+      "alpha": "-1.5707963267948966",
+      "theta": "0",
+      "reverseRotationDirection": "0"
+    },
+    {
+      "a": "425",
+      "d": "0",
+      "alpha": "0",
+      "theta": "-1.5707963267948966",
+      "reverseRotationDirection": "0"
+    },
+    {
+      "a": "40",
+      "d": "0",
+      "alpha": "-1.5707963267948966",
+      "theta": "0",
+      "reverseRotationDirection": "0"
+    },
+    {
+      "a": "0",
+      "d": "425",
+      "alpha": "1.5707963267948966",
+      "theta": "0",
+      "reverseRotationDirection": "0"
+    },
+    {
+      "a": "0",
+      "d": "0",
+      "alpha": "-1.5707963267948966",
+      "theta": "0",
+      "reverseRotationDirection": "0"
+    },
+    {
+      "a": "0",
+      "d": "90",
+      "alpha": "0",
+      "theta": "-3.1415926535897931",
+      "reverseRotationDirection": "0"
+    }
+  ],
+  "limits": {
+    "joints": [
+      {
+        "position": {
+          "lower": "-3.14159265358979",
+          "upper": "3.14159265358979"
+        },
+        "torque": "0.64000000000000001"
+      },
+      {
+        "position": {
+          "lower": "-1.658062789394613",
+          "upper": "2.70526034059121"
+        },
+        "torque": "0.64000000000000001"
+      },
+      {
+        "position": {
+          "lower": "-3.66519142918809",
+          "upper": "1.2042771838760874"
+        },
+        "torque": "0.64000000000000001"
+      },
+      {
+        "position": {
+          "lower": "-4.01425727958696",
+          "upper": "4.01425727958696"
+        },
+        "torque": "0.64000000000000001"
+      },
+      {
+        "position": {
+          "lower": "-2.26892802759263",
+          "upper": "2.26892802759263"
+        },
+        "torque": "0.64000000000000001"
+      },
+      {
+        "position": {
+          "lower": "-6.98131700797732",
+          "upper": "6.98131700797732"
+        },
+        "torque": "0.64000000000000001"
+      }
+    ]
+  },
+  "operationLimits": {
+    "AUTO": {
+      "joints": [
+        {
+          "velocity": "4.8869219055841228",
+          "acceleration": "35.186"
+        },
+        {
+          "velocity": "3.9793506945470714",
+          "acceleration": "29.322"
+        },
+        {
+          "velocity": "5.7595865315812876",
+          "acceleration": "36.652"
+        },
+        {
+          "velocity": "8.7266462599716478",
+          "acceleration": "48.869"
+        },
+        {
+          "velocity": "7.2431163957764677",
+          "acceleration": "49.480"
+        },
+        {
+          "velocity": "12.5663706143591729",
+          "acceleration": "10.471975511965978"
+        }
+      ],
+      "tcp": {
+        "velocity": "8900"
+      }
+    },
+    "MANUAL_T1": {
+      "joints": [
+        {
+          "velocity": "0.3000500236858572",
+          "acceleration": "2.1004"
+        },
+        {
+          "velocity": "0.29077708937001129",
+          "acceleration": "2.0354"
+        },
+        {
+          "velocity": "0.30941476232035792",
+          "acceleration": "2.1659"
+        },
+        {
+          "velocity": "0.39422659386006959",
+          "acceleration": "2.7596"
+        },
+        {
+          "velocity": "0.42118582215099998",
+          "acceleration": "2.9483"
+        },
+        {
+          "velocity": "0.52159705747918661",
+          "acceleration": "3.6512"
+        }
+      ],
+      "tcp": {
+        "velocity": "250"
+      }
+    }
+  }
+}
