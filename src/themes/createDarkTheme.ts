@@ -176,6 +176,14 @@ export function createDarkTheme(): Theme {
           },
         ],
       },
+      MuiDrawer: {
+        styleOverrides: {
+          paper: {
+            border: "none",
+            boxShadow: "4px 0 8px -4px rgba(0, 0, 0, 0.3)",
+          },
+        },
+      },
       MuiFab: {
         styleOverrides: {
           root: {
