@@ -48,12 +48,6 @@ export function parseRobotModel(gltf: GLTF, filename: string): { gltf: GLTF } {
   let flange: Object3D | undefined
   const joints: Object3D[] = []
 
-  function isSixJoints(
-    joints: Object3D[],
-  ): joints is [Object3D, Object3D, Object3D, Object3D, Object3D, Object3D] {
-    return joints.length === 6
-  }
-
   function parseNode(node: Object3D) {
     if (isFlange(node)) {
       if (flange) {
@@ -73,12 +67,6 @@ export function parseRobotModel(gltf: GLTF, filename: string): { gltf: GLTF } {
   }
 
   parseNode(gltf.scene)
-
-  if (!isSixJoints(joints)) {
-    throw Error(
-      `Expected to find 6 joint groups in robot model ${filename} with names _J01, _J02 etc, found ${joints.length}. Only 6-joint robot models are currently supported.`,
-    )
-  }
 
   if (!flange) {
     throw Error(
