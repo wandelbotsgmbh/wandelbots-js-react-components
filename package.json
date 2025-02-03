@@ -126,7 +126,7 @@
     "@shikijs/monaco": "^2.1.0",
     "i18next-browser-languagedetector": "^8.0.0",
     "lodash-es": "^4.17.21",
-    "mobx": "^6.13.5",
+    "mobx": "^6.13.6",
     "mobx-react-lite": "^4.0.7",
     "react-error-boundary": "^5.0.0",
     "react-i18next": "^15.4.0",
