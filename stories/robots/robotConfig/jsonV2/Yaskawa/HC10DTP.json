@@ -1,0 +1,109 @@
+{
+  "dof": 6,
+  "dhParameters": [
+    {
+      "a": "0",
+      "d": "0",
+      "alpha": "1.5707963267948966",
+      "theta": "0",
+      "reverseRotationDirection": "0"
+    },
+    {
+      "a": "700",
+      "d": "0",
+      "alpha": "0",
+      "theta": "1.5707963267948966",
+      "reverseRotationDirection": "1"
+    },
+    {
+      "a": "0",
+      "d": "0",
+      "alpha": "-1.5707963267948966",
+      "theta": "0",
+      "reverseRotationDirection": "0"
+    },
+    {
+      "a": "0",
+      "d": "-500",
+      "alpha": "1.5707963267948966",
+      "theta": "3.1415926535897931",
+      "reverseRotationDirection": "0"
+    },
+    {
+      "a": "0",
+      "d": "162",
+      "alpha": "-1.5707963267948966",
+      "theta": "0",
+      "reverseRotationDirection": "1"
+    },
+    {
+      "a": "0",
+      "d": "-170",
+      "alpha": "3.1415926535897931",
+      "theta": "3.1415926535897931",
+      "reverseRotationDirection": "0"
+    }
+  ],
+  "limits": {
+    "joints": [
+      {
+        "position": {
+          "lower": "-3.66519142918809",
+          "upper": "3.66519142918809"
+        },
+        "velocity": "2.26892802759263",
+        "acceleration": "15.8824961931484"
+      },
+      {
+        "position": {
+          "lower": "-3.14159265358979",
+          "upper": "3.14159265358979"
+        },
+        "velocity": "2.26892802759263",
+        "acceleration": "15.8824961931484"
+      },
+      {
+        "position": {
+          "lower": "-5.06145483078356",
+          "upper": "5.06145483078356"
+        },
+        "velocity": "3.14159265358979",
+        "acceleration": "21.9911485751286"
+      },
+      {
+        "position": {
+          "lower": "-3.66519142918809",
+          "upper": "3.66519142918809"
+        },
+        "velocity": "3.14159265358979",
+        "acceleration": "21.9911485751286"
+      },
+      {
+        "position": {
+          "lower": "-3.14159265358979",
+          "upper": "3.14159265358979"
+        },
+        "velocity": "4.36332312998582",
+        "acceleration": "30.5432619099008"
+      },
+      {
+        "position": {
+          "lower": "-3.66519142918809",
+          "upper": "3.66519142918809"
+        },
+        "velocity": "4.36332312998582",
+        "acceleration": "30.5432619099008"
+      }
+    ],
+    "tcp": {
+      "velocity": "1500"
+    }
+  },
+  "operationLimits": {
+    "MANUAL": {
+      "tcp": {
+        "velocity": "250"
+      }
+    }
+  }
+}
