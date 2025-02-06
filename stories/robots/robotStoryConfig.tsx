@@ -30,7 +30,7 @@ export async function getDHParams(
     d: parseFloat(json.d),
     alpha: parseFloat(json.alpha),
     theta: parseFloat(json.theta),
-    reverseRotationDirection: json.reverseRotationDirection === "1",
+    reverse_rotation_direction: json.reverseRotationDirection === "1",
   }))
 }
 
