@@ -47,7 +47,8 @@ export const JoggingJointLimitDetector = ({
       sx={{
         margin: "0.5rem 1rem",
         textAlign: "center",
-        visibility: jointLimitReachedIndices.length ? "visible" : "collapse",
+        minHeight: "1.5rem",
+        visibility: jointLimitReachedIndices.length ? "visible" : "hidden",
       }}
     >
       {t("Jogging.JointLimitsReached.lb", {
