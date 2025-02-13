@@ -38,9 +38,6 @@ export const JoggingJointLimitDetector = ({
     if (limitReached) jointLimitReachedIndices.push(index)
   }
 
-  if (jointLimitReachedIndices.length === 0) {
-    return null
-  }
   return (
     <Typography
       color="error"
