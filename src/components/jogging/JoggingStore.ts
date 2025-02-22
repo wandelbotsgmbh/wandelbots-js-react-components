@@ -130,18 +130,6 @@ export class JoggingStore {
         ),
       ])
 
-    // Setting mode control makes jogging startup slightly faster
-    // on physical robots
-    // https://wandelbots.slack.com/archives/C06VA4J59PF/p1725523765976109?thread_ts=1725464963.859559&cid=C06VA4J59PF
-    try {
-      await jogger.nova.api.controller.setDefaultMode(
-        jogger.motionStream.controllerId,
-        "MODE_CONTROL",
-      )
-    } catch (err) {
-      console.error(err)
-    }
-
     return new JoggingStore(
       jogger,
       motionGroupSpec,
