@@ -108,12 +108,12 @@ jobs:
         run: |
           # Create directory for uncompressed package
           mkdir -p no-draco-package
-          cp -r * no-draco-package/ 2>/dev/null || true
+          cp -r * no-draco-package/
           cd no-draco-package
           
           # Replace models with uncompressed versions
-          rm -rf dist/public/models/*.glb
-          mv ../no-draco-models/*.glb dist/public/models/
+          rm -rf public/models/*.glb
+          mv ../no-draco-models/*.glb public/models/
           
       - name: Release no-draco version
         working-directory: no-draco-package
