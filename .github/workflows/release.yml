@@ -106,9 +106,10 @@ jobs:
 
       - name: Prepare no-draco package
         run: |
-          ls
-          rm -rf public/models/*.glb
-          mv no-draco-models/*.glb public/models/
+          # Create release asset archive
+          cd no-draco-models
+          zip ../no-draco-models.zip *.glb
+          cd ..
           
       - name: Release
         env:
