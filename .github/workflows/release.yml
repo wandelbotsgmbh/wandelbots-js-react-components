@@ -98,12 +98,6 @@ jobs:
         with:
           name: build-artifacts
           path: dist/
-      - name: Release
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: npx semantic-release
-      
       - name: Download uncompressed models
         uses: actions/download-artifact@v4
         with:
@@ -121,9 +115,6 @@ jobs:
           rm -rf public/models/*.glb
           mv ../no-draco-models/*.glb public/models/
           
-          # Update package.json for no-draco version
-          jq '.name = .name + "-no-draco"' package.json > tmp.json && mv tmp.json package.json
-
       - name: Release no-draco version
         working-directory: no-draco-package
         env:
