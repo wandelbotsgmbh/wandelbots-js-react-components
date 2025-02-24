@@ -106,11 +106,11 @@ jobs:
 
       - name: Prepare no-draco package
         run: |
+          ls
           rm -rf public/models/*.glb
           mv no-draco-models/*.glb public/models/
           
-      - name: Release no-draco version
-        working-directory: no-draco-package
+      - name: Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
