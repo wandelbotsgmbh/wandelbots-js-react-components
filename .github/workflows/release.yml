@@ -61,7 +61,10 @@ jobs:
               filename=$(basename "$file")
               echo "Processing $filename..."
               # Remove Draco compression and convert to unlit
-              gltf-transform dedup unlit draco "$file" "no-draco-models/$filename"
+              # Chain the transformations using pipes
+              gltf-transform dedup "$file" temp1.glb && \
+              gltf-transform unlit temp1.glb "no-draco-models/$filename"
+              rm temp1.glb
             fi
           done
       - name: Upload uncompressed models
