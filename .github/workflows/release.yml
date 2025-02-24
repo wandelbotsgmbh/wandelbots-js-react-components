@@ -112,8 +112,8 @@ jobs:
           cd no-draco-package
           
           # Replace models with uncompressed versions
-          rm -rf public/models/*.glb
-          mv ../no-draco-models/*.glb public/models/
+          rm -rf dist/public/models/*.glb
+          mv ../no-draco-models/*.glb dist/public/models/
           
       - name: Release no-draco version
         working-directory: no-draco-package
