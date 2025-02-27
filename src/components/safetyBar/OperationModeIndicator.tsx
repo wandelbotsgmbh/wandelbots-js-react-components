@@ -1,14 +1,14 @@
 import { useTheme } from "@mui/material"
+import type { RobotControllerStateOperationModeEnum } from "@wandelbots/wandelbots-js"
 import { observer } from "mobx-react-lite"
 import { Trans, useTranslation } from "react-i18next"
 import OperationModeAutomaticIcon from "./icons/operation-mode-automatic.svg"
 import OperationModeErrorIcon from "./icons/operation-mode-error.svg"
 import OperationModeManualIcon from "./icons/operation-mode-manual.svg"
 import { IndicatorWithExplanation } from "./IndicatorWithExplanation"
-import type { OperationMode } from "./SafetyBar"
 
 interface OperationModeIndicatorProps {
-  operationMode: OperationMode
+  operationMode: RobotControllerStateOperationModeEnum
 }
 
 export const OperationModeIndicator = observer(

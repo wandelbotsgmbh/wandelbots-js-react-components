@@ -1,4 +1,5 @@
 import { useTheme } from "@mui/material"
+import type { RobotControllerStateSafetyStateEnum } from "@wandelbots/wandelbots-js"
 import { observer } from "mobx-react-lite"
 import { Trans, useTranslation } from "react-i18next"
 import { assertUnreachable } from "../utils/errorHandling"
@@ -8,10 +9,9 @@ import SafetyStateManualActionRequiredIcon from "./icons/safety-state-manual-act
 import SafetyStateNormalIcon from "./icons/safety-state-normal.svg"
 import SafetyStateStopIcon from "./icons/safety-state-stop.svg"
 import { IndicatorWithExplanation } from "./IndicatorWithExplanation"
-import type { SafetyState } from "./SafetyBar"
 
 interface SafetyStateIndicatorProps {
-  safetyState: SafetyState
+  safetyState: RobotControllerStateSafetyStateEnum
 }
 
 export const SafetyStateIndicator = observer(
