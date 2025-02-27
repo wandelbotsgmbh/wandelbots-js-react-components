@@ -1,6 +1,6 @@
 {
   "name": "@wandelbots/wandelbots-js-react-components",
-  "version": "0.0.0-semantically-released",
+  "version": "3.0.0",
   "description": "React UI toolkit for building applications on top of the Wandelbots platform",
   "type": "module",
   "sideEffects": false,
