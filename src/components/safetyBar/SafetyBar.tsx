@@ -1,5 +1,6 @@
 import { Divider, Stack } from "@mui/material"
 import { observer } from "mobx-react-lite"
+import { externalizeComponent } from "../../externalizeComponent"
 import { ControllerTypeIndicator } from "./ControllerTypeIndicator"
 import { OperationModeIndicator } from "./OperationModeIndicator"
 import { SafetyStateIndicator } from "./SafetyStateIndicator"
@@ -35,26 +36,28 @@ export interface SafetyBarProps {
   safetyState: SafetyState
 }
 
-export const SafetyBar = observer((props: SafetyBarProps) => {
-  return (
-    <Stack
-      direction="row"
-      gap="8px"
-      alignItems="center"
-      sx={{ height: "24px" }}
-    >
-      <SafetyStateIndicator safetyState={props.safetyState} />
+export const SafetyBar = externalizeComponent(
+  observer((props: SafetyBarProps) => {
+    return (
+      <Stack
+        direction="row"
+        gap="8px"
+        alignItems="center"
+        sx={{ height: "24px" }}
+      >
+        <SafetyStateIndicator safetyState={props.safetyState} />
 
-      <Divider orientation="vertical" flexItem />
+        <Divider orientation="vertical" flexItem />
 
-      <OperationModeIndicator operationMode={props.operationMode} />
+        <OperationModeIndicator operationMode={props.operationMode} />
 
-      <Divider orientation="vertical" flexItem />
+        <Divider orientation="vertical" flexItem />
 
-      <ControllerTypeIndicator
-        isVirtual={props.isVirtual}
-        motionGroupId={props.motionGroupId}
-      />
-    </Stack>
-  )
-})
+        <ControllerTypeIndicator
+          isVirtual={props.isVirtual}
+          motionGroupId={props.motionGroupId}
+        />
+      </Stack>
+    )
+  }),
+)

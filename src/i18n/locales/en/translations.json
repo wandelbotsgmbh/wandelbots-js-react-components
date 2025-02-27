@@ -14,7 +14,6 @@
   "Jogging.JointLimitsReached.lb": "Joint limit reached for joint {{jointNumbers}}",
   "Jogging.Orientation.coordsys": "Base",
   "Jogging.Orientation.tool": "Tool",
-
   "SafetyBar.ActivationToggle.Activate.bt": "Activate",
   "SafetyBar.ActivationToggle.Activated.bt": "Activated",
   "SafetyBar.ActivationToggle.Activating.bt": "Activating",
