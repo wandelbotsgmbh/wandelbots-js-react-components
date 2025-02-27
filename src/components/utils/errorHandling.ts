@@ -17,6 +17,10 @@ export function makeShortErrorMessage(err: unknown) {
   }
 }
 
+export function assertUnreachable(x: never, msg: string): never {
+  throw new Error(msg + ` ${JSON.stringify(x)}`)
+}
+
 export function makeErrorMessage(err: unknown) {
   if (err instanceof AxiosError && err.code === "ERR_NETWORK") {
     return "Failed to connect to the server. Please check your internet connection."
