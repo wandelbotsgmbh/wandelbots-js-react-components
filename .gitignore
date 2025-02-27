@@ -3,7 +3,7 @@
 node_modules
 tsconfig.tsbuildinfo
 *.tgz
-dist
+#dist
 tmp
 storybook-static
 
