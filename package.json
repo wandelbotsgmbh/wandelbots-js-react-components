@@ -100,10 +100,9 @@
     "vite-plugin-svgr": "^4.3.0",
     "vitest": "^3.0.7",
     "wait-on": "^8.0.2",
-    "@wandelbots/wandelbots-js": "^1.16.0"
+    "@wandelbots/wandelbots-js": "^1.17.0"
   },
   "peerDependencies": {
-    "@wandelbots/wandelbots-js": "1.16.0-pr.feature-ADX-406-add-safety-bar-component.63.fe83de8",
     "@emotion/react": "^11.11.1",
     "@emotion/styled": "^11.11.0",
     "@mui/icons-material": "^6",
