@@ -30,7 +30,7 @@
     "ci:test:built": "run-p --race ci:test:server ci:test:runner",
     "ci:test:server": "http-server storybook-static --port 9009 --silent",
     "ci:test:runner": "wait-on tcp:127.0.0.1:9009 && test-storybook --url http://127.0.0.1:9009 --index-json --browsers chromium",
-    "build": "rimraf dist && vite build && tsc --declaration --emitDeclarationOnly",
+    "build": "rimraf dist && vite build",
     "build-storybook": "storybook build"
   },
   "repository": {
