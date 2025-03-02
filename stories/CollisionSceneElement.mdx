@@ -1,0 +1,49 @@
+import { Meta, Story } from '@storybook/blocks';
+import * as CollisionSceneElement from './CollisionSceneElement.stories';
+
+<Meta of={CollisionSceneElement} />
+
+# Collision Scene Element
+
+The `CollisionSceneElement` component visualizes a collision scene which can be created and fetched via the collision scene API endpoint.
+
+This component should be used with [wandelbots-js](https://github.com/wandelbotsgmbh/wandelbots-js). Pass the `scene` from the `Get Scene API endpoint` to the component.
+
+```tsx
+const rapidlyChangingMotionState: MotionGroupStateResponse = {
+    state: {
+      controller: "",
+      joint_limit_reached: { limit_reached: [] },
+      joint_position: { joints: [1, 1, 1, 1, 1, 0] },
+      joint_current: { joints: [0, 0, 0, 0, 0, 0] },
+      joint_velocity: { joints: [0, 0, 0, 0, 0, 0] },
+      motion_group: "",
+      tcp_pose: {
+        position: { x: 0, y: 0, z: 0 },
+        orientation: { x: 0, y: 0, z: 0 },
+        tcp: "",
+      },
+      velocity: {},
+    },
+  }
+
+return (
+<CollisionSceneElement
+  scene={scene}
+  meshChildrenProvider={(colliderKey, collider) => (
+    <meshStandardMaterial
+      color={
+        colliderKey === "test/convex-hull"
+          ? theme.palette.tertiary.main
+          : theme.palette.primary.main
+      }
+      opacity={0.5}
+      transparent
+    />
+  )}
+  rapidlyChangingMotionStates={{ "test/robot": rapidlyChangingMotionState }}
+/>)
+```
+
+<Story of={CollisionSceneElement.CollisionSceneElementSt} />
+
