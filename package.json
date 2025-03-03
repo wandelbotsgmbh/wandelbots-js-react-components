@@ -57,7 +57,7 @@
     "@rollup/plugin-typescript": "^12.1.2",
     "@storybook/addon-docs": "^8.6.2",
     "@storybook/addon-essentials": "^8.6.2",
-    "@storybook/addon-interactions": "^8.6.2",
+    "@storybook/addon-interactions": "^8.6.3",
     "@storybook/blocks": "^8.6.2",
     "@storybook/react": "^8.6.2",
     "@storybook/csf-tools": "^8.6.2",
