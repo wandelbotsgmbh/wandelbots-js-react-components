@@ -4,10 +4,14 @@ import type {
   CollisionScene,
   MotionGroupStateResponse,
 } from "@wandelbots/wandelbots-js"
-import { Vector3 } from "three"
+import * as THREE from "three"
 import { Setup } from "../src/Setup"
 import CollisionSceneElement from "../src/components/3d-viewport/collider/CollisionScene"
-import { DEMO_CONVEX_HULL } from "./convexHull"
+import {
+  DEMO_CONVEX_HULL,
+  UR5E_DH_PARAMETERS,
+  UR5E_LINK_CHAIN,
+} from "./convexHull"
 
 export default {
   tags: ["!dev"],
@@ -24,7 +28,7 @@ export default {
           alignItems: "center",
         }}
       >
-        <Setup cameraPosition={new Vector3(0, 2, 5)}>
+        <Setup cameraPosition={new THREE.Vector3(0, 2, 5)}>
           <group position={[0, 0, 0]}>
             <Story />
           </group>
@@ -117,83 +121,8 @@ function CollisionSceneElementScene(
       },
     },
     motion_groups: {
-      "test/robot": {
-        link_chain: [
-          {
-            link_0_sphere: {
-              shape: { shape_type: "cylinder", height: 20, radius: 300 },
-              pose: {
-                position: [0, 0, -300],
-                orientation: [Math.PI * 0.5, 0, 0],
-              },
-            },
-            link_0_capsule: {
-              shape: {
-                shape_type: "capsule",
-                radius: 20,
-                cylinder_height: 290,
-              },
-              pose: {
-                position: [0, 0, -145],
-                orientation: [Math.PI * 0.5, 0, 0],
-              },
-            },
-          },
-          {
-            link_1: {
-              shape: {
-                shape_type: "capsule",
-                radius: 20,
-                cylinder_height: 270,
-              },
-              pose: {
-                position: [-135, 0, 0],
-                orientation: [0, 0, Math.PI * 0.5],
-              },
-            },
-          },
-
-          {
-            link_2: {
-              shape: {
-                shape_type: "capsule",
-                radius: 20,
-                cylinder_height: 70,
-              },
-              pose: {
-                position: [-35, 0, 0],
-                orientation: [0, 0, Math.PI * 0.5],
-              },
-            },
-          },
-          {
-            link_3: {
-              shape: {
-                shape_type: "capsule",
-                radius: 20,
-                cylinder_height: 302,
-              },
-              pose: {
-                position: [0, 0, 151],
-                orientation: [Math.PI * 0.5, 0, 0],
-              },
-            },
-          },
-          {},
-          {
-            link_5: {
-              shape: {
-                shape_type: "capsule",
-                radius: 20,
-                cylinder_height: 72,
-              },
-              pose: {
-                position: [0, -36, 0],
-                orientation: [0, Math.PI * 0.5, 0],
-              },
-            },
-          },
-        ],
+      "0@ur5e": {
+        link_chain: UR5E_LINK_CHAIN,
         tool: {
           cylinder: {
             shape: { shape_type: "cylinder", height: 20, radius: 40 },
@@ -220,16 +149,16 @@ function CollisionSceneElementScene(
 
   const rapidlyChangingMotionState: MotionGroupStateResponse = {
     state: {
-      controller: "",
+      controller: "ur5e",
       joint_limit_reached: { limit_reached: [] },
-      joint_position: { joints: [1, 1, 1, 1, 1, 0] },
+      joint_position: { joints: [0, 0, Math.PI / 2, 0, 0, 0] },
       joint_current: { joints: [0, 0, 0, 0, 0, 0] },
       joint_velocity: { joints: [0, 0, 0, 0, 0, 0] },
-      motion_group: "",
+      motion_group: "0",
       tcp_pose: {
         position: { x: 0, y: 0, z: 0 },
         orientation: { x: 0, y: 0, z: 0 },
-        tcp: "",
+        tcp: "Flange",
       },
       velocity: {},
     },
@@ -250,7 +179,13 @@ function CollisionSceneElementScene(
           transparent
         />
       )}
-      rapidlyChangingMotionStates={{ "test/robot": rapidlyChangingMotionState }}
+      motionGroupStates={{
+        "0@ur5e": {
+          state: rapidlyChangingMotionState,
+          dhParameters: UR5E_DH_PARAMETERS,
+          mountingPosition: new THREE.Vector3(0, 0, -1),
+        },
+      }}
     />
   )
 }

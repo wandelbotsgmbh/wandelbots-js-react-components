@@ -3,20 +3,27 @@ import type {
   DHParameter,
   MotionGroupStateResponse,
 } from "@wandelbots/wandelbots-js"
+import * as THREE from "three"
 import ColliderCollection, {
   type MeshChildrenProvider,
 } from "./ColliderCollection"
 import CollisionMotionGroupElement from "./CollisionMotionGroup"
 
+type MotionGroupData = {
+  state: MotionGroupStateResponse
+  dhParameters: DHParameter[]
+  mountingPosition: THREE.Vector3
+}
+
 type CollisionSceneElementProps = {
   scene: CollisionScene
   meshChildrenProvider: MeshChildrenProvider
-  rapidlyChangingMotionStates: Record<string, MotionGroupStateResponse>
+  motionGroupStates: Record<string, MotionGroupData>
 }
 
 export default function CollisionSceneElement({
   scene,
-  rapidlyChangingMotionStates,
+  motionGroupStates,
   meshChildrenProvider,
 }: CollisionSceneElementProps) {
   const colliders = scene.colliders
@@ -29,63 +36,24 @@ export default function CollisionSceneElement({
           colliders={colliders}
         />
       )}
-      {Object.entries(motionGroups).map(([motionGroupKey, motionGroup]) => (
-        <CollisionMotionGroupElement
-          key={motionGroupKey}
-          name={motionGroupKey}
-          motionGroup={motionGroup}
-          dhParameters={dhParameters}
-          meshChildrenProvider={meshChildrenProvider}
-          rapidlyChangingMotionState={
-            rapidlyChangingMotionStates[motionGroupKey]
-          }
-        />
-      ))}
+      {Object.entries(motionGroups)
+        .filter(
+          ([motionGroupKey, _]) =>
+            motionGroupStates[motionGroupKey] !== undefined,
+        )
+        .map(([motionGroupKey, motionGroup]) => (
+          <CollisionMotionGroupElement
+            key={motionGroupKey}
+            name={motionGroupKey}
+            motionGroup={motionGroup}
+            mountingPosition={
+              motionGroupStates[motionGroupKey].mountingPosition
+            }
+            dhParameters={motionGroupStates[motionGroupKey].dhParameters}
+            meshChildrenProvider={meshChildrenProvider}
+            rapidlyChangingMotionState={motionGroupStates[motionGroupKey].state}
+          />
+        ))}
     </group>
   )
 }
-
-const dhParameters: DHParameter[] = [
-  {
-    a: 0,
-    d: 290,
-    alpha: -1.5707963267948966,
-    theta: 0,
-    reverse_rotation_direction: false,
-  },
-  {
-    a: 270,
-    d: 0,
-    alpha: 0,
-    theta: -1.5707963267948966,
-    reverse_rotation_direction: false,
-  },
-  {
-    a: 70,
-    d: 0,
-    alpha: -1.5707963267948966,
-    theta: 0,
-    reverse_rotation_direction: false,
-  },
-  {
-    a: 0,
-    d: 302,
-    alpha: 1.5707963267948966,
-    theta: 0,
-    reverse_rotation_direction: false,
-  },
-  {
-    a: 0,
-    d: 0,
-    alpha: -1.5707963267948966,
-    theta: 0,
-    reverse_rotation_direction: false,
-  },
-  {
-    a: 0,
-    d: 72,
-    alpha: 0,
-    theta: -3.1415926535897931,
-    reverse_rotation_direction: false,
-  },
-]

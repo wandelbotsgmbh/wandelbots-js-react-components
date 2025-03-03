@@ -15,6 +15,7 @@ type CollisionMotionGroupElementProps = {
   motionGroup: CollisionMotionGroup
   rapidlyChangingMotionState: MotionGroupStateResponse
   dhParameters: DHParameter[]
+  mountingPosition?: THREE.Vector3
 
   meshChildrenProvider: MeshChildrenProvider
 }
@@ -24,6 +25,7 @@ export default function CollisionMotionGroupElement({
   motionGroup,
   rapidlyChangingMotionState,
   dhParameters,
+  mountingPosition,
   meshChildrenProvider,
 }: CollisionMotionGroupElementProps) {
   const joints = rapidlyChangingMotionState.state.joint_position?.joints
@@ -39,17 +41,23 @@ export default function CollisionMotionGroupElement({
   function getJointTransforms() {
     jointTransform.identity()
 
-    return joints?.map((joint, jointIndex) => {
-      jointTransform.multiply(getDHTransform(dhParameters[jointIndex], joint))
-      return {
-        position: new THREE.Vector3().applyMatrix4(jointTransform),
-        rotation: new THREE.Euler().setFromRotationMatrix(jointTransform),
-      }
-    })
+    return [
+      jointTransform.clone(),
+      ...joints?.map((joint, jointIndex) => {
+        jointTransform.multiply(getDHTransform(dhParameters[jointIndex], joint))
+        return {
+          position: new THREE.Vector3().applyMatrix4(jointTransform),
+          rotation: new THREE.Euler().setFromRotationMatrix(jointTransform),
+        }
+      }),
+    ]
   }
 
   return (
-    <group name={name} position={new THREE.Vector3(0, 0, -1)}>
+    <group
+      name={name}
+      position={mountingPosition ?? new THREE.Vector3(0, 0, 0)}
+    >
       <DHRobot
         dhParameters={dhParameters}
         rapidlyChangingMotionState={rapidlyChangingMotionState}
