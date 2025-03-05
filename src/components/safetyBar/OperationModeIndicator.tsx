@@ -1,4 +1,4 @@
-import { useTheme } from "@mui/material"
+import { useTheme, type PopoverOrigin } from "@mui/material"
 import type { RobotControllerStateOperationModeEnum } from "@wandelbots/wandelbots-js"
 import { observer } from "mobx-react-lite"
 import { Trans, useTranslation } from "react-i18next"
@@ -9,10 +9,16 @@ import { IndicatorWithExplanation } from "./IndicatorWithExplanation"
 
 interface OperationModeIndicatorProps {
   operationMode: RobotControllerStateOperationModeEnum
+  anchorOrigin?: PopoverOrigin
+  transformOrigin?: PopoverOrigin
 }
 
 export const OperationModeIndicator = observer(
-  ({ operationMode }: OperationModeIndicatorProps) => {
+  ({
+    operationMode,
+    anchorOrigin,
+    transformOrigin,
+  }: OperationModeIndicatorProps) => {
     const { t } = useTranslation()
     const theme = useTheme()
 
@@ -31,6 +37,8 @@ export const OperationModeIndicator = observer(
                 movement without manual confirmation is possible in this mode.
               </Trans>
             }
+            anchorOrigin={anchorOrigin}
+            transformOrigin={transformOrigin}
           />
         )
       case "OPERATION_MODE_MANUAL":
@@ -51,6 +59,8 @@ export const OperationModeIndicator = observer(
               </Trans>
             }
             literalValue={operationMode}
+            anchorOrigin={anchorOrigin}
+            transformOrigin={transformOrigin}
           />
         )
       }
@@ -69,6 +79,8 @@ export const OperationModeIndicator = observer(
               </Trans>
             }
             literalValue={operationMode}
+            anchorOrigin={anchorOrigin}
+            transformOrigin={transformOrigin}
           />
         )
     }

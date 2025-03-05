@@ -1,4 +1,4 @@
-import { Divider, Stack } from "@mui/material"
+import { Divider, Stack, type PopoverOrigin } from "@mui/material"
 import type {
   RobotControllerStateOperationModeEnum,
   RobotControllerStateSafetyStateEnum,
@@ -14,6 +14,8 @@ export interface SafetyBarProps {
   motionGroupId: string
   operationMode: RobotControllerStateOperationModeEnum
   safetyState: RobotControllerStateSafetyStateEnum
+  anchorOrigin?: PopoverOrigin
+  transformOrigin?: PopoverOrigin
 }
 
 export const SafetyBar = externalizeComponent(
@@ -25,17 +27,27 @@ export const SafetyBar = externalizeComponent(
         alignItems="center"
         sx={{ height: "24px" }}
       >
-        <SafetyStateIndicator safetyState={props.safetyState} />
+        <SafetyStateIndicator
+          safetyState={props.safetyState}
+          anchorOrigin={props.anchorOrigin}
+          transformOrigin={props.transformOrigin}
+        />
 
         <Divider orientation="vertical" flexItem />
 
-        <OperationModeIndicator operationMode={props.operationMode} />
+        <OperationModeIndicator
+          operationMode={props.operationMode}
+          anchorOrigin={props.anchorOrigin}
+          transformOrigin={props.transformOrigin}
+        />
 
         <Divider orientation="vertical" flexItem />
 
         <ControllerTypeIndicator
           isVirtual={props.isVirtual}
           motionGroupId={props.motionGroupId}
+          anchorOrigin={props.anchorOrigin}
+          transformOrigin={props.transformOrigin}
         />
       </Stack>
     )
