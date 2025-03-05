@@ -1,4 +1,4 @@
-import { useTheme } from "@mui/material"
+import { useTheme, type PopoverOrigin } from "@mui/material"
 import { observer } from "mobx-react-lite"
 import { Trans, useTranslation } from "react-i18next"
 import ControllerTypePhysicalIcon from "./icons/controller-type-physical.svg"
@@ -8,10 +8,17 @@ import { IndicatorWithExplanation } from "./IndicatorWithExplanation"
 interface ControllerTypeIndicatorProps {
   isVirtual: boolean
   motionGroupId: string
+  anchorOrigin?: PopoverOrigin
+  transformOrigin?: PopoverOrigin
 }
 
 export const ControllerTypeIndicator = observer(
-  ({ isVirtual, motionGroupId }: ControllerTypeIndicatorProps) => {
+  ({
+    isVirtual,
+    motionGroupId,
+    anchorOrigin,
+    transformOrigin,
+  }: ControllerTypeIndicatorProps) => {
     const theme = useTheme()
     const { t } = useTranslation()
 
@@ -34,6 +41,8 @@ export const ControllerTypeIndicator = observer(
               without special safety precautions.
             </Trans>
           }
+          anchorOrigin={anchorOrigin}
+          transformOrigin={transformOrigin}
         />
       )
     }
@@ -53,6 +62,8 @@ export const ControllerTypeIndicator = observer(
             components={{ code: <code />, strong: <strong /> }}
           />
         }
+        anchorOrigin={anchorOrigin}
+        transformOrigin={transformOrigin}
       />
     )
   },

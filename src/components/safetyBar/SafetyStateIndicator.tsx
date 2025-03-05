@@ -1,4 +1,4 @@
-import { useTheme } from "@mui/material"
+import { useTheme, type PopoverOrigin } from "@mui/material"
 import type { RobotControllerStateSafetyStateEnum } from "@wandelbots/wandelbots-js"
 import { observer } from "mobx-react-lite"
 import { Trans, useTranslation } from "react-i18next"
@@ -12,10 +12,16 @@ import { IndicatorWithExplanation } from "./IndicatorWithExplanation"
 
 interface SafetyStateIndicatorProps {
   safetyState: RobotControllerStateSafetyStateEnum
+  anchorOrigin?: PopoverOrigin
+  transformOrigin?: PopoverOrigin
 }
 
 export const SafetyStateIndicator = observer(
-  ({ safetyState }: SafetyStateIndicatorProps) => {
+  ({
+    safetyState,
+    anchorOrigin,
+    transformOrigin,
+  }: SafetyStateIndicatorProps) => {
     const { t } = useTranslation()
     const theme = useTheme()
 
@@ -35,6 +41,8 @@ export const SafetyStateIndicator = observer(
                 not prevented by this state.
               </Trans>
             }
+            anchorOrigin={anchorOrigin}
+            transformOrigin={transformOrigin}
           />
         )
 
@@ -56,6 +64,8 @@ export const SafetyStateIndicator = observer(
               </Trans>
             }
             literalValue={safetyState}
+            anchorOrigin={anchorOrigin}
+            transformOrigin={transformOrigin}
           />
         )
 
@@ -79,6 +89,8 @@ export const SafetyStateIndicator = observer(
               </Trans>
             }
             literalValue={safetyState}
+            anchorOrigin={anchorOrigin}
+            transformOrigin={transformOrigin}
           />
         )
 
@@ -103,6 +115,8 @@ export const SafetyStateIndicator = observer(
               </Trans>
             }
             literalValue={safetyState}
+            anchorOrigin={anchorOrigin}
+            transformOrigin={transformOrigin}
           />
         )
 
@@ -122,6 +136,8 @@ export const SafetyStateIndicator = observer(
               </Trans>
             }
             literalValue={safetyState}
+            anchorOrigin={anchorOrigin}
+            transformOrigin={transformOrigin}
           />
         )
       default:
