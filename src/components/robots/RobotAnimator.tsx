@@ -3,7 +3,7 @@ import { useThree } from "@react-three/fiber"
 import type {
   DHParameter,
   MotionGroupStateResponse,
-} from "@wandelbots/wandelbots-api-client"
+} from "@wandelbots/nova-js/v1"
 import React, { useRef } from "react"
 import type { Group, Object3D } from "three"
 import { useAutorun } from "../utils/hooks"

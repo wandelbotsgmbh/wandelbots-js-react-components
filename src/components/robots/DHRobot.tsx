@@ -1,5 +1,5 @@
 import { Line } from "@react-three/drei"
-import type { DHParameter } from "@wandelbots/wandelbots-api-client"
+import type { DHParameter } from "@wandelbots/nova-js/v1"
 import type * as THREE from "three"
 import { Matrix4, Quaternion, Vector3 } from "three"
 import type { LineGeometry } from "three/examples/jsm/lines/LineGeometry.js"

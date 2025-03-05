@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react"
-import { Euler, Vector3, WebGLRenderer } from "three"
+import type { SafetySetupSafetyZone } from "@wandelbots/nova-js/v1"
+import { Vector3 } from "three"
 import { SafetyZonesRenderer } from "../src"
-import type { SafetySetupSafetyZone } from "@wandelbots/wandelbots-js"
 import { Setup } from "../src/Setup"
 
 export default {

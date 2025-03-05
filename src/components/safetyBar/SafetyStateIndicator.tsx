@@ -1,5 +1,5 @@
 import { useTheme, type PopoverOrigin } from "@mui/material"
-import type { RobotControllerStateSafetyStateEnum } from "@wandelbots/wandelbots-js"
+import type { RobotControllerStateSafetyStateEnum } from "@wandelbots/nova-js/v1"
 import { observer } from "mobx-react-lite"
 import { Trans, useTranslation } from "react-i18next"
 import { assertUnreachable } from "../utils/errorHandling"

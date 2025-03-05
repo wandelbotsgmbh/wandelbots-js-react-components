@@ -2,7 +2,7 @@ import { Divider, Stack, type PopoverOrigin } from "@mui/material"
 import type {
   RobotControllerStateOperationModeEnum,
   RobotControllerStateSafetyStateEnum,
-} from "@wandelbots/wandelbots-js"
+} from "@wandelbots/nova-js/v1"
 import { observer } from "mobx-react-lite"
 import { externalizeComponent } from "../../externalizeComponent"
 import { ControllerTypeIndicator } from "./ControllerTypeIndicator"

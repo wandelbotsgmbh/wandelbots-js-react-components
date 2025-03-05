@@ -1,4 +1,4 @@
-import type { MotionGroupStateResponse } from "@wandelbots/wandelbots-js"
+import type { MotionGroupStateResponse } from "@wandelbots/nova-js/v1"
 
 export const rapidlyChangingMotionState: MotionGroupStateResponse = {
   state: {

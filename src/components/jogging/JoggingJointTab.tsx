@@ -1,5 +1,5 @@
 import { Divider, Stack } from "@mui/material"
-import { radiansToDegrees } from "@wandelbots/wandelbots-js"
+import { radiansToDegrees } from "@wandelbots/nova-js"
 import { observer } from "mobx-react-lite"
 import type { ReactNode } from "react"
 import { JoggingJointLimitDetector } from "./JoggingJointLimitDetector"

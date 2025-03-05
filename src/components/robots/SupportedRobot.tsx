@@ -2,7 +2,7 @@ import type { GroupProps } from "@react-three/fiber"
 import type {
   DHParameter,
   MotionGroupStateResponse,
-} from "@wandelbots/wandelbots-api-client"
+} from "@wandelbots/nova-js/v1"
 import { Suspense, useCallback, useEffect, useState } from "react"
 import { DHRobot } from "./DHRobot"
 
