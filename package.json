@@ -100,7 +100,7 @@
     "vite-plugin-svgr": "^4.3.0",
     "vitest": "^3.0.7",
     "wait-on": "^8.0.2",
-    "@wandelbots/wandelbots-js": "^1.17.1"
+    "@wandelbots/nova-js": "^2"
   },
   "peerDependencies": {
     "@emotion/react": "^11.11.1",
