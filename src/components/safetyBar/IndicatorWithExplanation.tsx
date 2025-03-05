@@ -3,6 +3,7 @@ import {
   Stack,
   SvgIcon,
   Typography,
+  type PopoverOrigin,
   type TypographyProps,
 } from "@mui/material"
 import { observer, useLocalObservable } from "mobx-react-lite"
@@ -16,6 +17,8 @@ export type IndicatorWithExplanationProps = {
   name: ReactNode
   explanation: ReactNode
   literalValue?: string
+  anchorOrigin?: PopoverOrigin
+  transformOrigin?: PopoverOrigin
 }
 
 export const IndicatorWithExplanation = observer(
@@ -27,6 +30,8 @@ export const IndicatorWithExplanation = observer(
     name,
     explanation,
     literalValue,
+    anchorOrigin,
+    transformOrigin,
   }: IndicatorWithExplanationProps) => {
     const state = useLocalObservable(() => ({
       anchorEl: null as HTMLElement | null,
@@ -69,14 +74,18 @@ export const IndicatorWithExplanation = observer(
           }}
           open={state.isPopoverOpen}
           anchorEl={state.anchorEl}
-          anchorOrigin={{
-            vertical: "bottom",
-            horizontal: "left",
-          }}
-          transformOrigin={{
-            vertical: "top",
-            horizontal: "left",
-          }}
+          anchorOrigin={
+            anchorOrigin ?? {
+              vertical: "bottom",
+              horizontal: "left",
+            }
+          }
+          transformOrigin={
+            transformOrigin ?? {
+              vertical: "top",
+              horizontal: "left",
+            }
+          }
           onClose={state.closePopover}
           disableRestoreFocus
         >
