@@ -62,7 +62,7 @@
     "@storybook/react": "^8.6.3",
     "@storybook/csf-tools": "^8.6.2",
     "@storybook/react-vite": "^8.6.2",
-    "@storybook/test": "^8.6.2",
+    "@storybook/test": "^8.6.3",
     "@storybook/test-runner": "^0.21.3",
     "@storybook/types": "^8.6.3",
     "@svgr/rollup": "^8.1.0",
