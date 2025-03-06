@@ -70,6 +70,7 @@
     "@types/react": "^18.3.12",
     "@types/three": "^0.174.0",
     "@vitejs/plugin-react": "^4.3.4",
+    "@wandelbots/wandelbots-js": "^1.17.1",
     "add": "^2.0.6",
     "glob": "^11.0.1",
     "http-server": "^14.1.1",
@@ -99,8 +100,7 @@
     "vite": "~6.2.0",
     "vite-plugin-svgr": "^4.3.0",
     "vitest": "^3.0.7",
-    "wait-on": "^8.0.2",
-    "@wandelbots/wandelbots-js": "^1.17.1"
+    "wait-on": "^8.0.2"
   },
   "peerDependencies": {
     "@emotion/react": "^11.11.1",
