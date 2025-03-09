@@ -1,8 +1,8 @@
 import { Line } from "@react-three/drei"
-import type { DHParameter } from "@wandelbots/wandelbots-api-client"
 import type * as THREE from "three"
-import { Matrix4, Quaternion, Vector3 } from "three"
+import { Matrix4 } from "three"
 import type { LineGeometry } from "three/examples/jsm/lines/LineGeometry.js"
+import { getDHLine, getDHLines } from "../utils/dhParameter"
 import RobotAnimator from "./RobotAnimator"
 import type { DHRobotProps } from "./SupportedRobot"
 
@@ -16,36 +16,11 @@ export function DHRobot({
 }: DHRobotProps) {
   // reused in every update
   const accumulatedMatrix = new Matrix4()
-
-  // Updates accumulatedMatrix with every execution
-  // Reset the matrix to identity if you start a new position update
-  function getLinePoints(
-    dhParameter: DHParameter,
-    jointRotation: number,
-  ): {
-    a: THREE.Vector3
-    b: THREE.Vector3
-  } {
-    const position = new Vector3()
-    const quaternion = new Quaternion()
-    const scale = new Vector3()
-    accumulatedMatrix.decompose(position, quaternion, scale)
-    const prevPosition = position.clone() // Update the previous position
-
-    const matrix = new Matrix4()
-      .makeRotationY(
-        dhParameter.theta! +
-          jointRotation * (dhParameter.reverse_rotation_direction ? -1 : 1),
-      ) // Rotate around Z
-      .multiply(new Matrix4().makeTranslation(0, dhParameter.d! / 1000, 0)) // Translate along Z
-      .multiply(new Matrix4().makeTranslation(dhParameter.a! / 1000, 0, 0)) // Translate along X
-      .multiply(new Matrix4().makeRotationX(dhParameter.alpha!)) // Rotate around X
-
-    // Accumulate transformations
-    accumulatedMatrix.multiply(matrix)
-    accumulatedMatrix.decompose(position, quaternion, scale)
-    return { a: prevPosition, b: position }
-  }
+  const dhLines = getDHLines(
+    accumulatedMatrix,
+    dhParameters,
+    rapidlyChangingMotionState.state.joint_position.joints,
+  )
 
   function setJointLineRotation(
     jointIndex: number,
@@ -57,16 +32,18 @@ export function DHRobot({
       return
     }
 
-    const dh_parameter = dhParameters[jointIndex]
-    if (!dh_parameter) {
+    const dhParameter = dhParameters[jointIndex]
+    if (!dhParameter) {
       return
     }
 
-    const { a, b } = getLinePoints(dh_parameter, jointValue)
+    const dhLine = getDHLine(accumulatedMatrix, dhParameter, jointValue)
     const lineGeometry = line.geometry as LineGeometry
-    lineGeometry.setPositions([a.toArray(), b.toArray()].flat())
+    lineGeometry.setPositions(
+      [dhLine.start.toArray(), dhLine.end.toArray()].flat(),
+    )
 
-    mesh.position.set(b.x, b.y, b.z)
+    mesh.position.set(dhLine.end.x, dhLine.end.y, dhLine.end.z)
   }
 
   function setRotation(joints: THREE.Object3D[], jointValues: number[]) {
@@ -93,22 +70,23 @@ export function DHRobot({
             <sphereGeometry args={[0.01, 32, 32]} />
             <meshStandardMaterial color={"black"} depthTest={true} />
           </mesh>
+
           {dhParameters!.map((param, index) => {
-            const { a, b } = getLinePoints(
-              param,
-              rapidlyChangingMotionState.state.joint_position.joints[index] ??
-                0,
-            )
             const jointName = `dhrobot_J0${index}`
             return (
               <group name={jointName} key={jointName}>
                 <Line
                   name={CHILD_LINE}
-                  points={[a, b]}
+                  points={[dhLines[index].start, dhLines[index].end]}
                   color={"white"}
                   lineWidth={5}
+                  segments
                 />
-                <mesh name={CHILD_MESH} key={"mesh_" + index} position={b}>
+                <mesh
+                  name={CHILD_MESH}
+                  key={"mesh_" + index}
+                  position={dhLines[index].end}
+                >
                   <sphereGeometry args={[0.01, 32, 32]} />
                   <meshStandardMaterial color={"black"} depthTest={true} />
                 </mesh>
