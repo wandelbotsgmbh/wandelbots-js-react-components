@@ -98,6 +98,19 @@ export function createDarkTheme(): Theme {
   return {
     ...baseTheme,
     components: {
+      MuiCssBaseline: {
+        styleOverrides: {
+          "html, body, *": {
+            scrollbarWidth: "none",
+            msOverflowStyle: "none",
+          },
+
+          "html:hover, body:hover, *:hover": {
+            scrollbarWidth: "thin",
+            scrollbarColor: `${baseTheme.palette.divider} transparent`,
+          },
+        },
+      },
       MuiButton: {
         styleOverrides: {
           root: {
