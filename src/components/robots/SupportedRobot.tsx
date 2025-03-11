@@ -69,12 +69,8 @@ export const SupportedRobot = externalizeComponent(
       <ErrorBoundary
         fallback={dhrobot}
         onError={(err) => {
-          if (err.message.includes("404: Not Found")) {
-            // Missing model; show the fallback for now
-            console.error(err)
-          } else {
-            throw err
-          }
+          // Missing model; show the fallback for now
+          console.error(err)
         }}
       >
         <Suspense fallback={dhrobot}>
