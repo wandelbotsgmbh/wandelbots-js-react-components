@@ -1,6 +1,6 @@
 import { type GroupProps } from "@react-three/fiber"
-import type { Geometry } from "@wandelbots/wandelbots-api-client"
-import type { SafetySetupSafetyZone } from "@wandelbots/wandelbots-js"
+import type { Geometry } from "@wandelbots/nova-api/v1"
+import type { SafetySetupSafetyZone } from "@wandelbots/nova-js/v1"
 import * as THREE from "three"
 import { ConvexGeometry } from "three-stdlib"
 

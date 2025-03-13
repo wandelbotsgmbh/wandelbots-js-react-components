@@ -1,5 +1,5 @@
 import { Stack, Tab, Tabs, type SxProps } from "@mui/material"
-import { NovaClient } from "@wandelbots/wandelbots-js"
+import { NovaClient } from "@wandelbots/nova-js/v1"
 import { isString } from "lodash-es"
 import { runInAction } from "mobx"
 import { observer, useLocalObservable } from "mobx-react-lite"

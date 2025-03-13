@@ -108,7 +108,7 @@ const theme = createNovaMuiTheme()
 <img width="20%" alt="Robot" src="https://github.com/user-attachments/assets/da661136-8b53-48ba-85de-63b09e3b51f3">
 </a>
 
-This `Robot` component adds the robot to the 3D viewport. Use it together with the `connectedMotionGroup` from `@wandelbots/wandelbots-js`.
+This `Robot` component adds the robot to the 3D viewport. Use it together with the `connectedMotionGroup` from `@wandelbots/nova-js/v1`.
 
 ```tsx
 <Robot connectedMotionGroup={connectedMotionGroup} />
@@ -135,7 +135,7 @@ export type ConnectecMotionGroupRobotProps = {
 
 ##### SupportedRobot
 
-The `SupportedRobot` can be used to display a robot model without the need for a `connectedMotionGroup` from `@wandelbots/wandelbots-js`.
+The `SupportedRobot` can be used to display a robot model without the need for a `connectedMotionGroup` from `@wandelbots/nova-js/v1`.
 
 ```tsx
 <SupportedRobot

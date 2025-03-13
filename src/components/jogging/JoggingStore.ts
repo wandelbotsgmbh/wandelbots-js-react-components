@@ -1,10 +1,10 @@
+import { tryParseJson } from "@wandelbots/nova-js"
 import type {
   CoordinateSystem,
   JoggerConnection,
   MotionGroupSpecification,
   RobotTcp,
-} from "@wandelbots/wandelbots-js"
-import { tryParseJson } from "@wandelbots/wandelbots-js"
+} from "@wandelbots/nova-js/v1"
 import { countBy } from "lodash-es"
 import keyBy from "lodash-es/keyBy"
 import uniqueId from "lodash-es/uniqueId"

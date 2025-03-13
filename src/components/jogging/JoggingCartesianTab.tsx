@@ -5,7 +5,7 @@ import {
   Typography,
   useTheme,
 } from "@mui/material"
-import { degreesToRadians, radiansToDegrees } from "@wandelbots/wandelbots-js"
+import { degreesToRadians, radiansToDegrees } from "@wandelbots/nova-js"
 import { observer } from "mobx-react-lite"
 import { useTranslation } from "react-i18next"
 import XAxisIcon from "../../icons/axis-x.svg"

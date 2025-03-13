@@ -1,5 +1,5 @@
 import { useTheme, type PopoverOrigin } from "@mui/material"
-import type { RobotControllerStateOperationModeEnum } from "@wandelbots/wandelbots-js"
+import type { RobotControllerStateOperationModeEnum } from "@wandelbots/nova-js/v1"
 import { observer } from "mobx-react-lite"
 import { Trans, useTranslation } from "react-i18next"
 import OperationModeAutomaticIcon from "./icons/operation-mode-automatic.svg"
