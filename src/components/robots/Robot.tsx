@@ -1,6 +1,6 @@
 import { type GroupProps } from "@react-three/fiber"
 
-import type { ConnectedMotionGroup } from "@wandelbots/wandelbots-js"
+import type { ConnectedMotionGroup } from "@wandelbots/nova-js/v1"
 import type { Group } from "three"
 import { SupportedRobot } from "./SupportedRobot"
 import { defaultGetModel } from "./robotModelLogic"
@@ -14,7 +14,7 @@ export type RobotProps = {
 
 /**
  * The Robot component is a wrapper around the SupportedRobot component
- * for usage with @wandelbots/wandelbots-js ConnectedMotionGroup object.
+ * for usage with @wandelbots/nova-js ConnectedMotionGroup object.
  *
  * @param {RobotProps} props - The properties for the Robot component.
  * @param {ConnectedMotionGroup} props.connectedMotionGroup - The connected motion group containing motion state and parameters.

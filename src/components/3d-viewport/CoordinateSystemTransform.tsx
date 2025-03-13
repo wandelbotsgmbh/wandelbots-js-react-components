@@ -1,6 +1,6 @@
-import type { CoordinateSystem } from "@wandelbots/wandelbots-api-client"
+import type { CoordinateSystem } from "@wandelbots/nova-api/v1"
 import type { ReactNode } from "react"
-import { Vector3, Quaternion } from "three"
+import { Quaternion, Vector3 } from "three"
 
 /**
  * Applies a API coordinate system transformation to
