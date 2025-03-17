@@ -62,7 +62,7 @@
     "@storybook/addon-essentials": "^8.6.4",
     "@storybook/addon-interactions": "^8.6.4",
     "@storybook/blocks": "^8.6.4",
-    "@storybook/csf-tools": "^8.6.4",
+    "@storybook/csf-tools": "^8.6.6",
     "@storybook/react": "^8.6.4",
     "@storybook/react-vite": "^8.6.4",
     "@storybook/test": "^8.6.4",
