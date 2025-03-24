@@ -101,7 +101,7 @@
     "three-stdlib": "^2.35.14",
     "ts-dedent": "^2.2.0",
     "typescript": "^5.8.2",
-    "unplugin": "^1.15.0",
+    "unplugin": "^2.2.2",
     "vite": "^6.2.0",
     "vite-plugin-svgr": "^4.3.0",
     "vitest": "^3.0.7",
