@@ -261,11 +261,11 @@ export class JoggingStore {
     return [
       {
         id: "cartesian",
-        label: "Cartesian",
+        label: "cartesian",
       },
       {
         id: "joint",
-        label: "Joints",
+        label: "joint",
       },
     ] as const
   }

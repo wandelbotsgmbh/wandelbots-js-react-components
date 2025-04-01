@@ -31,17 +31,13 @@ export const JoggingOptions = observer(({ store }: { store: JoggingStore }) => {
         gap: "16px",
         gridTemplateColumns: "1fr 1fr",
         gridTemplateRows: "min-height min-height",
-        "& label": {
-          opacity: 0.7,
-          fontSize: "12px",
-          marginBottom: "4px",
-        },
+        "& label": { opacity: 0.7, fontSize: "12px", marginBottom: "4px" },
       }}
     >
       {/* Coordinate system */}
       <AdornedSelect
         labelId="jogging-coord-select"
-        labelValue={"Coordinate Sys."}
+        labelValue={t("Jogging.CoordinateSystem.hlb")}
         value={store.selectedCoordSystemId}
         size="small"
         variant="filled"
@@ -101,7 +97,7 @@ export const JoggingOptions = observer(({ store }: { store: JoggingStore }) => {
 
       {/* Increment selection */}
       <AdornedSelect
-        labelValue={"Increment"}
+        labelValue={t("Jogging.Increment.hlb")}
         labelId="jogging-increment-select"
         size="small"
         variant="filled"

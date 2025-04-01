@@ -70,6 +70,7 @@ export const JoggingCartesianAxisControl = externalizeComponent(
             hovered: "#000",
             pressed: "#000",
           },
+          labelColor: "#000",
         }
       }
 
