@@ -9,6 +9,7 @@ import { LoadingCover } from "../LoadingCover"
 import { JoggingCartesianTab } from "./JoggingCartesianTab"
 import { JoggingJointTab } from "./JoggingJointTab"
 import { JoggingStore } from "./JoggingStore"
+import { getTabTranslation } from "./translationHelper"
 
 export type JoggingPanelTabId = "cartesian" | "joint"
 
@@ -147,7 +148,7 @@ const JoggingPanelInner = observer(
           {store.tabs.map((tab) => (
             <Tab
               key={tab.id}
-              label={tab.label}
+              label={getTabTranslation(tab.id)}
               id={`jogging-tab-${tab.id}`}
               aria-controls={`jogging-tab-${tab.id}`}
             />

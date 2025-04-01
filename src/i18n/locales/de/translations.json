@@ -3,7 +3,7 @@
   "Jogging.Cartesian.Rotation.velocityDegPerSec.lb": "{{amount}}°/s",
   "Jogging.Velocity.lb": "Geschwindigkeit",
   "General.degree.variable": "{{amount}}°",
-  "General.mm.variable": "{{amount}}mm",
+  "General.mm.variable": "{{amount}} mm",
   "Jogging.Cartesian.MotionType.lb": "Bewegungstyp",
   "Jogging.Cartesian.Translation.bt": "Translation",
   "Jogging.Cartesian.Rotation.bt": "Rotation",
@@ -11,8 +11,8 @@
   "Jogging.Increment.Continuous.dd": "Fortlaufend",
   "Jogging.Cartesian.Orientation.lb": "Orientierung",
   "Jogging.JointLimitsReached.lb": "Gelenkgrenzen für Gelenk {{jointNumbers}} erreicht",
-  "Jogging.Orientation.coordsys": "Base (Roboter)",
-  "Jogging.Orientation.tool": "Tool",
+  "Jogging.Orientation.coordsys": "Roboterbasis",
+  "Jogging.Orientation.tool": "Werkzeug",
   "SafetyBar.ActivationToggle.Activate.bt": "Aktivieren",
   "SafetyBar.ActivationToggle.Activated.bt": "Aktiviert",
   "SafetyBar.ActivationToggle.Activating.bt": "Wird aktiviert…",
@@ -38,5 +38,9 @@
   "SafetyBar.SafetyState.Stop.Explanation.lb": "Die Robotersteuerung ist in einen Stoppzustand übergegangen. Bis der Stoppzustand aufgelöst ist, ist keine Bewegung mehr möglich.",
   "SafetyBar.SafetyState.Stop.lb": "Stopp",
   "SafetyBar.SafetyState.ti": "Sicherheitszustand",
-  "SafetyBar.StopState.Estop.Explanation.lb": "NOT-AUS aktiviert. NOT-AUS freischalten, um Roboter zu bewegen."
+  "SafetyBar.StopState.Estop.Explanation.lb": "NOT-AUS aktiviert. NOT-AUS freischalten, um Roboter zu bewegen.",
+  "Jogging.Increment.hlb": "Schrittgröße",
+  "Jogging.CoordinateSystem.hlb": "Koordinatensystem",
+  "Jogging.Cartesian.bt": "Kartesisch",
+  "Jogging.Joints.bt": "Gelenke"
 }
