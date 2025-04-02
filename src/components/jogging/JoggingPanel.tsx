@@ -4,6 +4,7 @@ import { isString } from "lodash-es"
 import { runInAction } from "mobx"
 import { observer, useLocalObservable } from "mobx-react-lite"
 import { useEffect } from "react"
+import { useTranslation } from "react-i18next"
 import { externalizeComponent } from "../../externalizeComponent"
 import { LoadingCover } from "../LoadingCover"
 import { JoggingCartesianTab } from "./JoggingCartesianTab"
@@ -120,6 +121,8 @@ const JoggingPanelInner = observer(
     children?: React.ReactNode
     childrenJoint?: React.ReactNode
   }) => {
+    const { t } = useTranslation()
+
     function renderTabContent() {
       if (store.currentTab.id === "cartesian") {
         return (
@@ -147,7 +150,11 @@ const JoggingPanelInner = observer(
           {store.tabs.map((tab) => (
             <Tab
               key={tab.id}
-              label={tab.label}
+              label={
+                tab.label === "cartesian"
+                  ? t("Jogging.Cartesian.bt")
+                  : t("Jogging.Joints.bt")
+              }
               id={`jogging-tab-${tab.id}`}
               aria-controls={`jogging-tab-${tab.id}`}
             />

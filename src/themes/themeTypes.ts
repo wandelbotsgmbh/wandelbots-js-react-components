@@ -25,6 +25,7 @@ export interface AxisControlComponentColors {
     disabled?: string
     hovered?: string
   }
+  labelColor?: string
 }
 
 interface NovaComponentsExtension {
@@ -34,7 +35,7 @@ interface NovaComponentsExtension {
         X?: AxisControlComponentColors
         Y?: AxisControlComponentColors
         Z?: AxisControlComponentColors
-      }
+      },
     }
     WandelscriptEditor?: {
       monacoTheme: editor.IStandaloneThemeData

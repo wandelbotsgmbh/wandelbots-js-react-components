@@ -227,7 +227,9 @@ export const JoggingCartesianTab = observer(
                       <Typography
                         sx={{
                           fontSize: "24px",
-                          color: theme.palette.text.primary,
+                          color:
+                            axis.colors?.labelColor ??
+                            theme.palette.text.primary,
                         }}
                       >
                         {axis.id.toUpperCase()}
@@ -269,7 +271,9 @@ export const JoggingCartesianTab = observer(
                       <Typography
                         sx={{
                           fontSize: "24px",
-                          color: theme.palette.text.primary,
+                          color:
+                            axis.colors?.labelColor ??
+                            theme.palette.text.primary,
                         }}
                       >
                         {axis.id.toUpperCase()}
