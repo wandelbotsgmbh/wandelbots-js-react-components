@@ -51,7 +51,7 @@
     "@mui/icons-material": "^6.4.1",
     "@mui/material": "^6.4.0",
     "@react-spring/three": "^9.7.5",
-    "@react-three/drei": "^9.122.0",
+    "@react-three/drei": "^10.0.5",
     "@react-three/fiber": "^8.18.0",
     "@rollup/plugin-commonjs": "^28.0.2",
     "@rollup/plugin-json": "^6.1.0",
@@ -113,7 +113,7 @@
     "@mui/icons-material": "^6",
     "@mui/material": "^6",
     "@react-spring/three": "^9",
-    "@react-three/drei": "^9.122.0",
+    "@react-three/drei": "^10.0.5",
     "@react-three/fiber": "^8.18.0",
     "three": ">=0.174",
     "three-stdlib": ">=2"
