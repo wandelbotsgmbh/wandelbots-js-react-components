@@ -1,7 +1,6 @@
 import { type FC } from "react"
 import { I18nextProvider } from "react-i18next"
-// @ts-expect-error invalid type-only import error
-import i18n from "./i18n/config"
+import { i18n } from "./i18n/config"
 
 /**
  * Our components require a certain context that may or may not
