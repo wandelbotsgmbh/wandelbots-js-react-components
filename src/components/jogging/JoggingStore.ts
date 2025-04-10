@@ -104,6 +104,18 @@ export class JoggingStore {
   /** Maximum rotation velocity user can choose on the velocity slider in °/s */
   maxRotationVelocityDegPerSec: number = 60
 
+  /** Whether to show the coordinate system select dropdown in the UI */
+  showCoordSystemSelect: boolean = true
+
+  /** Whether to show the TCP select dropdown in the UI */
+  showTcpSelect: boolean = true
+
+  /** Whether to show the orientation select dropdown in the UI */
+  showOrientationSelect: boolean = true
+
+  /** Whether to show the increment select dropdown in the UI */
+  showIncrementSelect: boolean = true
+
   disposers: IReactionDisposer[] = []
 
   /**

@@ -35,7 +35,12 @@ interface NovaComponentsExtension {
         X?: AxisControlComponentColors
         Y?: AxisControlComponentColors
         Z?: AxisControlComponentColors
-      },
+      }
+    }
+    JoggingJoint?: {
+      Joint?: {
+        arrowColor?: string
+      }
     }
     WandelscriptEditor?: {
       monacoTheme: editor.IStandaloneThemeData
