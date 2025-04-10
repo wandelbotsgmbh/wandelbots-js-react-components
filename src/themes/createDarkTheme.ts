@@ -255,6 +255,11 @@ export function createDarkTheme(): Theme {
           },
         },
       },
+      JoggingJoint: {
+        Joint: {
+          arrowColor: baseTheme.palette.text.primary,
+        },
+      },
       WandelscriptEditor: {
         monacoTheme: {
           base: "vs-dark",
