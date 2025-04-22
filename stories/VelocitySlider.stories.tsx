@@ -1,6 +1,12 @@
+import { useArgs } from "@storybook/preview-api"
 import type { Meta, StoryObj } from "@storybook/react"
 import { VelocitySlider } from "../src"
-import { useArgs } from "@storybook/preview-api"
+
+const mockStore = {
+  showVelocityLegend: true,
+  showVelocitySliderLabel: true,
+  useGradientSlider: false,
+} as any
 
 const meta: Meta<typeof VelocitySlider> = {
   title: "Jogging/VelocitySlider",
@@ -12,6 +18,7 @@ const meta: Meta<typeof VelocitySlider> = {
     min: 1,
     max: 100,
     disabled: false,
+    store: mockStore,
   },
   render: function Component(args) {
     const [, setArgs] = useArgs()
