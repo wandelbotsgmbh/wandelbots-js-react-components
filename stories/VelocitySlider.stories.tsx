@@ -3,9 +3,9 @@ import type { Meta, StoryObj } from "@storybook/react"
 import { VelocitySlider } from "../src"
 
 const mockStore = {
-  showVelocityLegend: true,
+  showTabIcons: false,
   showVelocitySliderLabel: true,
-  useGradientSlider: false,
+  showVelocityLegend: false,
 } as any
 
 const meta: Meta<typeof VelocitySlider> = {

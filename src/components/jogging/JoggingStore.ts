@@ -117,13 +117,13 @@ export class JoggingStore {
   showIncrementSelect: boolean = true
 
   /** Whether to show icons in the jogging tabs */
-  showTabIcons: boolean = true
+  showTabIcons: boolean = false
 
   /** Whether to show the label to the right of the velocity slider */
-  showVelocitySliderLabel: boolean = false
+  showVelocitySliderLabel: boolean = true
 
   /** Whether to show the legend before the slider */
-  showVelocityLegend: boolean = true
+  showVelocityLegend: boolean = false
 
   disposers: IReactionDisposer[] = []
 
