@@ -42,5 +42,6 @@
   "Jogging.Increment.hlb": "Schrittgröße",
   "Jogging.CoordinateSystem.hlb": "Koordinatensystem",
   "Jogging.Cartesian.bt": "Kartesisch",
-  "Jogging.Joints.bt": "Gelenke"
+  "Jogging.Joints.bt": "Gelenke",
+  "Jogging.Velocity.bt": "Geschwindigkeit"
 }

@@ -21,7 +21,7 @@ const meta: Meta<typeof JoggingCartesianAxisControl> = {
     const joggingValueRef = useRef(0)
 
     const theme = useTheme()
-    const colors = theme.componentsExt?.JoggingCartesian?.Axis?.X
+    const colors = theme.componentsExt?.JoggingPanel?.JoggingCartesian?.Axis?.X
 
     useAnimationFrame(() => {
       if (joggingDirRef.current === "+") {

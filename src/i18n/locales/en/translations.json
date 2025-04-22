@@ -43,5 +43,6 @@
   "Jogging.Increment.hlb": "Increment",
   "Jogging.CoordinateSystem.hlb": "Coordinate system",
   "Jogging.Cartesian.bt": "Cartesian",
-  "Jogging.Joints.bt": "Joints"
+  "Jogging.Joints.bt": "Joints",
+  "Jogging.Velocity.bt": "Velocity"
 }

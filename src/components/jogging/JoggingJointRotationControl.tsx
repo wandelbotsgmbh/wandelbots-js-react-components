@@ -137,7 +137,9 @@ export const JoggingJointRotationControl = externalizeComponent(
             <ChevronLeft
               sx={{
                 pointerEvents: "none",
-                color: theme.componentsExt?.JoggingJoint?.Joint?.arrowColor,
+                color:
+                  theme.componentsExt?.JoggingPanel?.JoggingJoint?.Joint
+                    ?.arrowColor,
               }}
             />
           </IconButton>
@@ -233,7 +235,9 @@ export const JoggingJointRotationControl = externalizeComponent(
             <ChevronRight
               sx={{
                 pointerEvents: "none",
-                color: theme.componentsExt?.JoggingJoint?.Joint?.arrowColor,
+                color:
+                  theme.componentsExt?.JoggingPanel?.JoggingJoint?.Joint
+                    ?.arrowColor,
               }}
             />
           </IconButton>
