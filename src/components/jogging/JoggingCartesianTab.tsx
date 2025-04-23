@@ -143,17 +143,17 @@ export const JoggingCartesianTab = observer(
     const axisList = [
       {
         id: "x",
-        colors: theme.componentsExt?.JoggingCartesian?.Axis?.X,
+        colors: theme.componentsExt?.JoggingPanel?.JoggingCartesian?.Axis?.X,
         icon: <XAxisIcon />,
       },
       {
         id: "y",
-        colors: theme.componentsExt?.JoggingCartesian?.Axis?.Y,
+        colors: theme.componentsExt?.JoggingPanel?.JoggingCartesian?.Axis?.Y,
         icon: <YAxisIcon />,
       },
       {
         id: "z",
-        colors: theme.componentsExt?.JoggingCartesian?.Axis?.Z,
+        colors: theme.componentsExt?.JoggingPanel?.JoggingCartesian?.Axis?.Z,
         icon: <ZAxisIcon />,
       },
     ] as const

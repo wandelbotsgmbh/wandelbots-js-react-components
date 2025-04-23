@@ -30,16 +30,21 @@ export interface AxisControlComponentColors {
 
 interface NovaComponentsExtension {
   componentsExt?: {
-    JoggingCartesian?: {
-      Axis?: {
-        X?: AxisControlComponentColors
-        Y?: AxisControlComponentColors
-        Z?: AxisControlComponentColors
+    JoggingPanel?: {
+      JoggingCartesian?: {
+        Axis?: {
+          X?: AxisControlComponentColors
+          Y?: AxisControlComponentColors
+          Z?: AxisControlComponentColors
+        }
       }
-    }
-    JoggingJoint?: {
-      Joint?: {
-        arrowColor?: string
+      JoggingJoint?: {
+        Joint?: {
+          arrowColor?: string
+        }
+      }
+      VelocitySlider?: {
+        sliderLegendColor?: string
       }
     }
     WandelscriptEditor?: {

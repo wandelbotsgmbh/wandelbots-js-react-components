@@ -21,6 +21,7 @@ export const JoggingVelocitySlider = observer(
 
     return (
       <VelocitySlider
+        store={store}
         velocity={store.velocityInDisplayUnits}
         min={store.minVelocityInDisplayUnits}
         max={store.maxVelocityInDisplayUnits}

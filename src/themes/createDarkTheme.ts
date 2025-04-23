@@ -215,49 +215,54 @@ export function createDarkTheme(): Theme {
     },
 
     componentsExt: {
-      JoggingCartesian: {
-        Axis: {
-          X: {
-            backgroundColor: "rgba(215, 66, 56, 1)",
-            borderColor: "rgba(215, 66, 56, 1)",
-            buttonBackgroundColor: {
-              default: "rgba(241, 77, 66, 1)",
-              pressed: "rgba(138, 41, 35, 1)",
-              hovered: "rgba(241, 77, 66, 1)",
-              disabled: "rgba(241, 77, 66, 1)",
+      JoggingPanel: {
+        JoggingCartesian: {
+          Axis: {
+            X: {
+              backgroundColor: "rgba(215, 66, 56, 1)",
+              borderColor: "rgba(215, 66, 56, 1)",
+              buttonBackgroundColor: {
+                default: "rgba(241, 77, 66, 1)",
+                pressed: "rgba(138, 41, 35, 1)",
+                hovered: "rgba(241, 77, 66, 1)",
+                disabled: "rgba(241, 77, 66, 1)",
+              },
+              color: "rgba(255, 198, 198, 1)",
+              labelColor: baseTheme.palette.text.primary,
             },
-            color: "rgba(255, 198, 198, 1)",
-            labelColor: baseTheme.palette.text.primary,
-          },
-          Y: {
-            backgroundColor: "rgba(20, 151, 108, 1)",
-            borderColor: "rgba(20, 151, 108, 1)",
-            buttonBackgroundColor: {
-              default: "rgba(28, 188, 135, 1)",
-              pressed: "rgba(11, 89, 63, 1)",
-              disabled: "rgba(28, 188, 135, 1)",
-              hovered: "rgba(28, 188, 135, 1)",
+            Y: {
+              backgroundColor: "rgba(20, 151, 108, 1)",
+              borderColor: "rgba(20, 151, 108, 1)",
+              buttonBackgroundColor: {
+                default: "rgba(28, 188, 135, 1)",
+                pressed: "rgba(11, 89, 63, 1)",
+                disabled: "rgba(28, 188, 135, 1)",
+                hovered: "rgba(28, 188, 135, 1)",
+              },
+              color: "rgba(215, 255, 242, 1)",
+              labelColor: baseTheme.palette.text.primary,
             },
-            color: "rgba(215, 255, 242, 1)",
-            labelColor: baseTheme.palette.text.primary,
-          },
-          Z: {
-            backgroundColor: "rgba(1, 87, 155, 1)",
-            borderColor: "rgba(1, 87, 155, 1)",
-            buttonBackgroundColor: {
-              default: "rgba(2, 136, 209, 1)",
-              pressed: "rgba(2, 64, 114, 1)",
-              disabled: "rgba(2, 136, 209, 1)",
-              hovered: "rgba(2, 136, 209, 1)",
+            Z: {
+              backgroundColor: "rgba(1, 87, 155, 1)",
+              borderColor: "rgba(1, 87, 155, 1)",
+              buttonBackgroundColor: {
+                default: "rgba(2, 136, 209, 1)",
+                pressed: "rgba(2, 64, 114, 1)",
+                disabled: "rgba(2, 136, 209, 1)",
+                hovered: "rgba(2, 136, 209, 1)",
+              },
+              color: "rgba(210, 239, 255, 1)",
+              labelColor: baseTheme.palette.text.primary,
             },
-            color: "rgba(210, 239, 255, 1)",
-            labelColor: baseTheme.palette.text.primary,
           },
         },
-      },
-      JoggingJoint: {
-        Joint: {
-          arrowColor: baseTheme.palette.text.primary,
+        JoggingJoint: {
+          Joint: {
+            arrowColor: baseTheme.palette.text.primary,
+          },
+        },
+        VelocitySlider: {
+          sliderLegendColor: baseTheme.palette.text.primary,
         },
       },
       WandelscriptEditor: {
