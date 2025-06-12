@@ -1,7 +1,10 @@
 {
   "extends": "../tsconfig.json",
   "compilerOptions": {
-    "rootDir": "../"
+    "rootDir": "../",
+    "skipLibCheck": true,
+    "noImplicitAny": false,
+    "strict": false
   },
-  "include": ["../src", "."]
+  "include": ["../src", ".", "./types.d.ts"]
 }

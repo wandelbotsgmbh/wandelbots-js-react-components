@@ -100,9 +100,8 @@ export default function AvatarExample() {
         >
           <AssignmentIcon />
         </Avatar>
-      </Box>
+      </Box>{" "}
       <Box component="div" sx={avatarSetStyle}>
-        {/* @ts-expect-error Union type complexity issue in MUI v6 */}
         <AvatarGroup max={4}>
           <Avatar
             alt="Remy Sharp"

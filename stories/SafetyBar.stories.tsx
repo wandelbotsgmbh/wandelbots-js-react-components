@@ -1,10 +1,9 @@
-import type { Meta, StoryObj } from "@storybook/react"
+import type { Meta, StoryObj } from "@storybook/react-vite"
 import { SafetyBar } from "../src"
 
 const meta: Meta<typeof SafetyBar> = {
   title: "Safety/SafetyBar",
   component: SafetyBar,
-  tags: ["autodocs"],
   args: {
     isVirtual: false,
     motionGroupId: "robot1",

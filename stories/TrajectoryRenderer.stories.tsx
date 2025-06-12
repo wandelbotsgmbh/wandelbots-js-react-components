@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react"
+import type { Meta, StoryObj } from "@storybook/react-vite"
 import type { GetTrajectoryResponse } from "@wandelbots/nova-js/v1"
 import { Vector3 } from "three"
 import { TrajectoryRenderer } from "../src/components/3d-viewport/TrajectoryRenderer"

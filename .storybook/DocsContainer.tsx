@@ -1,23 +1,25 @@
-import type { DocsContainerProps } from "@storybook/blocks"
-import { DocsContainer as BaseContainer } from "@storybook/blocks"
-import { addons } from "@storybook/preview-api"
-import { themes } from "@storybook/theming"
+import type { DocsContainerProps } from "@storybook/addon-docs/blocks"
+import { DocsContainer as BaseContainer } from "@storybook/addon-docs/blocks"
 import type { FC, PropsWithChildren } from "react"
-import React, { useEffect, useState } from "react"
-import { DARK_MODE_EVENT_NAME } from "storybook-dark-mode"
-
-const channel = addons.getChannel()
+import { themes } from "storybook/theming"
 
 export const DocsContainer: FC<PropsWithChildren<DocsContainerProps>> = ({
   children,
   context,
 }) => {
-  const [isDark, setDark] = useState(true)
+  // Get theme from Storybook globals - using a safer access pattern
+  let theme = "light"
+  try {
+    theme =
+      (context as any)?.store?.globals?.globals?.theme ||
+      (context as any)?.globals?.theme ||
+      "light"
+  } catch (e) {
+    // Fallback to light theme if access fails
+    theme = "light"
+  }
 
-  useEffect(() => {
-    channel.on(DARK_MODE_EVENT_NAME, setDark)
-    return () => channel.off(DARK_MODE_EVENT_NAME, setDark)
-  }, [channel])
+  const isDark = theme === "dark"
 
   return (
     <BaseContainer
