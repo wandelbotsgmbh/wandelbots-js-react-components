@@ -7,25 +7,9 @@ export const DocsContainer: FC<PropsWithChildren<DocsContainerProps>> = ({
   children,
   context,
 }) => {
-  // Get theme from Storybook globals - using a safer access pattern
-  let theme = "light"
-  try {
-    theme =
-      (context as any)?.store?.globals?.globals?.theme ||
-      (context as any)?.globals?.theme ||
-      "light"
-  } catch (e) {
-    // Fallback to light theme if access fails
-    theme = "light"
-  }
-
-  const isDark = theme === "dark"
-
+  // Force dark theme for documentation
   return (
-    <BaseContainer
-      theme={isDark ? themes.dark : themes.light}
-      context={context}
-    >
+    <BaseContainer theme={themes.dark} context={context}>
       {children}
     </BaseContainer>
   )

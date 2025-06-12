@@ -10,8 +10,11 @@ const preview: Preview = {
       container: DocsContainer,
     },
 
-    // Support for built-in Storybook dark mode
-    backgrounds: { disable: true },
+    // Force dark backgrounds
+    backgrounds: {
+      default: "dark",
+      values: [{ name: "dark", value: "#121212" }],
+    },
 
     options: {
       storySort: (a, b) =>
@@ -29,26 +32,11 @@ const preview: Preview = {
       },
     },
   },
-  globalTypes: {
-    theme: {
-      description: "Global theme for components",
-      defaultValue: "light",
-      toolbar: {
-        title: "Theme",
-        icon: "paintbrush",
-        items: [
-          { value: "light", title: "Light", icon: "sun" },
-          { value: "dark", title: "Dark", icon: "moon" },
-        ],
-        dynamicTitle: true,
-      },
-    },
-  },
   decorators: [
-    (Story, context) => {
-      const theme = context.globals.theme || "light"
+    (Story) => {
+      // Force dark theme for all components
       const muiTheme = createNovaMuiTheme({
-        palette: { mode: theme },
+        palette: { mode: "dark" },
       })
 
       return (

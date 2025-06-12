@@ -41,7 +41,8 @@ export default function SliderExample() {
       {" "}
       <Typography id="continuous-slider" gutterBottom>
         Volume
-      </Typography>{" "}      <Grid container spacing={2}>
+      </Typography>{" "}
+      <Grid container spacing={2}>
         <Grid component="div">
           <VolumeDown />
         </Grid>

@@ -13,7 +13,7 @@ declare module "@mui/material/Grid" {
   interface GridPropsVariantOverrides {
     item: true
   }
-  
+
   interface GridProps {
     item?: boolean
     container?: boolean
