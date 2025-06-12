@@ -13,7 +13,10 @@ const preview: Preview = {
     // Force dark backgrounds
     backgrounds: {
       default: "dark",
-      values: [{ name: "dark", value: "#121212" }],
+      values: [
+        { name: "dark", value: "#121212" },
+        { name: "light", value: "#ffffff" },
+      ],
     },
 
     options: {
@@ -31,6 +34,9 @@ const preview: Preview = {
         date: /Date$/,
       },
     },
+  },
+  initialGlobals: {
+    backgrounds: { value: "dark" },
   },
   decorators: [
     (Story) => {
