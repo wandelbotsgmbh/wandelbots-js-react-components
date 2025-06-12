@@ -24,5 +24,6 @@ export const rapidlyChangingMotionState: MotionGroupStateResponse = {
     joint_limit_reached: {
       limit_reached: [false, false, false, false, false, false],
     },
+    sequence_number: "0",
   },
 }

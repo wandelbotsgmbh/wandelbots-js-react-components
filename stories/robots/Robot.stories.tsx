@@ -1,6 +1,6 @@
 import { Canvas } from "@react-three/fiber"
-import type { StoryObj } from "@storybook/react"
-import { expect, fn, waitFor } from "@storybook/test"
+import type { StoryObj } from "@storybook/react-vite"
+import { expect, fn, waitFor } from "storybook/test"
 import type { ConnectedMotionGroup } from "@wandelbots/nova-js/v1"
 import { NovaClient } from "@wandelbots/nova-js/v1"
 import { useEffect, useState } from "react"

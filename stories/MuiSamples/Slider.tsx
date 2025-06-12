@@ -38,30 +38,29 @@ export default function SliderExample() {
 
   return (
     <Box component="div" sx={{ width: 300 }}>
+      {" "}
       <Typography id="continuous-slider" gutterBottom>
         Volume
-      </Typography>
+      </Typography>{" "}
       <Grid container spacing={2}>
-        <Grid item>
+        <Grid component="div">
           <VolumeDown />
         </Grid>
-        <Grid item xs>
+        <Grid xs component="div">
           <Slider
             value={value}
             onChange={handleChange}
             aria-labelledby="continuous-slider"
-          />
+          />{" "}
         </Grid>
-        <Grid item>
+        <Grid component="div">
           <VolumeUp />
         </Grid>
       </Grid>
-
       <Typography id="disabled-slider" gutterBottom>
         Disabled slider
       </Typography>
       <Slider disabled defaultValue={30} aria-labelledby="disabled-slider" />
-
       <Typography id="discrete-slider-always" gutterBottom>
         Always visible
       </Typography>

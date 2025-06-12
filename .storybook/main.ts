@@ -1,6 +1,6 @@
-import { loadCsf } from "@storybook/csf-tools"
 import type { StorybookConfig } from "@storybook/react-vite"
 import { readFileSync } from "node:fs"
+import { loadCsf } from "storybook/internal/csf-tools"
 import type { Indexer } from "storybook/internal/types"
 import {
   generateRobotStories,
@@ -19,12 +19,7 @@ const config: StorybookConfig = {
         ]
       : []),
   ],
-  addons: [
-    "@storybook/addon-essentials",
-    "storybook-preset-inline-svg",
-    "storybook-dark-mode",
-    "@storybook/addon-interactions",
-  ],
+  addons: ["storybook-preset-inline-svg", "@storybook/addon-docs"],
   framework: {
     name: "@storybook/react-vite",
     options: {},
