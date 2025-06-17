@@ -32,19 +32,11 @@ interface NovaComponentsExtension {
   componentsExt?: {
     JoggingPanel?: {
       JoggingCartesian?: {
-        translation?: {
-          Axis?: {
-            X?: AxisControlComponentColors
-            Y?: AxisControlComponentColors
-            Z?: AxisControlComponentColors
-          }
-        }
-        rotation?: {
-          Axis?: {
-            X?: AxisControlComponentColors
-            Y?: AxisControlComponentColors
-            Z?: AxisControlComponentColors
-          }
+        Axis?: {
+          X?: AxisControlComponentColors
+          Y?: AxisControlComponentColors
+          Z?: AxisControlComponentColors
+          Disabled?: AxisControlComponentColors
         }
       }
       JoggingJoint?: {

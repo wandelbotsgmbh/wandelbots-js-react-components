@@ -4,6 +4,7 @@ import {
   ToggleButton,
   Typography,
   useTheme,
+  type Theme,
 } from "@mui/material"
 import { degreesToRadians, radiansToDegrees } from "@wandelbots/nova-js"
 import { observer } from "mobx-react-lite"
@@ -140,42 +141,38 @@ export const JoggingCartesianTab = observer(
       await store.deactivate()
     }
 
+    function getAxisColors(
+      axisId: "X" | "Y" | "Z",
+      motionType: "translate" | "rotate",
+      theme: Theme,
+    ) {
+      const axisColors =
+        theme.componentsExt?.JoggingPanel?.JoggingCartesian?.Axis
+
+      if (!axisColors) return undefined
+
+      if (motionType === "translate") {
+        return axisColors[axisId]
+      }
+
+      return axisColors.Disabled ?? axisColors[axisId]
+    }
+
     const axisList = [
       {
         id: "x",
-        colors: {
-          translation:
-            theme.componentsExt?.JoggingPanel?.JoggingCartesian?.translation
-              ?.Axis?.X,
-          rotation:
-            theme.componentsExt?.JoggingPanel?.JoggingCartesian?.rotation?.Axis
-              ?.X,
-        },
         icon: <XAxisIcon />,
+        colors: getAxisColors("X", store.selectedCartesianMotionType, theme),
       },
       {
         id: "y",
-        colors: {
-          translation:
-            theme.componentsExt?.JoggingPanel?.JoggingCartesian?.translation
-              ?.Axis?.Y,
-          rotation:
-            theme.componentsExt?.JoggingPanel?.JoggingCartesian?.rotation?.Axis
-              ?.Y,
-        },
         icon: <YAxisIcon />,
+        colors: getAxisColors("Y", store.selectedCartesianMotionType, theme),
       },
       {
         id: "z",
-        colors: {
-          translation:
-            theme.componentsExt?.JoggingPanel?.JoggingCartesian?.translation
-              ?.Axis?.Z,
-          rotation:
-            theme.componentsExt?.JoggingPanel?.JoggingCartesian?.rotation?.Axis
-              ?.Z,
-        },
         icon: <ZAxisIcon />,
+        colors: getAxisColors("Z", store.selectedCartesianMotionType, theme),
       },
     ] as const
 
@@ -235,7 +232,7 @@ export const JoggingCartesianTab = observer(
               axisList.map((axis) => (
                 <JoggingCartesianAxisControl
                   key={axis.id}
-                  colors={axis.colors?.translation}
+                  colors={axis.colors}
                   disabled={store.isLocked}
                   activeJoggingDirection={
                     store.incrementJogInProgress?.axis === axis.id
@@ -249,7 +246,7 @@ export const JoggingCartesianTab = observer(
                         sx={{
                           fontSize: "24px",
                           color:
-                            axis.colors?.translation?.labelColor ??
+                            axis.colors?.labelColor ??
                             theme.palette.text.primary,
                         }}
                       >
@@ -279,7 +276,7 @@ export const JoggingCartesianTab = observer(
               axisList.map((axis) => (
                 <JoggingCartesianAxisControl
                   key={axis.id}
-                  colors={axis.colors.rotation}
+                  colors={axis.colors}
                   disabled={store.isLocked}
                   activeJoggingDirection={
                     store.incrementJogInProgress?.axis === axis.id
@@ -293,7 +290,7 @@ export const JoggingCartesianTab = observer(
                         sx={{
                           fontSize: "24px",
                           color:
-                            axis.colors?.rotation?.labelColor ??
+                            axis.colors?.labelColor ??
                             theme.palette.text.primary,
                         }}
                       >
