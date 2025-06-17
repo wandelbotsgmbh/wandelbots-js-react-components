@@ -143,17 +143,38 @@ export const JoggingCartesianTab = observer(
     const axisList = [
       {
         id: "x",
-        colors: theme.componentsExt?.JoggingPanel?.JoggingCartesian?.Axis?.X,
+        colors: {
+          translation:
+            theme.componentsExt?.JoggingPanel?.JoggingCartesian?.translation
+              ?.Axis?.X,
+          rotation:
+            theme.componentsExt?.JoggingPanel?.JoggingCartesian?.rotation?.Axis
+              ?.X,
+        },
         icon: <XAxisIcon />,
       },
       {
         id: "y",
-        colors: theme.componentsExt?.JoggingPanel?.JoggingCartesian?.Axis?.Y,
+        colors: {
+          translation:
+            theme.componentsExt?.JoggingPanel?.JoggingCartesian?.translation
+              ?.Axis?.Y,
+          rotation:
+            theme.componentsExt?.JoggingPanel?.JoggingCartesian?.rotation?.Axis
+              ?.Y,
+        },
         icon: <YAxisIcon />,
       },
       {
         id: "z",
-        colors: theme.componentsExt?.JoggingPanel?.JoggingCartesian?.Axis?.Z,
+        colors: {
+          translation:
+            theme.componentsExt?.JoggingPanel?.JoggingCartesian?.translation
+              ?.Axis?.Z,
+          rotation:
+            theme.componentsExt?.JoggingPanel?.JoggingCartesian?.rotation?.Axis
+              ?.Z,
+        },
         icon: <ZAxisIcon />,
       },
     ] as const
@@ -214,7 +235,7 @@ export const JoggingCartesianTab = observer(
               axisList.map((axis) => (
                 <JoggingCartesianAxisControl
                   key={axis.id}
-                  colors={axis.colors}
+                  colors={axis.colors?.translation}
                   disabled={store.isLocked}
                   activeJoggingDirection={
                     store.incrementJogInProgress?.axis === axis.id
@@ -228,7 +249,7 @@ export const JoggingCartesianTab = observer(
                         sx={{
                           fontSize: "24px",
                           color:
-                            axis.colors?.labelColor ??
+                            axis.colors?.translation?.labelColor ??
                             theme.palette.text.primary,
                         }}
                       >
@@ -258,7 +279,7 @@ export const JoggingCartesianTab = observer(
               axisList.map((axis) => (
                 <JoggingCartesianAxisControl
                   key={axis.id}
-                  colors={axis.colors}
+                  colors={axis.colors.rotation}
                   disabled={store.isLocked}
                   activeJoggingDirection={
                     store.incrementJogInProgress?.axis === axis.id
@@ -272,7 +293,7 @@ export const JoggingCartesianTab = observer(
                         sx={{
                           fontSize: "24px",
                           color:
-                            axis.colors?.labelColor ??
+                            axis.colors?.rotation?.labelColor ??
                             theme.palette.text.primary,
                         }}
                       >
