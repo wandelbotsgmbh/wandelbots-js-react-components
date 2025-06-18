@@ -125,6 +125,9 @@ export class JoggingStore {
   /** Whether to show the legend before the slider */
   showVelocityLegend: boolean = false
 
+  /** Whether to show the legend before the joints */
+  showJointsLegend: boolean = false
+
   disposers: IReactionDisposer[] = []
 
   /**
