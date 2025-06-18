@@ -155,7 +155,7 @@ export const JoggingCartesianTab = observer(
         return axisColors[axisId]
       }
 
-      return axisColors.Disabled ?? axisColors[axisId]
+      return axisColors.CustomRotation ?? axisColors[axisId]
     }
 
     const axisList = [

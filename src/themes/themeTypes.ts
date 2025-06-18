@@ -36,7 +36,7 @@ interface NovaComponentsExtension {
           X?: AxisControlComponentColors
           Y?: AxisControlComponentColors
           Z?: AxisControlComponentColors
-          Disabled?: AxisControlComponentColors
+          CustomRotation?: AxisControlComponentColors
         }
       }
       JoggingJoint?: {
