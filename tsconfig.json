@@ -17,6 +17,7 @@
     "declaration": true,
     "declarationMap": true,
     "verbatimModuleSyntax": true,
+    "noImplicitAny": false,
     // Stops vscode from sometimes deleting chunks of code accidentally
     "allowUnreachableCode": true
   },

@@ -9,7 +9,7 @@ import React from "react"
 export default function ProgressExample() {
   const [loading, setLoading] = React.useState(false)
   const [success, setSuccess] = React.useState(false)
-  const timer = React.useRef<number>()
+  const timer = React.useRef<number>(0)
 
   React.useEffect(() => {
     return () => {

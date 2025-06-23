@@ -4,7 +4,7 @@ import * as THREE from "three"
 
 export type TrajectoryRendererProps = {
   trajectory: GetTrajectoryResponse
-} & JSX.IntrinsicElements["group"]
+} & React.JSX.IntrinsicElements["group"]
 
 export function TrajectoryRenderer({
   trajectory,

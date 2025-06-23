@@ -54,10 +54,10 @@ export default function ListExample() {
             />
           }
           label="Enable secondary text"
-        />
-      </FormGroup>
+        />{" "}
+      </FormGroup>{" "}
       <Grid container spacing={2}>
-        <Grid item xs={12} md={6}>
+        <Grid {...({ item: true, xs: 12, md: 6, component: "div" } as any)}>
           <Typography variant="h6" sx={{ mt: 4, mx: 0, mb: 2 }}>
             Text only
           </Typography>
@@ -71,10 +71,10 @@ export default function ListExample() {
                   />
                 </ListItem>,
               )}
-            </List>
-          </Box>
+            </List>{" "}
+          </Box>{" "}
         </Grid>
-        <Grid item xs={12} md={6}>
+        <Grid {...({ item: true, xs: 12, md: 6, component: "div" } as any)}>
           <Typography variant="h6" sx={{ mt: 4, mx: 0, mb: 2 }}>
             Icon with text
           </Typography>
@@ -92,11 +92,11 @@ export default function ListExample() {
                 </ListItem>,
               )}
             </List>
-          </Box>
-        </Grid>
-      </Grid>
+          </Box>{" "}
+        </Grid>{" "}
+      </Grid>{" "}
       <Grid container spacing={2}>
-        <Grid item xs={12} md={6}>
+        <Grid {...({ item: true, xs: 12, md: 6, component: "div" } as any)}>
           <Typography variant="h6" sx={{ mt: 4, mx: 0, mb: 2 }}>
             Avatar with text
           </Typography>
@@ -114,11 +114,11 @@ export default function ListExample() {
                     secondary={secondary ? "Secondary text" : null}
                   />
                 </ListItem>,
-              )}
-            </List>
-          </Box>
+              )}{" "}
+            </List>{" "}
+          </Box>{" "}
         </Grid>
-        <Grid item xs={12} md={6}>
+        <Grid {...({ item: true, xs: 12, md: 6, component: "div" } as any)}>
           <Typography variant="h6" sx={{ mt: 4, mx: 0, mb: 2 }}>
             Avatar with text and icon
           </Typography>

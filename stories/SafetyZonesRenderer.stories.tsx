@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react"
+import type { Meta, StoryObj } from "@storybook/react-vite"
 import type { SafetySetupSafetyZone } from "@wandelbots/nova-js/v1"
 import { Vector3 } from "three"
 import { SafetyZonesRenderer } from "../src"
