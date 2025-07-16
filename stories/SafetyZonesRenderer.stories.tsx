@@ -4,7 +4,7 @@ import { Vector3 } from "three"
 import { SafetyZonesRenderer } from "../src"
 import { Setup } from "../src/Setup"
 
-export default {
+const meta: Meta<typeof SafetyZonesRenderer> = {
   tags: ["!dev"],
   title: "3D View/SafetyZonesRenderer",
   component: SafetyZonesRenderer,
@@ -27,7 +27,9 @@ export default {
       </div>
     ),
   ],
-} satisfies Meta<typeof SafetyZonesRenderer>
+}
+
+export default meta
 
 type Story = StoryObj<typeof SafetyZonesRenderer>
 
