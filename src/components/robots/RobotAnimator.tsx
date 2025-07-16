@@ -4,7 +4,7 @@ import type {
   DHParameter,
   MotionGroupStateResponse,
 } from "@wandelbots/nova-api/v1"
-import React, { useEffect, useRef, useState, useCallback } from "react"
+import React, { useCallback, useEffect, useRef, useState } from "react"
 import type { Group, Object3D } from "three"
 import { useAutorun } from "../utils/hooks"
 import { collectJoints } from "./robotModelLogic"

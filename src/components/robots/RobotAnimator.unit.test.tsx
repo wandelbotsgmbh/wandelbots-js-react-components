@@ -1,6 +1,9 @@
-import { vi, describe, it, expect, beforeEach, afterEach } from "vitest"
+import type {
+  DHParameter,
+  MotionGroupStateResponse,
+} from "@wandelbots/nova-api/v1"
 import { Object3D } from "three"
-import type { DHParameter, MotionGroupStateResponse } from "@wandelbots/nova-api/v1"
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 // Import the component for testing
 import RobotAnimator from "./RobotAnimator"
@@ -27,9 +30,9 @@ vi.mock("@react-three/fiber", () => ({
   }),
 }))
 
+import { useSpring } from "@react-spring/three"
 import { useAutorun } from "../utils/hooks"
 import { collectJoints } from "./robotModelLogic"
-import { useSpring } from "@react-spring/three"
 
 const mockUseAutorun = useAutorun as any
 const mockCollectJoints = collectJoints as any
@@ -72,7 +75,9 @@ describe("RobotAnimator Logic Tests", () => {
     mockAxisValues = {}
     for (let i = 0; i < 6; i++) {
       mockAxisValues[i] = {
-        get: vi.fn().mockReturnValue(mockMotionState.state.joint_position.joints[i]),
+        get: vi
+          .fn()
+          .mockReturnValue(mockMotionState.state.joint_position.joints[i]),
       }
     }
 
@@ -123,7 +128,7 @@ describe("RobotAnimator Logic Tests", () => {
       const dhParam = dhParameters[index]
       const rotationOffset = dhParam.theta || 0
       const rotationSign = dhParam.reverse_rotation_direction ? -1 : 1
-      
+
       joint.rotation.y = rotationSign * jointValues[index]! + rotationOffset
     })
 
@@ -140,7 +145,7 @@ describe("RobotAnimator Logic Tests", () => {
     // Test the filtering logic that removes undefined values
     const inputJoints = [1, undefined, 3, undefined, 5, 6]
     const filteredJoints = inputJoints.filter((item) => item !== undefined)
-    
+
     expect(filteredJoints).toEqual([1, 3, 5, 6])
     expect(filteredJoints.length).toBe(4)
   })
@@ -148,25 +153,25 @@ describe("RobotAnimator Logic Tests", () => {
   it("should test DH parameter application", () => {
     // Test various DH parameter combinations
     const testCases = [
-      { 
-        jointValue: 1.0, 
+      {
+        jointValue: 1.0,
         dhParam: { theta: 0, reverse_rotation_direction: false },
-        expected: 1.0 
+        expected: 1.0,
       },
-      { 
-        jointValue: 1.0, 
+      {
+        jointValue: 1.0,
         dhParam: { theta: 0.5, reverse_rotation_direction: false },
-        expected: 1.5 
+        expected: 1.5,
       },
-      { 
-        jointValue: 1.0, 
+      {
+        jointValue: 1.0,
         dhParam: { theta: 0, reverse_rotation_direction: true },
-        expected: -1.0 
+        expected: -1.0,
       },
-      { 
-        jointValue: 1.0, 
+      {
+        jointValue: 1.0,
         dhParam: { theta: 0.5, reverse_rotation_direction: true },
-        expected: -0.5 
+        expected: -0.5,
       },
     ]
 
@@ -174,9 +179,9 @@ describe("RobotAnimator Logic Tests", () => {
       const joint = new Object3D()
       const rotationOffset = dhParam.theta || 0
       const rotationSign = dhParam.reverse_rotation_direction ? -1 : 1
-      
+
       joint.rotation.y = rotationSign * jointValue + rotationOffset
-      
+
       expect(joint.rotation.y).toBeCloseTo(expected, 5)
     })
   })
@@ -203,10 +208,11 @@ describe("RobotAnimator Logic Tests", () => {
   it("should test empty joint array handling", () => {
     // Test behavior when no joints are available
     const emptyJoints: Object3D[] = []
-    
+
     // This simulates the isInitialized check in the component
-    const isInitialized = emptyJoints.length > 0 && emptyJoints.every((obj) => obj != null)
-    
+    const isInitialized =
+      emptyJoints.length > 0 && emptyJoints.every((obj) => obj != null)
+
     expect(isInitialized).toBe(false)
   })
 
@@ -214,10 +220,12 @@ describe("RobotAnimator Logic Tests", () => {
     // Test the joint object validation logic
     const validJoints = [new Object3D(), new Object3D(), new Object3D()]
     const invalidJoints = [new Object3D(), null, new Object3D()]
-    
-    const isValidJointsInitialized = validJoints.length > 0 && validJoints.every((obj) => obj != null)
-    const isInvalidJointsInitialized = invalidJoints.length > 0 && invalidJoints.every((obj) => obj != null)
-    
+
+    const isValidJointsInitialized =
+      validJoints.length > 0 && validJoints.every((obj) => obj != null)
+    const isInvalidJointsInitialized =
+      invalidJoints.length > 0 && invalidJoints.every((obj) => obj != null)
+
     expect(isValidJointsInitialized).toBe(true)
     expect(isInvalidJointsInitialized).toBe(false)
   })
@@ -227,7 +235,9 @@ describe("RobotAnimator Logic Tests", () => {
     expect(mockMotionState.state).toBeDefined()
     expect(mockMotionState.state.joint_position).toBeDefined()
     expect(mockMotionState.state.joint_position.joints).toBeDefined()
-    expect(Array.isArray(mockMotionState.state.joint_position.joints)).toBe(true)
+    expect(Array.isArray(mockMotionState.state.joint_position.joints)).toBe(
+      true,
+    )
     expect(mockMotionState.state.joint_position.joints.length).toBe(6)
   })
 
@@ -245,10 +255,10 @@ describe("RobotAnimator Logic Tests", () => {
     const mockCallback = vi.fn()
     const testJoints = [new Object3D(), new Object3D()]
     const testValues = [1.0, 2.0]
-    
+
     // Simulate calling the callback
     mockCallback(testJoints, testValues)
-    
+
     expect(mockCallback).toHaveBeenCalledWith(testJoints, testValues)
     expect(mockCallback).toHaveBeenCalledTimes(1)
   })
@@ -257,29 +267,32 @@ describe("RobotAnimator Logic Tests", () => {
     // Test the initialization state logic that prevents race conditions
     let isInitialized = false
     const joints: Object3D[] = []
-    
+
     // Simulate setGroupRef logic
     function simulateSetGroupRef(group: any) {
       if (!group) {
         isInitialized = false
         return
       }
-      
+
       // Simulate collectJoints
       const collectedJoints = group ? [new Object3D(), new Object3D()] : []
-      
+
       // Only mark as initialized if we have valid joint objects
-      if (collectedJoints.length > 0 && collectedJoints.every((obj) => obj != null)) {
+      if (
+        collectedJoints.length > 0 &&
+        collectedJoints.every((obj) => obj != null)
+      ) {
         isInitialized = true
       } else {
         isInitialized = false
       }
     }
-    
+
     // Test null group
     simulateSetGroupRef(null)
     expect(isInitialized).toBe(false)
-    
+
     // Test valid group
     simulateSetGroupRef({ type: "Group" })
     expect(isInitialized).toBe(true)
