@@ -4,6 +4,7 @@ import {
   ToggleButton,
   Typography,
   useTheme,
+  type Theme,
 } from "@mui/material"
 import { degreesToRadians, radiansToDegrees } from "@wandelbots/nova-js"
 import { observer } from "mobx-react-lite"
@@ -140,21 +141,38 @@ export const JoggingCartesianTab = observer(
       await store.deactivate()
     }
 
+    function getAxisColors(
+      axisId: "X" | "Y" | "Z",
+      motionType: "translate" | "rotate",
+      theme: Theme,
+    ) {
+      const axisColors =
+        theme.componentsExt?.JoggingPanel?.JoggingCartesian?.Axis
+
+      if (!axisColors) return undefined
+
+      if (motionType === "translate") {
+        return axisColors[axisId]
+      }
+
+      return axisColors.CustomRotation ?? axisColors[axisId]
+    }
+
     const axisList = [
       {
         id: "x",
-        colors: theme.componentsExt?.JoggingPanel?.JoggingCartesian?.Axis?.X,
         icon: <XAxisIcon />,
+        colors: getAxisColors("X", store.selectedCartesianMotionType, theme),
       },
       {
         id: "y",
-        colors: theme.componentsExt?.JoggingPanel?.JoggingCartesian?.Axis?.Y,
         icon: <YAxisIcon />,
+        colors: getAxisColors("Y", store.selectedCartesianMotionType, theme),
       },
       {
         id: "z",
-        colors: theme.componentsExt?.JoggingPanel?.JoggingCartesian?.Axis?.Z,
         icon: <ZAxisIcon />,
+        colors: getAxisColors("Z", store.selectedCartesianMotionType, theme),
       },
     ] as const
 
