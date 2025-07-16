@@ -99,7 +99,7 @@ const PaletteOverview: React.FC = () => {
         </Box>
       ))}
     </Box>
-  );
+  )
 }
 
 export default PaletteOverview

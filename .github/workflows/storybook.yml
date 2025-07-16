@@ -5,7 +5,7 @@ on:
   # Event for the workflow to run on
   push:
     branches:
-      - '**' # Run on all branches
+      - "**" # Run on all branches
 
 permissions:
   contents: write
@@ -37,10 +37,10 @@ jobs:
             grep -E '^(main$|feat/|feature/|fix/|bugfix/)' |
             sort -u
           )
-          
+
           echo "Found branches:"
           echo "${valid_branches}"
-          
+
           json_branches=$(printf '%s\n' "${valid_branches}" | jq -R . | jq -s -c .)
           echo "json_branches=${json_branches}" >> $GITHUB_OUTPUT
 
@@ -61,7 +61,7 @@ jobs:
           ref: ${{ matrix.branch }}
       - uses: actions/setup-node@v4
         with:
-          node-version: 'lts/*'
+          node-version: "lts/*"
       - name: Install dependencies
         run: npm ci
       - name: Build Storybook
