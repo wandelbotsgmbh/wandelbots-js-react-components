@@ -39,17 +39,9 @@ const PaletteOverview: React.FC = () => {
               alignItems: "baseline",
             }}
           >
-            {" "}
             {theme.palette[category] &&
               Object.keys(theme.palette[category]).map((shade) => (
-                <Grid
-                  {...({
-                    item: true,
-                    component: "div",
-                    key: shade,
-                    sx: { alignItems: "center" },
-                  } as any)}
-                >
+                <Grid key={shade} sx={{ alignItems: "center" }}>
                   <Typography variant="body2">{shade}</Typography>
                   <Tooltip title={(theme.palette[category] as any)[shade]}>
                     <Box
@@ -62,18 +54,11 @@ const PaletteOverview: React.FC = () => {
                     />
                   </Tooltip>
                 </Grid>
-              ))}{" "}
+              ))}
             {category === "primary" &&
               theme.paletteExt?.primary &&
               Object.keys(theme.paletteExt.primary).map((shade) => (
-                <Grid
-                  {...({
-                    item: true,
-                    component: "div",
-                    key: shade,
-                    sx: { alignItems: "center" },
-                  } as any)}
-                >
+                <Grid key={shade} sx={{ alignItems: "center" }}>
                   <Typography variant="body2">{shade}</Typography>
                   <Tooltip title={(theme.paletteExt?.primary as any)?.[shade]}>
                     <Box
@@ -88,18 +73,11 @@ const PaletteOverview: React.FC = () => {
                     />
                   </Tooltip>
                 </Grid>
-              ))}{" "}
+              ))}
             {category === "secondary" &&
               theme.paletteExt?.secondary &&
               Object.keys(theme.paletteExt.secondary).map((shade) => (
-                <Grid
-                  {...({
-                    item: true,
-                    component: "div",
-                    key: shade,
-                    sx: { alignItems: "center" },
-                  } as any)}
-                >
+                <Grid key={shade} sx={{ alignItems: "center" }}>
                   <Typography variant="body2">{shade}</Typography>
                   <Tooltip
                     title={(theme.paletteExt?.secondary as any)?.[shade]}
@@ -121,7 +99,7 @@ const PaletteOverview: React.FC = () => {
         </Box>
       ))}
     </Box>
-  )
+  );
 }
 
 export default PaletteOverview

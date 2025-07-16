@@ -100,7 +100,7 @@ export default function AvatarExample() {
         >
           <AssignmentIcon />
         </Avatar>
-      </Box>{" "}
+      </Box>
       <Box component="div" sx={avatarSetStyle}>
         <AvatarGroup max={4}>
           <Avatar

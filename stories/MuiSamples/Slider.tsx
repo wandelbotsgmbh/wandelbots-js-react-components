@@ -38,22 +38,21 @@ export default function SliderExample() {
 
   return (
     <Box component="div" sx={{ width: 300 }}>
-      {" "}
       <Typography id="continuous-slider" gutterBottom>
         Volume
-      </Typography>{" "}
+      </Typography>
       <Grid container spacing={2}>
-        <Grid component="div">
+        <Grid>
           <VolumeDown />
         </Grid>
-        <Grid xs component="div">
+        <Grid size="grow">
           <Slider
             value={value}
             onChange={handleChange}
             aria-labelledby="continuous-slider"
-          />{" "}
+          />
         </Grid>
-        <Grid component="div">
+        <Grid>
           <VolumeUp />
         </Grid>
       </Grid>
@@ -73,5 +72,5 @@ export default function SliderExample() {
         valueLabelDisplay="on"
       />
     </Box>
-  )
+  );
 }

@@ -38,9 +38,10 @@ export default function CardExample() {
   const handleExpandClick = () => {
     setExpanded(!expanded)
   }
+
   return (
     <Grid container spacing={2}>
-      <Grid {...({ item: true } as any)}>
+      <Grid>
         <Typography variant="h6">Simple</Typography>
         <Card sx={{ minWidth: 275 }}>
           <CardContent>
@@ -71,10 +72,10 @@ export default function CardExample() {
             <Button size="small" color="secondary">
               Dismiss
             </Button>
-          </CardActions>{" "}
-        </Card>{" "}
+          </CardActions>
+        </Card>
       </Grid>
-      <Grid {...({ item: true } as any)}>
+      <Grid>
         <Typography variant="h6">Outlined</Typography>
         <Card variant="outlined" sx={{ minWidth: 275 }}>
           <CardContent>
@@ -105,10 +106,10 @@ export default function CardExample() {
             <Button size="small" color="secondary">
               Dismiss
             </Button>
-          </CardActions>{" "}
+          </CardActions>
         </Card>
       </Grid>
-      <Grid {...({ item: true } as any)}>
+      <Grid>
         <Typography variant="h6">Complex</Typography>
         <Card sx={{ minWidth: 345 }}>
           <CardHeader
