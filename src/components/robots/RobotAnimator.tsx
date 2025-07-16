@@ -4,7 +4,7 @@ import type {
   DHParameter,
   MotionGroupStateResponse,
 } from "@wandelbots/nova-api/v1"
-import React, { useEffect, useRef, useState } from "react"
+import React, { useEffect, useRef, useState, useCallback } from "react"
 import type { Group, Object3D } from "three"
 import { useAutorun } from "../utils/hooks"
 import { collectJoints } from "./robotModelLogic"
@@ -54,27 +54,6 @@ export default function RobotAnimator({
     setSpring.start(Object.assign({}, jointValues.current) as any)
   }
 
-  function setRotation() {
-    if (!isInitialized) return
-
-    const updatedJointValues = jointObjects.current.map((_, objectIndex) =>
-      (axisValues as any)[objectIndex].get(),
-    )
-
-    if (onRotationChanged) {
-      onRotationChanged(jointObjects.current, updatedJointValues)
-    } else {
-      for (const [index, object] of jointObjects.current.entries()) {
-        const dhParam = dhParameters[index]
-        const rotationOffset = dhParam.theta || 0
-        const rotationSign = dhParam.reverse_rotation_direction ? -1 : 1
-
-        object.rotation.y =
-          rotationSign * updatedJointValues[index]! + rotationOffset
-      }
-    }
-  }
-
   // Initialize spring only after joints are ready
   const [axisValues, setSpring] = useSpring(() => ({
     ...Object.assign(
@@ -94,13 +73,34 @@ export default function RobotAnimator({
     },
   }))
 
+  const setRotation = useCallback(() => {
+    if (!isInitialized) return
+
+    const updatedJointValues = jointObjects.current.map((_, objectIndex) =>
+      (axisValues as any)[objectIndex].get(),
+    )
+
+    if (onRotationChanged) {
+      onRotationChanged(jointObjects.current, updatedJointValues)
+    } else {
+      for (const [index, object] of jointObjects.current.entries()) {
+        const dhParam = dhParameters[index]
+        const rotationOffset = dhParam.theta || 0
+        const rotationSign = dhParam.reverse_rotation_direction ? -1 : 1
+
+        object.rotation.y =
+          rotationSign * updatedJointValues[index]! + rotationOffset
+      }
+    }
+  }, [isInitialized, axisValues, onRotationChanged, dhParameters])
+
   // Effect to handle initial rotation when component becomes initialized
   useEffect(() => {
     if (isInitialized) {
       setRotation()
       invalidate()
     }
-  }, [isInitialized])
+  }, [isInitialized, setRotation, invalidate])
 
   useAutorun(() => {
     if (!isInitialized) return
