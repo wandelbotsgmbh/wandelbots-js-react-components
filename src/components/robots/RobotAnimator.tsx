@@ -4,7 +4,7 @@ import type {
   DHParameter,
   MotionGroupStateResponse,
 } from "@wandelbots/nova-api/v1"
-import React, { useCallback, useEffect, useRef, useState } from "react"
+import React, { useRef } from "react"
 import type { Group, Object3D } from "three"
 import { useAutorun } from "../utils/hooks"
 import { collectJoints } from "./robotModelLogic"
@@ -25,56 +25,53 @@ export default function RobotAnimator({
   Globals.assign({ frameLoop: "always" })
   const jointValues = useRef<number[]>([])
   const jointObjects = useRef<Object3D[]>([])
-  const [isInitialized, setIsInitialized] = useState(false)
   const { invalidate } = useThree()
 
   function setGroupRef(group: Group | null) {
-    if (!group) {
-      setIsInitialized(false)
-      return
-    }
+    if (!group) return
 
     jointObjects.current = collectJoints(group)
 
-    // Only mark as initialized if we have valid joint objects
+    // Set initial position only if we have valid joint objects
     if (
       jointObjects.current.length > 0 &&
       jointObjects.current.every((obj) => obj != null)
     ) {
-      setIsInitialized(true)
-    } else {
-      setIsInitialized(false)
+      // Use requestAnimationFrame to ensure axisValues is ready
+      requestAnimationFrame(() => {
+        setRotation()
+        invalidate()
+      })
     }
   }
 
   function updateJoints(newJointValues: number[]) {
-    if (!isInitialized) return
-
     jointValues.current = newJointValues
     setSpring.start(Object.assign({}, jointValues.current) as any)
   }
 
-  // Initialize spring only after joints are ready
   const [axisValues, setSpring] = useSpring(() => ({
     ...Object.assign(
       {},
       rapidlyChangingMotionState.state.joint_position.joints,
     ),
     onChange: () => {
-      if (isInitialized) {
-        setRotation()
-        invalidate()
-      }
+      setRotation()
+      invalidate()
     },
     onResolve: () => {
-      if (isInitialized) {
-        setRotation()
-      }
+      setRotation()
     },
   }))
 
-  const setRotation = useCallback(() => {
-    if (!isInitialized) return
+  function setRotation() {
+    // Safety check to prevent race condition
+    if (
+      jointObjects.current.length === 0 ||
+      !jointObjects.current.every((obj) => obj != null)
+    ) {
+      return
+    }
 
     const updatedJointValues = jointObjects.current.map((_, objectIndex) =>
       (axisValues as any)[objectIndex].get(),
@@ -92,19 +89,9 @@ export default function RobotAnimator({
           rotationSign * updatedJointValues[index]! + rotationOffset
       }
     }
-  }, [isInitialized, axisValues, onRotationChanged, dhParameters])
-
-  // Effect to handle initial rotation when component becomes initialized
-  useEffect(() => {
-    if (isInitialized) {
-      setRotation()
-      invalidate()
-    }
-  }, [isInitialized, setRotation, invalidate])
+  }
 
   useAutorun(() => {
-    if (!isInitialized) return
-
     const newJointValues =
       rapidlyChangingMotionState.state.joint_position.joints.filter(
         (item) => item !== undefined,
