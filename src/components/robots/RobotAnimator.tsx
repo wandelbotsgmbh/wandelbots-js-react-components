@@ -50,19 +50,23 @@ export default function RobotAnimator({
     setSpring.start(Object.assign({}, jointValues.current) as any)
   }
 
-  const [axisValues, setSpring] = useSpring(() => ({
-    ...Object.assign(
-      {},
-      rapidlyChangingMotionState.state.joint_position.joints,
-    ),
-    onChange: () => {
-      setRotation()
-      invalidate()
-    },
-    onResolve: () => {
-      setRotation()
-    },
-  }))
+  const [axisValues, setSpring] = useSpring(() => {
+    const currentJointValues =
+      rapidlyChangingMotionState.state.joint_position.joints.filter(
+        (item) => item !== undefined,
+      )
+
+    return {
+      ...Object.assign({}, currentJointValues),
+      onChange: () => {
+        setRotation()
+        invalidate()
+      },
+      onResolve: () => {
+        setRotation()
+      },
+    }
+  })
 
   function setRotation() {
     // Safety check to prevent race condition
@@ -97,7 +101,32 @@ export default function RobotAnimator({
         (item) => item !== undefined,
       )
 
-    requestAnimationFrame(() => updateJoints(newJointValues))
+    requestAnimationFrame(() => {
+      // Check if spring values are significantly different from target values
+      const currentSpringValues = jointObjects.current.map(
+        (_, index) => (axisValues as any)[index]?.get() || 0,
+      )
+
+      const maxDifference = Math.max(
+        ...newJointValues.map((newValue, index) =>
+          Math.abs(newValue - (currentSpringValues[index] || 0)),
+        ),
+      )
+
+      // Be more aggressive about detecting "snap back" situations
+      // If difference is large (> 0.05 radians ~= 2.9 degrees), reset immediately
+      // This handles focus restoration and other cases where animation would be jarring
+      if (maxDifference > 0.05) {
+        jointValues.current = newJointValues
+        setSpring.set(Object.assign({}, jointValues.current) as any)
+        // Force immediate rotation update
+        setRotation()
+        invalidate()
+      } else {
+        // Normal smooth animation for small changes
+        updateJoints(newJointValues)
+      }
+    })
   })
 
   return <group ref={setGroupRef}>{children}</group>
