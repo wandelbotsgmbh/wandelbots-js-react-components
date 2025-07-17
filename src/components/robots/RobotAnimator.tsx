@@ -27,18 +27,6 @@ export default function RobotAnimator({
   const jointObjects = useRef<Object3D[]>([])
   const { invalidate } = useThree()
 
-  function isRobotFullyInitialized(): boolean {
-    return (
-      jointObjects.current.length > 0 &&
-      jointObjects.current.every(
-        (joint): joint is Object3D => joint !== undefined && joint !== null,
-      ) &&
-      typedAxisValues !== undefined &&
-      dhParameters.length === jointObjects.current.length &&
-      dhParameters.every((param): param is DHParameter => param !== undefined)
-    )
-  }
-
   function setGroupRef(group: Group | null) {
     if (!group) return
 
@@ -67,14 +55,20 @@ export default function RobotAnimator({
     )
 
     if (onRotationChanged) {
-      // Filter out undefined/null joints before passing to callback
-      const validJoints = jointObjects.current.filter((joint) => joint != null)
-      const validJointValues = validJoints.map(
-        (_, index) => updatedJointValues[index] || 0,
+      // Since we've validated everything, all joints should be valid
+      // But let's still be defensive and only pass valid joints
+      const validJoints = jointObjects.current.filter(
+        (joint): joint is Object3D => joint != null,
       )
 
-      if (validJoints.length > 0) {
-        onRotationChanged(validJoints, validJointValues)
+      if (validJoints.length === jointObjects.current.length) {
+        // All joints are valid, pass them with corresponding values
+        onRotationChanged(validJoints, updatedJointValues)
+      } else {
+        // Some joints are invalid, don't call the callback
+        console.warn(
+          "RobotAnimator: Some joints are invalid, skipping onRotationChanged callback",
+        )
       }
     } else {
       for (const [index, object] of jointObjects.current.entries()) {
@@ -116,6 +110,18 @@ export default function RobotAnimator({
 
   // Type the spring values properly
   const typedAxisValues = axisValues as SpringValues<Record<string, number>>
+
+  function isRobotFullyInitialized(): boolean {
+    return (
+      jointObjects.current.length > 0 &&
+      jointObjects.current.every(
+        (joint): joint is Object3D => joint !== undefined && joint !== null,
+      ) &&
+      typedAxisValues !== undefined &&
+      dhParameters.length === jointObjects.current.length &&
+      dhParameters.every((param): param is DHParameter => param !== undefined)
+    )
+  }
 
   return <group ref={setGroupRef}>{children}</group>
 }
