@@ -88,45 +88,51 @@ export class ValueInterpolator {
   }
 
   /**
-   * Update interpolation using spring physics (call this in useFrame for frame-rate independence)
-   * @param delta - Frame delta time for smooth animation
+   * Update interpolation using spring physics
+   *
+   * Call this method every frame for smooth animation. In React Three Fiber,
+   * call from within useFrame callback with the provided delta time.
+   *
+   * @param delta - Time elapsed since last update in seconds (e.g., 1/60 ≈ 0.0167 for 60fps)
+   * @returns true when interpolation is complete (all values reached their targets)
    */
   update(delta: number = 1 / 60): boolean {
     let hasChanges = false
     let isComplete = true
 
-    // Clamp delta to prevent instability from large frame drops
-    const clampedDelta = Math.min(delta, 1 / 15) // Max 66ms frame time
+    // Limit delta to prevent physics instability during large frame drops
+    const clampedDelta = Math.min(delta, 1 / 15) // Maximum 66ms frame time allowed
 
     for (let i = 0; i < this.currentValues.length; i++) {
       const current = this.currentValues[i]
       const target = this.targetValues[i]
       const velocity = this.velocities[i]
 
-      // Spring physics calculation
+      // Calculate spring physics forces
       const displacement = target - current
       const springForce = displacement * this.options.tension
       const dampingForce = velocity * this.options.friction
 
-      // Net force and acceleration
+      // Calculate acceleration from net force (F = ma, assuming mass = 1)
       const acceleration = springForce - dampingForce
 
-      // Update velocity and position using Verlet integration for stability
+      // Integrate physics using Verlet method for numerical stability
       const newVelocity = velocity + acceleration * clampedDelta
       const newValue = current + newVelocity * clampedDelta
 
-      // Check if we're close enough to target and velocity is low enough
+      // Determine if this value has settled (close to target with low velocity)
       const isValueComplete =
         Math.abs(displacement) < this.options.threshold &&
         Math.abs(newVelocity) < this.options.threshold * 10
 
       if (!isValueComplete) {
         isComplete = false
+        // Continue spring animation
         this.currentValues[i] = newValue
         this.velocities[i] = newVelocity
         hasChanges = true
       } else {
-        // Snap to target when close enough
+        // Snap exactly to target when close enough (prevents endless micro-movements)
         if (this.currentValues[i] !== target) {
           this.currentValues[i] = target
           this.velocities[i] = 0
@@ -147,8 +153,10 @@ export class ValueInterpolator {
   }
 
   /**
-   * Set new target values to interpolate towards
-   * Handles irregular target updates smoothly by considering update frequency
+   * Set new target values for the interpolation to move towards
+   *
+   * Includes smart blending for very rapid target updates (faster than 120fps)
+   * to prevent jarring movements when targets change frequently.
    */
   setTarget(newValues: number[]): void {
     const now = performance.now()
@@ -159,21 +167,21 @@ export class ValueInterpolator {
     this.targetValues = [...newValues]
     this.targetUpdateTime = now
 
-    // Only apply blending for extremely rapid updates (< 8ms, roughly faster than 120fps)
-    // This helps with irregular robot data but doesn't interfere with normal usage
+    // Apply target blending for extremely rapid updates to prevent jarring jumps
+    // Only activates when targets change faster than 120fps (< 8ms between updates)
     if (
       timeSinceLastUpdate < 8 &&
       timeSinceLastUpdate > 0 &&
       this.previousTargetValues.length > 0
     ) {
-      // Very conservative blending - only smooth the most jarring rapid updates
-      const blendFactor = Math.min(timeSinceLastUpdate / 8, 1) // 0-1 based on 8ms window
+      // Blend between previous and new target based on time elapsed
+      const blendFactor = Math.min(timeSinceLastUpdate / 8, 1) // 0 to 1 over 8ms
 
       for (let i = 0; i < this.targetValues.length; i++) {
         const prev = this.previousTargetValues[i] || 0
         const next = newValues[i] || 0
 
-        // Only blend if the change is significant (> 10% of the range)
+        // Only blend significant changes to avoid unnecessary smoothing
         const change = Math.abs(next - prev)
         if (change > 0.1) {
           this.targetValues[i] = prev + (next - prev) * blendFactor
@@ -181,43 +189,49 @@ export class ValueInterpolator {
       }
     }
 
-    // Ensure arrays have the same length
+    // Ensure value and velocity arrays have matching lengths
     while (this.currentValues.length < newValues.length) {
       this.currentValues.push(newValues[this.currentValues.length])
-      this.velocities.push(0) // Initialize velocity for new values
+      this.velocities.push(0) // New values start with zero velocity
     }
     if (this.currentValues.length > newValues.length) {
       this.currentValues = this.currentValues.slice(0, newValues.length)
       this.velocities = this.velocities.slice(0, newValues.length)
     }
 
-    // Don't auto-start interpolation - let manual update() calls handle it
-    // This prevents conflicts with useFrame() calls
+    // Does not start automatic interpolation - requires manual update() calls
+    // This design prevents conflicts when using with React Three Fiber's useFrame
   }
 
   /**
-   * Get the current interpolated values
+   * Get a copy of all current interpolated values
    */
   getCurrentValues(): number[] {
     return [...this.currentValues]
   }
 
   /**
-   * Get a specific interpolated value by index
+   * Get a single interpolated value by its array index
    */
   getValue(index: number): number {
     return this.currentValues[index] ?? 0
   }
 
   /**
-   * Check if interpolation is currently active
+   * Check if automatic interpolation is currently running
+   *
+   * This only tracks auto-interpolation started with startAutoInterpolation().
+   * Manual update() calls are not tracked by this method.
    */
   isInterpolating(): boolean {
     return this.animationId !== null
   }
 
   /**
-   * Stop the current interpolation
+   * Stop automatic interpolation if it's running
+   *
+   * This cancels the internal animation frame loop but does not affect
+   * manual update() calls.
    */
   stop(): void {
     if (this.animationId !== null) {
@@ -247,14 +261,21 @@ export class ValueInterpolator {
   }
 
   /**
-   * Start automatic interpolation (use when not calling update() manually)
+   * Start automatic interpolation with an animation loop
+   *
+   * This begins a requestAnimationFrame loop that calls update() automatically.
+   * For React Three Fiber components, prefer using manual update() calls
+   * within useFrame hooks instead.
    */
   startAutoInterpolation(): void {
     this.startInterpolation()
   }
 
   /**
-   * Destroy the interpolator and clean up resources
+   * Clean up all resources and stop any running animations
+   *
+   * This cancels any active animation frames and resets internal state.
+   * Call this when the component unmounts or is no longer needed.
    */
   destroy(): void {
     this.stop()
@@ -269,8 +290,8 @@ export class ValueInterpolator {
   }
 
   private animate = (): void => {
-    // Use the main update method which now handles spring physics
-    const isComplete = this.update(1 / 60) // Default 60fps for auto-interpolation
+    // Use delta timing with a fallback for consistent automatic animations
+    const isComplete = this.update(1 / 60) // Simulate 60fps for auto-interpolation
 
     if (!isComplete) {
       this.animationId = requestAnimationFrame(this.animate)

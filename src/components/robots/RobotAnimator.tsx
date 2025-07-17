@@ -35,8 +35,8 @@ export default function RobotAnimator({
       )
 
     interpolatorRef.current = new ValueInterpolator(initialJointValues, {
-      tension: 120, // Spring tension for smooth animation
-      friction: 20, // Spring friction for natural settling
+      tension: 120, // Controls spring stiffness - higher values create faster, more responsive motion
+      friction: 20, // Controls damping - higher values reduce oscillation and create smoother settling
       threshold: 0.001,
     })
 
@@ -45,13 +45,13 @@ export default function RobotAnimator({
     }
   }, [])
 
-  // Frame-rate independent animation loop
+  // Animation loop that runs at the display's refresh rate
   useFrame((state, delta) => {
     if (interpolatorRef.current) {
       const isComplete = interpolatorRef.current.update(delta)
       setRotation()
 
-      // Only invalidate if interpolation is still active
+      // Trigger a re-render only if the animation is still running
       if (!isComplete) {
         invalidate()
       }
