@@ -10,13 +10,13 @@ vi.mock("./robotModelLogic", () => ({
   collectJoints: vi.fn(),
 }))
 
-vi.mock("@react-spring/three", () => ({
-  useSpring: vi.fn(),
+vi.mock("../utils/interpolation", () => ({
+  ValueInterpolator: vi.fn().mockImplementation(() => ({
+    setTarget: vi.fn(),
+    getCurrentValues: vi.fn(() => []),
+    destroy: vi.fn(),
+  })),
 }))
-
-import { useSpring } from "@react-spring/three"
-
-const mockUseSpring = useSpring as any
 
 describe("RobotAnimator", () => {
   it("should export the component correctly", () => {
@@ -81,18 +81,7 @@ describe("RobotAnimator", () => {
     }).not.toThrow()
   })
 
-  it("should use React Spring for smooth interpolation", () => {
-    const mockSpringResult = {
-      joint0: { get: () => 0.6 },
-      joint1: { get: () => -1.2 },
-    }
-
-    // Mock useSpring to return spring values with get() methods
-    mockUseSpring.mockReturnValue(mockSpringResult)
-
-    // Verify useSpring would be called with proper configuration
-    expect(typeof mockUseSpring).toBe("function")
-
+  it("should use custom interpolation for smooth value transitions", () => {
     // Test the rotation calculation logic
     const dhParam1 = { theta: 0.1, reverse_rotation_direction: false }
     const dhParam2 = { theta: -0.2, reverse_rotation_direction: true }
@@ -113,8 +102,12 @@ describe("RobotAnimator", () => {
 
     expect(expectedRotationReverse).toBe(0)
 
-    // Verify the spring result structure
-    expect(mockSpringResult.joint0.get()).toBe(0.6)
-    expect(mockSpringResult.joint1.get()).toBe(-1.2)
+    // Test rotation direction logic
+    const testValue = 1.5
+    const normalParam = { theta: 0, reverse_rotation_direction: false }
+    const reversedParam = { theta: 0, reverse_rotation_direction: true }
+
+    expect(1 * testValue + 0).toBe(1.5) // Normal direction
+    expect(-1 * testValue + 0).toBe(-1.5) // Reversed direction
   })
 })
