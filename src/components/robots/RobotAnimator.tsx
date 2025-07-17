@@ -54,7 +54,6 @@ export default function RobotAnimator({
     }
   }
 
-  // Purely declarative spring - no imperative API usage
   const jointValues = useMemo(
     () =>
       rapidlyChangingMotionState.state.joint_position.joints.filter(
@@ -69,15 +68,14 @@ export default function RobotAnimator({
   )
 
   const axisValues = useSpring({
-    from: Object.fromEntries(jointValues.map((_, index) => [index, 0])),
     to: targetValues,
-    config: { tension: 120, friction: 20 },
+    config: {
+      tension: 120,
+      friction: 20,
+    },
     onChange: () => {
       setRotation()
       invalidate()
-    },
-    onResolve: () => {
-      setRotation()
     },
   })
 
