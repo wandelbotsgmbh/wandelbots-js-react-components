@@ -48,9 +48,13 @@ export default function RobotAnimator({
   // Frame-rate independent animation loop
   useFrame((state, delta) => {
     if (interpolatorRef.current) {
-      interpolatorRef.current.update(delta)
+      const isComplete = interpolatorRef.current.update(delta)
       setRotation()
-      invalidate()
+
+      // Only invalidate if interpolation is still active
+      if (!isComplete) {
+        invalidate()
+      }
     }
   })
 

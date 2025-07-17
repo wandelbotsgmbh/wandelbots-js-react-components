@@ -9,6 +9,10 @@ import * as THREE from "three"
  * - Uses frame deltas for refresh-rate independence
  * - Avoids object creation in animation loops
  * - Direct mutation for performance
+ * - Manual update() calls for useFrame integration (no automatic RAF loop)
+ *
+ * Note: When using with useFrame(), call update(delta) manually.
+ * For standalone usage, call startAutoInterpolation() to begin automatic updates.
  *
  * @example
  * ```tsx
@@ -148,7 +152,8 @@ export class ValueInterpolator {
       this.currentValues = this.currentValues.slice(0, newValues.length)
     }
 
-    this.startInterpolation()
+    // Don't auto-start interpolation - let manual update() calls handle it
+    // This prevents conflicts with useFrame() calls
   }
 
   /**
@@ -197,6 +202,13 @@ export class ValueInterpolator {
    */
   updateOptions(newOptions: Partial<InterpolationOptions>): void {
     this.options = { ...this.options, ...newOptions }
+  }
+
+  /**
+   * Start automatic interpolation (use when not calling update() manually)
+   */
+  startAutoInterpolation(): void {
+    this.startInterpolation()
   }
 
   /**
@@ -290,6 +302,10 @@ export class ValueInterpolator {
 
 /**
  * React hook for using the ValueInterpolator with useFrame
+ *
+ * This hook creates a ValueInterpolator that's designed for manual updates
+ * via useFrame(). It will not start automatic interpolation - you must
+ * call interpolator.update(delta) in your useFrame callback.
  *
  * @example
  * ```tsx

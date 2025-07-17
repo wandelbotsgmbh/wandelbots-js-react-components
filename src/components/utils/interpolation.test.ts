@@ -195,6 +195,129 @@ describe("ValueInterpolator", () => {
     expect(mockOnChange.mock.calls.length).toBeGreaterThan(callCountAfterFirst)
   })
 
+  it("should not conflict when using manual updates without starting auto-interpolation", () => {
+    let changeCount = 0
+    interpolator = new ValueInterpolator([0], {
+      alpha: 0.1,
+      onChange: () => {
+        changeCount++
+      },
+    })
+
+    // Set target but don't start auto-interpolation
+    interpolator.setTarget([10])
+
+    // Should not have triggered any changes yet (no auto-start)
+    expect(changeCount).toBe(0)
+
+    // Manual update should work
+    interpolator.update(1 / 60)
+    expect(changeCount).toBe(1)
+
+    // Another manual update should continue interpolation
+    interpolator.update(1 / 60)
+    expect(changeCount).toBe(2)
+  })
+
+  it("should work with auto-interpolation when explicitly started", async () => {
+    let changeCount = 0
+    interpolator = new ValueInterpolator([0], {
+      alpha: 0.3, // Faster for testing
+      onChange: () => {
+        changeCount++
+      },
+    })
+
+    // Set target and start auto-interpolation
+    interpolator.setTarget([10])
+    interpolator.startAutoInterpolation()
+
+    // Wait for automatic updates
+    await new Promise((resolve) => setTimeout(resolve, 50))
+
+    // Should have triggered automatic changes
+    expect(changeCount).toBeGreaterThan(0)
+  })
+
+  it("should not double-update when both manual and auto are used incorrectly", () => {
+    let updateCallCount = 0
+    const originalUpdate = ValueInterpolator.prototype.update
+
+    // Spy on update calls to detect conflicts
+    ValueInterpolator.prototype.update = function (delta) {
+      updateCallCount++
+      return originalUpdate.call(this, delta)
+    }
+
+    try {
+      interpolator = new ValueInterpolator([0], {
+        alpha: 0.1,
+        onChange: mockOnChange,
+      })
+
+      interpolator.setTarget([10])
+
+      // Manual update (this should be the only way it updates)
+      interpolator.update(1 / 60)
+
+      // Should only have been called once (no auto-start)
+      expect(updateCallCount).toBe(1)
+      expect(mockOnChange).toHaveBeenCalledTimes(1)
+    } finally {
+      // Restore original method
+      ValueInterpolator.prototype.update = originalUpdate
+    }
+  })
+
+  it("should work correctly in RobotAnimator-like usage pattern", async () => {
+    // Simulate the exact pattern used in RobotAnimator
+    let frameUpdateCount = 0
+    let onChangeCallCount = 0
+
+    interpolator = new ValueInterpolator([0, 0, 0], {
+      alpha: 0.15,
+      easing: "spring",
+      threshold: 0.001,
+      onChange: () => {
+        onChangeCallCount++
+      },
+    })
+
+    // Simulate useFrame calling update repeatedly
+    const simulateUseFrame = () => {
+      const animate = () => {
+        frameUpdateCount++
+        interpolator.update(1 / 60)
+
+        if (frameUpdateCount < 20) {
+          setTimeout(animate, 16) // ~60fps
+        }
+      }
+      animate()
+    }
+
+    // Start the animation loop
+    simulateUseFrame()
+
+    // After a few frames, change target (like rapidlyChangingMotionState update)
+    setTimeout(() => {
+      interpolator.setTarget([1, 2, 3])
+    }, 50)
+
+    // Wait for animation to complete
+    await new Promise((resolve) => setTimeout(resolve, 400))
+
+    // Should have smooth updates, not conflicts
+    expect(frameUpdateCount).toBeGreaterThanOrEqual(20)
+    expect(onChangeCallCount).toBeGreaterThan(0)
+    expect(onChangeCallCount).toBeLessThan(frameUpdateCount * 2) // No double updates
+
+    const finalValues = interpolator.getCurrentValues()
+    expect(finalValues[0]).toBeCloseTo(1, 0.5)
+    expect(finalValues[1]).toBeCloseTo(2, 0.5)
+    expect(finalValues[2]).toBeCloseTo(3, 0.5)
+  })
+
   it("should handle setImmediate correctly", () => {
     interpolator = new ValueInterpolator([0, 0], {
       onChange: mockOnChange,
