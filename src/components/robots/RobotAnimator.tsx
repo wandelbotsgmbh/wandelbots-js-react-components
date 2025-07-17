@@ -1,4 +1,4 @@
-import { Globals, useSpring } from "@react-spring/three"
+import { Globals, useSpring, type SpringValues } from "@react-spring/three"
 import { useThree } from "@react-three/fiber"
 import type {
   DHParameter,
@@ -27,21 +27,27 @@ export default function RobotAnimator({
   const jointObjects = useRef<Object3D[]>([])
   const { invalidate } = useThree()
 
+  function isRobotFullyInitialized(): boolean {
+    return (
+      jointObjects.current.length > 0 &&
+      jointObjects.current.every(
+        (joint): joint is Object3D => joint !== undefined && joint !== null,
+      ) &&
+      typedAxisValues !== undefined &&
+      dhParameters.length === jointObjects.current.length &&
+      dhParameters.every((param): param is DHParameter => param !== undefined)
+    )
+  }
+
   function setGroupRef(group: Group | null) {
     if (!group) return
 
     jointObjects.current = collectJoints(group)
 
-    // Set initial position only if we have valid joint objects
-    if (
-      jointObjects.current.length > 0 &&
-      jointObjects.current.every((obj) => obj != null)
-    ) {
-      // Use requestAnimationFrame to ensure axisValues is ready
-      requestAnimationFrame(() => {
-        setRotation()
-        invalidate()
-      })
+    // Only set initial position if robot is fully initialized
+    if (isRobotFullyInitialized()) {
+      setRotation()
+      invalidate()
     }
   }
 
@@ -50,47 +56,37 @@ export default function RobotAnimator({
     setSpring.start(Object.assign({}, jointValues.current) as any)
   }
 
-  const [axisValues, setSpring] = useSpring(() => {
-    const currentJointValues =
-      rapidlyChangingMotionState.state.joint_position.joints.filter(
-        (item) => item !== undefined,
-      )
-
-    return {
-      ...Object.assign({}, currentJointValues),
-      onChange: () => {
-        setRotation()
-        invalidate()
-      },
-      onResolve: () => {
-        setRotation()
-      },
-    }
-  })
-
   function setRotation() {
-    // Safety check to prevent race condition
-    if (
-      jointObjects.current.length === 0 ||
-      !jointObjects.current.every((obj) => obj != null)
-    ) {
+    // Use the comprehensive validation function
+    if (!isRobotFullyInitialized()) {
       return
     }
 
-    const updatedJointValues = jointObjects.current.map((_, objectIndex) =>
-      (axisValues as any)[objectIndex].get(),
+    const updatedJointValues = jointObjects.current.map(
+      (_, objectIndex) => typedAxisValues[objectIndex.toString()]?.get() || 0,
     )
 
     if (onRotationChanged) {
-      onRotationChanged(jointObjects.current, updatedJointValues)
+      // Filter out undefined/null joints before passing to callback
+      const validJoints = jointObjects.current.filter((joint) => joint != null)
+      const validJointValues = validJoints.map(
+        (_, index) => updatedJointValues[index] || 0,
+      )
+
+      if (validJoints.length > 0) {
+        onRotationChanged(validJoints, validJointValues)
+      }
     } else {
       for (const [index, object] of jointObjects.current.entries()) {
+        // Skip if object or dhParameter is undefined
+        if (!object || !dhParameters[index]) continue
+
         const dhParam = dhParameters[index]
         const rotationOffset = dhParam.theta || 0
         const rotationSign = dhParam.reverse_rotation_direction ? -1 : 1
 
         object.rotation.y =
-          rotationSign * updatedJointValues[index]! + rotationOffset
+          rotationSign * (updatedJointValues[index] || 0) + rotationOffset
       }
     }
   }
@@ -101,33 +97,25 @@ export default function RobotAnimator({
         (item) => item !== undefined,
       )
 
-    requestAnimationFrame(() => {
-      // Check if spring values are significantly different from target values
-      const currentSpringValues = jointObjects.current.map(
-        (_, index) => (axisValues as any)[index]?.get() || 0,
-      )
-
-      const maxDifference = Math.max(
-        ...newJointValues.map((newValue, index) =>
-          Math.abs(newValue - (currentSpringValues[index] || 0)),
-        ),
-      )
-
-      // Be more aggressive about detecting "snap back" situations
-      // If difference is large (> 0.05 radians ~= 2.9 degrees), reset immediately
-      // This handles focus restoration and other cases where animation would be jarring
-      if (maxDifference > 0.05) {
-        jointValues.current = newJointValues
-        setSpring.set(Object.assign({}, jointValues.current) as any)
-        // Force immediate rotation update
-        setRotation()
-        invalidate()
-      } else {
-        // Normal smooth animation for small changes
-        updateJoints(newJointValues)
-      }
-    })
+    requestAnimationFrame(() => updateJoints(newJointValues))
   })
+
+  const [axisValues, setSpring] = useSpring(() => ({
+    ...Object.assign(
+      {},
+      rapidlyChangingMotionState.state.joint_position.joints,
+    ),
+    onChange: () => {
+      setRotation()
+      invalidate()
+    },
+    onResolve: () => {
+      setRotation()
+    },
+  }))
+
+  // Type the spring values properly
+  const typedAxisValues = axisValues as SpringValues<Record<string, number>>
 
   return <group ref={setGroupRef}>{children}</group>
 }
