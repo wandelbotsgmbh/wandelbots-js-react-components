@@ -1,4 +1,4 @@
-import { Globals, useSpring, type SpringValues } from "@react-spring/three"
+import { Globals, useSpring } from "@react-spring/three"
 import { useThree } from "@react-three/fiber"
 import type {
   DHParameter,
@@ -25,7 +25,37 @@ export default function RobotAnimator({
   Globals.assign({ frameLoop: "always" })
   const jointValues = useRef<number[]>([])
   const jointObjects = useRef<Object3D[]>([])
+  const isInitialized = useRef(false)
   const { invalidate } = useThree()
+
+  // Use a direct spring that responds to joint value changes
+  const currentJointValues =
+    rapidlyChangingMotionState.state.joint_position.joints.filter(
+      (item) => item !== undefined,
+    )
+
+  const targetValues = Object.fromEntries(
+    currentJointValues.map((value, index) => [index.toString(), value]),
+  )
+
+  const springProps = useSpring({
+    ...targetValues,
+    onChange: () => {
+      setRotation()
+      invalidate()
+    },
+    config: { tension: 120, friction: 20 },
+  })
+
+  useAutorun(() => {
+    const newJointValues =
+      rapidlyChangingMotionState.state.joint_position.joints.filter(
+        (item) => item !== undefined,
+      )
+
+    jointValues.current = newJointValues
+    // The spring will automatically update via the dependency on currentJointValues
+  })
 
   function setGroupRef(group: Group | null) {
     if (!group) return
@@ -39,20 +69,17 @@ export default function RobotAnimator({
     }
   }
 
-  function updateJoints(newJointValues: number[]) {
-    jointValues.current = newJointValues
-    setSpring.start(Object.assign({}, jointValues.current) as any)
-  }
-
   function setRotation() {
     // Use the comprehensive validation function
     if (!isRobotFullyInitialized()) {
       return
     }
 
-    const updatedJointValues = jointObjects.current.map(
-      (_, objectIndex) => typedAxisValues[objectIndex.toString()]?.get() || 0,
-    )
+    const updatedJointValues = jointObjects.current.map((_, objectIndex) => {
+      const key = objectIndex.toString()
+      const springValue = (springProps as any)[key]
+      return springValue ? springValue.get() : 0
+    })
 
     if (onRotationChanged) {
       // Since we've validated everything, all joints should be valid
@@ -85,39 +112,13 @@ export default function RobotAnimator({
     }
   }
 
-  useAutorun(() => {
-    const newJointValues =
-      rapidlyChangingMotionState.state.joint_position.joints.filter(
-        (item) => item !== undefined,
-      )
-
-    requestAnimationFrame(() => updateJoints(newJointValues))
-  })
-
-  const [axisValues, setSpring] = useSpring(() => ({
-    ...Object.assign(
-      {},
-      rapidlyChangingMotionState.state.joint_position.joints,
-    ),
-    onChange: () => {
-      setRotation()
-      invalidate()
-    },
-    onResolve: () => {
-      setRotation()
-    },
-  }))
-
-  // Type the spring values properly
-  const typedAxisValues = axisValues as SpringValues<Record<string, number>>
-
   function isRobotFullyInitialized(): boolean {
     return (
       jointObjects.current.length > 0 &&
       jointObjects.current.every(
         (joint): joint is Object3D => joint !== undefined && joint !== null,
       ) &&
-      typedAxisValues !== undefined &&
+      Object.keys(springProps as any).length > 0 &&
       dhParameters.length === jointObjects.current.length &&
       dhParameters.every((param): param is DHParameter => param !== undefined)
     )

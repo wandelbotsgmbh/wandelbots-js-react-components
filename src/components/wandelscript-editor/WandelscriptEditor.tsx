@@ -13,6 +13,35 @@ import { externalizeComponent } from "../../externalizeComponent"
 import { LoadingCover } from "../LoadingCover"
 import wandelscriptTextmateGrammar from "./wandelscript.tmLanguage"
 
+// Configure Monaco Environment for web workers
+if (typeof window !== "undefined") {
+  ;(window as any).MonacoEnvironment = {
+    getWorkerUrl: function (moduleId: string, label: string) {
+      // Use CDN for Monaco workers - this is reliable across different environments
+      const monacoVersion = "0.52.2"
+      const baseUrl = `https://unpkg.com/monaco-editor@${monacoVersion}/esm/vs`
+
+      switch (label) {
+        case "json":
+          return `${baseUrl}/language/json/json.worker.js`
+        case "css":
+        case "scss":
+        case "less":
+          return `${baseUrl}/language/css/css.worker.js`
+        case "html":
+        case "handlebars":
+        case "razor":
+          return `${baseUrl}/language/html/html.worker.js`
+        case "typescript":
+        case "javascript":
+          return `${baseUrl}/language/typescript/ts.worker.js`
+        default:
+          return `${baseUrl}/editor/editor.worker.js`
+      }
+    },
+  }
+}
+
 type WandelscriptEditorProps = {
   /** The current Wandelscript content of the code editor (controlled component) */
   code?: string
