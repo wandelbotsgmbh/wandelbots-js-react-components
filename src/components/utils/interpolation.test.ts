@@ -436,4 +436,32 @@ describe("ValueInterpolator", () => {
       expect(result[0]).toBeLessThan(50) // Should be less than the final target due to interpolation
     })
   })
+
+  it("should provide smooth initialization without jumpiness", () => {
+    const interpolator = new ValueInterpolator([0], {
+      tension: 120,
+      friction: 20,
+    })
+
+    interpolator.setTarget([10]) // Large target change
+
+    const firstFrameValues: number[] = []
+
+    // Capture values from first few frames
+    for (let frame = 0; frame < 5; frame++) {
+      interpolator.update(1 / 60)
+      firstFrameValues.push(interpolator.getValue(0))
+    }
+
+    // First frame should not jump too aggressively
+    expect(firstFrameValues[0]).toBeLessThan(2) // Should start gently
+    expect(firstFrameValues[0]).toBeGreaterThan(0) // But should move
+
+    // Should show gradual acceleration, not sudden jumps
+    const firstStep = firstFrameValues[1] - firstFrameValues[0]
+    const secondStep = firstFrameValues[2] - firstFrameValues[1]
+
+    expect(secondStep).toBeGreaterThanOrEqual(firstStep) // Should accelerate gradually
+    expect(firstStep).toBeLessThan(1.5) // First step should be modest
+  })
 })

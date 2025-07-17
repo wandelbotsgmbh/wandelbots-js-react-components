@@ -63,6 +63,7 @@ export class ValueInterpolator {
   private targetUpdateTime: number = 0
   private animationId: number | null = null
   private options: Required<InterpolationOptions>
+  private updateCount: number = 0 // Track how many updates have occurred
 
   // Spring physics state
   private velocities: number[] = []
@@ -85,6 +86,7 @@ export class ValueInterpolator {
     this.previousTargetValues = [...initialValues]
     this.velocities = new Array(initialValues.length).fill(0)
     this.targetUpdateTime = performance.now()
+    this.updateCount = 0
   }
 
   /**
@@ -100,8 +102,17 @@ export class ValueInterpolator {
     let hasChanges = false
     let isComplete = true
 
+    // Increment update counter for initialization smoothing
+    this.updateCount++
+
     // Limit delta to prevent physics instability during large frame drops
     const clampedDelta = Math.min(delta, 1 / 15) // Maximum 66ms frame time allowed
+
+    // Apply gentle ramp-up for the first few frames to prevent initial jumpiness
+    const initializationFactor =
+      this.updateCount <= 3
+        ? Math.min(this.updateCount / 3, 1) // Gradual ramp over first 3 frames
+        : 1
 
     for (let i = 0; i < this.currentValues.length; i++) {
       const current = this.currentValues[i]
@@ -110,7 +121,8 @@ export class ValueInterpolator {
 
       // Calculate spring physics forces
       const displacement = target - current
-      const springForce = displacement * this.options.tension
+      const springForce =
+        displacement * this.options.tension * initializationFactor
       const dampingForce = velocity * this.options.friction
 
       // Calculate acceleration from net force (F = ma, assuming mass = 1)
@@ -166,6 +178,9 @@ export class ValueInterpolator {
     this.previousTargetValues = [...this.targetValues]
     this.targetValues = [...newValues]
     this.targetUpdateTime = now
+
+    // Reset update counter for smooth initialization when target changes
+    this.updateCount = 0
 
     // Apply target blending for extremely rapid updates to prevent jarring jumps
     // Only activates when targets change faster than 120fps (< 8ms between updates)
@@ -250,6 +265,7 @@ export class ValueInterpolator {
     this.previousTargetValues = [...values]
     this.velocities = new Array(values.length).fill(0) // Reset velocities
     this.targetUpdateTime = performance.now()
+    this.updateCount = 0 // Reset update counter
     this.options.onChange(this.currentValues)
   }
 
