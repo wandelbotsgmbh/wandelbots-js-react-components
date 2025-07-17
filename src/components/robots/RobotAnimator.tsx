@@ -35,8 +35,8 @@ export default function RobotAnimator({
       )
 
     interpolatorRef.current = new ValueInterpolator(initialJointValues, {
-      alpha: 0.15, // Frame-rate independent interpolation
-      easing: "spring", // Spring-like animation to match the previous feel
+      tension: 120, // Spring tension for smooth animation
+      friction: 20, // Spring friction for natural settling
       threshold: 0.001,
     })
 

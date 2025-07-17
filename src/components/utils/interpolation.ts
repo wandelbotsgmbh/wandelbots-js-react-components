@@ -1,51 +1,36 @@
 import React from "react"
-import * as THREE from "three"
 
 /**
- * Smooth value interpolation utility for animating between values
- * even with rapid updates. Uses THREE.MathUtils.lerp for optimized interpolation.
+ * Smooth value interpolation utility using spring physics with tension and friction.
+ * Designed for React Three Fiber applications with smooth, natural animations.
  *
- * Follows React Three Fiber best practices:
- * - Uses frame deltas for refresh-rate independence
- * - Avoids object creation in animation loops
- * - Direct mutation for performance
+ * Features:
+ * - Spring physics with configurable tension and friction
+ * - Frame-rate independent using delta timing
+ * - Handles irregular frame timing and rapid target updates
  * - Manual update() calls for useFrame integration (no automatic RAF loop)
- *
- * Note: When using with useFrame(), call update(delta) manually.
- * For standalone usage, call startAutoInterpolation() to begin automatic updates.
+ * - Direct mutation for performance
  *
  * @example
  * ```tsx
- * // Basic usage with spring-like animation (similar to react-spring)
+ * // Basic spring animation
  * const interpolator = new ValueInterpolator([0, 0, 0], {
- *   alpha: 0.1, // Interpolation alpha (0-1, frame-rate independent)
- *   easing: 'spring', // Spring-like animation with slight overshoot
+ *   tension: 120, // Higher = faster, stiffer spring (default: 120)
+ *   friction: 20, // Higher = more damping, less oscillation (default: 20)
  *   onChange: (values) => {
- *     // Update your objects with interpolated values
  *     robot.joints.forEach((joint, i) => {
  *       joint.rotation.y = values[i]
  *     })
  *   }
  * })
  *
- * // Different easing options:
- * // 'linear' - smooth linear interpolation
- * // 'spring' - spring-like with overshoot (similar to react-spring)
- * // 'easeOut' - smooth deceleration
- * // 'easeInOut' - smooth acceleration and deceleration
- *
- * // Set new target values
  * interpolator.setTarget([1.5, -0.8, 2.1])
  *
- * // React hook usage with useFrame
+ * // React Three Fiber usage
  * function MyComponent() {
- *   const [interpolator] = useInterpolation([0, 0, 0], {
- *     alpha: 0.1,
- *     easing: 'spring'
- *   })
+ *   const [interpolator] = useInterpolation([0, 0, 0])
  *
  *   useFrame((state, delta) => {
- *     // Frame-rate independent updates
  *     interpolator.update(delta)
  *   })
  *
@@ -58,15 +43,13 @@ import * as THREE from "three"
  * ```
  */
 
-export type EasingFunction = "linear" | "spring" | "easeOut" | "easeInOut"
-
 export interface InterpolationOptions {
-  /** Interpolation alpha factor (0-1, frame-rate independent) */
-  alpha?: number
-  /** Minimum threshold to consider interpolation complete */
+  /** Spring tension (higher = faster, stiffer spring) - default: 120 */
+  tension?: number
+  /** Spring friction (higher = more damping, less oscillation) - default: 20 */
+  friction?: number
+  /** Minimum threshold to consider interpolation complete - default: 0.001 */
   threshold?: number
-  /** Easing function to use for interpolation */
-  easing?: EasingFunction
   /** Callback when values change during interpolation */
   onChange?: (values: number[]) => void
   /** Callback when interpolation reaches target values */
@@ -76,17 +59,22 @@ export interface InterpolationOptions {
 export class ValueInterpolator {
   private currentValues: number[] = []
   private targetValues: number[] = []
+  private previousTargetValues: number[] = []
+  private targetUpdateTime: number = 0
   private animationId: number | null = null
   private options: Required<InterpolationOptions>
+
+  // Spring physics state
+  private velocities: number[] = []
 
   constructor(
     initialValues: number[] = [],
     options: InterpolationOptions = {},
   ) {
     this.options = {
-      alpha: 0.1,
+      tension: 120,
+      friction: 20,
       threshold: 0.001,
-      easing: "spring",
       onChange: () => {},
       onComplete: () => {},
       ...options,
@@ -94,36 +82,56 @@ export class ValueInterpolator {
 
     this.currentValues = [...initialValues]
     this.targetValues = [...initialValues]
+    this.previousTargetValues = [...initialValues]
+    this.velocities = new Array(initialValues.length).fill(0)
+    this.targetUpdateTime = performance.now()
   }
 
   /**
-   * Update interpolation (call this in useFrame for frame-rate independence)
+   * Update interpolation using spring physics (call this in useFrame for frame-rate independence)
    * @param delta - Frame delta time for smooth animation
    */
   update(delta: number = 1 / 60): boolean {
     let hasChanges = false
     let isComplete = true
 
+    // Clamp delta to prevent instability from large frame drops
+    const clampedDelta = Math.min(delta, 1 / 15) // Max 66ms frame time
+
     for (let i = 0; i < this.currentValues.length; i++) {
       const current = this.currentValues[i]
       const target = this.targetValues[i]
-      const diff = Math.abs(target - current)
+      const velocity = this.velocities[i]
 
-      if (diff > this.options.threshold) {
+      // Spring physics calculation
+      const displacement = target - current
+      const springForce = displacement * this.options.tension
+      const dampingForce = velocity * this.options.friction
+
+      // Net force and acceleration
+      const acceleration = springForce - dampingForce
+
+      // Update velocity and position using Verlet integration for stability
+      const newVelocity = velocity + acceleration * clampedDelta
+      const newValue = current + newVelocity * clampedDelta
+
+      // Check if we're close enough to target and velocity is low enough
+      const isValueComplete =
+        Math.abs(displacement) < this.options.threshold &&
+        Math.abs(newVelocity) < this.options.threshold * 10
+
+      if (!isValueComplete) {
         isComplete = false
-        // Frame-rate independent interpolation using delta
-        const newValue = this.applyEasing(
-          current,
-          target,
-          this.options.alpha,
-          delta,
-        )
         this.currentValues[i] = newValue
+        this.velocities[i] = newVelocity
         hasChanges = true
-      } else if (current !== target) {
-        // Snap to target if within threshold
-        this.currentValues[i] = target
-        hasChanges = true
+      } else {
+        // Snap to target when close enough
+        if (this.currentValues[i] !== target) {
+          this.currentValues[i] = target
+          this.velocities[i] = 0
+          hasChanges = true
+        }
       }
     }
 
@@ -140,16 +148,47 @@ export class ValueInterpolator {
 
   /**
    * Set new target values to interpolate towards
+   * Handles irregular target updates smoothly by considering update frequency
    */
   setTarget(newValues: number[]): void {
-    this.targetValues = [...newValues]
+    const now = performance.now()
+    const timeSinceLastUpdate = now - this.targetUpdateTime
 
-    // Ensure currentValues array has the same length
+    // Store previous target for smooth transitions
+    this.previousTargetValues = [...this.targetValues]
+    this.targetValues = [...newValues]
+    this.targetUpdateTime = now
+
+    // Only apply blending for extremely rapid updates (< 8ms, roughly faster than 120fps)
+    // This helps with irregular robot data but doesn't interfere with normal usage
+    if (
+      timeSinceLastUpdate < 8 &&
+      timeSinceLastUpdate > 0 &&
+      this.previousTargetValues.length > 0
+    ) {
+      // Very conservative blending - only smooth the most jarring rapid updates
+      const blendFactor = Math.min(timeSinceLastUpdate / 8, 1) // 0-1 based on 8ms window
+
+      for (let i = 0; i < this.targetValues.length; i++) {
+        const prev = this.previousTargetValues[i] || 0
+        const next = newValues[i] || 0
+
+        // Only blend if the change is significant (> 10% of the range)
+        const change = Math.abs(next - prev)
+        if (change > 0.1) {
+          this.targetValues[i] = prev + (next - prev) * blendFactor
+        }
+      }
+    }
+
+    // Ensure arrays have the same length
     while (this.currentValues.length < newValues.length) {
       this.currentValues.push(newValues[this.currentValues.length])
+      this.velocities.push(0) // Initialize velocity for new values
     }
     if (this.currentValues.length > newValues.length) {
       this.currentValues = this.currentValues.slice(0, newValues.length)
+      this.velocities = this.velocities.slice(0, newValues.length)
     }
 
     // Don't auto-start interpolation - let manual update() calls handle it
@@ -194,6 +233,9 @@ export class ValueInterpolator {
     this.stop()
     this.currentValues = [...values]
     this.targetValues = [...values]
+    this.previousTargetValues = [...values]
+    this.velocities = new Array(values.length).fill(0) // Reset velocities
+    this.targetUpdateTime = performance.now()
     this.options.onChange(this.currentValues)
   }
 
@@ -218,46 +260,6 @@ export class ValueInterpolator {
     this.stop()
   }
 
-  /**
-   * Apply easing function to the interpolation with frame-rate independence
-   */
-  private applyEasing(
-    current: number,
-    target: number,
-    alpha: number,
-    delta: number = 1,
-  ): number {
-    // Adjust alpha based on delta for frame-rate independence
-    // Standard 60fps frame time is ~0.0167, so normalize to that
-    const frameRateAdjustedAlpha = Math.min(alpha * (delta * 60), 1)
-
-    switch (this.options.easing) {
-      case "linear":
-        return THREE.MathUtils.lerp(current, target, frameRateAdjustedAlpha)
-
-      case "spring":
-        // Spring easing with frame-rate independence
-        const springAlpha = Math.min(frameRateAdjustedAlpha * 1.5, 0.8)
-        return THREE.MathUtils.lerp(current, target, springAlpha)
-
-      case "easeOut":
-        // Ease out cubic for smooth deceleration
-        const t = Math.min(frameRateAdjustedAlpha * 2, 1)
-        const easedT = 1 - Math.pow(1 - t, 3)
-        return THREE.MathUtils.lerp(current, target, easedT)
-
-      case "easeInOut":
-        // Ease in-out for smooth acceleration and deceleration
-        const t2 = Math.min(frameRateAdjustedAlpha * 2, 1)
-        const easedT2 =
-          t2 < 0.5 ? 4 * t2 * t2 * t2 : 1 - Math.pow(-2 * t2 + 2, 3) / 2
-        return THREE.MathUtils.lerp(current, target, easedT2)
-
-      default:
-        return THREE.MathUtils.lerp(current, target, frameRateAdjustedAlpha)
-    }
-  }
-
   private startInterpolation(): void {
     if (this.animationId !== null) {
       return // Already interpolating
@@ -267,35 +269,13 @@ export class ValueInterpolator {
   }
 
   private animate = (): void => {
-    let hasChanges = false
-    let isComplete = true
+    // Use the main update method which now handles spring physics
+    const isComplete = this.update(1 / 60) // Default 60fps for auto-interpolation
 
-    for (let i = 0; i < this.currentValues.length; i++) {
-      const current = this.currentValues[i]
-      const target = this.targetValues[i]
-      const diff = Math.abs(target - current)
-
-      if (diff > this.options.threshold) {
-        isComplete = false
-        const newValue = this.applyEasing(current, target, this.options.alpha)
-        this.currentValues[i] = newValue
-        hasChanges = true
-      } else if (current !== target) {
-        // Snap to target if within threshold
-        this.currentValues[i] = target
-        hasChanges = true
-      }
-    }
-
-    if (hasChanges) {
-      this.options.onChange(this.currentValues)
-    }
-
-    if (isComplete) {
-      this.animationId = null
-      this.options.onComplete(this.currentValues)
-    } else {
+    if (!isComplete) {
       this.animationId = requestAnimationFrame(this.animate)
+    } else {
+      this.animationId = null
     }
   }
 }
@@ -303,14 +283,16 @@ export class ValueInterpolator {
 /**
  * React hook for using the ValueInterpolator with useFrame
  *
- * This hook creates a ValueInterpolator that's designed for manual updates
- * via useFrame(). It will not start automatic interpolation - you must
- * call interpolator.update(delta) in your useFrame callback.
+ * This hook creates a ValueInterpolator that uses spring physics for smooth,
+ * natural animations. Call interpolator.update(delta) in your useFrame callback.
  *
  * @example
  * ```tsx
  * function AnimatedMesh() {
- *   const [interpolator] = useInterpolation([0, 0, 0], { alpha: 0.1 })
+ *   const [interpolator] = useInterpolation([0, 0, 0], {
+ *     tension: 120, // Higher = faster spring
+ *     friction: 20  // Higher = more damping
+ *   })
  *   const meshRef = useRef()
  *
  *   useFrame((state, delta) => {
