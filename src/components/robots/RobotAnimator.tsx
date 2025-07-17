@@ -35,10 +35,45 @@ export default function RobotAnimator({
     invalidate()
   }
 
+  // Extract joint values
+  const jointValues = useMemo(
+    () =>
+      rapidlyChangingMotionState.state.joint_position.joints.filter(
+        (item) => item !== undefined,
+      ),
+    [rapidlyChangingMotionState.state.joint_position.joints],
+  )
+
+  // Create dynamic spring configuration based on actual number of joints
+  const springConfig = useMemo(() => {
+    const config: any = {
+      config: {
+        tension: 120,
+        friction: 20,
+      },
+      onChange: () => {
+        // This is critical: trigger setRotation when spring values change
+        setRotation()
+        invalidate()
+      },
+    }
+
+    // Add joint values dynamically based on dhParameters length
+    dhParameters.forEach((_, index) => {
+      config[`joint${index}`] = jointValues[index] || 0
+    })
+
+    return config
+  }, [jointValues, dhParameters.length])
+
+  const axisValues = useSpring(springConfig)
+
+  // Update setRotation to use the dynamic spring values
   function setRotation() {
-    const updatedJointValues = jointObjects.current.map((_, objectIndex) =>
-      (axisValues as any)[objectIndex].get(),
-    )
+    const updatedJointValues = dhParameters.map((_, index) => {
+      const springValue = (axisValues as any)[`joint${index}`]
+      return springValue ? springValue.get() : 0
+    })
 
     if (onRotationChanged) {
       onRotationChanged(jointObjects.current, updatedJointValues)
@@ -53,31 +88,6 @@ export default function RobotAnimator({
       }
     }
   }
-
-  const jointValues = useMemo(
-    () =>
-      rapidlyChangingMotionState.state.joint_position.joints.filter(
-        (item) => item !== undefined,
-      ),
-    [rapidlyChangingMotionState.state.joint_position.joints],
-  )
-
-  const targetValues = useMemo(
-    () => Object.fromEntries(jointValues.map((value, index) => [index, value])),
-    [jointValues],
-  )
-
-  const axisValues = useSpring({
-    to: targetValues,
-    config: {
-      tension: 120,
-      friction: 20,
-    },
-    onChange: () => {
-      setRotation()
-      invalidate()
-    },
-  })
 
   return <group ref={setGroupRef}>{children}</group>
 }
