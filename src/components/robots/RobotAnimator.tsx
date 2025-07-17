@@ -4,9 +4,8 @@ import type {
   DHParameter,
   MotionGroupStateResponse,
 } from "@wandelbots/nova-api/v1"
-import React, { useRef } from "react"
+import React, { useEffect, useRef } from "react"
 import type { Group, Object3D } from "three"
-import { useAutorun } from "../utils/hooks"
 import { collectJoints } from "./robotModelLogic"
 
 type RobotAnimatorProps = {
@@ -23,50 +22,55 @@ export default function RobotAnimator({
   children,
 }: RobotAnimatorProps) {
   Globals.assign({ frameLoop: "always" })
-  const jointValues = useRef<number[]>([])
   const jointObjects = useRef<Object3D[]>([])
-  const isInitialized = useRef(false)
   const { invalidate } = useThree()
 
-  // Use a direct spring that responds to joint value changes
+  // Get current joint values
   const currentJointValues =
     rapidlyChangingMotionState.state.joint_position.joints.filter(
       (item) => item !== undefined,
     )
 
-  const targetValues = Object.fromEntries(
-    currentJointValues.map((value, index) => [index.toString(), value]),
-  )
-
-  const springProps = useSpring({
-    ...targetValues,
+  // Create spring with proper dependency array
+  const [springValues, api] = useSpring(() => ({
+    // Initialize with current values as an object
+    ...currentJointValues.reduce(
+      (acc, value, index) => {
+        acc[index] = value
+        return acc
+      },
+      {} as Record<number, number>,
+    ),
     onChange: () => {
-      setRotation()
-      invalidate()
+      if (jointObjects.current.length > 0) {
+        setRotation()
+        invalidate()
+      }
     },
     config: { tension: 120, friction: 20 },
-  })
+  }))
 
-  useAutorun(() => {
-    const newJointValues =
-      rapidlyChangingMotionState.state.joint_position.joints.filter(
-        (item) => item !== undefined,
-      )
+  // Update spring when joint values change
+  useEffect(() => {
+    const newValues = currentJointValues.reduce(
+      (acc, value, index) => {
+        acc[index] = value
+        return acc
+      },
+      {} as Record<number, number>,
+    )
 
-    jointValues.current = newJointValues
-    // The spring will automatically update via the dependency on currentJointValues
-  })
+    api.start(newValues)
+  }, [currentJointValues.join(","), api]) // Use join for stable dependency
 
   function setGroupRef(group: Group | null) {
     if (!group) return
 
     jointObjects.current = collectJoints(group)
 
-    // Only set initial position if robot is fully initialized
-    if (isRobotFullyInitialized()) {
-      setRotation()
-      invalidate()
-    }
+    // Set initial position
+    setRotation()
+    invalidate()
   }
 
   function setRotation() {
@@ -75,10 +79,14 @@ export default function RobotAnimator({
       return
     }
 
+    // Get the animated joint values from the spring object
     const updatedJointValues = jointObjects.current.map((_, objectIndex) => {
-      const key = objectIndex.toString()
-      const springValue = (springProps as any)[key]
-      return springValue ? springValue.get() : 0
+      const springValue = springValues[objectIndex as keyof typeof springValues]
+      return typeof springValue === "object" &&
+        springValue &&
+        "get" in springValue
+        ? (springValue as any).get()
+        : 0
     })
 
     if (onRotationChanged) {
@@ -118,7 +126,7 @@ export default function RobotAnimator({
       jointObjects.current.every(
         (joint): joint is Object3D => joint !== undefined && joint !== null,
       ) &&
-      Object.keys(springProps as any).length > 0 &&
+      Object.keys(springValues).length > 0 &&
       dhParameters.length === jointObjects.current.length &&
       dhParameters.every((param): param is DHParameter => param !== undefined)
     )
