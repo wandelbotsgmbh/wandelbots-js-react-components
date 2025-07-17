@@ -1,10 +1,10 @@
-import { Globals, useSpring } from "@react-spring/three"
+import { useSpring } from "@react-spring/three"
 import { useThree } from "@react-three/fiber"
 import type {
   DHParameter,
   MotionGroupStateResponse,
 } from "@wandelbots/nova-api/v1"
-import React, { useMemo, useRef } from "react"
+import React, { useRef } from "react"
 import type { Group, Object3D } from "three"
 import { collectJoints } from "./robotModelLogic"
 
@@ -21,73 +21,55 @@ export default function RobotAnimator({
   onRotationChanged,
   children,
 }: RobotAnimatorProps) {
-  Globals.assign({ frameLoop: "always" })
   const jointObjects = useRef<Object3D[]>([])
   const { invalidate } = useThree()
 
   function setGroupRef(group: Group | null) {
     if (!group) return
-
     jointObjects.current = collectJoints(group)
 
-    // Set initial position
-    setRotation()
-    invalidate()
-  }
-
-  // Extract joint values
-  const jointValues = useMemo(
-    () =>
-      rapidlyChangingMotionState.state.joint_position.joints.filter(
-        (item) => item !== undefined,
-      ),
-    [rapidlyChangingMotionState.state.joint_position.joints],
-  )
-
-  // Create dynamic spring configuration based on actual number of joints
-  const springConfig = useMemo(() => {
-    const config: any = {
-      config: {
-        tension: 120,
-        friction: 20,
-      },
-      onChange: () => {
-        // This is critical: trigger setRotation when spring values change
-        setRotation()
-        invalidate()
-      },
-    }
-
-    // Add joint values dynamically based on dhParameters length
-    dhParameters.forEach((_, index) => {
-      config[`joint${index}`] = jointValues[index] || 0
-    })
-
-    return config
-  }, [jointValues, dhParameters.length])
-
-  const axisValues = useSpring(springConfig)
-
-  // Update setRotation to use the dynamic spring values
-  function setRotation() {
-    const updatedJointValues = dhParameters.map((_, index) => {
-      const springValue = (axisValues as any)[`joint${index}`]
-      return springValue ? springValue.get() : 0
-    })
-
+    // Trigger callback if provided
     if (onRotationChanged) {
-      onRotationChanged(jointObjects.current, updatedJointValues)
-    } else {
-      for (const [index, object] of jointObjects.current.entries()) {
-        const dhParam = dhParameters[index]
-        const rotationOffset = dhParam.theta || 0
-        const rotationSign = dhParam.reverse_rotation_direction ? -1 : 1
-
-        object.rotation.y =
-          rotationSign * updatedJointValues[index]! + rotationOffset
-      }
+      const joints = rapidlyChangingMotionState.state.joint_position.joints
+      const filteredJoints = joints.filter((item) => item !== undefined)
+      onRotationChanged(jointObjects.current, filteredJoints)
     }
   }
+
+  // Get current joint values
+  const joints = rapidlyChangingMotionState.state.joint_position.joints
+  const filteredJoints = joints.filter((item) => item !== undefined)
+
+  // Create spring values for each joint - declarative approach
+  const springValues: Record<string, number> = {}
+  for (
+    let index = 0;
+    index < Math.min(dhParameters.length, filteredJoints.length);
+    index++
+  ) {
+    const dhParam = dhParameters[index]
+    const jointValue = filteredJoints[index]!
+    const rotationOffset = dhParam.theta || 0
+    const rotationSign = dhParam.reverse_rotation_direction ? -1 : 1
+
+    springValues[`joint${index}`] = rotationSign * jointValue + rotationOffset
+  }
+
+  // Declarative spring that automatically animates when target values change
+  const jointRotations = useSpring({
+    ...springValues,
+    config: { tension: 120, friction: 20 }, // Smooth but responsive
+    onChange: () => {
+      // Apply rotations to joint objects
+      for (const [index, object] of jointObjects.current.entries()) {
+        const jointKey = `joint${index}`
+        if (jointKey in jointRotations) {
+          object.rotation.y = (jointRotations as any)[jointKey].get()
+        }
+      }
+      invalidate()
+    },
+  })
 
   return <group ref={setGroupRef}>{children}</group>
 }

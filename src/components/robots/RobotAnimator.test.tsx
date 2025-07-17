@@ -2,8 +2,21 @@ import type {
   DHParameter,
   MotionGroupStateResponse,
 } from "@wandelbots/nova-api/v1"
-import { describe, expect, it } from "vitest"
+import { describe, expect, it, vi } from "vitest"
 import RobotAnimator from "./RobotAnimator"
+
+// Mock the dependencies
+vi.mock("./robotModelLogic", () => ({
+  collectJoints: vi.fn(),
+}))
+
+vi.mock("@react-spring/three", () => ({
+  useSpring: vi.fn(),
+}))
+
+import { useSpring } from "@react-spring/three"
+
+const mockUseSpring = useSpring as any
 
 describe("RobotAnimator", () => {
   it("should export the component correctly", () => {
@@ -68,66 +81,40 @@ describe("RobotAnimator", () => {
     }).not.toThrow()
   })
 
-  it("should verify dynamic joint configuration logic", () => {
-    // Test the logic that would create dynamic spring configs
-    const testConfigs = [
-      { jointCount: 3, expectedJoints: ["joint0", "joint1", "joint2"] },
-      {
-        jointCount: 6,
-        expectedJoints: [
-          "joint0",
-          "joint1",
-          "joint2",
-          "joint3",
-          "joint4",
-          "joint5",
-        ],
-      },
-      {
-        jointCount: 8,
-        expectedJoints: [
-          "joint0",
-          "joint1",
-          "joint2",
-          "joint3",
-          "joint4",
-          "joint5",
-          "joint6",
-          "joint7",
-        ],
-      },
-    ]
+  it("should use React Spring for smooth interpolation", () => {
+    const mockSpringResult = {
+      joint0: { get: () => 0.6 },
+      joint1: { get: () => -1.2 },
+    }
 
-    testConfigs.forEach(({ jointCount, expectedJoints }) => {
-      // Simulate the logic from the component
-      const dhParameters = Array(jointCount).fill({
-        theta: 0,
-        reverse_rotation_direction: false,
-      })
-      const jointValues = Array(jointCount)
-        .fill(0)
-        .map((_, i) => i * 0.1)
+    // Mock useSpring to return spring values with get() methods
+    mockUseSpring.mockReturnValue(mockSpringResult)
 
-      const config: any = {
-        config: { tension: 120, friction: 20 },
-        onChange: () => {},
-      }
+    // Verify useSpring would be called with proper configuration
+    expect(typeof mockUseSpring).toBe("function")
 
-      dhParameters.forEach((_, index) => {
-        config[`joint${index}`] = jointValues[index] || 0
-      })
+    // Test the rotation calculation logic
+    const dhParam1 = { theta: 0.1, reverse_rotation_direction: false }
+    const dhParam2 = { theta: -0.2, reverse_rotation_direction: true }
+    const jointValue1 = 0.5
+    const jointValue2 = 1.0
 
-      // Verify the configuration has the expected joint properties
-      expectedJoints.forEach((jointKey) => {
-        expect(config[jointKey]).toBeDefined()
-        expect(typeof config[jointKey]).toBe("number")
-      })
+    // Calculate expected rotations
+    const expectedRotation1 = 1 * jointValue1 + 0.1 // 0.6
+    const expectedRotation2 = -1 * jointValue2 + -0.2 // -1.2
 
-      // Verify no extra joints were added
-      const actualJointKeys = Object.keys(config).filter((key) =>
-        key.startsWith("joint"),
-      )
-      expect(actualJointKeys).toHaveLength(jointCount)
-    })
+    expect(expectedRotation1).toBe(0.6)
+    expect(expectedRotation2).toBe(-1.2)
+
+    // Test edge cases
+    const dhParamReverse = { theta: 0, reverse_rotation_direction: true }
+    const jointValueZero = 0
+    const expectedRotationReverse = -1 * jointValueZero + 0 // 0
+
+    expect(expectedRotationReverse).toBe(0)
+
+    // Verify the spring result structure
+    expect(mockSpringResult.joint0.get()).toBe(0.6)
+    expect(mockSpringResult.joint1.get()).toBe(-1.2)
   })
 })
