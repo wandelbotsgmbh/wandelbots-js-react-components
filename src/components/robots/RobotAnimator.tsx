@@ -1,4 +1,4 @@
-import { useThree } from "@react-three/fiber"
+import { useFrame, useThree } from "@react-three/fiber"
 import type {
   DHParameter,
   MotionGroupStateResponse,
@@ -35,22 +35,24 @@ export default function RobotAnimator({
       )
 
     interpolatorRef.current = new ValueInterpolator(initialJointValues, {
-      speed: 0.15, // Smooth interpolation speed
+      alpha: 0.15, // Frame-rate independent interpolation
       easing: "spring", // Spring-like animation to match the previous feel
       threshold: 0.001,
-      onChange: () => {
-        setRotation()
-        invalidate()
-      },
-      onComplete: () => {
-        setRotation()
-      },
     })
 
     return () => {
       interpolatorRef.current?.destroy()
     }
   }, [])
+
+  // Frame-rate independent animation loop
+  useFrame((state, delta) => {
+    if (interpolatorRef.current) {
+      interpolatorRef.current.update(delta)
+      setRotation()
+      invalidate()
+    }
+  })
 
   function setGroupRef(group: Group | null) {
     if (!group) return

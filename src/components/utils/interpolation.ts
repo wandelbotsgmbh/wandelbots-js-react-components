@@ -5,11 +5,16 @@ import * as THREE from "three"
  * Smooth value interpolation utility for animating between values
  * even with rapid updates. Uses THREE.MathUtils.lerp for optimized interpolation.
  *
+ * Follows React Three Fiber best practices:
+ * - Uses frame deltas for refresh-rate independence
+ * - Avoids object creation in animation loops
+ * - Direct mutation for performance
+ *
  * @example
  * ```tsx
  * // Basic usage with spring-like animation (similar to react-spring)
  * const interpolator = new ValueInterpolator([0, 0, 0], {
- *   speed: 0.1, // Interpolation speed (0-1)
+ *   alpha: 0.1, // Interpolation alpha (0-1, frame-rate independent)
  *   easing: 'spring', // Spring-like animation with slight overshoot
  *   onChange: (values) => {
  *     // Update your objects with interpolated values
@@ -28,19 +33,23 @@ import * as THREE from "three"
  * // Set new target values
  * interpolator.setTarget([1.5, -0.8, 2.1])
  *
- * // React hook usage
+ * // React hook usage with useFrame
  * function MyComponent() {
- *   const [interpolator, currentValues] = useInterpolation([0, 0, 0], {
- *     speed: 0.15,
- *     easing: 'spring',
- *     onChange: (values) => console.log('Values updated:', values)
+ *   const [interpolator] = useInterpolation([0, 0, 0], {
+ *     alpha: 0.1,
+ *     easing: 'spring'
+ *   })
+ *
+ *   useFrame((state, delta) => {
+ *     // Frame-rate independent updates
+ *     interpolator.update(delta)
  *   })
  *
  *   useEffect(() => {
  *     interpolator.setTarget([1, 2, 3])
  *   }, [])
  *
- *   return <div>Current values: {currentValues.join(', ')}</div>
+ *   return <mesh position={interpolator.getCurrentValues()} />
  * }
  * ```
  */
@@ -48,8 +57,8 @@ import * as THREE from "three"
 export type EasingFunction = "linear" | "spring" | "easeOut" | "easeInOut"
 
 export interface InterpolationOptions {
-  /** Interpolation speed factor (0-1, where 1 is instant) */
-  speed?: number
+  /** Interpolation alpha factor (0-1, frame-rate independent) */
+  alpha?: number
   /** Minimum threshold to consider interpolation complete */
   threshold?: number
   /** Easing function to use for interpolation */
@@ -71,7 +80,7 @@ export class ValueInterpolator {
     options: InterpolationOptions = {},
   ) {
     this.options = {
-      speed: 0.1,
+      alpha: 0.1,
       threshold: 0.001,
       easing: "spring",
       onChange: () => {},
@@ -81,6 +90,48 @@ export class ValueInterpolator {
 
     this.currentValues = [...initialValues]
     this.targetValues = [...initialValues]
+  }
+
+  /**
+   * Update interpolation (call this in useFrame for frame-rate independence)
+   * @param delta - Frame delta time for smooth animation
+   */
+  update(delta: number = 1 / 60): boolean {
+    let hasChanges = false
+    let isComplete = true
+
+    for (let i = 0; i < this.currentValues.length; i++) {
+      const current = this.currentValues[i]
+      const target = this.targetValues[i]
+      const diff = Math.abs(target - current)
+
+      if (diff > this.options.threshold) {
+        isComplete = false
+        // Frame-rate independent interpolation using delta
+        const newValue = this.applyEasing(
+          current,
+          target,
+          this.options.alpha,
+          delta,
+        )
+        this.currentValues[i] = newValue
+        hasChanges = true
+      } else if (current !== target) {
+        // Snap to target if within threshold
+        this.currentValues[i] = target
+        hasChanges = true
+      }
+    }
+
+    if (hasChanges) {
+      this.options.onChange(this.currentValues)
+    }
+
+    if (isComplete) {
+      this.options.onComplete(this.currentValues)
+    }
+
+    return isComplete
   }
 
   /**
@@ -156,35 +207,42 @@ export class ValueInterpolator {
   }
 
   /**
-   * Apply easing function to the interpolation
+   * Apply easing function to the interpolation with frame-rate independence
    */
-  private applyEasing(current: number, target: number, speed: number): number {
+  private applyEasing(
+    current: number,
+    target: number,
+    alpha: number,
+    delta: number = 1,
+  ): number {
+    // Adjust alpha based on delta for frame-rate independence
+    // Standard 60fps frame time is ~0.0167, so normalize to that
+    const frameRateAdjustedAlpha = Math.min(alpha * (delta * 60), 1)
+
     switch (this.options.easing) {
       case "linear":
-        return THREE.MathUtils.lerp(current, target, speed)
+        return THREE.MathUtils.lerp(current, target, frameRateAdjustedAlpha)
 
       case "spring":
-        // Improved spring-like easing with better convergence
-        const diff = target - current
-        // Use a modified approach that maintains spring feel but ensures convergence
-        const springAlpha = Math.min(speed * 1.5, 0.8) // Cap to prevent overshooting too much
+        // Spring easing with frame-rate independence
+        const springAlpha = Math.min(frameRateAdjustedAlpha * 1.5, 0.8)
         return THREE.MathUtils.lerp(current, target, springAlpha)
 
       case "easeOut":
         // Ease out cubic for smooth deceleration
-        const t = Math.min(speed * 2, 1)
+        const t = Math.min(frameRateAdjustedAlpha * 2, 1)
         const easedT = 1 - Math.pow(1 - t, 3)
         return THREE.MathUtils.lerp(current, target, easedT)
 
       case "easeInOut":
         // Ease in-out for smooth acceleration and deceleration
-        const t2 = Math.min(speed * 2, 1)
+        const t2 = Math.min(frameRateAdjustedAlpha * 2, 1)
         const easedT2 =
           t2 < 0.5 ? 4 * t2 * t2 * t2 : 1 - Math.pow(-2 * t2 + 2, 3) / 2
         return THREE.MathUtils.lerp(current, target, easedT2)
 
       default:
-        return THREE.MathUtils.lerp(current, target, speed)
+        return THREE.MathUtils.lerp(current, target, frameRateAdjustedAlpha)
     }
   }
 
@@ -207,7 +265,7 @@ export class ValueInterpolator {
 
       if (diff > this.options.threshold) {
         isComplete = false
-        const newValue = this.applyEasing(current, target, this.options.speed)
+        const newValue = this.applyEasing(current, target, this.options.alpha)
         this.currentValues[i] = newValue
         hasChanges = true
       } else if (current !== target) {
@@ -231,25 +289,36 @@ export class ValueInterpolator {
 }
 
 /**
- * React hook for using the ValueInterpolator
+ * React hook for using the ValueInterpolator with useFrame
+ *
+ * @example
+ * ```tsx
+ * function AnimatedMesh() {
+ *   const [interpolator] = useInterpolation([0, 0, 0], { alpha: 0.1 })
+ *   const meshRef = useRef()
+ *
+ *   useFrame((state, delta) => {
+ *     if (interpolator.update(delta)) {
+ *       // Animation complete
+ *     }
+ *     // Apply current values directly to mesh
+ *     const [x, y, z] = interpolator.getCurrentValues()
+ *     meshRef.current.position.set(x, y, z)
+ *   })
+ *
+ *   return <mesh ref={meshRef} />
+ * }
+ * ```
  */
 export function useInterpolation(
   initialValues: number[] = [],
   options: InterpolationOptions = {},
-): [ValueInterpolator, number[]] {
+): [ValueInterpolator] {
   const interpolatorRef = React.useRef<ValueInterpolator | null>(null)
-  const [currentValues, setCurrentValues] =
-    React.useState<number[]>(initialValues)
 
   // Initialize interpolator
   if (!interpolatorRef.current) {
-    interpolatorRef.current = new ValueInterpolator(initialValues, {
-      ...options,
-      onChange: (values) => {
-        setCurrentValues([...values])
-        options.onChange?.(values)
-      },
-    })
+    interpolatorRef.current = new ValueInterpolator(initialValues, options)
   }
 
   // Update options when they change
@@ -264,5 +333,5 @@ export function useInterpolation(
     }
   }, [])
 
-  return [interpolatorRef.current!, currentValues]
+  return [interpolatorRef.current!]
 }
