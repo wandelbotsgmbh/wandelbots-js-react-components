@@ -4,7 +4,7 @@ import type {
   DHParameter,
   MotionGroupStateResponse,
 } from "@wandelbots/nova-api/v1"
-import React, { useRef } from "react"
+import React, { useMemo, useRef } from "react"
 import type { Group, Object3D } from "three"
 import { collectJoints } from "./robotModelLogic"
 
@@ -54,14 +54,24 @@ export default function RobotAnimator({
     }
   }
 
-  // Declarative spring that automatically updates when motion state changes
-  const axisValues = useSpring({
-    to: Object.assign(
-      {},
+  // Purely declarative spring - no imperative API usage
+  const jointValues = useMemo(
+    () =>
       rapidlyChangingMotionState.state.joint_position.joints.filter(
         (item) => item !== undefined,
       ),
-    ),
+    [rapidlyChangingMotionState.state.joint_position.joints],
+  )
+
+  const targetValues = useMemo(
+    () => Object.fromEntries(jointValues.map((value, index) => [index, value])),
+    [jointValues],
+  )
+
+  const axisValues = useSpring({
+    from: Object.fromEntries(jointValues.map((_, index) => [index, 0])),
+    to: targetValues,
+    config: { tension: 120, friction: 20 },
     onChange: () => {
       setRotation()
       invalidate()
