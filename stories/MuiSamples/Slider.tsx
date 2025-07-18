@@ -42,26 +42,24 @@ export default function SliderExample() {
         Volume
       </Typography>
       <Grid container spacing={2}>
-        <Grid item>
+        <Grid>
           <VolumeDown />
         </Grid>
-        <Grid item xs>
+        <Grid size="grow">
           <Slider
             value={value}
             onChange={handleChange}
             aria-labelledby="continuous-slider"
           />
         </Grid>
-        <Grid item>
+        <Grid>
           <VolumeUp />
         </Grid>
       </Grid>
-
       <Typography id="disabled-slider" gutterBottom>
         Disabled slider
       </Typography>
       <Slider disabled defaultValue={30} aria-labelledby="disabled-slider" />
-
       <Typography id="discrete-slider-always" gutterBottom>
         Always visible
       </Typography>

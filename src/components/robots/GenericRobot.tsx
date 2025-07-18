@@ -1,6 +1,5 @@
-import { animated } from "@react-spring/three"
 import { useGLTF } from "@react-three/drei"
-import type { GroupProps } from "@react-three/fiber"
+import type { ThreeElements } from "@react-three/fiber"
 import React, { useCallback } from "react"
 import type { Group, Mesh } from "three"
 import { type Object3D } from "three"
@@ -14,7 +13,7 @@ export type RobotModelProps = {
    */
   postModelRender?: () => void
   flangeRef?: React.Ref<Group>
-} & GroupProps
+} & ThreeElements["group"]
 
 function isMesh(node: Object3D): node is Mesh {
   return node.type === "Mesh"
@@ -54,7 +53,7 @@ export function GenericRobot({
       )
     } else {
       return (
-        <animated.group
+        <group
           name={node.name}
           key={node.uuid}
           position={node.position}
@@ -62,7 +61,7 @@ export function GenericRobot({
           ref={isFlange(node) ? flangeRef : undefined}
         >
           {node.children.map(renderNode)}
-        </animated.group>
+        </group>
       )
     }
   }

@@ -42,7 +42,7 @@ See the [Storybook](https://wandelbotsgmbh.github.io/wandelbots-js-react-compone
 </table>
 
 ### UI
- 
+
 #### JoggingPanel
 
 <a href="https://wandelbotsgmbh.github.io/wandelbots-js-react-components/?path=/docs/jogging-joggingpanel--docs">

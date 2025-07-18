@@ -1,5 +1,5 @@
 import { green } from "@mui/material/colors"
-import type { SvgIconProps } from "@mui/material/SvgIcon";
+import type { SvgIconProps } from "@mui/material/SvgIcon"
 import SvgIcon from "@mui/material/SvgIcon"
 import React from "react"
 

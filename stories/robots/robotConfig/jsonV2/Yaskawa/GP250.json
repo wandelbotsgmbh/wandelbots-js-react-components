@@ -45,9 +45,7 @@
       "reverseRotationDirection": "0"
     }
   ],
-  "features": [
-    "SafetyLimitElbowFlangeVelocityInAuto"
-  ],
+  "features": ["SafetyLimitElbowFlangeVelocityInAuto"],
   "limits": {
     "joints": [
       {

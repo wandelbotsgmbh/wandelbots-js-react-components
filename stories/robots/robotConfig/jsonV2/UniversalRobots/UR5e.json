@@ -44,9 +44,7 @@
       "reverseRotationDirection": "0"
     }
   ],
-  "features": [
-    "SafetyLimitElbowFlangeVelocityInAuto"
-  ],
+  "features": ["SafetyLimitElbowFlangeVelocityInAuto"],
   "limits": {
     "mechanicalLimits": {
       "jointPositionMin": [
@@ -84,30 +82,9 @@
           "6.2849306364315813",
           "6.2849306364315813"
         ],
-        "jointVelocity": [
-          "3.14",
-          "3.14",
-          "3.14",
-          "3.14",
-          "3.14",
-          "3.14"
-        ],
-        "jointAcceleration": [
-          "40.0",
-          "40.0",
-          "40.0",
-          "40.0",
-          "40.0",
-          "40.0"
-        ],
-        "jointTorque": [
-          "150.0",
-          "150.0",
-          "150.0",
-          "28.0",
-          "28.0",
-          "28.0"
-        ],
+        "jointVelocity": ["3.14", "3.14", "3.14", "3.14", "3.14", "3.14"],
+        "jointAcceleration": ["40.0", "40.0", "40.0", "40.0", "40.0", "40.0"],
+        "jointTorque": ["150.0", "150.0", "150.0", "28.0", "28.0", "28.0"],
         "tcpForce": "0"
       }
     }

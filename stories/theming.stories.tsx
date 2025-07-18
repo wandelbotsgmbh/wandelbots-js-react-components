@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react"
+import type { Meta, StoryObj } from "@storybook/react-vite"
 import { JoggingPanel, createNovaMuiTheme } from "../src"
 import { Default as JoggingPanelStory } from "./JoggingPanel.stories"
 import { createTheme, ThemeProvider } from "@mui/material"

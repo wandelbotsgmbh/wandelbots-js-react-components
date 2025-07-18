@@ -1,15 +1,20 @@
-import { Box } from "@mui/material";
-import TextField from "@mui/material/TextField";
-import React from "react";
+import { Box } from "@mui/material"
+import TextField from "@mui/material/TextField"
+import React from "react"
 
 export default function TextFieldExample() {
   return (
-    <Box component="form" sx={{
-      "& > div > *": {
-        m: 1,
-        width: "25ch",
-      },
-    }} noValidate autoComplete="off">
+    <Box
+      component="form"
+      sx={{
+        "& > div > *": {
+          m: 1,
+          width: "25ch",
+        },
+      }}
+      noValidate
+      autoComplete="off"
+    >
       <div>
         <TextField
           required
@@ -50,7 +55,12 @@ export default function TextFieldExample() {
             shrink: true,
           }}
         />
-        <TextField id="standard-search" label="Search field" type="search" variant="standard" />
+        <TextField
+          id="standard-search"
+          label="Search field"
+          type="search"
+          variant="standard"
+        />
         <TextField
           id="standard-helperText"
           label="Helper text"
@@ -163,11 +173,7 @@ export default function TextFieldExample() {
             shrink: true,
           }}
         />
-        <TextField
-          id="outlined-search"
-          label="Search field"
-          type="search"
-        />
+        <TextField id="outlined-search" label="Search field" type="search" />
         <TextField
           id="outlined-helperText"
           label="Helper text"
