@@ -1,4 +1,3 @@
-import { animated } from "@react-spring/three"
 import { useGLTF } from "@react-three/drei"
 import type { ThreeElements } from "@react-three/fiber"
 import React, { useCallback } from "react"
@@ -54,7 +53,7 @@ export function GenericRobot({
       )
     } else {
       return (
-        <animated.group
+        <group
           name={node.name}
           key={node.uuid}
           position={node.position}
@@ -62,7 +61,7 @@ export function GenericRobot({
           ref={isFlange(node) ? flangeRef : undefined}
         >
           {node.children.map(renderNode)}
-        </animated.group>
+        </group>
       )
     }
   }
