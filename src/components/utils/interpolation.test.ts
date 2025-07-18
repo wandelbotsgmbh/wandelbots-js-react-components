@@ -464,4 +464,120 @@ describe("ValueInterpolator", () => {
     expect(secondStep).toBeGreaterThanOrEqual(firstStep) // Should accelerate gradually
     expect(firstStep).toBeLessThan(1.5) // First step should be modest
   })
+
+  it("should work correctly when multiple components use separate interpolators", () => {
+    // Test the scenario where two components each have their own interpolator
+    const interpolator1 = new ValueInterpolator([0, 0], {
+      tension: 120,
+      friction: 20,
+      threshold: 0.001,
+    })
+
+    const interpolator2 = new ValueInterpolator([0, 0], {
+      tension: 120,
+      friction: 20,
+      threshold: 0.001,
+    })
+
+    // Set different targets for each interpolator
+    interpolator1.setTarget([5, 10])
+    interpolator2.setTarget([15, 20])
+
+    // Update both interpolators for several frames
+    const values1History: number[][] = []
+    const values2History: number[][] = []
+
+    for (let frame = 0; frame < 30; frame++) {
+      // More frames for spring physics
+      interpolator1.update(1 / 60)
+      interpolator2.update(1 / 60)
+
+      values1History.push([...interpolator1.getCurrentValues()])
+      values2History.push([...interpolator2.getCurrentValues()])
+    }
+
+    // Both interpolators should be moving independently
+    const firstFrame1 = values1History[0]
+    const lastFrame1 = values1History[values1History.length - 1]
+    const firstFrame2 = values2History[0]
+    const lastFrame2 = values2History[values2History.length - 1]
+
+    // Interpolators should be moving independently and at reasonable speed
+    expect(lastFrame1[0]).toBeGreaterThan(firstFrame1[0])
+    expect(lastFrame1[1]).toBeGreaterThan(firstFrame1[1])
+    expect(lastFrame2[0]).toBeGreaterThan(firstFrame2[0])
+    expect(lastFrame2[1]).toBeGreaterThan(firstFrame2[1])
+
+    // Should make meaningful progress toward targets
+    expect(lastFrame1[0]).toBeGreaterThan(1) // Should have made progress toward 5
+    expect(lastFrame1[1]).toBeGreaterThan(2) // Should have made progress toward 10
+    expect(lastFrame2[0]).toBeGreaterThan(3) // Should have made progress toward 15
+    expect(lastFrame2[1]).toBeGreaterThan(4) // Should have made progress toward 20
+
+    // The interpolators should be independent - their values should be different
+    expect(lastFrame1[0]).not.toBeCloseTo(lastFrame2[0], 1)
+    expect(lastFrame1[1]).not.toBeCloseTo(lastFrame2[1], 1)
+
+    // Clean up
+    interpolator1.destroy()
+    interpolator2.destroy()
+  })
+
+  it("should handle multiple interpolators updating in the same frame correctly", async () => {
+    // Simulate a more realistic scenario where multiple components
+    // are updating their interpolators in the same animation frame
+    const interpolators: ValueInterpolator[] = []
+    const changeCallCounts: (() => number)[] = []
+
+    // Create multiple interpolators
+    for (let i = 0; i < 3; i++) {
+      let callCount = 0
+      const interpolator = new ValueInterpolator([0], {
+        onChange: () => {
+          callCount++
+        },
+      })
+      interpolators.push(interpolator)
+      changeCallCounts.push(() => callCount) // Store a function to get current count
+    }
+
+    // Set different targets
+    interpolators[0].setTarget([10])
+    interpolators[1].setTarget([20])
+    interpolators[2].setTarget([30])
+
+    // Simulate a frame where all interpolators update
+    const simulateFrame = () => {
+      interpolators.forEach((interpolator) => {
+        interpolator.update(1 / 60)
+      })
+    }
+
+    // Run several frames (more for spring physics)
+    for (let frame = 0; frame < 40; frame++) {
+      simulateFrame()
+      await new Promise((resolve) => setTimeout(resolve, 1))
+    }
+
+    // Check that all interpolators moved independently
+    const finalValues = interpolators.map(
+      (interpolator) => interpolator.getCurrentValues()[0],
+    )
+
+    expect(finalValues[0]).toBeGreaterThan(1) // Moving toward 10
+    expect(finalValues[1]).toBeGreaterThan(2) // Moving toward 20
+    expect(finalValues[2]).toBeGreaterThan(3) // Moving toward 30
+
+    // All should have different values
+    expect(finalValues[0]).not.toBeCloseTo(finalValues[1], 1)
+    expect(finalValues[1]).not.toBeCloseTo(finalValues[2], 1)
+
+    // All should have triggered onChange callbacks
+    changeCallCounts.forEach((getCount, index) => {
+      expect(getCount()).toBeGreaterThan(0)
+    })
+
+    // Clean up
+    interpolators.forEach((interpolator) => interpolator.destroy())
+  })
 })

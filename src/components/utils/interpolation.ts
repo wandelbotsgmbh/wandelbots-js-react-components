@@ -109,9 +109,10 @@ export class ValueInterpolator {
     const clampedDelta = Math.min(delta, 1 / 15) // Maximum 66ms frame time allowed
 
     // Apply gentle ramp-up for the first few frames to prevent initial jumpiness
+    // Only apply reduced force for the very first frame to prevent jarring starts
     const initializationFactor =
-      this.updateCount <= 3
-        ? Math.min(this.updateCount / 3, 1) // Gradual ramp over first 3 frames
+      this.updateCount === 1
+        ? 0.7 // Slightly reduced force only on the very first frame
         : 1
 
     for (let i = 0; i < this.currentValues.length; i++) {
@@ -184,10 +185,16 @@ export class ValueInterpolator {
 
     // Apply target blending for extremely rapid updates to prevent jarring jumps
     // Only activates when targets change faster than 120fps (< 8ms between updates)
+    // AND this is not the first target being set (avoid blending initial target with initial values)
+    const isInitialTargetSet = this.previousTargetValues.every(
+      (val, i) => val === this.currentValues[i],
+    )
+
     if (
       timeSinceLastUpdate < 8 &&
       timeSinceLastUpdate > 0 &&
-      this.previousTargetValues.length > 0
+      this.previousTargetValues.length > 0 &&
+      !isInitialTargetSet // Don't blend if this is the first meaningful target change
     ) {
       // Blend between previous and new target based on time elapsed
       const blendFactor = Math.min(timeSinceLastUpdate / 8, 1) // 0 to 1 over 8ms
