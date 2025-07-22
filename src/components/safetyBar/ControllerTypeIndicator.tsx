@@ -10,6 +10,7 @@ interface ControllerTypeIndicatorProps {
   motionGroupId: string
   anchorOrigin?: PopoverOrigin
   transformOrigin?: PopoverOrigin
+  compact: boolean
 }
 
 export const ControllerTypeIndicator = observer(
@@ -18,6 +19,7 @@ export const ControllerTypeIndicator = observer(
     motionGroupId,
     anchorOrigin,
     transformOrigin,
+    compact,
   }: ControllerTypeIndicatorProps) => {
     const theme = useTheme()
     const { t } = useTranslation()
@@ -29,6 +31,7 @@ export const ControllerTypeIndicator = observer(
           icon={ControllerTypeVirtualIcon}
           color={theme.palette.tertiary.main}
           name={t("SafetyBar.ControllerType.Virtual.lb")}
+          label={compact ? null : t("SafetyBar.ControllerType.Virtual.lb")}
           explanation={
             <Trans
               i18nKey="SafetyBar.MotionGroup.Virtual.Explanation.lb"
@@ -53,6 +56,7 @@ export const ControllerTypeIndicator = observer(
         icon={ControllerTypePhysicalIcon}
         color={theme.palette.primary.main}
         name={t("SafetyBar.ControllerType.Physical.lb")}
+        label={compact ? null : t("SafetyBar.ControllerType.Physical.lb")}
         explanation={
           <Trans
             i18nKey="SafetyBar.MotionGroup.Physical.Explanation.lb"
