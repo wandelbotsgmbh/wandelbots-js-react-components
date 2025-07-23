@@ -1,15 +1,37 @@
 import type { Meta, StoryObj } from "@storybook/react"
-import { SafetyBar } from "../src"
+import { SafetyBar, type SafetyBarProps } from "../src"
+import { Stack, Typography, useTheme } from "@mui/material"
+
+const SafetyBarWrapper = (props: SafetyBarProps) => {
+  const theme = useTheme()
+  return (
+    <Stack gap={4} sx={{ paddingTop: "1rem", paddingBottom: "3rem" }}>
+      <Stack gap={2}>
+        <Typography variant="body2" color={theme.palette.text.primary}>
+          Compact
+        </Typography>
+        <SafetyBar {...props} />
+      </Stack>
+      <Stack gap={2}>
+        <Typography variant="body2" color={theme.palette.text.primary}>
+          Extended
+        </Typography>
+        <SafetyBar {...props} compact={false} />
+      </Stack>
+    </Stack>
+  )
+}
 
 const meta: Meta<typeof SafetyBar> = {
   title: "Safety/SafetyBar",
-  component: SafetyBar,
+  component: SafetyBarWrapper,
   tags: ["autodocs"],
   args: {
     isVirtual: false,
     motionGroupId: "robot1",
     operationMode: "OPERATION_MODE_AUTO",
     safetyState: "SAFETY_STATE_NORMAL",
+    compact: true,
   },
   argTypes: {
     isVirtual: {
@@ -35,6 +57,13 @@ const meta: Meta<typeof SafetyBar> = {
         "OPERATION_MODE_MANUAL_T2",
       ],
       description: "Current operation mode of the robot",
+    },
+    compact: {
+      control: "boolean",
+      description: "Whether to display the safety bar in compact mode",
+      table: {
+        defaultValue: { summary: "true" },
+      },
     },
     safetyState: {
       control: "select",

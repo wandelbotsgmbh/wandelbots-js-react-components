@@ -15,6 +15,7 @@ export type IndicatorWithExplanationProps = {
   color: TypographyProps["color"]
   title?: ReactNode
   name: ReactNode
+  label?: ReactNode
   explanation: ReactNode
   literalValue?: string
   anchorOrigin?: PopoverOrigin
@@ -28,6 +29,7 @@ export const IndicatorWithExplanation = observer(
     color,
     title,
     name,
+    label,
     explanation,
     literalValue,
     anchorOrigin,
@@ -56,6 +58,8 @@ export const IndicatorWithExplanation = observer(
           aria-haspopup="true"
           onMouseEnter={state.openPopover}
           onMouseLeave={state.closePopover}
+          direction="row"
+          spacing={1}
           sx={{
             cursor: "pointer",
           }}
@@ -66,6 +70,9 @@ export const IndicatorWithExplanation = observer(
               color,
             }}
           />
+          {label && (<div style={{
+              color,
+            }}>{label}</div>)}
         </Stack>
         <Popover
           id={id}
