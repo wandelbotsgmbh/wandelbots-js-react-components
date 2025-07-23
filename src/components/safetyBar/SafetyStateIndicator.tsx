@@ -35,16 +35,15 @@ export const SafetyStateIndicator = observer(
             id="safety-state-normal"
             title={t("SafetyBar.SafetyState.ti")}
             name={t("SafetyBar.SafetyState.Normal.lb")}
-            label={compact ? null :  t("SafetyBar.SafetyState.Normal.lb")}
+            label={compact ? null : t("SafetyBar.SafetyState.Normal.lb")}
             icon={SafetyStateNormalIcon}
-            color={"rgba(255, 255, 255, 0.57)"}
+            color={theme.palette.text.secondary}
             explanation={
               <Trans i18nKey="SafetyBar.SafetyState.Normal.Explanation.lb">
                 The robot controller is in a normal safety state. Movement is
                 not prevented by this state.
               </Trans>
             }
-
             anchorOrigin={anchorOrigin}
             transformOrigin={transformOrigin}
           />
@@ -114,7 +113,11 @@ export const SafetyStateIndicator = observer(
             color={theme.palette.warning.main}
             title={t("SafetyBar.SafetyState.ti")}
             name={t("SafetyBar.SafetyState.ManualActionRequired.lb")}
-            label={compact ? null : t("SafetyBar.SafetyState.ManualActionRequired.lb")}
+            label={
+              compact
+                ? null
+                : t("SafetyBar.SafetyState.ManualActionRequired.lb")
+            }
             explanation={
               <Trans i18nKey="SafetyBar.SafetyState.ManualActionRequired.Explanation.lb">
                 The robot controller has entered a safety state requiring manual
