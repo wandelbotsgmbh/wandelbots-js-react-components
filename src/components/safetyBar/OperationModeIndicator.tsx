@@ -19,7 +19,7 @@ export const OperationModeIndicator = observer(
     operationMode,
     anchorOrigin,
     transformOrigin,
-    compact
+    compact,
   }: OperationModeIndicatorProps) => {
     const { t } = useTranslation()
     const theme = useTheme()
@@ -33,7 +33,7 @@ export const OperationModeIndicator = observer(
             title={t("SafetyBar.OperationMode.ti")}
             name={t("SafetyBar.OperationMode.Automatic.ti")}
             label={compact ? null : t("SafetyBar.OperationMode.Automatic.ti")}
-            color={"rgba(255, 255, 255, 0.57)"}
+            color={theme.palette.text.secondary}
             explanation={
               <Trans i18nKey="SafetyBar.OperationMode.Auto.Explanation.lb">
                 The robot controller is in automatic operation mode. Automated
