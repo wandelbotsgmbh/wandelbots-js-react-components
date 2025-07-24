@@ -45,7 +45,7 @@
   "Jogging.Cartesian.bt": "Cartesian",
   "Jogging.Joints.bt": "Joints",
   "Jogging.Velocity.bt": "Velocity",
-  "ProgramControl.Run.bt": "Run",
+  "ProgramControl.Start.bt": "Start",
   "ProgramControl.Resume.bt": "Resume",
   "ProgramControl.Pause.bt": "Pause",
   "ProgramControl.Stop.bt": "Stop"

@@ -74,7 +74,7 @@ export const ProgramControl = externalizeComponent(
             label:
               state === "paused"
                 ? t("ProgramControl.Resume.bt")
-                : t("ProgramControl.Run.bt"),
+                : t("ProgramControl.Start.bt"),
             color: theme.palette.success.main,
             onClick: onRun,
           },
