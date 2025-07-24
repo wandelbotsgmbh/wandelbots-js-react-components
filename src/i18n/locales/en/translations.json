@@ -46,5 +46,9 @@
   "Jogging.Joints.bt": "Joints",
   "Jogging.Velocity.bt": "Velocity",
   "CycleTimer.RemainingTime.lb": "Time remaining",
-  "CycleTimer.OfTime.lb": "of {{time}} min."
+  "CycleTimer.OfTime.lb": "of {{time}} min.",
+  "ProgramControl.Start.bt": "Start",
+  "ProgramControl.Resume.bt": "Resume",
+  "ProgramControl.Pause.bt": "Pause",
+  "ProgramControl.Stop.bt": "Stop"
 }

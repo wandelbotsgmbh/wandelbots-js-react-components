@@ -335,14 +335,14 @@ export default function TableExample() {
               {stableSort(rows, getComparator(order, orderBy))
                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                 .map((row, index) => {
-                  const isItemSelected = isSelected(row.name)
+                  const isItemSelected = isSelected(row.name as string)
                   const labelId = `enhanced-table-checkbox-${index}`
 
                   return (
                     <TableRow
                       hover
                       onClick={(event: MouseEvent) =>
-                        handleClick(event, row.name)
+                        handleClick(event, row.name as string)
                       }
                       role="checkbox"
                       aria-checked={isItemSelected}
