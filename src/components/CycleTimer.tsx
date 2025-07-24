@@ -6,10 +6,19 @@ import { useTranslation } from "react-i18next"
 import { externalizeComponent } from "../externalizeComponent"
 
 export interface CycleTimerProps {
-  /** Callback that receives the startNewCycle function for controlling the timer */
-  onCycleComplete: (
-    startNewCycle: (maxTimeSeconds: number, elapsedSeconds?: number) => void,
-  ) => void
+  /**
+   * Callback that receives the timer control functions:
+   * - `startNewCycle(maxTimeSeconds, elapsedSeconds?)` - Start a new timer cycle
+   * - `pause()` - Pause the countdown while preserving remaining time
+   * - `resume()` - Resume countdown from where it was paused
+   * - `isPaused()` - Check current pause state
+   */
+  onCycleComplete: (controls: {
+    startNewCycle: (maxTimeSeconds: number, elapsedSeconds?: number) => void
+    pause: () => void
+    resume: () => void
+    isPaused: () => boolean
+  }) => void
   /** Callback fired when a cycle actually completes (reaches zero) */
   onCycleEnd?: () => void
   /** Whether the timer should start automatically when maxTime is set */
@@ -30,11 +39,13 @@ export interface CycleTimerProps {
  * - Shows remaining time prominently in the center (60px font)
  * - Displays "remaining time" label at top and total time at bottom
  * - Automatically counts down and triggers callback when reaching zero
+ * - Full timer control: start, pause, resume functionality
+ * - Support for starting with elapsed time (resume mid-cycle)
  * - Fully localized with i18next
  * - Material-UI theming integration
  * - Small variant with animated progress icon (gauge border only) next to text
  *
- * @param onCycleComplete - Callback that receives the startNewCycle function for controlling the timer
+ * @param onCycleComplete - Callback that receives timer control functions
  * @param onCycleEnd - Optional callback fired when a cycle actually completes (reaches zero)
  * @param autoStart - Whether to start timer automatically (default: true)
  * @param variant - Visual variant: "default" (large gauge) or "small" (animated icon with text)
@@ -44,15 +55,31 @@ export interface CycleTimerProps {
  * Usage:
  * ```tsx
  * <CycleTimer
- *   onCycleComplete={(startNewCycle) => {
+ *   onCycleComplete={(controls) => {
  *     // Start a 5-minute cycle
- *     startNewCycle(300)
+ *     controls.startNewCycle(300)
  *
  *     // Or start a 5-minute cycle with 2 minutes already elapsed
- *     startNewCycle(300, 120)
+ *     controls.startNewCycle(300, 120)
+ *
+ *     // Pause the timer
+ *     controls.pause()
+ *
+ *     // Resume the timer
+ *     controls.resume()
+ *
+ *     // Check if paused
+ *     const paused = controls.isPaused()
  *   }}
+ *   onCycleEnd={() => console.log('Cycle completed!')}
  * />
  * ```
+ *
+ * Control Functions:
+ * - `startNewCycle(maxTimeSeconds, elapsedSeconds?)` - Start a new timer cycle
+ * - `pause()` - Pause the countdown while preserving remaining time
+ * - `resume()` - Resume countdown from where it was paused
+ * - `isPaused()` - Check current pause state
  */
 export const CycleTimer = externalizeComponent(
   observer(
@@ -69,6 +96,7 @@ export const CycleTimer = externalizeComponent(
       const [remainingTime, setRemainingTime] = useState(0)
       const [maxTime, setMaxTime] = useState(0)
       const [isRunning, setIsRunning] = useState(false)
+      const [isPausedState, setIsPausedState] = useState(false)
       const intervalRef = useRef<NodeJS.Timeout | null>(null)
 
       const startNewCycle = useCallback(
@@ -79,6 +107,7 @@ export const CycleTimer = externalizeComponent(
           setMaxTime(maxTimeSeconds)
           const remainingSeconds = Math.max(0, maxTimeSeconds - elapsedSeconds)
           setRemainingTime(remainingSeconds)
+          setIsPausedState(false)
 
           if (remainingSeconds === 0) {
             console.log("Cycle already completed (elapsed time >= max time)")
@@ -97,12 +126,35 @@ export const CycleTimer = externalizeComponent(
         [autoStart, onCycleEnd],
       )
 
-      // Call onCycleComplete immediately to provide the startNewCycle function
+      const pause = useCallback(() => {
+        console.log("Pausing timer")
+        setIsRunning(false)
+        setIsPausedState(true)
+      }, [])
+
+      const resume = useCallback(() => {
+        if (isPausedState && remainingTime > 0) {
+          console.log("Resuming timer")
+          setIsRunning(true)
+          setIsPausedState(false)
+        }
+      }, [isPausedState, remainingTime])
+
+      const isPaused = useCallback(() => {
+        return isPausedState
+      }, [isPausedState])
+
+      // Call onCycleComplete immediately to provide the timer control functions
       useEffect(() => {
         let isMounted = true
         const timeoutId = setTimeout(() => {
           if (isMounted) {
-            onCycleComplete(startNewCycle)
+            onCycleComplete({
+              startNewCycle,
+              pause,
+              resume,
+              isPaused,
+            })
           }
         }, 0)
 
@@ -110,7 +162,7 @@ export const CycleTimer = externalizeComponent(
           isMounted = false
           clearTimeout(timeoutId)
         }
-      }, [onCycleComplete, startNewCycle])
+      }, [onCycleComplete, startNewCycle, pause, resume, isPaused])
 
       useEffect(() => {
         if (isRunning && remainingTime > 0) {

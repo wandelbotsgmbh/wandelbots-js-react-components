@@ -10,6 +10,28 @@ const meta: Meta<typeof CycleTimer> = {
   parameters: {
     layout: "centered",
     docs: {
+      description: {
+        component: `
+A circular gauge timer component that shows the remaining time of a cycle.
+
+**Features:**
+- Circular gauge with 264px diameter and 40px thickness
+- Shows remaining time prominently in the center
+- Displays "remaining time" label at top and total time at bottom
+- Automatically counts down and triggers callback when reaching zero
+- **Full timer control: start, pause, resume functionality**
+- **Support for starting with elapsed time (resume mid-cycle)**
+- Fully localized with i18next
+- Material-UI theming integration
+- Small variant with animated progress icon next to text
+
+**Control Functions:**
+- \`startNewCycle(maxTimeSeconds, elapsedSeconds?)\` - Start a new timer cycle
+- \`pause()\` - Pause the countdown while preserving remaining time
+- \`resume()\` - Resume countdown from where it was paused
+- \`isPaused()\` - Check current pause state
+        `,
+      },
       story: {
         inline: false,
         iframeHeight: 400,
@@ -24,7 +46,7 @@ const meta: Meta<typeof CycleTimer> = {
     onCycleComplete: {
       action: "onCycleComplete",
       description:
-        "Callback that receives the startNewCycle function for controlling the timer",
+        "Callback that receives timer control functions (startNewCycle, pause, resume, isPaused)",
     },
     onCycleEnd: {
       action: "onCycleEnd",
@@ -74,30 +96,49 @@ type Story = StoryObj<typeof meta>
 
 /**
  * Default CycleTimer with automatic timer functionality.
- * Click "Start New Cycle" to begin a 5-minute countdown.
+ * Click "Start New Cycle" to begin a countdown, then use pause/resume controls.
  */
 export const Default: Story = {
   args: {
     autoStart: true,
   },
   render: function Render(args) {
-    const timerRef: React.MutableRefObject<((maxTime: number) => void) | null> =
-      React.useRef(null)
+    const controlsRef: React.MutableRefObject<{
+      startNewCycle: (maxTime: number, elapsedSeconds?: number) => void
+      pause: () => void
+      resume: () => void
+      isPaused: () => boolean
+    } | null> = React.useRef(null)
 
-    const handleCycleComplete = (startNewCycle: (maxTime: number) => void) => {
-      timerRef.current = startNewCycle
-      console.log("Timer ready for new cycle.")
+    const handleCycleComplete = (controls: {
+      startNewCycle: (maxTime: number, elapsedSeconds?: number) => void
+      pause: () => void
+      resume: () => void
+      isPaused: () => boolean
+    }) => {
+      controlsRef.current = controls
+      console.log("Timer controls ready.")
     }
 
     const handleCycleEnd = () => {
       console.log("Cycle completed! Timer reached zero.")
-      // In a real application, you might want to automatically start a new cycle
-      // For demo purposes, we just log and wait for manual restart
     }
 
     const startDemo = (minutes: number) => {
-      if (timerRef.current) {
-        timerRef.current(minutes * 60) // Convert minutes to seconds
+      if (controlsRef.current) {
+        controlsRef.current.startNewCycle(minutes * 60) // Convert minutes to seconds
+      }
+    }
+
+    const pauseTimer = () => {
+      if (controlsRef.current) {
+        controlsRef.current.pause()
+      }
+    }
+
+    const resumeTimer = () => {
+      if (controlsRef.current) {
+        controlsRef.current.resume()
       }
     }
 
@@ -125,13 +166,29 @@ export const Default: Story = {
           }}
         >
           <Button variant="contained" onClick={() => startDemo(5)}>
-            Start 5 Min Cycle
+            Start 5 min cycle
           </Button>
           <Button variant="contained" onClick={() => startDemo(3)}>
-            Start 3 Min Cycle
+            Start 3 min cycle
           </Button>
           <Button variant="contained" onClick={() => startDemo(0.1)}>
-            Start 6 Sec Cycle (Demo)
+            Start 6 sec cycle (demo)
+          </Button>
+        </Box>
+
+        <Box
+          sx={{
+            display: "flex",
+            gap: 2,
+            flexWrap: "wrap",
+            justifyContent: "center",
+          }}
+        >
+          <Button variant="outlined" onClick={pauseTimer}>
+            Pause timer
+          </Button>
+          <Button variant="outlined" onClick={resumeTimer}>
+            Resume timer
           </Button>
         </Box>
       </Box>
@@ -148,17 +205,26 @@ export const ManualStart: Story = {
     autoStart: false,
   },
   render: function Render(args) {
-    const timerRef: React.MutableRefObject<((maxTime: number) => void) | null> =
-      React.useRef(null)
+    const controlsRef: React.MutableRefObject<{
+      startNewCycle: (maxTime: number, elapsedSeconds?: number) => void
+      pause: () => void
+      resume: () => void
+      isPaused: () => boolean
+    } | null> = React.useRef(null)
 
-    const handleCycleComplete = (startNewCycle: (maxTime: number) => void) => {
-      timerRef.current = startNewCycle
-      console.log("Timer ready for manual restart.")
+    const handleCycleComplete = (controls: {
+      startNewCycle: (maxTime: number, elapsedSeconds?: number) => void
+      pause: () => void
+      resume: () => void
+      isPaused: () => boolean
+    }) => {
+      controlsRef.current = controls
+      console.log("Timer controls ready for manual control.")
     }
 
     const startDemo = (minutes: number) => {
-      if (timerRef.current) {
-        timerRef.current(minutes * 60)
+      if (controlsRef.current) {
+        controlsRef.current.startNewCycle(minutes * 60)
       }
     }
 
@@ -182,10 +248,10 @@ export const ManualStart: Story = {
           }}
         >
           <Button variant="contained" onClick={() => startDemo(2)}>
-            Set 2 Min Cycle (Manual Start)
+            Set 2 min cycle (manual start)
           </Button>
           <Button variant="contained" onClick={() => startDemo(0.05)}>
-            Set 3 Sec Cycle (Demo)
+            Set 3 sec cycle (demo)
           </Button>
         </Box>
 
@@ -217,11 +283,20 @@ export const ContinuousCycles: Story = {
   render: function Render(args) {
     const [cycleCount, setCycleCount] = React.useState(0)
     const [isAutoRestart, setIsAutoRestart] = React.useState(false)
-    const timerRef: React.MutableRefObject<((maxTime: number) => void) | null> =
-      React.useRef(null)
+    const controlsRef: React.MutableRefObject<{
+      startNewCycle: (maxTime: number, elapsedSeconds?: number) => void
+      pause: () => void
+      resume: () => void
+      isPaused: () => boolean
+    } | null> = React.useRef(null)
 
-    const handleCycleComplete = (startNewCycle: (maxTime: number) => void) => {
-      timerRef.current = startNewCycle
+    const handleCycleComplete = (controls: {
+      startNewCycle: (maxTime: number, elapsedSeconds?: number) => void
+      pause: () => void
+      resume: () => void
+      isPaused: () => boolean
+    }) => {
+      controlsRef.current = controls
     }
 
     const handleCycleEnd = () => {
@@ -230,17 +305,17 @@ export const ContinuousCycles: Story = {
       if (isAutoRestart) {
         // Automatically start a new 10-second cycle
         setTimeout(() => {
-          if (timerRef.current) {
-            timerRef.current(10)
+          if (controlsRef.current) {
+            controlsRef.current.startNewCycle(10)
           }
         }, 1000)
       }
     }
 
     const startDemo = () => {
-      if (timerRef.current) {
+      if (controlsRef.current) {
         setCycleCount(0)
-        timerRef.current(10) // Start with 10 seconds
+        controlsRef.current.startNewCycle(10) // Start with 10 seconds
       }
     }
 
@@ -272,7 +347,7 @@ export const ContinuousCycles: Story = {
           }}
         >
           <Button variant="contained" onClick={startDemo}>
-            Start Continuous Demo (10s cycles)
+            Start continuous demo (10s cycles)
           </Button>
           <Button
             variant={isAutoRestart ? "contained" : "outlined"}
@@ -314,11 +389,20 @@ export const SmallVariant: Story = {
     autoStart: true,
   },
   render: function Render(args) {
-    const timerRef: React.MutableRefObject<((maxTime: number) => void) | null> =
-      React.useRef(null)
+    const controlsRef: React.MutableRefObject<{
+      startNewCycle: (maxTime: number, elapsedSeconds?: number) => void
+      pause: () => void
+      resume: () => void
+      isPaused: () => boolean
+    } | null> = React.useRef(null)
 
-    const handleCycleComplete = (startNewCycle: (maxTime: number) => void) => {
-      timerRef.current = startNewCycle
+    const handleCycleComplete = (controls: {
+      startNewCycle: (maxTime: number, elapsedSeconds?: number) => void
+      pause: () => void
+      resume: () => void
+      isPaused: () => boolean
+    }) => {
+      controlsRef.current = controls
     }
 
     const handleCycleEnd = () => {
@@ -326,8 +410,8 @@ export const SmallVariant: Story = {
     }
 
     const startDemo = (minutes: number) => {
-      if (timerRef.current) {
-        timerRef.current(minutes * 60)
+      if (controlsRef.current) {
+        controlsRef.current.startNewCycle(minutes * 60)
       }
     }
 
@@ -355,10 +439,10 @@ export const SmallVariant: Story = {
           }}
         >
           <Button variant="contained" onClick={() => startDemo(5)}>
-            Start 5 Min Cycle
+            Start 5 min cycle
           </Button>
           <Button variant="contained" onClick={() => startDemo(0.1)}>
-            Start 6 Sec Cycle (Demo)
+            Start 6 sec cycle (demo)
           </Button>
         </Box>
       </Box>
@@ -378,11 +462,20 @@ export const SmallCompact: Story = {
     autoStart: true,
   },
   render: function Render(args) {
-    const timerRef: React.MutableRefObject<((maxTime: number) => void) | null> =
-      React.useRef(null)
+    const controlsRef: React.MutableRefObject<{
+      startNewCycle: (maxTime: number, elapsedSeconds?: number) => void
+      pause: () => void
+      resume: () => void
+      isPaused: () => boolean
+    } | null> = React.useRef(null)
 
-    const handleCycleComplete = (startNewCycle: (maxTime: number) => void) => {
-      timerRef.current = startNewCycle
+    const handleCycleComplete = (controls: {
+      startNewCycle: (maxTime: number, elapsedSeconds?: number) => void
+      pause: () => void
+      resume: () => void
+      isPaused: () => boolean
+    }) => {
+      controlsRef.current = controls
     }
 
     const handleCycleEnd = () => {
@@ -390,8 +483,8 @@ export const SmallCompact: Story = {
     }
 
     const startDemo = (minutes: number) => {
-      if (timerRef.current) {
-        timerRef.current(minutes * 60)
+      if (controlsRef.current) {
+        controlsRef.current.startNewCycle(minutes * 60)
       }
     }
 
@@ -419,10 +512,10 @@ export const SmallCompact: Story = {
           }}
         >
           <Button variant="contained" onClick={() => startDemo(3)}>
-            Start 3 Min Cycle
+            Start 3 min cycle
           </Button>
           <Button variant="contained" onClick={() => startDemo(0.05)}>
-            Start 3 Sec Cycle (Demo)
+            Start 3 sec cycle (demo)
           </Button>
         </Box>
 
@@ -435,6 +528,152 @@ export const SmallCompact: Story = {
           }}
         >
           Compact variant only shows the remaining time without total duration.
+        </Box>
+      </Box>
+    )
+  },
+}
+
+/**
+ * Pause/Resume functionality demo.
+ * Demonstrates the complete timer control interface including pause and resume.
+ */
+export const PauseResumeDemo: Story = {
+  args: {
+    autoStart: true,
+  },
+  render: function Render(args) {
+    const [isPaused, setIsPaused] = React.useState(false)
+    const controlsRef: React.MutableRefObject<{
+      startNewCycle: (maxTime: number, elapsedSeconds?: number) => void
+      pause: () => void
+      resume: () => void
+      isPaused: () => boolean
+    } | null> = React.useRef(null)
+
+    const handleCycleComplete = (controls: {
+      startNewCycle: (maxTime: number, elapsedSeconds?: number) => void
+      pause: () => void
+      resume: () => void
+      isPaused: () => boolean
+    }) => {
+      controlsRef.current = controls
+      console.log("Timer controls ready for pause/resume demo.")
+    }
+
+    const handleCycleEnd = () => {
+      console.log("Pause/Resume demo cycle completed!")
+      setIsPaused(false) // Reset pause state when cycle completes
+    }
+
+    const startDemo = (minutes: number, elapsedSeconds?: number) => {
+      if (controlsRef.current) {
+        controlsRef.current.startNewCycle(minutes * 60, elapsedSeconds)
+        setIsPaused(false)
+      }
+    }
+
+    const pauseTimer = () => {
+      if (controlsRef.current) {
+        controlsRef.current.pause()
+        setIsPaused(true)
+      }
+    }
+
+    const resumeTimer = () => {
+      if (controlsRef.current) {
+        controlsRef.current.resume()
+        setIsPaused(false)
+      }
+    }
+
+    const checkPauseState = () => {
+      if (controlsRef.current) {
+        const currentState = controlsRef.current.isPaused()
+        setIsPaused(currentState)
+        console.log("Current pause state:", currentState)
+      }
+    }
+
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          gap: 4,
+        }}
+      >
+        <CycleTimer
+          {...args}
+          onCycleComplete={handleCycleComplete}
+          onCycleEnd={handleCycleEnd}
+        />
+
+        <Box
+          sx={{
+            display: "flex",
+            gap: 2,
+            flexWrap: "wrap",
+            justifyContent: "center",
+          }}
+        >
+          <Button variant="contained" onClick={() => startDemo(2)}>
+            Start 2 min cycle
+          </Button>
+          <Button variant="contained" onClick={() => startDemo(0.2)}>
+            Start 12 sec cycle (demo)
+          </Button>
+          <Button variant="outlined" onClick={() => startDemo(5, 120)}>
+            Start 5 min with 2 min elapsed
+          </Button>
+        </Box>
+
+        <Box
+          sx={{
+            display: "flex",
+            gap: 2,
+            flexWrap: "wrap",
+            justifyContent: "center",
+          }}
+        >
+          <Button
+            variant="outlined"
+            color="warning"
+            onClick={pauseTimer}
+            disabled={isPaused}
+          >
+            Pause timer
+          </Button>
+          <Button
+            variant="outlined"
+            color="success"
+            onClick={resumeTimer}
+            disabled={!isPaused}
+          >
+            Resume timer
+          </Button>
+          <Button variant="text" onClick={checkPauseState}>
+            Check pause state
+          </Button>
+        </Box>
+
+        <Box
+          sx={{
+            typography: "body2",
+            color: isPaused ? "warning.main" : "text.secondary",
+            textAlign: "center",
+            maxWidth: 500,
+            fontWeight: isPaused ? "bold" : "normal",
+          }}
+        >
+          Timer Status: {isPaused ? "⏸️ PAUSED" : "▶️ Running"}
+          <br />
+          <br />
+          This demo showcases the complete timer control interface. You can
+          start cycles with or without elapsed time, pause the countdown, and
+          resume from where you left off. The timer preserves its state during
+          pause.
         </Box>
       </Box>
     )
