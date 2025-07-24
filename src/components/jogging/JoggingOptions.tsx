@@ -11,7 +11,7 @@ import {
 
 export const JoggingOptions = observer(({ store }: { store: JoggingStore }) => {
   const { t } = useTranslation()
-  const joggingOptions = []
+  const joggingOptions: React.ReactElement[] = []
 
   function translateOrientation(orientation: OrientationId): string {
     switch (orientation) {

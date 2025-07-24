@@ -1,6 +1,6 @@
-import { useArgs } from "@storybook/preview-api"
-import type { Meta, StoryObj } from "@storybook/react"
-import { expect, waitFor, within } from "@storybook/test"
+import { useArgs } from "storybook/preview-api"
+import type { Meta, StoryObj } from "@storybook/react-vite"
+import { expect, waitFor, within } from "storybook/test"
 import type { editor } from "monaco-editor"
 import { WandelscriptEditor } from "../src"
 

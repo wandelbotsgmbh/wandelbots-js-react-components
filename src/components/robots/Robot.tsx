@@ -1,4 +1,4 @@
-import { type GroupProps } from "@react-three/fiber"
+import { type ThreeElements } from "@react-three/fiber"
 
 import type { ConnectedMotionGroup } from "@wandelbots/nova-js/v1"
 import type { Group } from "three"
@@ -10,7 +10,7 @@ export type RobotProps = {
   getModel?: (modelFromController: string) => string
   flangeRef?: React.Ref<Group>
   transparentColor?: string
-} & GroupProps
+} & ThreeElements["group"]
 
 /**
  * The Robot component is a wrapper around the SupportedRobot component

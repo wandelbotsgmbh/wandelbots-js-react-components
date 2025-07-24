@@ -41,7 +41,7 @@ const PaletteOverview: React.FC = () => {
           >
             {theme.palette[category] &&
               Object.keys(theme.palette[category]).map((shade) => (
-                <Grid item key={shade} sx={{ alignItems: "center" }}>
+                <Grid key={shade} sx={{ alignItems: "center" }}>
                   <Typography variant="body2">{shade}</Typography>
                   <Tooltip title={(theme.palette[category] as any)[shade]}>
                     <Box
@@ -58,7 +58,7 @@ const PaletteOverview: React.FC = () => {
             {category === "primary" &&
               theme.paletteExt?.primary &&
               Object.keys(theme.paletteExt.primary).map((shade) => (
-                <Grid item key={shade} sx={{ alignItems: "center" }}>
+                <Grid key={shade} sx={{ alignItems: "center" }}>
                   <Typography variant="body2">{shade}</Typography>
                   <Tooltip title={(theme.paletteExt?.primary as any)?.[shade]}>
                     <Box
@@ -77,7 +77,7 @@ const PaletteOverview: React.FC = () => {
             {category === "secondary" &&
               theme.paletteExt?.secondary &&
               Object.keys(theme.paletteExt.secondary).map((shade) => (
-                <Grid item key={shade} sx={{ alignItems: "center" }}>
+                <Grid key={shade} sx={{ alignItems: "center" }}>
                   <Typography variant="body2">{shade}</Typography>
                   <Tooltip
                     title={(theme.paletteExt?.secondary as any)?.[shade]}

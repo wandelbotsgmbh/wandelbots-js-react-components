@@ -1,5 +1,5 @@
 import { Stack, Typography, useTheme } from "@mui/material"
-import type { Meta, StoryObj } from "@storybook/react"
+import type { Meta, StoryObj } from "@storybook/react-vite"
 import { runInAction } from "mobx"
 import { observer, useLocalObservable } from "mobx-react-lite"
 import {

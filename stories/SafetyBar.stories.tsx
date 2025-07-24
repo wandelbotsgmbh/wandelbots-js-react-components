@@ -1,6 +1,6 @@
-import type { Meta, StoryObj } from "@storybook/react"
-import { SafetyBar, type SafetyBarProps } from "../src"
 import { Stack, Typography, useTheme } from "@mui/material"
+import type { Meta, StoryObj } from "@storybook/react-vite"
+import { SafetyBar, type SafetyBarProps } from "../src"
 
 const SafetyBarWrapper = (props: SafetyBarProps) => {
   const theme = useTheme()
