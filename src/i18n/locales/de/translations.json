@@ -44,10 +44,6 @@
   "Jogging.Cartesian.bt": "Kartesisch",
   "Jogging.Joints.bt": "Gelenke",
   "Jogging.Velocity.bt": "Geschwindigkeit",
-  "ProgramControl.Run.bt": "Ausführen",
-  "ProgramControl.Resume.bt": "Fortsetzen",
-  "ProgramControl.Pause.bt": "Pausieren",
-  "ProgramControl.Stop.bt": "Stoppen",
   "CycleTimer.RemainingTime.lb": "Verbleibende Zeit",
   "CycleTimer.Of.lb": "von",
   "CycleTimer.Min.lb": "min."
