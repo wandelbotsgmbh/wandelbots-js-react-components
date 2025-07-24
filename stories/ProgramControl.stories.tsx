@@ -1,6 +1,6 @@
 import { Box, Button } from "@mui/material"
-import { useArgs } from "@storybook/preview-api"
-import type { Meta, StoryObj } from "@storybook/react"
+import type { Meta, StoryObj } from "@storybook/react-vite"
+import { useArgs } from "storybook/preview-api"
 import { ProgramControl } from "../src"
 
 const meta: Meta<typeof ProgramControl> = {
