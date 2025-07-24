@@ -1,7 +1,6 @@
+import { Box, Button } from "@mui/material"
 import { useArgs } from "@storybook/preview-api"
 import type { Meta, StoryObj } from "@storybook/react"
-import React from "react"
-import { Button, Box } from "@mui/material"
 import { ProgramControl } from "../src"
 
 const meta: Meta<typeof ProgramControl> = {
@@ -17,27 +16,29 @@ const meta: Meta<typeof ProgramControl> = {
       options: ["idle", "running", "paused", "stopping"],
       description: "The current state of the program control",
       table: {
-        type: { 
-          summary: "'idle' | 'running' | 'paused' | 'stopping'" 
+        type: {
+          summary: "'idle' | 'running' | 'paused' | 'stopping'",
         },
       },
     },
     variant: {
       control: "select",
       options: ["with_pause", "without_pause"],
-      description: "Variant of the component: 'with_pause' shows run/pause/stop buttons, 'without_pause' shows only run/stop buttons",
+      description:
+        "Variant of the component: 'with_pause' shows run/pause/stop buttons, 'without_pause' shows only run/stop buttons",
       table: {
-        type: { 
-          summary: "'with_pause' | 'without_pause'" 
+        type: {
+          summary: "'with_pause' | 'without_pause'",
         },
-        defaultValue: { 
-          summary: "'with_pause'" 
+        defaultValue: {
+          summary: "'with_pause'",
         },
       },
     },
     requiresManualReset: {
       control: "boolean",
-      description: "When true, the component will stay in 'stopping' state until onReset is called manually. When false, auto-resets to 'idle' after 2 seconds.",
+      description:
+        "When true, the component will stay in 'stopping' state until onReset is called manually. When false, auto-resets to 'idle' after 2 seconds.",
     },
     onRun: {
       action: "onRun",
@@ -45,15 +46,17 @@ const meta: Meta<typeof ProgramControl> = {
     },
     onPause: {
       action: "onPause",
-      description: "Callback fired when the pause button is clicked (only available in 'with_pause' variant)",
+      description:
+        "Callback fired when the pause button is clicked (only available in 'with_pause' variant)",
     },
     onStop: {
-      action: "onStop", 
+      action: "onStop",
       description: "Callback fired when the stop button is clicked",
     },
     onReset: {
       action: "onReset",
-      description: "Function to reset the component from 'stopping' state back to 'idle'. This must be called manually by the user when requiresManualReset is true.",
+      description:
+        "Function to reset the component from 'stopping' state back to 'idle'. This must be called manually by the user when requiresManualReset is true.",
     },
   },
   args: {
@@ -89,7 +92,7 @@ const meta: Meta<typeof ProgramControl> = {
       args.onStop?.()
       // Simulate state change
       setArgs({ state: "stopping" })
-      
+
       // If manual reset is required, don't auto-reset
       if (!args.requiresManualReset) {
         // Simulate return to idle after stopping
@@ -107,7 +110,14 @@ const meta: Meta<typeof ProgramControl> = {
     }
 
     return (
-      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          gap: 3,
+        }}
+      >
         <ProgramControl
           {...args}
           onRun={onRun}
@@ -115,8 +125,8 @@ const meta: Meta<typeof ProgramControl> = {
           onStop={onStop}
           onReset={onReset}
         />
-        
-        {args.requiresManualReset && args.state === 'stopping' && (
+
+        {args.requiresManualReset && args.state === "stopping" && (
           <Button
             variant="outlined"
             color="info"
@@ -126,13 +136,19 @@ const meta: Meta<typeof ProgramControl> = {
             🔄 Manual Reset (Trigger onReset)
           </Button>
         )}
-        
+
         {args.requiresManualReset && (
-          <Box sx={{ textAlign: 'center', fontSize: '0.875rem', color: 'text.secondary', maxWidth: 300 }}>
-            {args.state === 'stopping' 
+          <Box
+            sx={{
+              textAlign: "center",
+              fontSize: "0.875rem",
+              color: "text.secondary",
+              maxWidth: 300,
+            }}
+          >
+            {args.state === "stopping"
               ? "Component is in stopping state. Use the Manual Reset button above or manually call onReset() to return to idle."
-              : "When you press Stop, the component will stay in stopping state until you manually call the onReset function."
-            }
+              : "When you press Stop, the component will stay in stopping state until you manually call the onReset function."}
           </Box>
         )}
       </Box>
@@ -195,7 +211,8 @@ export const WithManualReset: Story = {
   parameters: {
     docs: {
       description: {
-        story: "This example shows the component in stopping state when manual reset is required. The user must manually call the onReset function to return to idle state.",
+        story:
+          "This example shows the component in stopping state when manual reset is required. The user must manually call the onReset function to return to idle state.",
       },
     },
   },
@@ -210,7 +227,8 @@ export const Interactive: Story = {
   parameters: {
     docs: {
       description: {
-        story: "Interactive demo with automatic reset after stopping. The component automatically returns to idle state after 2 seconds in stopping state.",
+        story:
+          "Interactive demo with automatic reset after stopping. The component automatically returns to idle state after 2 seconds in stopping state.",
       },
     },
   },
@@ -226,7 +244,8 @@ export const ManualResetRequired: Story = {
   parameters: {
     docs: {
       description: {
-        story: "Interactive demo with manual reset required. When stopped, the component stays in stopping state until you manually call the onReset function (check the Actions panel or use the reset button below).",
+        story:
+          "Interactive demo with manual reset required. When stopped, the component stays in stopping state until you manually call the onReset function (check the Actions panel or use the reset button below).",
       },
     },
   },
