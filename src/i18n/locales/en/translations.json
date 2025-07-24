@@ -45,7 +45,6 @@
   "Jogging.Cartesian.bt": "Cartesian",
   "Jogging.Joints.bt": "Joints",
   "Jogging.Velocity.bt": "Velocity",
-  "CycleTimer.RemainingTime.lb": "remaining time",
-  "CycleTimer.Of.lb": "of",
-  "CycleTimer.Min.lb": "min."
+  "CycleTimer.RemainingTime.lb": "Time remaining",
+  "CycleTimer.OfTime.lb": "of {{time}} min."
 }

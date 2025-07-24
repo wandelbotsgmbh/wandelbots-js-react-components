@@ -189,8 +189,8 @@ export const CycleTimer = externalizeComponent(
               {compact
                 ? // Compact mode: show only remaining time
                   formatTime(remainingTime)
-                : // Full mode: show "remaining / total min." format
-                  `${formatTime(remainingTime)} / ${formatTime(maxTime)} ${t("CycleTimer.Min.lb")}`}
+                : // Full mode: show "remaining / of total min." format
+                  `${formatTime(remainingTime)} / ${t("CycleTimer.OfTime.lb", { time: formatTime(maxTime) })}`}
             </Typography>
           </Box>
         )
@@ -281,8 +281,7 @@ export const CycleTimer = externalizeComponent(
                 color: theme.palette.text.secondary,
               }}
             >
-              {t("CycleTimer.Of.lb")} {formatTime(maxTime)}{" "}
-              {t("CycleTimer.Min.lb")}
+              {t("CycleTimer.OfTime.lb", { time: formatTime(maxTime) })}
             </Typography>
           </Box>
         </Box>

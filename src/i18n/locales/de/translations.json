@@ -45,6 +45,5 @@
   "Jogging.Joints.bt": "Gelenke",
   "Jogging.Velocity.bt": "Geschwindigkeit",
   "CycleTimer.RemainingTime.lb": "Verbleibende Zeit",
-  "CycleTimer.Of.lb": "von",
-  "CycleTimer.Min.lb": "min."
+  "CycleTimer.OfTime.lb": "von {{time}} min."
 }
