@@ -44,5 +44,12 @@
   "Jogging.CoordinateSystem.hlb": "Coordinate system",
   "Jogging.Cartesian.bt": "Cartesian",
   "Jogging.Joints.bt": "Joints",
-  "Jogging.Velocity.bt": "Velocity"
+  "Jogging.Velocity.bt": "Velocity",
+  "ProgramControl.Run.bt": "Run",
+  "ProgramControl.Resume.bt": "Resume",
+  "ProgramControl.Pause.bt": "Pause",
+  "ProgramControl.Stop.bt": "Stop",
+  "CycleTimer.RemainingTime.lb": "remaining time",
+  "CycleTimer.Of.lb": "of",
+  "CycleTimer.Min.lb": "min."
 }
