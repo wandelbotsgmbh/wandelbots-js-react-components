@@ -14,6 +14,7 @@ interface SafetyStateIndicatorProps {
   safetyState: RobotControllerStateSafetyStateEnum
   anchorOrigin?: PopoverOrigin
   transformOrigin?: PopoverOrigin
+  compact: boolean
 }
 
 export const SafetyStateIndicator = observer(
@@ -21,6 +22,7 @@ export const SafetyStateIndicator = observer(
     safetyState,
     anchorOrigin,
     transformOrigin,
+    compact,
   }: SafetyStateIndicatorProps) => {
     const { t } = useTranslation()
     const theme = useTheme()
@@ -33,8 +35,9 @@ export const SafetyStateIndicator = observer(
             id="safety-state-normal"
             title={t("SafetyBar.SafetyState.ti")}
             name={t("SafetyBar.SafetyState.Normal.lb")}
+            label={compact ? null : t("SafetyBar.SafetyState.Normal.lb")}
             icon={SafetyStateNormalIcon}
-            color={"rgba(255, 255, 255, 0.57)"}
+            color={theme.palette.text.secondary}
             explanation={
               <Trans i18nKey="SafetyBar.SafetyState.Normal.Explanation.lb">
                 The robot controller is in a normal safety state. Movement is
@@ -54,6 +57,7 @@ export const SafetyStateIndicator = observer(
             id="safety-state-estop"
             title={t("SafetyBar.SafetyState.ti")}
             name={t("SafetyBar.SafetyState.Estop.lb")}
+            label={compact ? null : t("SafetyBar.SafetyState.Estop.lb")}
             icon={SafetyStateEstopIcon}
             color={theme.palette.error.main}
             explanation={
@@ -81,6 +85,7 @@ export const SafetyStateIndicator = observer(
             icon={SafetyStateStopIcon}
             title={t("SafetyBar.SafetyState.ti")}
             name={t("SafetyBar.SafetyState.Stop.lb")}
+            label={compact ? null : t("SafetyBar.SafetyState.Stop.lb")}
             color={theme.palette.warning.main}
             explanation={
               <Trans i18nKey="SafetyBar.SafetyState.Stop.Explanation.lb">
@@ -108,6 +113,11 @@ export const SafetyStateIndicator = observer(
             color={theme.palette.warning.main}
             title={t("SafetyBar.SafetyState.ti")}
             name={t("SafetyBar.SafetyState.ManualActionRequired.lb")}
+            label={
+              compact
+                ? null
+                : t("SafetyBar.SafetyState.ManualActionRequired.lb")
+            }
             explanation={
               <Trans i18nKey="SafetyBar.SafetyState.ManualActionRequired.Explanation.lb">
                 The robot controller has entered a safety state requiring manual
@@ -130,6 +140,7 @@ export const SafetyStateIndicator = observer(
             color={theme.palette.error.main}
             title={t("SafetyBar.SafetyState.ti")}
             name={t("SafetyBar.SafetyState.Error.lb")}
+            label={compact ? null : t("SafetyBar.SafetyState.Error.lb")}
             explanation={
               <Trans i18nKey="SafetyBar.SafetyState.Error.Explanation.lb">
                 The robot controller has entered an unexpected safety state.

@@ -11,6 +11,7 @@ interface OperationModeIndicatorProps {
   operationMode: RobotControllerStateOperationModeEnum
   anchorOrigin?: PopoverOrigin
   transformOrigin?: PopoverOrigin
+  compact: boolean
 }
 
 export const OperationModeIndicator = observer(
@@ -18,6 +19,7 @@ export const OperationModeIndicator = observer(
     operationMode,
     anchorOrigin,
     transformOrigin,
+    compact,
   }: OperationModeIndicatorProps) => {
     const { t } = useTranslation()
     const theme = useTheme()
@@ -30,7 +32,8 @@ export const OperationModeIndicator = observer(
             icon={OperationModeAutomaticIcon}
             title={t("SafetyBar.OperationMode.ti")}
             name={t("SafetyBar.OperationMode.Automatic.ti")}
-            color={"rgba(255, 255, 255, 0.57)"}
+            label={compact ? null : t("SafetyBar.OperationMode.Automatic.ti")}
+            color={theme.palette.text.secondary}
             explanation={
               <Trans i18nKey="SafetyBar.OperationMode.Auto.Explanation.lb">
                 The robot controller is in automatic operation mode. Automated
@@ -51,6 +54,7 @@ export const OperationModeIndicator = observer(
             color={theme.palette.warning.main}
             title={t("SafetyBar.OperationMode.ti")}
             name={t("SafetyBar.OperationMode.Manual.lb")}
+            label={compact ? null : t("SafetyBar.OperationMode.Manual.lb")}
             explanation={
               <Trans i18nKey="SafetyBar.OperationMode.Manual.Explanation.lb">
                 The robot controller is in manual operation mode. On a physical
@@ -72,6 +76,7 @@ export const OperationModeIndicator = observer(
             color={theme.palette.warning.main}
             title={t("SafetyBar.OperationMode.ti")}
             name={t("SafetyBar.OperationMode.Error.lb")}
+            label={compact ? null : t("SafetyBar.OperationMode.Error.lb")}
             explanation={
               <Trans i18nKey="SafetyBar.OperationMode.Error.Explanation.lb">
                 The robot controller has entered an unexpected operation mode.
