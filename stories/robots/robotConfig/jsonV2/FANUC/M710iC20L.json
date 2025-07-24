@@ -96,7 +96,7 @@
       "jointInteraction": {
         "velocity": "4.6251225177849733",
         "acceleration": "32.399999999999999"
-        },
+      },
       "joints": [
         {
           "velocity": "3.6651914291880921",
@@ -131,7 +131,7 @@
       "jointInteraction": {
         "velocity": "0.90600000000000003",
         "acceleration": "5.2359877559829888"
-        },
+      },
       "joints": [
         {
           "velocity": "0.90600000000000003",

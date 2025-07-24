@@ -1,5 +1,6 @@
 import { Line } from "@react-three/drei"
 import type { DHParameter } from "@wandelbots/nova-api/v1"
+import React, { useRef } from "react"
 import type * as THREE from "three"
 import { Matrix4, Quaternion, Vector3 } from "three"
 import type { LineGeometry } from "three/examples/jsm/lines/LineGeometry.js"
@@ -16,6 +17,16 @@ export function DHRobot({
 }: DHRobotProps) {
   // reused in every update
   const accumulatedMatrix = new Matrix4()
+
+  // Store direct references to avoid searching by name
+  const lineRefs = useRef<any[]>([])
+  const meshRefs = useRef<(THREE.Mesh | null)[]>([])
+
+  // Initialize refs array when dhParameters change
+  React.useEffect(() => {
+    lineRefs.current = new Array(dhParameters.length).fill(null)
+    meshRefs.current = new Array(dhParameters.length).fill(null)
+  }, [dhParameters.length])
 
   // Updates accumulatedMatrix with every execution
   // Reset the matrix to identity if you start a new position update
@@ -49,7 +60,7 @@ export function DHRobot({
 
   function setJointLineRotation(
     jointIndex: number,
-    line: THREE.Line,
+    line: any, // Use any for drei Line component
     mesh: THREE.Mesh,
     jointValue: number,
   ) {
@@ -71,14 +82,20 @@ export function DHRobot({
 
   function setRotation(joints: THREE.Object3D[], jointValues: number[]) {
     accumulatedMatrix.identity()
-    joints.forEach((joint, jointIndex) => {
-      setJointLineRotation(
-        jointIndex,
-        joint.getObjectByName(CHILD_LINE) as THREE.Line,
-        joint.getObjectByName(CHILD_MESH) as THREE.Mesh,
-        jointValues[jointIndex]!,
-      )
-    })
+
+    // Use direct refs instead of searching by name
+    for (
+      let jointIndex = 0;
+      jointIndex < Math.min(joints.length, jointValues.length);
+      jointIndex++
+    ) {
+      const line = lineRefs.current[jointIndex]
+      const mesh = meshRefs.current[jointIndex]
+
+      if (line && mesh) {
+        setJointLineRotation(jointIndex, line, mesh, jointValues[jointIndex]!)
+      }
+    }
   }
 
   return (
@@ -103,12 +120,22 @@ export function DHRobot({
             return (
               <group name={jointName} key={jointName}>
                 <Line
+                  ref={(ref) => {
+                    lineRefs.current[index] = ref
+                  }}
                   name={CHILD_LINE}
                   points={[a, b]}
                   color={"white"}
                   lineWidth={5}
                 />
-                <mesh name={CHILD_MESH} key={"mesh_" + index} position={b}>
+                <mesh
+                  ref={(ref) => {
+                    meshRefs.current[index] = ref
+                  }}
+                  name={CHILD_MESH}
+                  key={"mesh_" + index}
+                  position={b}
+                >
                   <sphereGeometry args={[0.01, 32, 32]} />
                   <meshStandardMaterial color={"black"} depthTest={true} />
                 </mesh>

@@ -7,7 +7,7 @@ import { i18n } from "./i18n/config"
  * be provided by the user application; this wrapper ensures
  * they can be used either way.
  */
-export function externalizeComponent<T extends JSX.ElementType>(
+export function externalizeComponent<T extends React.JSX.ElementType>(
   Component: T,
 ): T {
   const WrappedComponent = ((props: T) => (

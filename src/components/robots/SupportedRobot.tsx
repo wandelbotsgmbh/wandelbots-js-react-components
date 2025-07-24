@@ -1,4 +1,4 @@
-import type { GroupProps } from "@react-three/fiber"
+import type { ThreeElements } from "@react-three/fiber"
 import type {
   DHParameter,
   MotionGroupStateResponse,
@@ -18,7 +18,7 @@ import { defaultGetModel } from "./robotModelLogic"
 export type DHRobotProps = {
   rapidlyChangingMotionState: MotionGroupStateResponse
   dhParameters: Array<DHParameter>
-} & GroupProps
+} & ThreeElements["group"]
 
 export type SupportedRobotProps = {
   rapidlyChangingMotionState: MotionGroupStateResponse
@@ -28,7 +28,7 @@ export type SupportedRobotProps = {
   getModel?: (modelFromController: string) => string
   postModelRender?: () => void
   transparentColor?: string
-} & GroupProps
+} & ThreeElements["group"]
 
 export const SupportedRobot = externalizeComponent(
   ({
