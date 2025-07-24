@@ -1,6 +1,6 @@
 /// <reference types="vitest" />
 import react from "@vitejs/plugin-react"
-import { defineConfig } from "vite"
+import { defineConfig } from "vitest/config"
 import svgr from "vite-plugin-svgr"
 
 export default defineConfig({
@@ -20,5 +20,6 @@ export default defineConfig({
     environment: "jsdom",
     setupFiles: ["./src/test/setup.ts"],
     globals: true,
+    include: ["src/**/*.{test,spec}.{ts,tsx}"],
   },
 })
