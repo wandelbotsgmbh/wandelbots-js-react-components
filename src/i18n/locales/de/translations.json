@@ -43,5 +43,9 @@
   "Jogging.CoordinateSystem.hlb": "Koordinatensystem",
   "Jogging.Cartesian.bt": "Kartesisch",
   "Jogging.Joints.bt": "Gelenke",
-  "Jogging.Velocity.bt": "Geschwindigkeit"
+  "Jogging.Velocity.bt": "Geschwindigkeit",
+  "ProgramControl.Run.bt": "Starten",
+  "ProgramControl.Resume.bt": "Fortsetzen",
+  "ProgramControl.Pause.bt": "Pausieren",
+  "ProgramControl.Stop.bt": "Stoppen"
 }

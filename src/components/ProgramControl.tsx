@@ -1,6 +1,7 @@
 import { Pause, PlayArrow, Stop } from "@mui/icons-material"
 import { Box, Button, Typography, useTheme } from "@mui/material"
 import { observer } from "mobx-react-lite"
+import { useTranslation } from "react-i18next"
 import { externalizeComponent } from "../externalizeComponent"
 
 export type ProgramState = "idle" | "running" | "paused" | "stopping"
@@ -64,24 +65,28 @@ export const ProgramControl = externalizeComponent(
       className,
     }: ProgramControlProps) => {
       const theme = useTheme()
+      const { t } = useTranslation()
 
       const getButtonConfigs = (): ButtonConfig[] => {
         const baseConfigs: Record<string, ButtonConfig> = {
           run: {
             enabled: state === "idle" || state === "paused",
-            label: state === "paused" ? "Resume" : "Run",
+            label:
+              state === "paused"
+                ? t("ProgramControl.Resume.bt")
+                : t("ProgramControl.Run.bt"),
             color: theme.palette.success.main,
             onClick: onRun,
           },
           pause: {
             enabled: state === "running",
-            label: "Pause",
+            label: t("ProgramControl.Pause.bt"),
             color: "#FFFFFF33",
             onClick: onPause || (() => {}),
           },
           stop: {
             enabled: state === "running" || state === "paused",
-            label: "Stop",
+            label: t("ProgramControl.Stop.bt"),
             color: theme.palette.error.main,
             onClick: onStop,
           },
