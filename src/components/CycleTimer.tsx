@@ -7,7 +7,9 @@ import { externalizeComponent } from "../externalizeComponent"
 
 export interface CycleTimerProps {
   /** Callback that receives the startNewCycle function for controlling the timer */
-  onCycleComplete: (startNewCycle: (maxTimeSeconds: number) => void) => void
+  onCycleComplete: (
+    startNewCycle: (maxTimeSeconds: number, elapsedSeconds?: number) => void,
+  ) => void
   /** Callback fired when a cycle actually completes (reaches zero) */
   onCycleEnd?: () => void
   /** Whether the timer should start automatically when maxTime is set */
@@ -38,6 +40,19 @@ export interface CycleTimerProps {
  * @param variant - Visual variant: "default" (large gauge) or "small" (animated icon with text)
  * @param compact - For small variant: whether to hide remaining time details
  * @param className - Additional CSS classes
+ *
+ * Usage:
+ * ```tsx
+ * <CycleTimer
+ *   onCycleComplete={(startNewCycle) => {
+ *     // Start a 5-minute cycle
+ *     startNewCycle(300)
+ *
+ *     // Or start a 5-minute cycle with 2 minutes already elapsed
+ *     startNewCycle(300, 120)
+ *   }}
+ * />
+ * ```
  */
 export const CycleTimer = externalizeComponent(
   observer(
@@ -57,18 +72,29 @@ export const CycleTimer = externalizeComponent(
       const intervalRef = useRef<NodeJS.Timeout | null>(null)
 
       const startNewCycle = useCallback(
-        (maxTimeSeconds: number) => {
-          console.log(`Starting new cycle with ${maxTimeSeconds} seconds`)
+        (maxTimeSeconds: number, elapsedSeconds: number = 0) => {
+          console.log(
+            `Starting new cycle with ${maxTimeSeconds} seconds (${elapsedSeconds} seconds already elapsed)`,
+          )
           setMaxTime(maxTimeSeconds)
-          setRemainingTime(maxTimeSeconds)
-          if (autoStart) {
+          const remainingSeconds = Math.max(0, maxTimeSeconds - elapsedSeconds)
+          setRemainingTime(remainingSeconds)
+
+          if (remainingSeconds === 0) {
+            console.log("Cycle already completed (elapsed time >= max time)")
+            setIsRunning(false)
+            // Trigger completion callback immediately if time is already up
+            if (onCycleEnd) {
+              setTimeout(() => onCycleEnd(), 0)
+            }
+          } else if (autoStart) {
             console.log("Auto-start enabled, starting timer")
             setIsRunning(true)
           } else {
             console.log("Auto-start disabled, timer set but not started")
           }
         },
-        [autoStart],
+        [autoStart, onCycleEnd],
       )
 
       // Call onCycleComplete immediately to provide the startNewCycle function
