@@ -41,6 +41,27 @@ const meta: Meta<typeof CycleTimer> = {
         },
       },
     },
+    variant: {
+      control: "select",
+      options: ["default", "small"],
+      description:
+        "Visual variant: 'default' (large gauge) or 'small' (animated icon with text)",
+      table: {
+        defaultValue: {
+          summary: "default",
+        },
+      },
+    },
+    compact: {
+      control: "boolean",
+      description:
+        "For small variant: whether to hide remaining time details (compact)",
+      table: {
+        defaultValue: {
+          summary: "false",
+        },
+      },
+    },
     className: {
       control: "text",
       description: "Additional CSS classes",
@@ -276,6 +297,144 @@ export const ContinuousCycles: Story = {
           This demonstrates how the CycleTimer can be used in a continuous
           operation scenario. When auto-restart is enabled, new cycles start
           automatically after each completion.
+        </Box>
+      </Box>
+    )
+  },
+}
+
+/**
+ * Small variant with animated progress icon next to text.
+ * Shows the format: [ANIMATED_ICON] X:XX/X:XX min
+ * The icon is a gauge border only (no fill) that animates with progress.
+ */
+export const SmallVariant: Story = {
+  args: {
+    variant: "small",
+    autoStart: true,
+  },
+  render: function Render(args) {
+    const timerRef: React.MutableRefObject<((maxTime: number) => void) | null> =
+      React.useRef(null)
+
+    const handleCycleComplete = (startNewCycle: (maxTime: number) => void) => {
+      timerRef.current = startNewCycle
+    }
+
+    const handleCycleEnd = () => {
+      console.log("Small timer cycle completed!")
+    }
+
+    const startDemo = (minutes: number) => {
+      if (timerRef.current) {
+        timerRef.current(minutes * 60)
+      }
+    }
+
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          gap: 4,
+        }}
+      >
+        <CycleTimer
+          {...args}
+          onCycleComplete={handleCycleComplete}
+          onCycleEnd={handleCycleEnd}
+        />
+
+        <Box
+          sx={{
+            display: "flex",
+            gap: 2,
+            flexWrap: "wrap",
+            justifyContent: "center",
+          }}
+        >
+          <Button variant="contained" onClick={() => startDemo(5)}>
+            Start 5 Min Cycle
+          </Button>
+          <Button variant="contained" onClick={() => startDemo(0.1)}>
+            Start 6 Sec Cycle (Demo)
+          </Button>
+        </Box>
+      </Box>
+    )
+  },
+}
+
+/**
+ * Small compact variant that only shows remaining time with animated icon.
+ * Format: [ANIMATED_ICON] X:XX
+ * The icon shows progress animation without any text details.
+ */
+export const SmallCompact: Story = {
+  args: {
+    variant: "small",
+    compact: true,
+    autoStart: true,
+  },
+  render: function Render(args) {
+    const timerRef: React.MutableRefObject<((maxTime: number) => void) | null> =
+      React.useRef(null)
+
+    const handleCycleComplete = (startNewCycle: (maxTime: number) => void) => {
+      timerRef.current = startNewCycle
+    }
+
+    const handleCycleEnd = () => {
+      console.log("Small compact timer cycle completed!")
+    }
+
+    const startDemo = (minutes: number) => {
+      if (timerRef.current) {
+        timerRef.current(minutes * 60)
+      }
+    }
+
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          gap: 4,
+        }}
+      >
+        <CycleTimer
+          {...args}
+          onCycleComplete={handleCycleComplete}
+          onCycleEnd={handleCycleEnd}
+        />
+
+        <Box
+          sx={{
+            display: "flex",
+            gap: 2,
+            flexWrap: "wrap",
+            justifyContent: "center",
+          }}
+        >
+          <Button variant="contained" onClick={() => startDemo(3)}>
+            Start 3 Min Cycle
+          </Button>
+          <Button variant="contained" onClick={() => startDemo(0.05)}>
+            Start 3 Sec Cycle (Demo)
+          </Button>
+        </Box>
+
+        <Box
+          sx={{
+            typography: "body2",
+            color: "text.secondary",
+            textAlign: "center",
+            maxWidth: 400,
+          }}
+        >
+          Compact variant only shows the remaining time without total duration.
         </Box>
       </Box>
     )

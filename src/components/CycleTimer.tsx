@@ -12,6 +12,10 @@ export interface CycleTimerProps {
   onCycleEnd?: () => void
   /** Whether the timer should start automatically when maxTime is set */
   autoStart?: boolean
+  /** Visual variant of the timer */
+  variant?: "default" | "small"
+  /** For small variant: whether to show remaining time details (compact hides them) */
+  compact?: boolean
   /** Additional CSS classes */
   className?: string
 }
@@ -26,10 +30,13 @@ export interface CycleTimerProps {
  * - Automatically counts down and triggers callback when reaching zero
  * - Fully localized with i18next
  * - Material-UI theming integration
+ * - Small variant with animated progress icon (gauge border only) next to text
  *
  * @param onCycleComplete - Callback that receives the startNewCycle function for controlling the timer
  * @param onCycleEnd - Optional callback fired when a cycle actually completes (reaches zero)
  * @param autoStart - Whether to start timer automatically (default: true)
+ * @param variant - Visual variant: "default" (large gauge) or "small" (animated icon with text)
+ * @param compact - For small variant: whether to hide remaining time details
  * @param className - Additional CSS classes
  */
 export const CycleTimer = externalizeComponent(
@@ -38,6 +45,8 @@ export const CycleTimer = externalizeComponent(
       onCycleComplete,
       onCycleEnd,
       autoStart = true,
+      variant = "default",
+      compact = false,
       className,
     }: CycleTimerProps) => {
       const theme = useTheme()
@@ -116,6 +125,78 @@ export const CycleTimer = externalizeComponent(
       const progressValue =
         maxTime > 0 ? ((maxTime - remainingTime) / maxTime) * 100 : 0
 
+      // Small variant: horizontal layout with gauge icon and text
+      if (variant === "small") {
+        return (
+          <Box
+            className={className}
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: 0.125, // Minimal gap - 1px
+            }}
+          >
+            {/* Animated progress gauge icon */}
+            <Box
+              sx={{
+                position: "relative",
+                width: 40,
+                height: 40,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                borderRadius: "50%",
+                overflow: "visible",
+              }}
+            >
+              <Gauge
+                width={40}
+                height={40}
+                value={progressValue}
+                valueMin={0}
+                valueMax={100}
+                innerRadius="70%"
+                outerRadius="95%"
+                sx={{
+                  [`& .MuiGauge-valueArc`]: {
+                    fill: theme.palette.success.main,
+                  },
+                  [`& .MuiGauge-referenceArc`]: {
+                    fill: theme.palette.success.main,
+                    opacity: 0.3,
+                  },
+                  [`& .MuiGauge-valueText`]: {
+                    display: "none",
+                  },
+                  [`& .MuiGauge-text`]: {
+                    display: "none",
+                  },
+                  [`& text`]: {
+                    display: "none",
+                  },
+                }}
+              />
+            </Box>
+
+            {/* Timer text display */}
+            <Typography
+              variant="body2"
+              sx={{
+                color: theme.palette.text.primary,
+                fontSize: "14px",
+              }}
+            >
+              {compact
+                ? // Compact mode: show only remaining time
+                  formatTime(remainingTime)
+                : // Full mode: show "remaining / total min." format
+                  `${formatTime(remainingTime)} / ${formatTime(maxTime)} ${t("CycleTimer.Min.lb")}`}
+            </Typography>
+          </Box>
+        )
+      }
+
+      // Default variant: large circular gauge with centered content
       return (
         <Box
           className={className}
@@ -147,7 +228,7 @@ export const CycleTimer = externalizeComponent(
             }}
           />
 
-          {/* Center content overlay */}
+          {/* Center content overlay with timer information */}
           <Box
             sx={{
               position: "absolute",
@@ -157,7 +238,7 @@ export const CycleTimer = externalizeComponent(
               width: 187, // 71% of 264 = ~187px inner radius
               height: 187,
               borderRadius: "50%",
-              backgroundColor: theme.palette.backgroundPaperElevation?.[8], // background/paper-elevation-8
+              backgroundColor: theme.palette.backgroundPaperElevation?.[8],
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
@@ -192,7 +273,7 @@ export const CycleTimer = externalizeComponent(
               {formatTime(remainingTime)}
             </Typography>
 
-            {/* Total time at bottom */}
+            {/* Total time display */}
             <Typography
               variant="body2"
               sx={{
