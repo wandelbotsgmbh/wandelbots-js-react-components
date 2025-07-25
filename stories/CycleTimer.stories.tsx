@@ -14,20 +14,18 @@ const meta: Meta<typeof CycleTimer> = {
         component: `
 A circular gauge timer component that shows the remaining time of a cycle.
 
-**Features:**
-- Circular gauge with 264px diameter and 40px thickness
-- Shows remaining time prominently in the center
-- Displays "remaining time" label at top and total time at bottom
-- Automatically counts down and triggers callback when reaching zero
-- **Full timer control: start, pause, resume functionality**
-- **Support for starting with elapsed time (resume mid-cycle)**
+**Key Features:**
+- **Visual countdown with circular progress gauge** (264px diameter)
+- **Complete timer control interface** (start, pause, resume, elapsed time support)
+- **Automatic callback triggers** when cycles complete
+- **Two display variants:** large gauge with centered time display, or compact icon with text
+- Smooth spring-based progress animations for all state transitions
 - Fully localized with i18next
 - Material-UI theming integration
-- Small variant with animated progress icon next to text
 
 **Control Functions:**
 - \`startNewCycle(maxTimeSeconds, elapsedSeconds?)\` - Start a new timer cycle
-- \`pause()\` - Pause the countdown while preserving remaining time
+- \`pause()\` - Pause the countdown while preserving remaining time  
 - \`resume()\` - Resume countdown from where it was paused
 - \`isPaused()\` - Check current pause state
         `,
