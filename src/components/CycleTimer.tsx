@@ -4,6 +4,7 @@ import { observer } from "mobx-react-lite"
 import { useCallback, useEffect, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { externalizeComponent } from "../externalizeComponent"
+import { useInterpolation } from "./utils/interpolation"
 
 export interface CycleTimerProps {
   /**
@@ -102,6 +103,15 @@ export const CycleTimer = externalizeComponent(
       const startTimeRef = useRef<number | null>(null)
       const pausedTimeRef = useRef<number>(0)
 
+      // Use interpolation for smooth gauge animation
+      const [progressInterpolator] = useInterpolation([0], {
+        tension: 80, // Slightly higher tension for more responsive feel
+        friction: 18, // Balanced friction for smooth but not sluggish animation
+        onChange: ([progress]) => {
+          setCurrentProgress(progress)
+        },
+      })
+
       const startNewCycle = useCallback(
         (maxTimeSeconds: number, elapsedSeconds: number = 0) => {
           console.log(
@@ -112,9 +122,16 @@ export const CycleTimer = externalizeComponent(
           setRemainingTime(remainingSeconds)
           setIsPausedState(false)
           pausedTimeRef.current = 0
-          setCurrentProgress(
-            elapsedSeconds > 0 ? (elapsedSeconds / maxTimeSeconds) * 100 : 0,
-          )
+
+          // Use interpolator for smooth progress animation
+          const initialProgress =
+            elapsedSeconds > 0 ? (elapsedSeconds / maxTimeSeconds) * 100 : 0
+          // If starting a completely new cycle (no elapsed time), smoothly animate from current position to 0
+          if (elapsedSeconds === 0) {
+            progressInterpolator.setTarget([0])
+          } else {
+            progressInterpolator.setTarget([initialProgress])
+          }
 
           if (remainingSeconds === 0) {
             console.log("Cycle already completed (elapsed time >= max time)")
@@ -133,7 +150,7 @@ export const CycleTimer = externalizeComponent(
             startTimeRef.current = null
           }
         },
-        [autoStart, onCycleEnd],
+        [autoStart, onCycleEnd, progressInterpolator],
       )
 
       const pause = useCallback(() => {
@@ -146,7 +163,7 @@ export const CycleTimer = externalizeComponent(
           // Update current progress to exact position when pausing
           const totalElapsed = pausedTimeRef.current / 1000
           const exactProgress = Math.min(100, (totalElapsed / maxTime) * 100)
-          setCurrentProgress(exactProgress)
+          progressInterpolator.setTarget([exactProgress])
 
           console.log(
             `Paused: total paused time now ${pausedTimeRef.current}ms, progress: ${exactProgress}%`,
@@ -154,7 +171,7 @@ export const CycleTimer = externalizeComponent(
         }
         setIsRunning(false)
         setIsPausedState(true)
-      }, [isRunning, maxTime])
+      }, [isRunning, maxTime, progressInterpolator])
 
       const resume = useCallback(() => {
         if (isPausedState && remainingTime > 0) {
@@ -202,15 +219,16 @@ export const CycleTimer = externalizeComponent(
               // Update remaining time based on timestamp calculation
               setRemainingTime(Math.ceil(remaining))
 
-              // Update progress for smooth animation
+              // Update progress target for smooth interpolated animation
               const progress = Math.min(100, (elapsed / maxTime) * 100)
-              setCurrentProgress(progress)
+              progressInterpolator.setTarget([progress])
 
               if (remaining <= 0) {
                 setIsRunning(false)
                 startTimeRef.current = null
                 setRemainingTime(0)
-                setCurrentProgress(100)
+                // Smoothly animate to 100% completion instead of jumping
+                progressInterpolator.setTarget([100])
                 // Call onCycleEnd when timer reaches zero to notify about completion
                 if (onCycleEnd) {
                   setTimeout(() => onCycleEnd(), 0)
@@ -239,7 +257,39 @@ export const CycleTimer = externalizeComponent(
             cancelAnimationFrame(animationRef.current)
           }
         }
-      }, [isRunning, onCycleEnd, maxTime])
+      }, [isRunning, onCycleEnd, maxTime, progressInterpolator])
+
+      // Separate animation loop for smooth interpolation
+      useEffect(() => {
+        let interpolationAnimationId: number | null = null
+
+        const animateInterpolation = () => {
+          progressInterpolator.update(1 / 60) // 60fps interpolation
+          interpolationAnimationId = requestAnimationFrame(animateInterpolation)
+        }
+
+        interpolationAnimationId = requestAnimationFrame(animateInterpolation)
+
+        return () => {
+          if (interpolationAnimationId) {
+            cancelAnimationFrame(interpolationAnimationId)
+          }
+        }
+      }, [progressInterpolator])
+
+      // Sync interpolator with static progress when not running
+      useEffect(() => {
+        if (!isRunning && !isPausedState && maxTime > 0) {
+          const staticProgress = ((maxTime - remainingTime) / maxTime) * 100
+          progressInterpolator.setTarget([staticProgress])
+        }
+      }, [
+        isRunning,
+        isPausedState,
+        maxTime,
+        remainingTime,
+        progressInterpolator,
+      ])
 
       const formatTime = (seconds: number): string => {
         const minutes = Math.floor(seconds / 60)
@@ -247,13 +297,7 @@ export const CycleTimer = externalizeComponent(
         return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`
       }
 
-      const progressValue = isRunning
-        ? currentProgress
-        : isPausedState
-          ? currentProgress // Keep exact progress when paused
-          : maxTime > 0
-            ? ((maxTime - remainingTime) / maxTime) * 100
-            : 0
+      const progressValue = currentProgress
 
       console.log(
         `Rendering CycleTimer: remainingTime=${remainingTime}, maxTime=${maxTime}, isRunning=${isRunning}, progressValue=${progressValue}`,
