@@ -345,6 +345,31 @@ export const CycleTimer = externalizeComponent(
                   [`& text`]: {
                     display: "none",
                   },
+                  // Hide any inner circle elements that might flash
+                  [`& .MuiGauge-referenceArcBackground`]: {
+                    display: "none",
+                  },
+                  [`& .MuiGauge-valueArcBackground`]: {
+                    display: "none",
+                  },
+                  [`& circle`]: {
+                    display: "none",
+                  },
+                }}
+              />
+
+              {/* Inner circle overlay to prevent flashing */}
+              <Box
+                sx={{
+                  position: "absolute",
+                  top: "50%",
+                  left: "50%",
+                  transform: "translate(-50%, -50%)",
+                  width: 13,
+                  height: 13,
+                  borderRadius: "50%",
+                  backgroundColor: theme.palette.background?.paper || "white",
+                  pointerEvents: "none",
                 }}
               />
             </Box>
