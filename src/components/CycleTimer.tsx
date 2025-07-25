@@ -97,7 +97,10 @@ export const CycleTimer = externalizeComponent(
       const [maxTime, setMaxTime] = useState(0)
       const [isRunning, setIsRunning] = useState(false)
       const [isPausedState, setIsPausedState] = useState(false)
-      const intervalRef = useRef<NodeJS.Timeout | null>(null)
+      const [currentProgress, setCurrentProgress] = useState(0)
+      const animationRef = useRef<number | null>(null)
+      const startTimeRef = useRef<number | null>(null)
+      const pausedTimeRef = useRef<number>(0)
 
       const startNewCycle = useCallback(
         (maxTimeSeconds: number, elapsedSeconds: number = 0) => {
@@ -108,19 +111,26 @@ export const CycleTimer = externalizeComponent(
           const remainingSeconds = Math.max(0, maxTimeSeconds - elapsedSeconds)
           setRemainingTime(remainingSeconds)
           setIsPausedState(false)
+          pausedTimeRef.current = 0
+          setCurrentProgress(
+            elapsedSeconds > 0 ? (elapsedSeconds / maxTimeSeconds) * 100 : 0,
+          )
 
           if (remainingSeconds === 0) {
             console.log("Cycle already completed (elapsed time >= max time)")
             setIsRunning(false)
+            startTimeRef.current = null
             // Trigger completion callback immediately if time is already up
             if (onCycleEnd) {
               setTimeout(() => onCycleEnd(), 0)
             }
           } else if (autoStart) {
             console.log("Auto-start enabled, starting timer")
+            startTimeRef.current = Date.now() - elapsedSeconds * 1000
             setIsRunning(true)
           } else {
             console.log("Auto-start disabled, timer set but not started")
+            startTimeRef.current = null
           }
         },
         [autoStart, onCycleEnd],
@@ -128,13 +138,28 @@ export const CycleTimer = externalizeComponent(
 
       const pause = useCallback(() => {
         console.log("Pausing timer")
+        if (startTimeRef.current && isRunning) {
+          const now = Date.now()
+          const additionalElapsed = now - startTimeRef.current
+          pausedTimeRef.current += additionalElapsed
+
+          // Update current progress to exact position when pausing
+          const totalElapsed = pausedTimeRef.current / 1000
+          const exactProgress = Math.min(100, (totalElapsed / maxTime) * 100)
+          setCurrentProgress(exactProgress)
+
+          console.log(
+            `Paused: total paused time now ${pausedTimeRef.current}ms, progress: ${exactProgress}%`,
+          )
+        }
         setIsRunning(false)
         setIsPausedState(true)
-      }, [])
+      }, [isRunning, maxTime])
 
       const resume = useCallback(() => {
         if (isPausedState && remainingTime > 0) {
           console.log("Resuming timer")
+          startTimeRef.current = Date.now()
           setIsRunning(true)
           setIsPausedState(false)
         }
@@ -165,34 +190,56 @@ export const CycleTimer = externalizeComponent(
       }, [onCycleComplete, startNewCycle, pause, resume, isPaused])
 
       useEffect(() => {
-        if (isRunning && remainingTime > 0) {
-          intervalRef.current = setInterval(() => {
-            setRemainingTime((prev) => {
-              if (prev <= 1) {
+        if (isRunning) {
+          // Single animation frame loop that handles both time updates and progress
+          const updateTimer = () => {
+            if (startTimeRef.current && maxTime > 0) {
+              const now = Date.now()
+              const elapsed =
+                (now - startTimeRef.current + pausedTimeRef.current) / 1000
+              const remaining = Math.max(0, maxTime - elapsed)
+
+              // Update remaining time based on timestamp calculation
+              setRemainingTime(Math.ceil(remaining))
+
+              // Update progress for smooth animation
+              const progress = Math.min(100, (elapsed / maxTime) * 100)
+              setCurrentProgress(progress)
+
+              if (remaining <= 0) {
                 setIsRunning(false)
+                startTimeRef.current = null
+                setRemainingTime(0)
+                setCurrentProgress(100)
                 // Call onCycleEnd when timer reaches zero to notify about completion
                 if (onCycleEnd) {
                   setTimeout(() => onCycleEnd(), 0)
                 }
                 console.log("Cycle completed! Timer reached zero.")
-                return 0
+                return
               }
-              return prev - 1
-            })
-          }, 1000)
+
+              // Continue animation loop while running
+              if (isRunning) {
+                animationRef.current = requestAnimationFrame(updateTimer)
+              }
+            }
+          }
+
+          animationRef.current = requestAnimationFrame(updateTimer)
         } else {
-          if (intervalRef.current) {
-            clearInterval(intervalRef.current)
-            intervalRef.current = null
+          if (animationRef.current) {
+            cancelAnimationFrame(animationRef.current)
+            animationRef.current = null
           }
         }
 
         return () => {
-          if (intervalRef.current) {
-            clearInterval(intervalRef.current)
+          if (animationRef.current) {
+            cancelAnimationFrame(animationRef.current)
           }
         }
-      }, [isRunning, remainingTime, onCycleEnd])
+      }, [isRunning, onCycleEnd, maxTime])
 
       const formatTime = (seconds: number): string => {
         const minutes = Math.floor(seconds / 60)
@@ -200,8 +247,17 @@ export const CycleTimer = externalizeComponent(
         return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`
       }
 
-      const progressValue =
-        maxTime > 0 ? ((maxTime - remainingTime) / maxTime) * 100 : 0
+      const progressValue = isRunning
+        ? currentProgress
+        : isPausedState
+          ? currentProgress // Keep exact progress when paused
+          : maxTime > 0
+            ? ((maxTime - remainingTime) / maxTime) * 100
+            : 0
+
+      console.log(
+        `Rendering CycleTimer: remainingTime=${remainingTime}, maxTime=${maxTime}, isRunning=${isRunning}, progressValue=${progressValue}`,
+      )
 
       // Small variant: horizontal layout with gauge icon and text
       if (variant === "small") {
@@ -235,7 +291,10 @@ export const CycleTimer = externalizeComponent(
                 valueMax={100}
                 innerRadius="70%"
                 outerRadius="95%"
+                skipAnimation={true}
                 sx={{
+                  opacity: isPausedState ? 0.6 : 1,
+                  transition: "opacity 0.2s ease",
                   [`& .MuiGauge-valueArc`]: {
                     fill: theme.palette.success.main,
                   },
@@ -295,7 +354,10 @@ export const CycleTimer = externalizeComponent(
             valueMax={100}
             innerRadius="71%"
             outerRadius="90%"
+            skipAnimation={true}
             sx={{
+              opacity: isPausedState ? 0.6 : 1,
+              transition: "opacity 0.2s ease",
               [`& .MuiGauge-valueArc`]: {
                 fill: theme.palette.success.main,
               },
