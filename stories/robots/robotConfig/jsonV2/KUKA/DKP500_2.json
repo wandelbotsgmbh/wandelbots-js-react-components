@@ -1,0 +1,70 @@
+{
+  "dof": 2,
+  "inverseSolver": "None",
+  "dhParameters": [
+    {
+      "a": "0",
+      "d": "0",
+      "alpha": "0",
+      "theta": "0",
+      "reverseRotationDirection": "0"
+    },
+    {
+      "a": "0",
+      "d": "0",
+      "alpha": "0",
+      "theta": "0",
+      "reverseRotationDirection": "0"
+    }
+  ],
+  "limits": {
+    "joints": [
+      {
+        "position": {
+          "lower": "-1.5707963267948966",
+          "upper": "1.5707963267948966"
+        },
+        "torque": "3500"
+      },
+      {
+        "position": {
+          "lower": "-1000",
+          "upper": "1000"
+        },
+        "torque": "3500"
+      }
+    ]
+  },
+  "operationLimits": {
+    "AUTO": {
+      "joints": [
+        {
+          "velocity": "0.5",
+          "acceleration": "42"
+        },
+        {
+          "velocity": "0.5",
+          "acceleration": "42"
+        }
+      ],
+      "tcp": {
+        "velocity": "2000"
+      }
+    },
+    "MANUAL": {
+      "joints": [
+        {
+          "velocity": "0.5",
+          "acceleration": "42"
+        },
+        {
+          "velocity": "0.5",
+          "acceleration": "42"
+        }
+      ],
+      "tcp": {
+        "velocity": "2000"
+      }
+    }
+  }
+}

@@ -15,6 +15,7 @@ const HIDDEN_ROBOTS = [
   "KUKA_KR270_R2700",
   "FANUC_M20iD35",
   "YASKAWA_TURN2",
+  "KUKA_DKP500_2"
 ]
 
 /** Generates lines of CSF code defining stories for each robot model .glb file */
