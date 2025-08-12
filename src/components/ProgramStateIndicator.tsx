@@ -44,24 +44,21 @@ export const ProgramStateIndicator = externalizeComponent(
         // First check for emergency stop or critical safety states
         if (
           safetyState === "SAFETY_STATE_DEVICE_EMERGENCY_STOP" ||
-          safetyState === "SAFETY_STATE_ROBOT_EMERGENCY_STOP"
-        ) {
-          return {
-            label: t("ProgramStateIndicator.EStop.lb"),
-            color: theme.palette.error.main,
-          }
-        }
-
-        // Check for stop states
-        if (
+          safetyState === "SAFETY_STATE_ROBOT_EMERGENCY_STOP" ||
           safetyState === "SAFETY_STATE_STOP_0" ||
           safetyState === "SAFETY_STATE_STOP_1" ||
           safetyState === "SAFETY_STATE_STOP_2" ||
           safetyState === "SAFETY_STATE_PROTECTIVE_STOP" ||
-          safetyState === "SAFETY_STATE_STOP"
+          safetyState === "SAFETY_STATE_STOP" ||
+          safetyState === "SAFETY_STATE_REDUCED" ||
+          safetyState === "SAFETY_STATE_MASTERING" ||
+          safetyState === "SAFETY_STATE_CONFIRM_SAFETY" ||
+          safetyState === "SAFETY_STATE_OPERATOR_SAFETY" ||
+          safetyState === "SAFETY_STATE_RECOVERY" ||
+          safetyState === "SAFETY_STATE_VIOLATION"
         ) {
           return {
-            label: t("ProgramStateIndicator.Stopped.lb"),
+            label: t("ProgramStateIndicator.EStop.lb"),
             color: theme.palette.error.main,
           }
         }
@@ -101,21 +98,6 @@ export const ProgramStateIndicator = externalizeComponent(
                 label: t("ProgramStateIndicator.Ready.lb"),
                 color: theme.palette.success.main,
               }
-          }
-        }
-
-        // For other safety states that require manual action
-        if (
-          safetyState === "SAFETY_STATE_REDUCED" ||
-          safetyState === "SAFETY_STATE_MASTERING" ||
-          safetyState === "SAFETY_STATE_CONFIRM_SAFETY" ||
-          safetyState === "SAFETY_STATE_OPERATOR_SAFETY" ||
-          safetyState === "SAFETY_STATE_RECOVERY" ||
-          safetyState === "SAFETY_STATE_VIOLATION"
-        ) {
-          return {
-            label: t("ProgramStateIndicator.Idle.lb"),
-            color: theme.palette.grey[600],
           }
         }
 
