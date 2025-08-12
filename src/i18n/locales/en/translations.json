@@ -51,5 +51,16 @@
   "ProgramControl.Start.bt": "Start",
   "ProgramControl.Resume.bt": "Resume",
   "ProgramControl.Pause.bt": "Pause",
-  "ProgramControl.Stop.bt": "Stop"
+  "ProgramControl.Stop.bt": "Stop",
+  "ProgramStateIndicator.Running.lb": "Running",
+  "ProgramStateIndicator.Error.lb": "Error",
+  "ProgramStateIndicator.EStop.lb": "E-Stop",
+  "ProgramStateIndicator.Idle.lb": "Idle",
+  "ProgramStateIndicator.Paused.lb": "Paused",
+  "ProgramStateIndicator.Ready.lb": "Ready",
+  "ProgramStateIndicator.Stopped.lb": "Stopped",
+  "ProgramStateIndicator.Auto.lb": "Auto",
+  "ProgramStateIndicator.Manual.lb": "Manual",
+  "ProgramStateIndicator.ManualT1.lb": "Manual T1",
+  "ProgramStateIndicator.ManualT2.lb": "Manual T2"
 }
