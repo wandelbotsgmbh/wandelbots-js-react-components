@@ -61,7 +61,6 @@ export const RobotListItem = externalizeComponent(
             border:
               "1px solid var(--secondary-_states-outlinedBorder, #FFFFFF1F)",
             background: "var(--background-paper-elevation-8, #292B3E)",
-            width: 732,
             height: 80,
             minHeight: "80px",
             borderRadius: "8px",

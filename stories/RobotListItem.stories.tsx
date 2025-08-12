@@ -1,9 +1,9 @@
 import { Box } from "@mui/material"
 import type { Meta, StoryObj } from "@storybook/react"
 import { RobotListItem } from "../src/components/RobotListItem"
-import { 
+import {
   RobotSetupReadinessIndicator,
-  RobotSetupReadinessState 
+  RobotSetupReadinessState,
 } from "../src/components/RobotSetupReadinessIndicator"
 
 const meta: Meta<typeof RobotListItem> = {
@@ -53,10 +53,12 @@ const meta: Meta<typeof RobotListItem> = {
         RobotSetupReadinessIndicator: RobotSetupReadinessIndicator,
         null: null,
       },
-      description: "Component to render for the precondition indicator. Pass null to hide it.",
+      description:
+        "Component to render for the precondition indicator. Pass null to hide it.",
       table: {
         type: {
-          summary: "ComponentType<{ setupState: RobotSetupReadinessState }> | null",
+          summary:
+            "ComponentType<{ setupState: RobotSetupReadinessState }> | null",
         },
         defaultValue: {
           summary: "RobotSetupReadinessIndicator",
