@@ -62,5 +62,8 @@
   "ProgramStateIndicator.Auto.lb": "Auto",
   "ProgramStateIndicator.Manual.lb": "Manual",
   "ProgramStateIndicator.ManualT1.lb": "Manual T1",
-  "ProgramStateIndicator.ManualT2.lb": "Manual T2"
+  "ProgramStateIndicator.ManualT2.lb": "Manual T2",
+  "RobotSetupReadinessIndicator.Ready.lb": "Ready",
+  "RobotSetupReadinessIndicator.RobotDisconnected.lb": "Robot disconnected",
+  "RobotSetupReadinessIndicator.PreconditionNotFulfilled.lb": "Precondition not fulfilled"
 }
