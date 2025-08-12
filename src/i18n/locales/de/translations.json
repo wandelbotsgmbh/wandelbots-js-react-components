@@ -54,7 +54,7 @@
   "ProgramStateIndicator.Running.lb": "In Betrieb",
   "ProgramStateIndicator.Error.lb": "Fehler",
   "ProgramStateIndicator.EStop.lb": "Not-Aus",
-  "ProgramStateIndicator.Idle.lb": "Bereit",
+  "ProgramStateIndicator.Idle.lb": "Leerlauf",
   "ProgramStateIndicator.Paused.lb": "Pausiert",
   "ProgramStateIndicator.Ready.lb": "Bereit",
   "ProgramStateIndicator.Stopped.lb": "Gestoppt",
