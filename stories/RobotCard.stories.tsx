@@ -529,3 +529,102 @@ export const LandscapeLayout: Story = {
     )
   },
 }
+
+/**
+ * Test responsive behavior with a resizable container.
+ * Drag the resize handle to see how the robot scales and eventually hides at small sizes.
+ * The component maintains consistent padding while making the 3D robot responsive.
+ */
+export const ResizableTest: Story = {
+  args: {
+    robotName: "Resizable Robot",
+    programState: ProgramState.IDLE,
+    safetyState: "SAFETY_STATE_NORMAL",
+    operationMode: "OPERATION_MODE_AUTO",
+    driveToHomeEnabled: true,
+    modelFromController: "UniversalRobots_UR5e",
+  },
+  loaders: [
+    async (context) => ({
+      dhParameters: await getDHParams(
+        context.args.modelFromController || "UniversalRobots_UR5e",
+      ),
+    }),
+  ],
+  render: function Render(args, { loaded: { dhParameters } }) {
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          gap: 2,
+          width: "100%",
+          maxWidth: 800,
+          margin: "0 auto",
+          padding: 2,
+        }}
+      >
+        <Box
+          sx={{
+            color: "text.secondary",
+            typography: "body2",
+            textAlign: "center",
+            mb: 2,
+          }}
+        >
+          <strong>Responsive Test:</strong> Drag the resize handle below to test
+          responsive behavior.
+          <br />• <strong>Landscape:</strong> Robot scales at {"<450px"}/
+          {"<550px"}, hides at {"<350px"} width or {"<250px"} height
+          <br />• <strong>Portrait:</strong> Robot scales at {"<300px"}/
+          {"<400px"}, hides at {"<250px"} width or {"<180px"} height
+          <br />• Less aggressive scaling/hiding for portrait mode to preserve
+          central robot display
+          <br />• Padding remains consistent for visual harmony
+        </Box>
+
+        <Box
+          sx={{
+            resize: "both",
+            overflow: "auto",
+            border: "2px dashed",
+            borderColor: "primary.main",
+            borderRadius: 2,
+            padding: 1,
+            minWidth: 200,
+            minHeight: 150,
+            width: 400,
+            height: 300,
+            background: "background.paper",
+            position: "relative",
+            "&::after": {
+              content: '"↘ Drag to resize"',
+              position: "absolute",
+              bottom: 4,
+              right: 4,
+              fontSize: 12,
+              color: "text.disabled",
+              pointerEvents: "none",
+            },
+          }}
+        >
+          <RobotCardWithMockConnectedMotionGroup
+            {...args}
+            dhParameters={dhParameters}
+          />
+        </Box>
+
+        <Box
+          sx={{
+            color: "text.secondary",
+            typography: "caption",
+            textAlign: "center",
+            mt: 1,
+          }}
+        >
+          Try different sizes to see the responsive behavior in action!
+        </Box>
+      </Box>
+    )
+  },
+}

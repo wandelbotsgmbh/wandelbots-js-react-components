@@ -1,4 +1,12 @@
-import { Box, Button, Card, Divider, Typography, useTheme } from "@mui/material"
+import {
+  Box,
+  Button,
+  Card,
+  Divider,
+  Typography,
+  useMediaQuery,
+  useTheme,
+} from "@mui/material"
 import { Bounds, useBounds } from "@react-three/drei"
 import { Canvas } from "@react-three/fiber"
 import type {
@@ -21,21 +29,24 @@ import { Robot } from "./robots/Robot"
 function BoundsRefresher({
   modelRenderTrigger,
   children,
+  isPortrait = false,
 }: {
-  modelRenderTrigger?: number
+  modelRenderTrigger: number
   children: React.ReactNode
+  isPortrait?: boolean
 }) {
-  const api = useBounds()
+  const bounds = useBounds()
 
   useEffect(() => {
-    if (modelRenderTrigger && modelRenderTrigger > 0) {
-      // Small delay to ensure the model is fully rendered
-      const timer = setTimeout(() => {
-        api.refresh().fit()
-      }, 100)
-      return () => clearTimeout(timer)
+    if (modelRenderTrigger > 0) {
+      // For portrait mode, use more aggressive fitting
+      if (isPortrait) {
+        bounds.refresh().clip().fit()
+      } else {
+        bounds.refresh().clip().fit()
+      }
     }
-  }, [modelRenderTrigger, api])
+  }, [modelRenderTrigger, bounds, isPortrait])
 
   return <>{children}</>
 }
@@ -92,7 +103,12 @@ export interface RobotCardProps {
  * - Automatic layout switching based on aspect ratio:
  *   - Portrait mode: Vertical layout with robot in center
  *   - Landscape mode: Horizontal layout with robot on left, content on right (left-aligned)
- * - Minimum size constraints (300px width, 400px height in portrait, 250px height in landscape) for usability
+ * - Responsive 3D robot rendering:
+ *   - Scales dynamically with container size
+ *   - Hides at very small sizes to preserve usability
+ *   - Adaptive margin based on available space
+ * - Smart spacing and padding that reduces at smaller sizes
+ * - Minimum size constraints for usability while maximizing content density
  * - Robot name displayed in Typography h6 at top-left
  * - Program state indicator below the name
  * - Auto-fitting 3D robot model that scales with container size
@@ -124,22 +140,31 @@ export const RobotCard = externalizeComponent(
       const robotRef = useRef<Group>(null)
       const cardRef = useRef<HTMLDivElement>(null)
       const [isLandscape, setIsLandscape] = useState(false)
+      const [cardSize, setCardSize] = useState<{
+        width: number
+        height: number
+      }>({ width: 400, height: 600 })
       const [modelRenderTrigger, setModelRenderTrigger] = useState(0)
 
-      // Hook to detect aspect ratio changes
+      // Responsive breakpoints
+      const isExtraSmall = useMediaQuery(theme.breakpoints.down("sm"))
+      const isSmall = useMediaQuery(theme.breakpoints.down("md"))
+
+      // Hook to detect aspect ratio and size changes
       useEffect(() => {
-        const checkAspectRatio = () => {
+        const checkDimensions = () => {
           if (cardRef.current) {
             const { offsetWidth, offsetHeight } = cardRef.current
             setIsLandscape(offsetWidth > offsetHeight)
+            setCardSize({ width: offsetWidth, height: offsetHeight })
           }
         }
 
         // Initial check
-        checkAspectRatio()
+        checkDimensions()
 
         // Set up ResizeObserver to watch for size changes
-        const resizeObserver = new ResizeObserver(checkAspectRatio)
+        const resizeObserver = new ResizeObserver(checkDimensions)
         if (cardRef.current) {
           resizeObserver.observe(cardRef.current)
         }
@@ -190,6 +215,31 @@ export const RobotCard = externalizeComponent(
         [],
       )
 
+      // Determine if robot should be hidden at small sizes to save space
+      // Less aggressive hiding for portrait mode since robot is in center
+      const shouldHideRobot = isLandscape
+        ? cardSize.width < 350 || cardSize.height < 250 // Aggressive for landscape
+        : cardSize.width < 250 || cardSize.height < 180 // Less aggressive for portrait
+
+      // Calculate responsive robot scale based on card size and orientation
+      const getRobotScale = () => {
+        if (shouldHideRobot) return 0
+
+        if (isLandscape) {
+          // More aggressive scaling for landscape since robot is on side
+          if (cardSize.width < 450) return 0.8
+          if (cardSize.width < 550) return 0.9
+          return 1
+        } else {
+          // Less aggressive scaling for portrait since robot is central
+          if (cardSize.width < 300) return 0.8
+          if (cardSize.width < 400) return 0.9
+          return 1
+        }
+      }
+
+      const robotScale = getRobotScale()
+
       return (
         <Card
           ref={cardRef}
@@ -202,10 +252,10 @@ export const RobotCard = externalizeComponent(
             flexDirection: isLandscape ? "row" : "column",
             position: "relative",
             overflow: "hidden",
-            minWidth: { xs: 250, sm: 300 },
+            minWidth: { xs: 180, sm: 220, md: 250 },
             minHeight: isLandscape
-              ? { xs: 200, sm: 250, md: 300 }
-              : { xs: 280, sm: 350, md: 400 },
+              ? { xs: 160, sm: 200, md: 250 }
+              : { xs: 200, sm: 280, md: 350 },
             border:
               "1px solid var(--secondary-_states-outlinedBorder, #FFFFFF1F)",
             borderRadius: "18px",
@@ -226,47 +276,54 @@ export const RobotCard = externalizeComponent(
                   m: { xs: 1.5, sm: 2, md: 3 },
                   mr: { xs: 0.75, sm: 1, md: 1.5 },
                   overflow: "hidden", // Prevent content from affecting container size
+                  display: shouldHideRobot ? "none" : "block",
                 }}
               >
-                <Canvas
-                  camera={{
-                    position: [2, 2, 2],
-                    fov: 45,
-                  }}
-                  shadows
-                  style={{
-                    borderRadius: theme.shape.borderRadius,
-                    width: "100%",
-                    height: "100%",
-                    background: "transparent",
-                    position: "absolute",
-                    top: 0,
-                    left: 0,
-                  }}
-                  dpr={[1, 2]}
-                  gl={{ alpha: true, antialias: true }}
-                >
-                  <PresetEnvironment />
-                  <Bounds fit clip observe margin={1}>
-                    <BoundsRefresher modelRenderTrigger={modelRenderTrigger}>
-                      <group ref={robotRef}>
-                        <RobotComponent
-                          connectedMotionGroup={connectedMotionGroup}
-                          postModelRender={handleModelRender}
-                        />
-                      </group>
-                    </BoundsRefresher>
-                  </Bounds>
-                </Canvas>
+                {!shouldHideRobot && (
+                  <Canvas
+                    camera={{
+                      position: [4, 4, 4], // Move camera further back for orthographic view
+                      fov: 15, // Low FOV for near-orthographic projection
+                    }}
+                    shadows
+                    style={{
+                      borderRadius: theme.shape.borderRadius,
+                      width: "100%",
+                      height: "100%",
+                      background: "transparent",
+                      position: "absolute",
+                      top: 0,
+                      left: 0,
+                    }}
+                    dpr={[1, 2]}
+                    gl={{ alpha: true, antialias: true }}
+                  >
+                    <PresetEnvironment />
+                    <Bounds fit clip observe margin={1}>
+                      <BoundsRefresher
+                        modelRenderTrigger={modelRenderTrigger}
+                        isPortrait={false}
+                      >
+                        <group ref={robotRef} scale={robotScale}>
+                          <RobotComponent
+                            connectedMotionGroup={connectedMotionGroup}
+                            postModelRender={handleModelRender}
+                          />
+                        </group>
+                      </BoundsRefresher>
+                    </Bounds>
+                  </Canvas>
+                )}
               </Box>
 
               {/* Content container on right */}
               <Box
                 sx={{
-                  flex: "1",
+                  flex: shouldHideRobot ? "1" : "1",
                   display: "flex",
                   flexDirection: "column",
                   justifyContent: "flex-start",
+                  width: shouldHideRobot ? "100%" : "50%",
                 }}
               >
                 {/* Header section with robot name and program state */}
@@ -368,131 +425,136 @@ export const RobotCard = externalizeComponent(
           ) : (
             <>
               {/* Portrait Layout: Header, Robot, Footer */}
-
-              {/* Header section with robot name and program state */}
               <Box
                 sx={{
-                  p: { xs: 1.5, sm: 2, md: 3 },
-                  pb: { xs: 0.5, sm: 0.75, md: 1 },
+                  p: 3,
+                  height: "100%",
+                  display: "flex",
+                  flexDirection: "column",
                 }}
               >
-                <Typography variant="h6" component="h2" sx={{ mb: 1 }}>
-                  {robotName}
-                </Typography>
-                <ProgramStateIndicator
-                  programState={programState}
-                  safetyState={safetyState}
-                  operationMode={operationMode}
-                />
-              </Box>
+                {/* Header section with robot name and program state */}
+                <Box>
+                  <Typography variant="h6" component="h2" sx={{ mb: 1 }}>
+                    {robotName}
+                  </Typography>
+                  <ProgramStateIndicator
+                    programState={programState}
+                    safetyState={safetyState}
+                    operationMode={operationMode}
+                  />
+                </Box>
 
-              {/* 3D Robot viewport in center */}
-              <Box
-                sx={{
-                  flex: 1,
-                  position: "relative",
-                  minHeight: { xs: 120, sm: 150, md: 200 },
-                  borderRadius: 1,
-                  mx: { xs: 1.5, sm: 2, md: 3 },
-                  mb: { xs: 0.5, sm: 0.75, md: 1 },
-                  overflow: "hidden", // Prevent content from affecting container size
-                }}
-              >
-                <Canvas
-                  camera={{
-                    position: [2, 2, 2],
-                    fov: 45,
-                  }}
-                  shadows
-                  style={{
-                    borderRadius: theme.shape.borderRadius,
-                    width: "100%",
-                    height: "100%",
-                    background: "transparent",
-                    position: "absolute",
-                    top: 0,
-                    left: 0,
-                  }}
-                  dpr={[1, 2]}
-                  gl={{ alpha: true, antialias: true }}
-                >
-                  <PresetEnvironment />
-                  <Bounds fit clip observe margin={1.2}>
-                    <BoundsRefresher modelRenderTrigger={modelRenderTrigger}>
-                      <group ref={robotRef}>
-                        <RobotComponent
-                          connectedMotionGroup={connectedMotionGroup}
-                          postModelRender={handleModelRender}
-                        />
-                      </group>
-                    </BoundsRefresher>
-                  </Bounds>
-                </Canvas>
-              </Box>
-
-              {/* Bottom section with runtime, cycle time, and button */}
-              <Box
-                sx={{
-                  p: { xs: 1.5, sm: 2, md: 3 },
-                  pt: 0,
-                }}
-              >
-                {/* Runtime display */}
-                <Typography
-                  variant="body1"
-                  sx={{
-                    mb: 0,
-                    color: "var(--text-secondary, #FFFFFFB2)",
-                  }}
-                >
-                  {t("RobotCard.Runtime.lb")}
-                </Typography>
-
-                {/* Compact cycle time component directly below runtime */}
-                <CycleTimerComponent
-                  variant="small"
-                  compact
-                  onCycleComplete={handleCycleComplete}
-                />
-
-                {/* Divider */}
-                <Divider
-                  sx={{
-                    mt: 1,
-                    mb: 0,
-                    borderColor: theme.palette.divider,
-                    opacity: 0.5,
-                  }}
-                />
-
-                {/* Drive to Home button with some space */}
+                {/* 3D Robot viewport in center */}
                 <Box
                   sx={{
-                    display: "flex",
-                    justifyContent: "flex-start",
-                    mt: { xs: 1, sm: 2, md: 5 },
-                    mb: { xs: 0.5, sm: 0.75, md: 1 },
+                    flex: shouldHideRobot ? 0 : 1,
+                    position: "relative",
+                    minHeight: shouldHideRobot
+                      ? 0
+                      : { xs: 120, sm: 150, md: 200 },
+                    height: shouldHideRobot ? 0 : "auto",
+                    borderRadius: 1,
+                    overflow: "hidden",
+                    display: shouldHideRobot ? "none" : "block",
                   }}
                 >
-                  <Button
-                    ref={driveButtonRef}
-                    variant="contained"
-                    color="secondary"
-                    size="small"
-                    disabled={true}
-                    onMouseDown={handleDriveToHomeMouseDown}
-                    onMouseUp={handleDriveToHomeMouseUp}
-                    onMouseLeave={handleDriveToHomeMouseLeave}
-                    onTouchStart={handleDriveToHomeMouseDown}
-                    onTouchEnd={handleDriveToHomeMouseUp}
+                  {!shouldHideRobot && (
+                    <Canvas
+                      camera={{
+                        position: [3, 3, 3], // Closer camera position for portrait to make robot larger
+                        fov: 20, // Slightly higher FOV for portrait to fill better
+                      }}
+                      shadows
+                      style={{
+                        borderRadius: theme.shape.borderRadius,
+                        width: "100%",
+                        height: "100%",
+                        background: "transparent",
+                        position: "absolute",
+                        top: 0,
+                        left: 0,
+                      }}
+                      dpr={[1, 2]}
+                      gl={{ alpha: true, antialias: true }}
+                    >
+                      <PresetEnvironment />
+                      <Bounds fit observe margin={1}>
+                        <BoundsRefresher
+                          modelRenderTrigger={modelRenderTrigger}
+                          isPortrait={true}
+                        >
+                          <group ref={robotRef} scale={robotScale}>
+                            <RobotComponent
+                              connectedMotionGroup={connectedMotionGroup}
+                              postModelRender={handleModelRender}
+                            />
+                          </group>
+                        </BoundsRefresher>
+                      </Bounds>
+                    </Canvas>
+                  )}
+                </Box>
+
+                {/* Bottom section with runtime, cycle time, and button */}
+                <Box>
+                  {/* Runtime display */}
+                  <Typography
+                    variant="body1"
                     sx={{
-                      textTransform: "none",
-                      px: 1.5,
-                      py: 0.5,
+                      mb: 0,
+                      color: "var(--text-secondary, #FFFFFFB2)",
                     }}
                   >
-                    {t("RobotCard.DriveToHome.bt")}
-                  </Button>
+                    {t("RobotCard.Runtime.lb")}
+                  </Typography>
+
+                  {/* Compact cycle time component directly below runtime */}
+                  <CycleTimerComponent
+                    variant="small"
+                    compact
+                    onCycleComplete={handleCycleComplete}
+                  />
+
+                  {/* Divider */}
+                  <Divider
+                    sx={{
+                      mt: 1,
+                      mb: 0,
+                      borderColor: theme.palette.divider,
+                      opacity: 0.5,
+                    }}
+                  />
+
+                  {/* Drive to Home button with some space */}
+                  <Box
+                    sx={{
+                      display: "flex",
+                      justifyContent: "flex-start",
+                      mt: { xs: 1, sm: 2, md: 5 },
+                      mb: { xs: 0.5, sm: 0.75, md: 1 },
+                    }}
+                  >
+                    <Button
+                      ref={driveButtonRef}
+                      variant="contained"
+                      color="secondary"
+                      size="small"
+                      disabled={true}
+                      onMouseDown={handleDriveToHomeMouseDown}
+                      onMouseUp={handleDriveToHomeMouseUp}
+                      onMouseLeave={handleDriveToHomeMouseLeave}
+                      onTouchStart={handleDriveToHomeMouseDown}
+                      onTouchEnd={handleDriveToHomeMouseUp}
+                      sx={{
+                        textTransform: "none",
+                        px: 1.5,
+                        py: 0.5,
+                      }}
+                    >
+                      {t("RobotCard.DriveToHome.bt")}
+                    </Button>
+                  </Box>
                 </Box>
               </Box>
             </>
