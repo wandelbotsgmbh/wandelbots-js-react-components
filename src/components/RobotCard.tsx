@@ -286,6 +286,7 @@ export const RobotCard = externalizeComponent(
                       fov: 15, // Low FOV for near-orthographic projection
                     }}
                     shadows
+                    frameloop="demand"
                     style={{
                       borderRadius: theme.shape.borderRadius,
                       width: "100%",
@@ -403,7 +404,7 @@ export const RobotCard = externalizeComponent(
                         variant="contained"
                         color="secondary"
                         size="small"
-                        disabled={true}
+                        disabled={!driveToHomeEnabled}
                         onMouseDown={handleDriveToHomeMouseDown}
                         onMouseUp={handleDriveToHomeMouseUp}
                         onMouseLeave={handleDriveToHomeMouseLeave}
@@ -466,6 +467,7 @@ export const RobotCard = externalizeComponent(
                         fov: 20, // Slightly higher FOV for portrait to fill better
                       }}
                       shadows
+                      frameloop="demand"
                       style={{
                         borderRadius: theme.shape.borderRadius,
                         width: "100%",
@@ -540,7 +542,7 @@ export const RobotCard = externalizeComponent(
                       variant="contained"
                       color="secondary"
                       size="small"
-                      disabled={true}
+                      disabled={!driveToHomeEnabled}
                       onMouseDown={handleDriveToHomeMouseDown}
                       onMouseUp={handleDriveToHomeMouseUp}
                       onMouseLeave={handleDriveToHomeMouseLeave}

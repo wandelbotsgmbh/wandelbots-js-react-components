@@ -1,6 +1,11 @@
 import { Box, Stack } from "@mui/material"
 import type { Meta, StoryObj } from "@storybook/react-vite"
-import type { ConnectedMotionGroup, DHParameter } from "@wandelbots/nova-js/v1"
+import type {
+  ConnectedMotionGroup,
+  DHParameter,
+  RobotControllerStateOperationModeEnum,
+  RobotControllerStateSafetyStateEnum,
+} from "@wandelbots/nova-js/v1"
 import { ProgramState } from "../src/components/ProgramControl"
 import { RobotCard } from "../src/components/RobotCard"
 import { Robot } from "../src/components/robots/Robot"
@@ -17,6 +22,7 @@ function RobotCardWithMockConnectedMotionGroup(
     dhParameters?: DHParameter[]
   },
 ) {
+  // Create the mock ConnectedMotionGroup with reactive properties
   const mockConnectedMotionGroup = {
     rapidlyChangingMotionState,
     modelFromController: props.modelFromController,
@@ -47,78 +53,16 @@ function RobotCardWithMockConnectedMotionGroup(
   )
 }
 
-const meta: Meta<typeof RobotCardWithMockConnectedMotionGroup> = {
+const meta: Meta = {
   title: "Components/RobotCard",
-  component: RobotCardWithMockConnectedMotionGroup,
   tags: ["!dev"],
   parameters: {
     layout: "centered",
-    docs: {
-      description: {
-        component: `
-A responsive card component that displays a 3D robot with controls and state indicators.
-
-## Usage
-
-\`\`\`tsx
-import { RobotCard, CycleTimer } from '@wandelbots/wandelbots-js-react-components'
-import { 
-  NovaClient,
-  RobotControllerStateSafetyStateEnum,
-  RobotControllerStateOperationModeEnum 
-} from '@wandelbots/nova-js/v1'
-import { ProgramState } from '@wandelbots/wandelbots-js-react-components'
-import { useState, useCallback } from 'react'
-
-function MyRobotDashboard() {
-  const [programState, setProgramState] = useState<ProgramState>(ProgramState.IDLE)
-  
-  const nova = new NovaClient({ instanceUrl: 'https://your-robot.com' })
-  const connectedMotionGroup = nova.connectMotionGroup(await nova.getMotionGroup('0'))
-
-  // Custom timer that starts a cycle automatically
-  const CustomTimer = useCallback((props) => (
-    <CycleTimer
-      {...props}
-      onCycleComplete={(controls) => {
-        // Start a 30 second production cycle
-        controls.startNewCycle(30)
-        setProgramState(ProgramState.RUNNING)
-      }}
-      onCycleEnd={() => {
-        setProgramState(ProgramState.IDLE)
-      }}
-    />
-  ), [])
-
-  return (
-    <RobotCard
-      robotName="Production Robot"
-      programState={programState}
-      safetyState={RobotControllerStateSafetyStateEnum.SAFETY_STATE_NORMAL}
-      operationMode={RobotControllerStateOperationModeEnum.OPERATION_MODE_AUTO}
-      connectedMotionGroup={connectedMotionGroup}
-      cycleTimerComponent={CustomTimer}
-      driveToHomeEnabled={true}
-    />
-  )
-}
-\`\`\`
-        `,
-      },
-      story: {
-        inline: false,
-        iframeHeight: 700,
-      },
-    },
   },
   argTypes: {
     robotName: {
       control: "text",
       description: "Name of the robot displayed at the top",
-      table: {
-        type: { summary: "string" },
-      },
     },
     programState: {
       control: "select",
@@ -129,11 +73,6 @@ function MyRobotDashboard() {
         ProgramState.STOPPING,
       ],
       description: "The current state of the program execution",
-      table: {
-        type: {
-          summary: "ProgramState",
-        },
-      },
     },
     safetyState: {
       control: "select",
@@ -170,22 +109,6 @@ function MyRobotDashboard() {
     driveToHomeEnabled: {
       control: "boolean",
       description: "Whether the Drive to Home button should be enabled",
-      table: {
-        defaultValue: { summary: "false" },
-        type: { summary: "boolean" },
-      },
-    },
-    onDriveToHomePress: {
-      action: "onDriveToHomePress",
-      description: "Callback fired when Drive to Home button is pressed",
-    },
-    onDriveToHomeRelease: {
-      action: "onDriveToHomeRelease",
-      description: "Callback fired when Drive to Home button is released",
-    },
-    className: {
-      control: "text",
-      description: "Additional CSS classes",
     },
     modelFromController: {
       control: "select",
@@ -200,9 +123,6 @@ function MyRobotDashboard() {
         "FANUC_CRX10iA",
       ],
       description: "Robot model to display",
-      table: {
-        type: { summary: "string" },
-      },
     },
   },
   args: {
@@ -216,16 +136,15 @@ function MyRobotDashboard() {
 }
 
 export default meta
-type Story = StoryObj<typeof RobotCardWithMockConnectedMotionGroup>
+type Story = StoryObj<typeof meta>
 
 /**
  * Interactive RobotCard that responds to all control parameters.
  * Use the controls panel to modify robot name, states, layout, and other properties
  * to explore the component's behavior and visual appearance.
  */
-export const Interactive: Story = {
+export const Interactive = {
   args: {
-    // Inherit from meta args but make them explicit for this story
     robotName: "UR5e Robot",
     programState: ProgramState.IDLE,
     safetyState: "SAFETY_STATE_NORMAL",
@@ -233,14 +152,32 @@ export const Interactive: Story = {
     driveToHomeEnabled: true,
     modelFromController: "UniversalRobots_UR5e",
   },
-  loaders: [
-    async (context) => ({
-      dhParameters: await getDHParams(
-        context.args.modelFromController || "UniversalRobots_UR5e",
-      ),
-    }),
-  ],
-  render: function Render(args, { loaded: { dhParameters } }) {
+  render: function Render(args: {
+    robotName: string
+    programState: ProgramState
+    safetyState: RobotControllerStateSafetyStateEnum
+    operationMode: RobotControllerStateOperationModeEnum
+    driveToHomeEnabled: boolean
+    modelFromController: string
+    onDriveToHomePress?: () => void
+    onDriveToHomeRelease?: () => void
+  }) {
+    // Create mock ConnectedMotionGroup directly in render
+    const mockConnectedMotionGroup = {
+      rapidlyChangingMotionState,
+      modelFromController: args.modelFromController || "UniversalRobots_UR5e",
+      dhParameters: [
+        { a: 0, alpha: 1.570796, d: 0.1625, theta: 0 },
+        { a: -0.24365, alpha: 0, d: 0, theta: 0 },
+        { a: -0.21325, alpha: 0, d: 0, theta: 0 },
+        { a: 0, alpha: 1.570796, d: 0.11235, theta: 0 },
+        { a: 0, alpha: -1.570796, d: 0.08535, theta: 0 },
+        { a: 0, alpha: 0, d: 0.0819, theta: 0 },
+      ],
+      motionGroupId: "0",
+      controllerId: args.modelFromController || "UniversalRobots_UR5e",
+    } as Partial<ConnectedMotionGroup> as ConnectedMotionGroup
+
     return (
       <Box
         sx={{
@@ -251,9 +188,25 @@ export const Interactive: Story = {
           height: 578,
         }}
       >
-        <RobotCardWithMockConnectedMotionGroup
-          {...args}
-          dhParameters={dhParameters}
+        <RobotCard
+          robotName={args.robotName}
+          programState={args.programState}
+          safetyState={args.safetyState as RobotControllerStateSafetyStateEnum}
+          operationMode={
+            args.operationMode as RobotControllerStateOperationModeEnum
+          }
+          driveToHomeEnabled={args.driveToHomeEnabled}
+          onDriveToHomePress={args.onDriveToHomePress}
+          onDriveToHomeRelease={args.onDriveToHomeRelease}
+          connectedMotionGroup={mockConnectedMotionGroup}
+          robotComponent={(robotProps) => (
+            <Robot
+              {...robotProps}
+              getModel={(modelFromController: string) => {
+                return `./models/${modelFromController}.glb`
+              }}
+            />
+          )}
         />
       </Box>
     )
@@ -266,7 +219,12 @@ export const Interactive: Story = {
  */
 export const Basic: Story = {
   args: {
+    robotName: "UR5e Robot",
+    programState: ProgramState.IDLE,
+    safetyState: "SAFETY_STATE_NORMAL",
+    operationMode: "OPERATION_MODE_AUTO",
     driveToHomeEnabled: false,
+    modelFromController: "UniversalRobots_UR5e",
   },
   loaders: [
     async () => ({
@@ -285,7 +243,14 @@ export const Basic: Story = {
         }}
       >
         <RobotCardWithMockConnectedMotionGroup
-          {...args}
+          robotName={args.robotName}
+          programState={args.programState}
+          safetyState={args.safetyState as RobotControllerStateSafetyStateEnum}
+          operationMode={
+            args.operationMode as RobotControllerStateOperationModeEnum
+          }
+          driveToHomeEnabled={args.driveToHomeEnabled}
+          modelFromController={args.modelFromController}
           dhParameters={dhParameters}
         />
       </Box>
@@ -330,6 +295,7 @@ export const MultipleRobots: Story = {
         dhParameters: robotConfigs[0].dhParameters,
         programState: ProgramState.RUNNING,
         safetyState: "SAFETY_STATE_NORMAL" as const,
+        operationMode: "OPERATION_MODE_AUTO" as const,
       },
       {
         name: "UR10e Station B",
@@ -337,6 +303,7 @@ export const MultipleRobots: Story = {
         dhParameters: robotConfigs[1].dhParameters,
         programState: ProgramState.PAUSED,
         safetyState: "SAFETY_STATE_NORMAL" as const,
+        operationMode: "OPERATION_MODE_AUTO" as const,
       },
       {
         name: "KUKA Station C",
@@ -344,6 +311,7 @@ export const MultipleRobots: Story = {
         dhParameters: robotConfigs[2].dhParameters,
         programState: ProgramState.IDLE,
         safetyState: "SAFETY_STATE_STOP" as const,
+        operationMode: "OPERATION_MODE_MANUAL" as const,
       },
       {
         name: "FANUC Station D",
@@ -351,6 +319,7 @@ export const MultipleRobots: Story = {
         dhParameters: robotConfigs[3].dhParameters,
         programState: ProgramState.STOPPING,
         safetyState: "SAFETY_STATE_DEVICE_EMERGENCY_STOP" as const,
+        operationMode: "OPERATION_MODE_MANUAL_T1" as const,
       },
     ]
 
@@ -371,13 +340,17 @@ export const MultipleRobots: Story = {
             }}
           >
             <RobotCardWithMockConnectedMotionGroup
-              {...args}
               robotName={robot.name}
+              programState={robot.programState}
+              safetyState={
+                robot.safetyState as RobotControllerStateSafetyStateEnum
+              }
+              operationMode={
+                robot.operationMode as RobotControllerStateOperationModeEnum
+              }
+              driveToHomeEnabled={robot.programState === ProgramState.IDLE}
               modelFromController={robot.modelFromController}
               dhParameters={robot.dhParameters}
-              programState={robot.programState}
-              safetyState={robot.safetyState}
-              driveToHomeEnabled={robot.programState === ProgramState.IDLE}
             />
           </Box>
         ))}
@@ -393,6 +366,10 @@ export const MultipleRobots: Story = {
 export const CompactSize: Story = {
   args: {
     robotName: "Compact UR3e",
+    programState: ProgramState.IDLE,
+    safetyState: "SAFETY_STATE_NORMAL",
+    operationMode: "OPERATION_MODE_AUTO",
+    driveToHomeEnabled: false,
     modelFromController: "UniversalRobots_UR3e",
   },
   loaders: [
@@ -412,7 +389,14 @@ export const CompactSize: Story = {
         }}
       >
         <RobotCardWithMockConnectedMotionGroup
-          {...args}
+          robotName={args.robotName}
+          programState={args.programState}
+          safetyState={args.safetyState as RobotControllerStateSafetyStateEnum}
+          operationMode={
+            args.operationMode as RobotControllerStateOperationModeEnum
+          }
+          driveToHomeEnabled={args.driveToHomeEnabled}
+          modelFromController={args.modelFromController}
           dhParameters={dhParameters}
         />
       </Box>
@@ -467,11 +451,17 @@ export const LandscapeLayout: Story = {
           </Box>
           <Box sx={{ flex: 1 }}>
             <RobotCardWithMockConnectedMotionGroup
-              {...args}
-              dhParameters={dhParameters}
               robotName="UR5e Landscape"
               programState={ProgramState.RUNNING}
-              safetyState="SAFETY_STATE_NORMAL"
+              safetyState={
+                "SAFETY_STATE_NORMAL" as RobotControllerStateSafetyStateEnum
+              }
+              operationMode={
+                "OPERATION_MODE_AUTO" as RobotControllerStateOperationModeEnum
+              }
+              driveToHomeEnabled={args.driveToHomeEnabled}
+              modelFromController="UniversalRobots_UR5e"
+              dhParameters={dhParameters}
             />
           </Box>
         </Box>
@@ -501,11 +491,17 @@ export const LandscapeLayout: Story = {
           </Box>
           <Box sx={{ flex: 1 }}>
             <RobotCardWithMockConnectedMotionGroup
-              {...args}
-              dhParameters={dhParameters}
               robotName="UR5e Portrait"
               programState={ProgramState.IDLE}
-              safetyState="SAFETY_STATE_NORMAL"
+              safetyState={
+                "SAFETY_STATE_NORMAL" as RobotControllerStateSafetyStateEnum
+              }
+              operationMode={
+                "OPERATION_MODE_AUTO" as RobotControllerStateOperationModeEnum
+              }
+              driveToHomeEnabled={args.driveToHomeEnabled}
+              modelFromController="UniversalRobots_UR5e"
+              dhParameters={dhParameters}
             />
           </Box>
         </Box>
@@ -609,7 +605,16 @@ export const ResizableTest: Story = {
           }}
         >
           <RobotCardWithMockConnectedMotionGroup
-            {...args}
+            robotName={args.robotName}
+            programState={args.programState}
+            safetyState={
+              args.safetyState as RobotControllerStateSafetyStateEnum
+            }
+            operationMode={
+              args.operationMode as RobotControllerStateOperationModeEnum
+            }
+            driveToHomeEnabled={args.driveToHomeEnabled}
+            modelFromController={args.modelFromController}
             dhParameters={dhParameters}
           />
         </Box>
