@@ -6,7 +6,7 @@ import type {
 import { observer } from "mobx-react-lite"
 import { useTranslation } from "react-i18next"
 import { externalizeComponent } from "../externalizeComponent"
-import type { ProgramState } from "./ProgramControl"
+import { ProgramState } from "./ProgramControl"
 
 export interface ProgramStateIndicatorProps {
   /** The current state of the program */
@@ -77,22 +77,22 @@ export const ProgramStateIndicator = externalizeComponent(
         // For normal safety states, check program state
         if (safetyState === "SAFETY_STATE_NORMAL") {
           switch (programState) {
-            case "running":
+            case ProgramState.RUNNING:
               return {
                 label: t("ProgramStateIndicator.Running.lb"),
                 color: theme.palette.success.main,
               }
-            case "paused":
+            case ProgramState.PAUSED:
               return {
                 label: t("ProgramStateIndicator.Paused.lb"),
                 color: theme.palette.grey[600],
               }
-            case "stopping":
+            case ProgramState.STOPPING:
               return {
                 label: t("ProgramStateIndicator.Stopped.lb"),
                 color: theme.palette.error.main,
               }
-            case "idle":
+            case ProgramState.IDLE:
             default:
               return {
                 label: t("ProgramStateIndicator.Ready.lb"),

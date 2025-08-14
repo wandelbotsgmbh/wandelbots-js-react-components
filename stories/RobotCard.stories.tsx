@@ -1,8 +1,9 @@
 import { Box, Stack } from "@mui/material"
 import type { Meta, StoryObj } from "@storybook/react-vite"
 import type { ConnectedMotionGroup, DHParameter } from "@wandelbots/nova-js/v1"
+import { ProgramState } from "../src/components/ProgramControl"
 import { RobotCard } from "../src/components/RobotCard"
-import { SupportedRobot } from "../src/components/robots/SupportedRobot"
+import { Robot } from "../src/components/robots/Robot"
 import { rapidlyChangingMotionState } from "./robots/motionState"
 import { getDHParams } from "./robots/robotStoryConfig"
 
@@ -30,15 +31,18 @@ function RobotCardWithMockConnectedMotionGroup(
     <RobotCard
       {...cardProps}
       connectedMotionGroup={mockConnectedMotionGroup}
-      robotComponent={(robotProps) => (
-        <SupportedRobot
-          {...robotProps}
-          getModel={(modelFromController: string) => {
-            // Fetch from storybook rather than CDN to ensure version alignment
-            return `./models/${modelFromController}.glb`
-          }}
-        />
-      )}
+      robotComponent={
+        props.robotComponent ||
+        ((robotProps) => (
+          <Robot
+            {...robotProps}
+            getModel={(modelFromController: string) => {
+              // Fetch from storybook rather than CDN to ensure version alignment
+              return `./models/${modelFromController}.glb`
+            }}
+          />
+        ))
+      }
     />
   )
 }
@@ -52,42 +56,54 @@ const meta: Meta<typeof RobotCardWithMockConnectedMotionGroup> = {
     docs: {
       description: {
         component: `
-A fully responsive Material-UI Card component that renders a 3D robot visualization with robotics controls and state indicators.
+A responsive card component that displays a 3D robot with controls and state indicators.
 
-**Architecture:**
-- Built with React Three Fiber for 3D rendering and Material-UI for UI components
-- Uses drei's \`<Bounds>\` component with automatic model fitting via \`postModelRender\` callback
-- Implements responsive layout switching based on container aspect ratio detection
-- Leverages MobX observer pattern for reactive state management
-- Integrates with Wandelbots Nova-JS \`ConnectedMotionGroup\` for real-time robot data
+## Usage
 
-**Layout System:**
-- **Portrait Mode (height > width):** Vertical stack - header, 3D viewport, controls
-- **Landscape Mode (width > height):** Horizontal split - 3D viewport (50%) | content panel (50%)
-- **Container-based sizing:** Automatically fills parent container (100% width/height)
-- **Minimum constraints:** 300px width, 400px height (portrait) / 300px height (landscape)
+\`\`\`tsx
+import { RobotCard, CycleTimer } from '@wandelbots/wandelbots-js-react-components'
+import { 
+  NovaClient,
+  RobotControllerStateSafetyStateEnum,
+  RobotControllerStateOperationModeEnum 
+} from '@wandelbots/nova-js/v1'
+import { ProgramState } from '@wandelbots/wandelbots-js-react-components'
+import { useState, useCallback } from 'react'
 
-**3D Rendering Features:**
-- Auto-fitting camera that responds to robot model loading and pose changes
-- Real-time robot pose updates via \`rapidlyChangingMotionState\`
-- Customizable robot component with DH parameter support
-- Transparent background with preset lighting environment
-- Optimized rendering with device pixel ratio scaling
+function MyRobotDashboard() {
+  const [programState, setProgramState] = useState<ProgramState>(ProgramState.IDLE)
+  
+  const nova = new NovaClient({ instanceUrl: 'https://your-robot.com' })
+  const connectedMotionGroup = nova.connectMotionGroup(await nova.getMotionGroup('0'))
 
-**Component Integration:**
-- **Robot State:** Program execution state, safety status, operation mode indicators
-- **Cycle Timer:** Configurable timer component with variant and compact modes
-- **Drive Controls:** Press-and-hold "Drive to Home" button with mouse/touch event handling
-- **Internationalization:** Full i18next support for all text elements
+  // Custom timer that starts a cycle automatically
+  const CustomTimer = useCallback((props) => (
+    <CycleTimer
+      {...props}
+      onCycleComplete={(controls) => {
+        // Start a 30 second production cycle
+        controls.startNewCycle(30)
+        setProgramState(ProgramState.RUNNING)
+      }}
+      onCycleEnd={() => {
+        setProgramState(ProgramState.IDLE)
+      }}
+    />
+  ), [])
 
-**Technical Implementation:**
-- Uses ResizeObserver for responsive layout detection
-- Implements bounds refresh trigger system for 3D model fitting
-- Supports custom robot and cycle timer component injection
-- Material-UI theming with CSS custom properties for dark mode compatibility
-
-**Use Cases:**
-Perfect for robotics dashboards, monitoring interfaces, and control panels where real-time 3D robot visualization is needed alongside operational controls and status information.
+  return (
+    <RobotCard
+      robotName="Production Robot"
+      programState={programState}
+      safetyState={RobotControllerStateSafetyStateEnum.SAFETY_STATE_NORMAL}
+      operationMode={RobotControllerStateOperationModeEnum.OPERATION_MODE_AUTO}
+      connectedMotionGroup={connectedMotionGroup}
+      cycleTimerComponent={CustomTimer}
+      driveToHomeEnabled={true}
+    />
+  )
+}
+\`\`\`
         `,
       },
       story: {
@@ -106,11 +122,16 @@ Perfect for robotics dashboards, monitoring interfaces, and control panels where
     },
     programState: {
       control: "select",
-      options: ["idle", "running", "paused", "stopping"],
+      options: [
+        ProgramState.IDLE,
+        ProgramState.RUNNING,
+        ProgramState.PAUSED,
+        ProgramState.STOPPING,
+      ],
       description: "The current state of the program execution",
       table: {
         type: {
-          summary: "'idle' | 'running' | 'paused' | 'stopping'",
+          summary: "ProgramState",
         },
       },
     },
@@ -186,7 +207,7 @@ Perfect for robotics dashboards, monitoring interfaces, and control panels where
   },
   args: {
     robotName: "UR5e Robot",
-    programState: "idle",
+    programState: ProgramState.IDLE,
     safetyState: "SAFETY_STATE_NORMAL",
     operationMode: "OPERATION_MODE_AUTO",
     driveToHomeEnabled: true,
@@ -206,7 +227,7 @@ export const Interactive: Story = {
   args: {
     // Inherit from meta args but make them explicit for this story
     robotName: "UR5e Robot",
-    programState: "idle",
+    programState: ProgramState.IDLE,
     safetyState: "SAFETY_STATE_NORMAL",
     operationMode: "OPERATION_MODE_AUTO",
     driveToHomeEnabled: true,
@@ -307,38 +328,38 @@ export const MultipleRobots: Story = {
         name: "UR5e Station A",
         modelFromController: robotConfigs[0].model,
         dhParameters: robotConfigs[0].dhParameters,
-        programState: "running" as const,
+        programState: ProgramState.RUNNING,
         safetyState: "SAFETY_STATE_NORMAL" as const,
       },
       {
         name: "UR10e Station B",
         modelFromController: robotConfigs[1].model,
         dhParameters: robotConfigs[1].dhParameters,
-        programState: "paused" as const,
+        programState: ProgramState.PAUSED,
         safetyState: "SAFETY_STATE_NORMAL" as const,
       },
       {
         name: "KUKA Station C",
         modelFromController: robotConfigs[2].model,
         dhParameters: robotConfigs[2].dhParameters,
-        programState: "idle" as const,
+        programState: ProgramState.IDLE,
         safetyState: "SAFETY_STATE_STOP" as const,
       },
       {
         name: "FANUC Station D",
         modelFromController: robotConfigs[3].model,
         dhParameters: robotConfigs[3].dhParameters,
-        programState: "stopping" as const,
+        programState: ProgramState.STOPPING,
         safetyState: "SAFETY_STATE_DEVICE_EMERGENCY_STOP" as const,
       },
     ]
 
     return (
       <Stack
-        spacing={4}
+        spacing={1}
         sx={{
-          padding: 3,
-          maxWidth: "100%",
+          padding: 1,
+          width: 500,
           overflow: "auto", // Allow horizontal scrolling if needed
         }}
       >
@@ -346,9 +367,7 @@ export const MultipleRobots: Story = {
           <Box
             key={robot.name}
             sx={{
-              width: 500,
-              height: 320, // Increased to accommodate minHeight: 300 + padding
-              minHeight: 320,
+              height: 300,
             }}
           >
             <RobotCardWithMockConnectedMotionGroup
@@ -358,7 +377,7 @@ export const MultipleRobots: Story = {
               dhParameters={robot.dhParameters}
               programState={robot.programState}
               safetyState={robot.safetyState}
-              driveToHomeEnabled={robot.programState === "idle"}
+              driveToHomeEnabled={robot.programState === ProgramState.IDLE}
             />
           </Box>
         ))}
@@ -451,7 +470,7 @@ export const LandscapeLayout: Story = {
               {...args}
               dhParameters={dhParameters}
               robotName="UR5e Landscape"
-              programState="running"
+              programState={ProgramState.RUNNING}
               safetyState="SAFETY_STATE_NORMAL"
             />
           </Box>
@@ -485,7 +504,7 @@ export const LandscapeLayout: Story = {
               {...args}
               dhParameters={dhParameters}
               robotName="UR5e Portrait"
-              programState="idle"
+              programState={ProgramState.IDLE}
               safetyState="SAFETY_STATE_NORMAL"
             />
           </Box>

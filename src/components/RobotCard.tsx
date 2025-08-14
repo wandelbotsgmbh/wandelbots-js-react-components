@@ -1,7 +1,6 @@
 import { Box, Button, Card, Divider, Typography, useTheme } from "@mui/material"
 import { Bounds, useBounds } from "@react-three/drei"
 import { Canvas } from "@react-three/fiber"
-import type { DHParameter } from "@wandelbots/nova-api/v1"
 import type {
   ConnectedMotionGroup,
   RobotControllerStateOperationModeEnum,
@@ -16,7 +15,7 @@ import { PresetEnvironment } from "./3d-viewport/PresetEnvironment"
 import { CycleTimer } from "./CycleTimer"
 import type { ProgramState } from "./ProgramControl"
 import { ProgramStateIndicator } from "./ProgramStateIndicator"
-import { SupportedRobot } from "./robots/SupportedRobot"
+import { Robot } from "./robots/Robot"
 
 // Component to refresh bounds when model renders
 function BoundsRefresher({
@@ -58,11 +57,9 @@ export interface RobotCardProps {
   onDriveToHomeRelease?: () => void
   /** Connected motion group for the robot */
   connectedMotionGroup: ConnectedMotionGroup
-  /** Custom robot component to render (optional, defaults to SupportedRobot) */
+  /** Custom robot component to render (optional, defaults to Robot) */
   robotComponent?: React.ComponentType<{
-    rapidlyChangingMotionState: ConnectedMotionGroup["rapidlyChangingMotionState"]
-    modelFromController: string
-    dhParameters: DHParameter[]
+    connectedMotionGroup: ConnectedMotionGroup
     flangeRef?: React.Ref<Group>
     postModelRender?: () => void
     transparentColor?: string
@@ -116,7 +113,7 @@ export const RobotCard = externalizeComponent(
       onDriveToHomePress,
       onDriveToHomeRelease,
       connectedMotionGroup,
-      robotComponent: RobotComponent = SupportedRobot,
+      robotComponent: RobotComponent = Robot,
       cycleTimerComponent: CycleTimerComponent = CycleTimer,
       className,
     }: RobotCardProps) => {
@@ -197,6 +194,7 @@ export const RobotCard = externalizeComponent(
         <Card
           ref={cardRef}
           className={className}
+          elevation={5}
           sx={{
             width: "100%",
             height: "100%",
@@ -204,9 +202,10 @@ export const RobotCard = externalizeComponent(
             flexDirection: isLandscape ? "row" : "column",
             position: "relative",
             overflow: "hidden",
-            minWidth: 300,
-            minHeight: isLandscape ? 300 : 400,
-            background: "var(--background-paper-elevation-8, #292B3F)",
+            minWidth: { xs: 250, sm: 300 },
+            minHeight: isLandscape
+              ? { xs: 200, sm: 250, md: 300 }
+              : { xs: 280, sm: 350, md: 400 },
             border:
               "1px solid var(--secondary-_states-outlinedBorder, #FFFFFF1F)",
             borderRadius: "18px",
@@ -224,8 +223,8 @@ export const RobotCard = externalizeComponent(
                   minHeight: "100%",
                   maxHeight: "100%",
                   borderRadius: 1,
-                  m: 2,
-                  mr: 1,
+                  m: { xs: 1.5, sm: 2, md: 3 },
+                  mr: { xs: 0.75, sm: 1, md: 1.5 },
                   overflow: "hidden", // Prevent content from affecting container size
                 }}
               >
@@ -252,13 +251,7 @@ export const RobotCard = externalizeComponent(
                     <BoundsRefresher modelRenderTrigger={modelRenderTrigger}>
                       <group ref={robotRef}>
                         <RobotComponent
-                          rapidlyChangingMotionState={
-                            connectedMotionGroup.rapidlyChangingMotionState
-                          }
-                          modelFromController={
-                            connectedMotionGroup.modelFromController || ""
-                          }
-                          dhParameters={connectedMotionGroup.dhParameters || []}
+                          connectedMotionGroup={connectedMotionGroup}
                           postModelRender={handleModelRender}
                         />
                       </group>
@@ -279,8 +272,8 @@ export const RobotCard = externalizeComponent(
                 {/* Header section with robot name and program state */}
                 <Box
                   sx={{
-                    p: 3,
-                    pb: 2,
+                    p: { xs: 1.5, sm: 2, md: 3 },
+                    pb: { xs: 1, sm: 1.5, md: 2 },
                     textAlign: "left",
                   }}
                 >
@@ -297,7 +290,7 @@ export const RobotCard = externalizeComponent(
                 {/* Bottom section with runtime, cycle time, and button */}
                 <Box
                   sx={{
-                    p: 3,
+                    p: { xs: 1.5, sm: 2, md: 3 },
                     pt: 0,
                     flex: "1",
                     display: "flex",
@@ -330,8 +323,8 @@ export const RobotCard = externalizeComponent(
                     {/* Divider */}
                     <Divider
                       sx={{
-                        mt: 2,
-                        mb: 2,
+                        mt: 1,
+                        mb: 0,
                         borderColor: theme.palette.divider,
                         opacity: 0.5,
                       }}
@@ -344,8 +337,8 @@ export const RobotCard = externalizeComponent(
                       sx={{
                         display: "flex",
                         justifyContent: "flex-start",
-                        mt: 2,
-                        mb: 2,
+                        mt: { xs: 1, sm: 1.5, md: 2 },
+                        mb: { xs: 0.5, sm: 0.75, md: 1 },
                       }}
                     >
                       <Button
@@ -377,7 +370,12 @@ export const RobotCard = externalizeComponent(
               {/* Portrait Layout: Header, Robot, Footer */}
 
               {/* Header section with robot name and program state */}
-              <Box sx={{ p: 3, pb: 1 }}>
+              <Box
+                sx={{
+                  p: { xs: 1.5, sm: 2, md: 3 },
+                  pb: { xs: 0.5, sm: 0.75, md: 1 },
+                }}
+              >
                 <Typography variant="h6" component="h2" sx={{ mb: 1 }}>
                   {robotName}
                 </Typography>
@@ -393,10 +391,10 @@ export const RobotCard = externalizeComponent(
                 sx={{
                   flex: 1,
                   position: "relative",
-                  minHeight: 200,
+                  minHeight: { xs: 120, sm: 150, md: 200 },
                   borderRadius: 1,
-                  mx: 3,
-                  mb: 1,
+                  mx: { xs: 1.5, sm: 2, md: 3 },
+                  mb: { xs: 0.5, sm: 0.75, md: 1 },
                   overflow: "hidden", // Prevent content from affecting container size
                 }}
               >
@@ -423,13 +421,7 @@ export const RobotCard = externalizeComponent(
                     <BoundsRefresher modelRenderTrigger={modelRenderTrigger}>
                       <group ref={robotRef}>
                         <RobotComponent
-                          rapidlyChangingMotionState={
-                            connectedMotionGroup.rapidlyChangingMotionState
-                          }
-                          modelFromController={
-                            connectedMotionGroup.modelFromController || ""
-                          }
-                          dhParameters={connectedMotionGroup.dhParameters || []}
+                          connectedMotionGroup={connectedMotionGroup}
                           postModelRender={handleModelRender}
                         />
                       </group>
@@ -439,7 +431,12 @@ export const RobotCard = externalizeComponent(
               </Box>
 
               {/* Bottom section with runtime, cycle time, and button */}
-              <Box sx={{ p: 3, pt: 0 }}>
+              <Box
+                sx={{
+                  p: { xs: 1.5, sm: 2, md: 3 },
+                  pt: 0,
+                }}
+              >
                 {/* Runtime display */}
                 <Typography
                   variant="body1"
@@ -461,8 +458,8 @@ export const RobotCard = externalizeComponent(
                 {/* Divider */}
                 <Divider
                   sx={{
-                    mt: 2,
-                    mb: 2,
+                    mt: 1,
+                    mb: 0,
                     borderColor: theme.palette.divider,
                     opacity: 0.5,
                   }}
@@ -473,8 +470,8 @@ export const RobotCard = externalizeComponent(
                   sx={{
                     display: "flex",
                     justifyContent: "flex-start",
-                    mt: 5,
-                    mb: 2,
+                    mt: { xs: 1, sm: 2, md: 5 },
+                    mb: { xs: 0.5, sm: 0.75, md: 1 },
                   }}
                 >
                   <Button
