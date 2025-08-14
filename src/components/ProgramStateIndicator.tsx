@@ -1,4 +1,4 @@
-import { Chip, useTheme } from "@mui/material"
+import { Chip, Typography, useTheme } from "@mui/material"
 import type {
   RobotControllerStateOperationModeEnum,
   RobotControllerStateSafetyStateEnum,
@@ -131,14 +131,26 @@ export const ProgramStateIndicator = externalizeComponent(
       return (
         <Chip
           className={className}
-          label={fullLabel}
+          label={
+            <Typography
+              variant="body2"
+              sx={{
+                fontSize: "0.75rem", // Smaller than body2
+                lineHeight: 1.2,
+              }}
+            >
+              {fullLabel}
+            </Typography>
+          }
           variant="filled"
           sx={{
             backgroundColor: color,
             color: theme.palette.getContrastText(color),
             fontWeight: 500,
+            height: "auto",
             "& .MuiChip-label": {
-              paddingX: 2,
+              paddingX: 1.5,
+              paddingY: 0.5,
             },
           }}
         />

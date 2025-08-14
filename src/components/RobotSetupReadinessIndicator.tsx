@@ -112,8 +112,10 @@ export const RobotSetupReadinessIndicator = externalizeComponent(
           backgroundColor,
           color: theme.palette.getContrastText(backgroundColor),
           fontWeight: 500,
+          height: "auto",
           "& .MuiChip-label": {
             paddingX: 1.5,
+            paddingY: 0.5,
           },
         }}
       />

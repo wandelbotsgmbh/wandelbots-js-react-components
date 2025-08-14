@@ -301,77 +301,56 @@ export const CycleTimer = externalizeComponent(
             sx={{
               display: "flex",
               alignItems: "center",
-              gap: 0.125, // Minimal gap - 1px
+              m: 0,
+              gap: 1, // 8px gap between circle and text
             }}
           >
-            {/* Animated progress gauge icon */}
+            {/* Animated progress ring icon */}
             <Box
               sx={{
-                position: "relative",
-                width: 40,
-                height: 40,
+                width: 20,
+                height: 20,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                borderRadius: "50%",
-                overflow: "visible",
+                opacity: isPausedState ? 0.6 : 1,
+                transition: "opacity 0.2s ease",
               }}
             >
-              <Gauge
-                width={40}
-                height={40}
-                value={progressValue}
-                valueMin={0}
-                valueMax={100}
-                innerRadius="70%"
-                outerRadius="95%"
-                skipAnimation={true}
-                sx={{
-                  opacity: isPausedState ? 0.6 : 1,
-                  transition: "opacity 0.2s ease",
-                  [`& .MuiGauge-valueArc`]: {
-                    fill: theme.palette.success.main,
-                  },
-                  [`& .MuiGauge-referenceArc`]: {
-                    fill: theme.palette.success.main,
-                    opacity: 0.3,
-                  },
-                  [`& .MuiGauge-valueText`]: {
-                    display: "none",
-                  },
-                  [`& .MuiGauge-text`]: {
-                    display: "none",
-                  },
-                  [`& text`]: {
-                    display: "none",
-                  },
-                  // Hide any inner circle elements that might flash
-                  [`& .MuiGauge-referenceArcBackground`]: {
-                    display: "none",
-                  },
-                  [`& .MuiGauge-valueArcBackground`]: {
-                    display: "none",
-                  },
-                  [`& circle`]: {
-                    display: "none",
-                  },
-                }}
-              />
-
-              {/* Inner circle overlay to prevent flashing */}
-              <Box
-                sx={{
-                  position: "absolute",
-                  top: "50%",
-                  left: "50%",
-                  transform: "translate(-50%, -50%)",
-                  width: 13,
-                  height: 13,
-                  borderRadius: "50%",
-                  backgroundColor: theme.palette.background?.paper || "white",
-                  pointerEvents: "none",
-                }}
-              />
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 20 20"
+                style={{ transform: "rotate(-90deg)" }}
+                role="img"
+                aria-label="Timer progress"
+              >
+                {/* Background ring */}
+                <circle
+                  cx="10"
+                  cy="10"
+                  r="8"
+                  fill="none"
+                  stroke={theme.palette.success.main}
+                  strokeWidth="2"
+                  opacity={0.3}
+                />
+                {/* Progress ring */}
+                <circle
+                  cx="10"
+                  cy="10"
+                  r="8"
+                  fill="none"
+                  stroke={theme.palette.success.main}
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeDasharray={`${2 * Math.PI * 8}`}
+                  strokeDashoffset={`${2 * Math.PI * 8 * (1 - progressValue / 100)}`}
+                  style={{
+                    transition: "stroke-dashoffset 0.1s ease-out",
+                  }}
+                />
+              </svg>
             </Box>
 
             {/* Timer text display */}
@@ -383,8 +362,8 @@ export const CycleTimer = externalizeComponent(
               }}
             >
               {compact
-                ? // Compact mode: show only remaining time
-                  formatTime(remainingTime)
+                ? // Compact mode: show remaining time with "min." suffix
+                  `${formatTime(remainingTime)} ${t("CycleTimer.Time.lb", { time: "" }).replace(/\s*$/, "")}`
                 : // Full mode: show "remaining / of total min." format
                   `${formatTime(remainingTime)} / ${t("CycleTimer.Time.lb", { time: formatTime(maxTime) })}`}
             </Typography>
