@@ -1,7 +1,7 @@
 import { Box, Button } from "@mui/material"
 import type { Meta, StoryObj } from "@storybook/react-vite"
 import { useArgs } from "storybook/preview-api"
-import { ProgramControl } from "../src"
+import { ProgramControl, ProgramState } from "../src"
 
 const meta: Meta<typeof ProgramControl> = {
   title: "Components/ProgramControl",
@@ -13,7 +13,12 @@ const meta: Meta<typeof ProgramControl> = {
   argTypes: {
     state: {
       control: "select",
-      options: ["idle", "running", "paused", "stopping"],
+      options: [
+        ProgramState.IDLE,
+        ProgramState.RUNNING,
+        ProgramState.PAUSED,
+        ProgramState.STOPPING,
+      ],
       description: "The current state of the program control",
       table: {
         type: {
@@ -60,7 +65,7 @@ const meta: Meta<typeof ProgramControl> = {
     },
   },
   args: {
-    state: "idle",
+    state: ProgramState.IDLE,
     variant: "with_pause",
     requiresManualReset: false,
   },
@@ -71,10 +76,10 @@ const meta: Meta<typeof ProgramControl> = {
       console.log("Run pressed")
       args.onRun?.()
       // Simulate state change
-      if (args.state === "idle") {
-        setArgs({ state: "running" })
-      } else if (args.state === "paused") {
-        setArgs({ state: "running" })
+      if (args.state === ProgramState.IDLE) {
+        setArgs({ state: ProgramState.RUNNING })
+      } else if (args.state === ProgramState.PAUSED) {
+        setArgs({ state: ProgramState.RUNNING })
       }
     }
 
@@ -82,8 +87,8 @@ const meta: Meta<typeof ProgramControl> = {
       console.log("Pause pressed")
       args.onPause?.()
       // Simulate state change
-      if (args.state === "running") {
-        setArgs({ state: "paused" })
+      if (args.state === ProgramState.RUNNING) {
+        setArgs({ state: ProgramState.PAUSED })
       }
     }
 
@@ -91,13 +96,13 @@ const meta: Meta<typeof ProgramControl> = {
       console.log("Stop pressed")
       args.onStop?.()
       // Simulate state change
-      setArgs({ state: "stopping" })
+      setArgs({ state: ProgramState.STOPPING })
 
       // If manual reset is required, don't auto-reset
       if (!args.requiresManualReset) {
         // Simulate return to idle after stopping
         setTimeout(() => {
-          setArgs({ state: "idle" })
+          setArgs({ state: ProgramState.IDLE })
         }, 2000)
       }
     }
@@ -106,7 +111,7 @@ const meta: Meta<typeof ProgramControl> = {
       console.log("Reset called")
       args.onReset?.()
       // Reset to idle state
-      setArgs({ state: "idle" })
+      setArgs({ state: ProgramState.IDLE })
     }
 
     return (
@@ -126,7 +131,7 @@ const meta: Meta<typeof ProgramControl> = {
           onReset={onReset}
         />
 
-        {args.requiresManualReset && args.state === "stopping" && (
+        {args.requiresManualReset && args.state === ProgramState.STOPPING && (
           <Button
             variant="outlined"
             color="info"
@@ -146,7 +151,7 @@ const meta: Meta<typeof ProgramControl> = {
               maxWidth: 300,
             }}
           >
-            {args.state === "stopping"
+            {args.state === ProgramState.STOPPING
               ? "Component is in stopping state. Use the Manual Reset button above or manually call onReset() to return to idle."
               : "When you press Stop, the component will stay in stopping state until you manually call the onReset function."}
           </Box>
@@ -161,42 +166,42 @@ type Story = StoryObj<typeof ProgramControl>
 
 export const WithPauseIdle: Story = {
   args: {
-    state: "idle",
+    state: ProgramState.IDLE,
     variant: "with_pause",
   },
 }
 
 export const WithPauseRunning: Story = {
   args: {
-    state: "running",
+    state: ProgramState.RUNNING,
     variant: "with_pause",
   },
 }
 
 export const WithPausePaused: Story = {
   args: {
-    state: "paused",
+    state: ProgramState.PAUSED,
     variant: "with_pause",
   },
 }
 
 export const WithPauseStopping: Story = {
   args: {
-    state: "stopping",
+    state: ProgramState.STOPPING,
     variant: "with_pause",
   },
 }
 
 export const WithoutPauseIdle: Story = {
   args: {
-    state: "idle",
+    state: ProgramState.IDLE,
     variant: "without_pause",
   },
 }
 
 export const WithoutPauseRunning: Story = {
   args: {
-    state: "running",
+    state: ProgramState.RUNNING,
     variant: "without_pause",
   },
 }
@@ -204,7 +209,7 @@ export const WithoutPauseRunning: Story = {
 export const WithManualReset: Story = {
   name: "Manual Reset Example",
   args: {
-    state: "stopping",
+    state: ProgramState.STOPPING,
     variant: "with_pause",
     requiresManualReset: true,
   },
@@ -221,7 +226,7 @@ export const WithManualReset: Story = {
 export const Interactive: Story = {
   name: "Interactive Demo (Auto Reset)",
   args: {
-    state: "idle",
+    state: ProgramState.IDLE,
     variant: "with_pause",
   },
   parameters: {
@@ -237,7 +242,7 @@ export const Interactive: Story = {
 export const ManualResetRequired: Story = {
   name: "Interactive Demo (Manual Reset)",
   args: {
-    state: "idle",
+    state: ProgramState.IDLE,
     variant: "with_pause",
     requiresManualReset: true,
   },

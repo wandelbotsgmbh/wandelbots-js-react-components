@@ -1,31 +1,13 @@
-import { Stack, Typography, useTheme } from "@mui/material"
 import type { Meta, StoryObj } from "@storybook/react-vite"
-import { SafetyBar, type SafetyBarProps } from "../src"
-
-const SafetyBarWrapper = (props: SafetyBarProps) => {
-  const theme = useTheme()
-  return (
-    <Stack gap={4} sx={{ paddingTop: "1rem", paddingBottom: "3rem" }}>
-      <Stack gap={2}>
-        <Typography variant="body2" color={theme.palette.text.primary}>
-          Compact
-        </Typography>
-        <SafetyBar {...props} />
-      </Stack>
-      <Stack gap={2}>
-        <Typography variant="body2" color={theme.palette.text.primary}>
-          Extended
-        </Typography>
-        <SafetyBar {...props} compact={false} />
-      </Stack>
-    </Stack>
-  )
-}
+import { SafetyBar } from "../src"
 
 const meta: Meta<typeof SafetyBar> = {
   title: "Safety/SafetyBar",
-  component: SafetyBarWrapper,
-  tags: ["autodocs"],
+  component: SafetyBar,
+  tags: ["!dev"],
+  parameters: {
+    layout: "padded",
+  },
   args: {
     isVirtual: false,
     motionGroupId: "robot1",
@@ -91,9 +73,9 @@ const meta: Meta<typeof SafetyBar> = {
 }
 
 export default meta
-type Story = StoryObj<typeof SafetyBar>
+type Story = StoryObj<typeof meta>
 
-export const Default: Story = {}
+export const Interactive: Story = {}
 
 export const VirtualRobot: Story = {
   args: {
@@ -123,5 +105,21 @@ export const ProtectiveStop: Story = {
 export const ErrorState: Story = {
   args: {
     safetyState: "SAFETY_STATE_FAULT",
+  },
+}
+
+export const CompactView: Story = {
+  args: {
+    compact: true,
+    safetyState: "SAFETY_STATE_NORMAL",
+    operationMode: "OPERATION_MODE_AUTO",
+  },
+}
+
+export const ExtendedView: Story = {
+  args: {
+    compact: false,
+    safetyState: "SAFETY_STATE_NORMAL",
+    operationMode: "OPERATION_MODE_AUTO",
   },
 }
