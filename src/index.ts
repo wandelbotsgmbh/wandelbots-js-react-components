@@ -1,6 +1,7 @@
 export * from "./components/3d-viewport/PresetEnvironment"
 export * from "./components/3d-viewport/SafetyZonesRenderer"
 export * from "./components/3d-viewport/TrajectoryRenderer"
+export * from "./components/AppTopBar"
 export * from "./components/CycleTimer"
 export * from "./components/DataGrid"
 export * from "./components/jogging/JoggingCartesianAxisControl"

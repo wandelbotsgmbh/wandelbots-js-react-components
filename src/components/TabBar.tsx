@@ -2,13 +2,12 @@ import type { SxProps } from "@mui/material"
 import { Box, Tab, Tabs } from "@mui/material"
 import { observer } from "mobx-react-lite"
 import { useState } from "react"
-import { useTranslation } from "react-i18next"
 import { externalizeComponent } from "../externalizeComponent"
 
 export interface TabItem {
   /** Unique identifier for the tab */
   id: string
-  /** Translation key or label text for the tab */
+  /** Label text for the tab */
   label: string
   /** Content to display when tab is active */
   content: React.ReactNode
@@ -57,7 +56,6 @@ function TabPanel(props: TabPanelProps) {
 export const TabBar = externalizeComponent(
   observer((props: TabBarProps) => {
     const { items, defaultActiveTab = 0, onTabChange, sx } = props
-    const { t } = useTranslation()
     const [activeTab, setActiveTab] = useState(defaultActiveTab)
 
     const handleTabChange = (
@@ -92,9 +90,7 @@ export const TabBar = externalizeComponent(
             {items.map((item, index) => (
               <Tab
                 key={item.id}
-                label={
-                  item.label.startsWith("common.") ? t(item.label) : item.label
-                }
+                label={item.label}
                 icon={item.icon}
                 iconPosition="start"
                 disableRipple
