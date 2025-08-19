@@ -1,6 +1,6 @@
 import type { GridColDef } from "@mui/x-data-grid"
 import type { Meta, StoryObj } from "@storybook/react"
-import { SearchableDataGrid } from "../src/components/SearchableDataGrid"
+import { WandelbotsDataGrid } from "../src/components/DataGrid"
 
 // Sample data types
 interface Program {
@@ -87,9 +87,9 @@ const sampleUsers: User[] = [
   },
 ]
 
-const meta: Meta<typeof SearchableDataGrid> = {
-  title: "SearchableDataGrid",
-  component: SearchableDataGrid,
+const meta: Meta<typeof WandelbotsDataGrid> = {
+  title: "Components/DataGrid",
+  component: WandelbotsDataGrid,
   tags: ["!dev"],
   parameters: {
     layout: "padded",
@@ -138,9 +138,6 @@ with advanced features like quick search, column filtering, and selection highli
     searchPlaceholder: {
       control: "text",
     },
-    backgroundColor: {
-      control: "color",
-    },
     selectFirstByDefault: {
       control: "boolean",
     },
@@ -151,7 +148,7 @@ with advanced features like quick search, column filtering, and selection highli
 }
 
 export default meta
-type Story = StoryObj<typeof SearchableDataGrid>
+type Story = StoryObj<typeof WandelbotsDataGrid>
 
 export const Default: Story = {
   render: (args) => {
@@ -192,7 +189,7 @@ export const Default: Story = {
 
     return (
       <div style={{ width: "100%", display: "flex", flexDirection: "column" }}>
-        <SearchableDataGrid<Program>
+        <WandelbotsDataGrid<Program>
           data={samplePrograms}
           columns={programColumns}
           getRowData={(program) => ({
@@ -218,7 +215,6 @@ export const Default: Story = {
           title={args.title}
           showCount={args.showCount}
           searchPlaceholder={args.searchPlaceholder}
-          backgroundColor={args.backgroundColor}
           selectFirstByDefault={args.selectFirstByDefault}
           dataGridProps={{
             initialState: {
@@ -235,17 +231,15 @@ export const Default: Story = {
     title: "Robot Programs",
     showCount: true,
     searchPlaceholder: "Search programs...",
-    backgroundColor: "rgba(255, 255, 255, 0.02)",
     selectFirstByDefault: true,
   },
   parameters: {
     docs: {
       description: {
         story: `
-Default interactive demo of the SearchableDataGrid component. 
+Default interactive demo of the DataGrid component. 
 
 **Try these features:**
-- **Background Color**: Use the background color picker to change the component background
 - **Auto Selection**: Toggle "selectFirstByDefault" to automatically select the first item
 - **Search**: Click the search icon and type to filter results
 - **Filter**: Click the filter icon to access advanced column filtering
@@ -307,7 +301,7 @@ export const UsersExample: Story = {
 
     return (
       <div style={{ width: "100%", display: "flex", flexDirection: "column" }}>
-        <SearchableDataGrid<User>
+        <WandelbotsDataGrid<User>
           data={sampleUsers}
           columns={userColumns}
           getRowData={(user) => ({
@@ -328,7 +322,6 @@ export const UsersExample: Story = {
           title={args.title}
           showCount={args.showCount}
           searchPlaceholder={args.searchPlaceholder}
-          backgroundColor={args.backgroundColor}
           selectFirstByDefault={args.selectFirstByDefault}
           dataGridProps={{
             initialState: {
@@ -345,14 +338,13 @@ export const UsersExample: Story = {
     title: "Users",
     showCount: true,
     searchPlaceholder: "Search users...",
-    backgroundColor: "rgba(255, 255, 255, 0.02)",
     selectFirstByDefault: true,
   },
   parameters: {
     docs: {
       description: {
         story: `
-Example showing the SearchableDataGrid with a different data type (Users).
+Example showing the DataGrid with a different data type (Users).
 
 **Features demonstrated:**
 - **Different Data Structure**: Shows how the component adapts to different data types
@@ -446,7 +438,7 @@ export const InScrollableContainer: Story = {
         </div>
 
         <div style={{ flex: 1, minHeight: 0 }}>
-          <SearchableDataGrid<Program>
+          <WandelbotsDataGrid<Program>
             data={extendedPrograms}
             columns={programColumns}
             getRowData={(program) => ({
@@ -488,7 +480,7 @@ export const InScrollableContainer: Story = {
     docs: {
       description: {
         story: `
-Example showing the SearchableDataGrid with fixed headers in a constrained container.
+Example showing the DataGrid with fixed headers in a constrained container.
 
 **Key features demonstrated:**
 - **Fixed Headers**: Column headers and toolbar remain visible while scrolling through data rows

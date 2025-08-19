@@ -19,7 +19,7 @@ import { observer } from "mobx-react-lite"
 import { useMemo, useState } from "react"
 import { externalizeComponent } from "../externalizeComponent"
 
-export interface SearchableDataGridProps<T = Record<string, unknown>> {
+export interface WandelbotsDataGridProps<T = Record<string, unknown>> {
   /**
    * Array of data items to display in the grid
    */
@@ -79,19 +79,13 @@ export interface SearchableDataGridProps<T = Record<string, unknown>> {
   CustomToolbar?: React.ComponentType
 
   /**
-   * Background color for the component
-   * @default "transparent"
-   */
-  backgroundColor?: string
-
-  /**
    * Select the first item by default
    * @default false
    */
   selectFirstByDefault?: boolean
 }
 
-export const SearchableDataGrid = externalizeComponent(
+export const WandelbotsDataGrid = externalizeComponent(
   observer(
     <T,>({
       data,
@@ -105,9 +99,8 @@ export const SearchableDataGrid = externalizeComponent(
       searchPlaceholder = "Search",
       dataGridProps,
       CustomToolbar,
-      backgroundColor = "transparent",
       selectFirstByDefault = false,
-    }: SearchableDataGridProps<T>) => {
+    }: WandelbotsDataGridProps<T>) => {
       // Internal state for selection when not controlled
       const [internalSelectedItem, setInternalSelectedItem] =
         useState<T | null>(null)
@@ -458,4 +451,4 @@ export const SearchableDataGrid = externalizeComponent(
   ),
 )
 
-SearchableDataGrid.displayName = "SearchableDataGrid"
+WandelbotsDataGrid.displayName = "WandelbotsDataGrid"
