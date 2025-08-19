@@ -1,7 +1,7 @@
 import { Button, Stack } from "@mui/material"
 import type { Meta, StoryObj } from "@storybook/react-vite"
 import { useState } from "react"
-import { LogPanel, LogStore } from "../src/index"
+import { LogPanel, type LogStore } from "../src/index"
 
 const meta: Meta<typeof LogPanel> = {
   title: "Components/LogPanel",
@@ -12,9 +12,8 @@ const meta: Meta<typeof LogPanel> = {
       description: {
         component: `A complete log panel component with built-in state management using MobX. 
 
-## Usage Examples
+## Usage
 
-### Simple Usage
 \`\`\`tsx
 function MyComponent() {
   const [logStore, setLogStore] = useState<LogStore>()
@@ -31,20 +30,6 @@ function MyComponent() {
 logStore?.addInfo("Operation completed successfully")
 logStore?.addError("Something went wrong")
 logStore?.addWarning("Warning message")
-\`\`\`
-
-### Usage with External Store
-\`\`\`tsx
-function MyApp() {
-  const logStore = useMemo(() => new LogStore(), [])
-
-  return (
-    <div>
-      <LogPanel store={logStore} height={300} />
-      <SomeOtherComponent onError={(msg) => logStore.addError(msg)} />
-    </div>
-  )
-}
 \`\`\``,
       },
     },
@@ -138,46 +123,6 @@ export const Interactive: StoryObj<typeof LogPanel> = {
       description: {
         story:
           "Interactive log panel with built-in state management. Use the buttons above to add different types of log messages. The component manages its own LogStore internally.",
-      },
-    },
-  },
-}
-
-export const WithExternalStore: StoryObj<typeof LogPanel> = {
-  render: (args) => {
-    const [store] = useState(() => {
-      const logStore = new LogStore()
-      // Pre-populate with some messages
-      logStore.addInfo("Wandelbots Nova application initialized")
-      logStore.addInfo("Connected to UR5e robot controller at 192.168.1.100")
-      logStore.addWarning("Robot battery level at 15% - consider charging")
-      logStore.addError("Failed to establish connection with safety PLC")
-      return logStore
-    })
-
-    const addMessage = () => {
-      store.addInfo(
-        `Motion sequence executed at ${new Date().toLocaleTimeString()}`,
-      )
-    }
-
-    return (
-      <Stack spacing={2} sx={{ width: 600 }}>
-        <Button variant="outlined" size="small" onClick={addMessage}>
-          Add Message to External Store
-        </Button>
-        <LogPanel {...args} store={store} />
-      </Stack>
-    )
-  },
-  args: {
-    height: 300,
-  },
-  parameters: {
-    docs: {
-      description: {
-        story:
-          "LogPanel using an external LogStore instance. This allows you to manage the log state from outside the component and share it between multiple components.",
       },
     },
   },

@@ -5,7 +5,14 @@ import {
   ExpandMore,
 } from "@mui/icons-material"
 import type { SxProps } from "@mui/material"
-import { Box, Button, IconButton, Paper, Typography } from "@mui/material"
+import {
+  Box,
+  Button,
+  IconButton,
+  Paper,
+  Typography,
+  useTheme,
+} from "@mui/material"
 import { observer } from "mobx-react-lite"
 import { useEffect, useRef, useState } from "react"
 import { externalizeComponent } from "../externalizeComponent"
@@ -37,6 +44,7 @@ export type LogViewerProps = {
 export const LogViewer = externalizeComponent(
   observer((props: LogViewerProps) => {
     const { messages = [], onClear, height = 400, sx } = props
+    const theme = useTheme()
     const scrollContainerRef = useRef<HTMLDivElement>(null)
 
     // Auto-scroll to bottom when new messages are added
@@ -67,12 +75,12 @@ export const LogViewer = externalizeComponent(
     const getMessageColor = (level: LogLevel) => {
       switch (level) {
         case "error":
-          return "var(--error-main, #EF5350)"
+          return theme.palette.error.main
         case "warning":
-          return "var(--warning-main, #FF9800)"
+          return theme.palette.warning.main
         case "info":
         default:
-          return "var(--text-secondary, #FFFFFFB2)"
+          return theme.palette.text.secondary
       }
     }
 
@@ -109,7 +117,7 @@ export const LogViewer = externalizeComponent(
             fontFamily: "monospace",
             flexDirection: "column",
             "&:hover": {
-              backgroundColor: "rgba(255, 255, 255, 0.03)",
+              backgroundColor: theme.palette.action.hover,
             },
             borderRadius: "4px",
             padding: "2px 4px",
@@ -125,7 +133,7 @@ export const LogViewer = externalizeComponent(
                 fontSize: "12px",
                 lineHeight: "18px",
                 letterSpacing: "0.4px",
-                color: "var(--text-disabled, #FFFFFF61)",
+                color: theme.palette.text.disabled,
                 whiteSpace: "nowrap",
                 flexShrink: 0,
               }}
@@ -168,9 +176,9 @@ export const LogViewer = externalizeComponent(
                 onClick={handleCopy}
                 sx={{
                   padding: "2px",
-                  color: "var(--text-secondary, #FFFFFFB2)",
+                  color: theme.palette.text.secondary,
                   "&:hover": {
-                    backgroundColor: "rgba(255, 255, 255, 0.08)",
+                    backgroundColor: theme.palette.action.hover,
                   },
                 }}
                 title={copyTooltip ? "Copied!" : "Copy message"}
@@ -184,9 +192,9 @@ export const LogViewer = externalizeComponent(
                   onClick={() => setIsExpanded(!isExpanded)}
                   sx={{
                     padding: "2px",
-                    color: "var(--text-secondary, #FFFFFFB2)",
+                    color: theme.palette.text.secondary,
                     "&:hover": {
-                      backgroundColor: "rgba(255, 255, 255, 0.08)",
+                      backgroundColor: theme.palette.action.hover,
                     },
                   }}
                   title={isExpanded ? "Collapse" : "Expand"}
@@ -207,7 +215,9 @@ export const LogViewer = externalizeComponent(
     return (
       <Paper
         sx={{
-          background: "var(--background-paper-elevation-2, #171927)",
+          backgroundColor:
+            theme.palette.backgroundPaperElevation?.[2] || "#171927",
+          backgroundImage: "none", // Override any gradient from elevation
           height,
           display: "flex",
           flexDirection: "column",
@@ -226,7 +236,11 @@ export const LogViewer = externalizeComponent(
         >
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
             <DocumentIcon
-              sx={{ fontSize: 16, color: "var(--text-secondary, #FFFFFFB2)" }}
+              sx={{
+                fontSize: 16,
+                color: theme.palette.action.active,
+                opacity: 0.56,
+              }}
             />
             <Typography
               sx={{
@@ -234,7 +248,7 @@ export const LogViewer = externalizeComponent(
                 fontSize: "14px",
                 lineHeight: "143%",
                 letterSpacing: "0.17px",
-                color: "var(--text-primary, #FFFFFF)",
+                color: theme.palette.text.primary,
               }}
             >
               Log
@@ -248,12 +262,12 @@ export const LogViewer = externalizeComponent(
               fontSize: "13px",
               lineHeight: "22px",
               letterSpacing: "0.46px",
-              color: "var(--primary-main, #8E56FC)",
+              color: theme.palette.primary.main,
               textTransform: "none",
               minWidth: "auto",
               padding: "4px 8px",
               "&:hover": {
-                backgroundColor: "rgba(142, 86, 252, 0.08)",
+                backgroundColor: theme.palette.primary.main + "14", // 8% opacity
               },
             }}
           >
@@ -276,7 +290,7 @@ export const LogViewer = externalizeComponent(
           {messages.length === 0 ? (
             <Typography
               sx={{
-                color: "var(--text-disabled, #FFFFFF61)",
+                color: theme.palette.text.disabled,
                 fontSize: "12px",
                 fontStyle: "italic",
                 textAlign: "center",

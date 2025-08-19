@@ -21,7 +21,6 @@ export type LogPanelProps = {
  *
  * @example
  * ```tsx
- * // Simple usage with automatic state management
  * function MyComponent() {
  *   const [logStore, setLogStore] = useState<LogStore>()
  *
@@ -37,21 +36,6 @@ export type LogPanelProps = {
  * logStore?.addInfo("Operation completed successfully")
  * logStore?.addError("Something went wrong")
  * logStore?.addWarning("Warning message")
- * ```
- *
- * @example
- * ```tsx
- * // Usage with external store for shared state
- * function MyApp() {
- *   const logStore = useMemo(() => new LogStore(), [])
- *
- *   return (
- *     <div>
- *       <LogPanel store={logStore} height={300} />
- *       <SomeOtherComponent onError={(msg) => logStore.addError(msg)} />
- *     </div>
- *   )
- * }
  * ```
  */
 export const LogPanel = externalizeComponent(
