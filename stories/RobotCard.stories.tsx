@@ -124,6 +124,20 @@ const meta: Meta = {
       ],
       description: "Robot model to display",
     },
+    onCycleTimerReady: {
+      action: "onCycleTimerReady",
+      description:
+        "Callback to receive cycle timer controls for external timer management",
+    },
+    onCycleEnd: {
+      action: "onCycleEnd",
+      description: "Callback fired when a cycle completes (reaches zero)",
+    },
+    cycleTimerAutoStart: {
+      control: "boolean",
+      description:
+        "Whether the cycle timer should auto-start when a new cycle is set",
+    },
   },
   args: {
     robotName: "UR5e Robot",
@@ -132,6 +146,7 @@ const meta: Meta = {
     operationMode: "OPERATION_MODE_AUTO",
     driveToHomeEnabled: true,
     modelFromController: "UniversalRobots_UR5e",
+    cycleTimerAutoStart: true,
   },
 }
 

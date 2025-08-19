@@ -1,12 +1,4 @@
-import {
-  Box,
-  Button,
-  Card,
-  Divider,
-  Typography,
-  useMediaQuery,
-  useTheme,
-} from "@mui/material"
+import { Box, Button, Card, Divider, Typography, useTheme } from "@mui/material"
 import { Bounds, useBounds } from "@react-three/drei"
 import { Canvas } from "@react-three/fiber"
 import type {
@@ -29,24 +21,17 @@ import { Robot } from "./robots/Robot"
 function BoundsRefresher({
   modelRenderTrigger,
   children,
-  isPortrait = false,
 }: {
   modelRenderTrigger: number
   children: React.ReactNode
-  isPortrait?: boolean
 }) {
   const bounds = useBounds()
 
   useEffect(() => {
     if (modelRenderTrigger > 0) {
-      // For portrait mode, use more aggressive fitting
-      if (isPortrait) {
-        bounds.refresh().clip().fit()
-      } else {
-        bounds.refresh().clip().fit()
-      }
+      bounds.refresh().clip().fit()
     }
-  }, [modelRenderTrigger, bounds, isPortrait])
+  }, [modelRenderTrigger, bounds])
 
   return <>{children}</>
 }
@@ -90,6 +75,17 @@ export interface RobotCardProps {
     autoStart?: boolean
     className?: string
   }>
+  /** Callback to receive cycle timer controls for external timer management */
+  onCycleTimerReady?: (controls: {
+    startNewCycle: (maxTimeSeconds: number, elapsedSeconds?: number) => void
+    pause: () => void
+    resume: () => void
+    isPaused: () => boolean
+  }) => void
+  /** Callback fired when a cycle completes (reaches zero) */
+  onCycleEnd?: () => void
+  /** Whether the cycle timer should auto-start when a new cycle is set */
+  cycleTimerAutoStart?: boolean
   /** Additional CSS class name */
   className?: string
 }
@@ -131,6 +127,9 @@ export const RobotCard = externalizeComponent(
       connectedMotionGroup,
       robotComponent: RobotComponent = Robot,
       cycleTimerComponent: CycleTimerComponent = CycleTimer,
+      onCycleTimerReady,
+      onCycleEnd,
+      cycleTimerAutoStart = true,
       className,
     }: RobotCardProps) => {
       const theme = useTheme()
@@ -146,9 +145,13 @@ export const RobotCard = externalizeComponent(
       }>({ width: 400, height: 600 })
       const [modelRenderTrigger, setModelRenderTrigger] = useState(0)
 
-      // Responsive breakpoints
-      const isExtraSmall = useMediaQuery(theme.breakpoints.down("sm"))
-      const isSmall = useMediaQuery(theme.breakpoints.down("md"))
+      // Store cycle timer controls for external control
+      const cycleControlsRef = useRef<{
+        startNewCycle: (maxTimeSeconds: number, elapsedSeconds?: number) => void
+        pause: () => void
+        resume: () => void
+        isPaused: () => boolean
+      } | null>(null)
 
       // Hook to detect aspect ratio and size changes
       useEffect(() => {
@@ -198,9 +201,9 @@ export const RobotCard = externalizeComponent(
         }
       }, [isDriveToHomePressed, onDriveToHomeRelease])
 
-      // Mock cycle timer controls for now
+      // Store and provide cycle timer controls for external use
       const handleCycleComplete = useCallback(
-        (_controls: {
+        (controls: {
           startNewCycle: (
             maxTimeSeconds: number,
             elapsedSeconds?: number,
@@ -209,10 +212,15 @@ export const RobotCard = externalizeComponent(
           resume: () => void
           isPaused: () => boolean
         }) => {
-          // TODO: Implement cycle timer integration if needed
-          // Controls are available here for future integration
+          // Store the controls for potential future use
+          cycleControlsRef.current = controls
+
+          // Notify parent component that timer controls are ready
+          if (onCycleTimerReady) {
+            onCycleTimerReady(controls)
+          }
         },
-        [],
+        [onCycleTimerReady],
       )
 
       // Determine if robot should be hidden at small sizes to save space
@@ -301,10 +309,7 @@ export const RobotCard = externalizeComponent(
                   >
                     <PresetEnvironment />
                     <Bounds fit clip observe margin={1}>
-                      <BoundsRefresher
-                        modelRenderTrigger={modelRenderTrigger}
-                        isPortrait={false}
-                      >
+                      <BoundsRefresher modelRenderTrigger={modelRenderTrigger}>
                         <group ref={robotRef} scale={robotScale}>
                           <RobotComponent
                             connectedMotionGroup={connectedMotionGroup}
@@ -375,6 +380,8 @@ export const RobotCard = externalizeComponent(
                         variant="small"
                         compact
                         onCycleComplete={handleCycleComplete}
+                        onCycleEnd={onCycleEnd}
+                        autoStart={cycleTimerAutoStart}
                       />
                     </Box>
 
@@ -484,7 +491,6 @@ export const RobotCard = externalizeComponent(
                       <Bounds fit observe margin={1}>
                         <BoundsRefresher
                           modelRenderTrigger={modelRenderTrigger}
-                          isPortrait={true}
                         >
                           <group ref={robotRef} scale={robotScale}>
                             <RobotComponent
@@ -516,6 +522,8 @@ export const RobotCard = externalizeComponent(
                     variant="small"
                     compact
                     onCycleComplete={handleCycleComplete}
+                    onCycleEnd={onCycleEnd}
+                    autoStart={cycleTimerAutoStart}
                   />
 
                   {/* Divider */}
