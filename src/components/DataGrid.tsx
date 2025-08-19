@@ -1,7 +1,7 @@
 import ClearIcon from "@mui/icons-material/Clear"
 import FilterListIcon from "@mui/icons-material/FilterList"
 import SearchIcon from "@mui/icons-material/Search"
-import { Box, Divider, Typography } from "@mui/material"
+import { Box, Divider, Typography, useTheme } from "@mui/material"
 import {
   DataGrid,
   type DataGridProps,
@@ -101,6 +101,8 @@ export const WandelbotsDataGrid = externalizeComponent(
       CustomToolbar,
       selectFirstByDefault = false,
     }: WandelbotsDataGridProps<T>) => {
+      const theme = useTheme()
+
       // Internal state for selection when not controlled
       const [internalSelectedItem, setInternalSelectedItem] =
         useState<T | null>(null)
@@ -276,7 +278,8 @@ export const WandelbotsDataGrid = externalizeComponent(
             height: "100%",
             display: "flex",
             flexDirection: "column",
-            background: "var(--background-paper-elevation-5, #202233)",
+            background:
+              theme.palette.backgroundPaperElevation?.[5] || "#202233",
           }}
         >
           <DataGrid
@@ -331,12 +334,13 @@ export const WandelbotsDataGrid = externalizeComponent(
               "& .MuiDataGrid-columnHeaders": {
                 border: "none",
                 borderBottom: "none !important",
-                backgroundColor: "var(--background-paper-elevation-5, #202233)",
+                backgroundColor:
+                  theme.palette.backgroundPaperElevation?.[5] || "#202233",
               },
               "& .MuiDataGrid-row": {
                 cursor: onRowClick ? "pointer" : "default",
                 border: "none",
-                margin: "0px 0",
+                margin: "1px 0",
                 position: "relative",
                 "&:hover": {
                   backgroundColor: "transparent !important",

@@ -58,9 +58,9 @@ export const RobotListItem = externalizeComponent(
         <Box
           className={className}
           sx={{
-            border:
-              "1px solid var(--secondary-_states-outlinedBorder, #FFFFFF1F)",
-            background: "var(--background-paper-elevation-8, #292B3E)",
+            border: `1px solid ${theme.palette.divider}`,
+            background:
+              theme.palette.backgroundPaperElevation?.[8] || "#292B3F",
             height: 80,
             minHeight: "80px",
             borderRadius: "8px",
@@ -90,10 +90,10 @@ export const RobotListItem = externalizeComponent(
                   width: 24,
                   height: 24,
                   "& svg": {
-                    fill: "var(--primary-main, #8E56FC) !important",
+                    fill: `${theme.palette.primary.main} !important`,
                   },
                   "& svg path": {
-                    fill: "var(--primary-main, #8E56FC) !important",
+                    fill: `${theme.palette.primary.main} !important`,
                   },
                 }}
               >

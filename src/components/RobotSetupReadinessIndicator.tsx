@@ -47,7 +47,7 @@ export const RobotSetupReadinessIndicator = externalizeComponent(
             backgroundColor:
               theme.palette.backgroundPaperElevation?.[11] ||
               theme.palette.background.paper,
-            textColor: "var(--secondary-contrast, #FFFFFFDE)",
+            textColor: theme.palette.secondary.contrastText,
           }
         case RobotSetupReadinessState.ROBOT_DISCONNECTED:
           return {
@@ -56,7 +56,7 @@ export const RobotSetupReadinessIndicator = externalizeComponent(
             backgroundColor:
               theme.palette.backgroundPaperElevation?.[11] ||
               theme.palette.background.paper,
-            textColor: "var(--secondary-contrast, #FFFFFFDE)",
+            textColor: theme.palette.secondary.contrastText,
           }
         case RobotSetupReadinessState.PRECONDITION_NOT_FULFILLED:
         default:
@@ -68,7 +68,7 @@ export const RobotSetupReadinessIndicator = externalizeComponent(
             backgroundColor:
               theme.palette.backgroundPaperElevation?.[11] ||
               theme.palette.background.paper,
-            textColor: "var(--secondary-contrast, #FFFFFFDE)",
+            textColor: theme.palette.secondary.contrastText,
           }
       }
     }

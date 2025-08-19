@@ -252,7 +252,6 @@ export const RobotCard = externalizeComponent(
         <Card
           ref={cardRef}
           className={className}
-          elevation={5}
           sx={{
             width: "100%",
             height: "100%",
@@ -264,10 +263,12 @@ export const RobotCard = externalizeComponent(
             minHeight: isLandscape
               ? { xs: 160, sm: 200, md: 250 }
               : { xs: 200, sm: 280, md: 350 },
-            border:
-              "1px solid var(--secondary-_states-outlinedBorder, #FFFFFF1F)",
+            border: `1px solid ${theme.palette.divider}`,
             borderRadius: "18px",
             boxShadow: "none",
+            backgroundColor:
+              theme.palette.backgroundPaperElevation?.[8] || "#2A2A3F",
+            backgroundImage: "none", // Override any gradient from elevation
           }}
         >
           {isLandscape ? (
@@ -367,7 +368,7 @@ export const RobotCard = externalizeComponent(
                       variant="body1"
                       sx={{
                         mb: 0,
-                        color: "var(--text-secondary, #FFFFFFB2)",
+                        color: theme.palette.text.secondary,
                         textAlign: "left",
                       }}
                     >
@@ -511,7 +512,7 @@ export const RobotCard = externalizeComponent(
                     variant="body1"
                     sx={{
                       mb: 0,
-                      color: "var(--text-secondary, #FFFFFFB2)",
+                      color: theme.palette.text.secondary,
                     }}
                   >
                     {t("RobotCard.Runtime.lb")}
