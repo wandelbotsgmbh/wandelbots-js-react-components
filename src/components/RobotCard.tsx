@@ -220,10 +220,15 @@ export const RobotCard = externalizeComponent(
       )
 
       // Determine if robot should be hidden at small sizes to save space
-      // Less aggressive hiding for portrait mode since robot is in center
       const shouldHideRobot = isLandscape
-        ? cardSize.width < 350 || cardSize.height < 250 // Aggressive for landscape
-        : cardSize.width < 250 || cardSize.height < 180 // Less aggressive for portrait
+        ? cardSize.width < 390 || cardSize.height < 250 // Hide robot when width < 390px in landscape
+        : cardSize.height < 350 // Hide robot at height < 200px in portrait
+
+      // Determine if runtime view should be hidden when height is too low
+      // Runtime should be hidden BEFORE the robot (at higher threshold)
+      const shouldHideRuntime = isLandscape
+        ? cardSize.height < 283 // Landscape: hide runtime at height < 283px
+        : cardSize.height < 450 // Portrait: hide runtime much earlier at height < 450px
 
       return (
         <Card
@@ -238,8 +243,8 @@ export const RobotCard = externalizeComponent(
             overflow: "hidden",
             minWidth: { xs: 180, sm: 220, md: 250 },
             minHeight: isLandscape
-              ? { xs: 160, sm: 200, md: 250 }
-              : { xs: 200, sm: 280, md: 350 },
+              ? { xs: 200, sm: 240, md: 260 } // Allow runtime hiding at < 283px
+              : { xs: 150, sm: 180, md: 220 }, // Allow progressive hiding in portrait mode
             border: `1px solid ${theme.palette.divider}`,
             borderRadius: "18px",
             boxShadow: "none",
@@ -336,42 +341,45 @@ export const RobotCard = externalizeComponent(
                     justifyContent: "space-between",
                   }}
                 >
-                  <Box>
-                    {/* Runtime display */}
-                    <Typography
-                      variant="body1"
-                      sx={{
-                        mb: 0,
-                        color: theme.palette.text.secondary,
-                        textAlign: "left",
-                      }}
-                    >
-                      {t("RobotCard.Runtime.lb")}
-                    </Typography>
+                  {/* Runtime view - hidden if height is too low in landscape mode */}
+                  {!shouldHideRuntime && (
+                    <Box>
+                      {/* Runtime display */}
+                      <Typography
+                        variant="body1"
+                        sx={{
+                          mb: 0,
+                          color: theme.palette.text.secondary,
+                          textAlign: "left",
+                        }}
+                      >
+                        {t("RobotCard.Runtime.lb")}
+                      </Typography>
 
-                    {/* Compact cycle time component directly below runtime */}
-                    <Box sx={{ textAlign: "left" }}>
-                      <CycleTimerComponent
-                        variant="small"
-                        compact
-                        onCycleComplete={handleCycleComplete}
-                        onCycleEnd={onCycleEnd}
-                        autoStart={cycleTimerAutoStart}
+                      {/* Compact cycle time component directly below runtime */}
+                      <Box sx={{ textAlign: "left" }}>
+                        <CycleTimerComponent
+                          variant="small"
+                          compact
+                          onCycleComplete={handleCycleComplete}
+                          onCycleEnd={onCycleEnd}
+                          autoStart={cycleTimerAutoStart}
+                        />
+                      </Box>
+
+                      {/* Divider */}
+                      <Divider
+                        sx={{
+                          mt: 1,
+                          mb: 0,
+                          borderColor: theme.palette.divider,
+                          opacity: 0.5,
+                        }}
                       />
                     </Box>
+                  )}
 
-                    {/* Divider */}
-                    <Divider
-                      sx={{
-                        mt: 1,
-                        mb: 0,
-                        borderColor: theme.palette.divider,
-                        opacity: 0.5,
-                      }}
-                    />
-                  </Box>
-
-                  <Box sx={{ mt: "auto" }}>
+                  <Box sx={{ mt: !shouldHideRuntime ? "auto" : 0 }}>
                     {/* Drive to Home button with some space */}
                     <Box
                       sx={{
@@ -474,42 +482,49 @@ export const RobotCard = externalizeComponent(
 
                 {/* Bottom section with runtime, cycle time, and button */}
                 <Box>
-                  {/* Runtime display */}
-                  <Typography
-                    variant="body1"
-                    sx={{
-                      mb: 0,
-                      color: theme.palette.text.secondary,
-                    }}
-                  >
-                    {t("RobotCard.Runtime.lb")}
-                  </Typography>
+                  {/* Runtime view - hidden based on shouldHideRuntime */}
+                  {!shouldHideRuntime && (
+                    <>
+                      {/* Runtime display */}
+                      <Typography
+                        variant="body1"
+                        sx={{
+                          mb: 0,
+                          color: theme.palette.text.secondary,
+                        }}
+                      >
+                        {t("RobotCard.Runtime.lb")}
+                      </Typography>
 
-                  {/* Compact cycle time component directly below runtime */}
-                  <CycleTimerComponent
-                    variant="small"
-                    compact
-                    onCycleComplete={handleCycleComplete}
-                    onCycleEnd={onCycleEnd}
-                    autoStart={cycleTimerAutoStart}
-                  />
+                      {/* Compact cycle time component directly below runtime */}
+                      <CycleTimerComponent
+                        variant="small"
+                        compact
+                        onCycleComplete={handleCycleComplete}
+                        onCycleEnd={onCycleEnd}
+                        autoStart={cycleTimerAutoStart}
+                      />
 
-                  {/* Divider */}
-                  <Divider
-                    sx={{
-                      mt: 1,
-                      mb: 0,
-                      borderColor: theme.palette.divider,
-                      opacity: 0.5,
-                    }}
-                  />
+                      {/* Divider */}
+                      <Divider
+                        sx={{
+                          mt: 1,
+                          mb: 0,
+                          borderColor: theme.palette.divider,
+                          opacity: 0.5,
+                        }}
+                      />
+                    </>
+                  )}
 
                   {/* Drive to Home button with some space */}
                   <Box
                     sx={{
                       display: "flex",
                       justifyContent: "flex-start",
-                      mt: { xs: 1, sm: 2, md: 5 },
+                      mt: !shouldHideRuntime
+                        ? { xs: 1, sm: 2, md: 5 }
+                        : { xs: 2, sm: 3, md: 4 }, // More margin when runtime is hidden
                       mb: { xs: 0.5, sm: 0.75, md: 1 },
                     }}
                   >
