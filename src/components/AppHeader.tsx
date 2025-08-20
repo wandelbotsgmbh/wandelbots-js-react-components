@@ -73,8 +73,8 @@ export const AppHeader = externalizeComponent(
 
     return (
       <>
-        <AppBar 
-          position="static" 
+        <AppBar
+          position="static"
           sx={{
             boxShadow: "none",
             backgroundImage: "none",

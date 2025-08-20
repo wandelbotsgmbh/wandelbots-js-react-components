@@ -328,6 +328,22 @@ export const LogViewer = externalizeComponent(
             display: "flex",
             flexDirection: "column",
             gap: "2px",
+            // Custom scrollbar styling to keep it consistently dark
+            scrollbarWidth: "thin",
+            scrollbarColor: `${theme.palette.divider} transparent`,
+            "&::-webkit-scrollbar": {
+              width: "6px",
+            },
+            "&::-webkit-scrollbar-track": {
+              background: "transparent",
+            },
+            "&::-webkit-scrollbar-thumb": {
+              backgroundColor: theme.palette.divider,
+              borderRadius: "3px",
+              "&:hover": {
+                backgroundColor: theme.palette.divider,
+              },
+            },
           }}
         >
           {messages.length === 0 ? (

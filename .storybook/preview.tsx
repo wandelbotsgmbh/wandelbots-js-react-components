@@ -10,12 +10,11 @@ const preview: Preview = {
       container: DocsContainer,
     },
 
-    // Force dark backgrounds
     backgrounds: {
       default: "dark",
       options: {
-        dark: { name: "Dark", value: "#141623" },
-        light: { name: "Light", value: "#ffffff" },
+        dark: { name: "dark", value: "#141623" },
+        light: { name: "light", value: "#ffffff" },
       },
     },
 
