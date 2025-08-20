@@ -83,6 +83,11 @@ export interface WandelbotsDataGridProps<T = Record<string, unknown>> {
    * @default false
    */
   selectFirstByDefault?: boolean
+
+  /**
+   * Custom sx styles for the root container
+   */
+  sx?: React.ComponentProps<typeof Box>["sx"]
 }
 
 export const WandelbotsDataGrid = externalizeComponent(
@@ -100,6 +105,7 @@ export const WandelbotsDataGrid = externalizeComponent(
       dataGridProps,
       CustomToolbar,
       selectFirstByDefault = false,
+      sx,
     }: WandelbotsDataGridProps<T>) => {
       const theme = useTheme()
 
@@ -278,8 +284,9 @@ export const WandelbotsDataGrid = externalizeComponent(
             height: "100%",
             display: "flex",
             flexDirection: "column",
-            background:
+            backgroundColor:
               theme.palette.backgroundPaperElevation?.[5] || "#202233",
+            ...sx, // Your custom styles will override the theme default
           }}
         >
           <DataGrid
@@ -321,9 +328,21 @@ export const WandelbotsDataGrid = externalizeComponent(
               border: "none",
               backgroundColor: "transparent",
               width: "100%",
+              // Remove any MUI overlays and elevation effects
+              "& .MuiPaper-root": {
+                backgroundColor: "transparent !important",
+                boxShadow: "none !important",
+              },
+              "& .MuiDataGrid-overlay": {
+                backgroundColor: "transparent !important",
+              },
               "& .MuiDataGrid-main": {
                 border: "none",
                 backgroundColor: "transparent",
+                // Remove any surface or paper overlays
+                "& .MuiPaper-root": {
+                  backgroundColor: "transparent !important",
+                },
               },
               "& .MuiDataGrid-container--top [role=row]": {
                 backgroundColor: "transparent !important",
@@ -410,6 +429,7 @@ export const WandelbotsDataGrid = externalizeComponent(
                 padding: "8px",
                 border: "none !important",
                 borderBottom: "none !important",
+                backgroundColor: "transparent !important",
                 "& .MuiBox-root": {
                   backgroundColor: "transparent !important",
                 },
@@ -418,6 +438,10 @@ export const WandelbotsDataGrid = externalizeComponent(
                 },
                 "& .MuiInputBase-root": {
                   backgroundColor: "transparent !important",
+                },
+                "& .MuiPaper-root": {
+                  backgroundColor: "transparent !important",
+                  boxShadow: "none !important",
                 },
                 "& *": {
                   borderBottom: "none !important",
@@ -444,7 +468,15 @@ export const WandelbotsDataGrid = externalizeComponent(
                 borderBottom: "none !important",
                 borderLeft: "none !important",
                 borderRight: "none !important",
+                backgroundColor: "transparent !important",
                 "--rowBorderColor": "none !important",
+              },
+              // Remove any remaining MUI background overlays
+              "& .MuiBackdrop-root": {
+                backgroundColor: "transparent !important",
+              },
+              "& .MuiModal-backdrop": {
+                backgroundColor: "transparent !important",
               },
               ...dataGridProps?.sx,
             }}
