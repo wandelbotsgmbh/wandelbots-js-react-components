@@ -13,10 +13,10 @@ const preview: Preview = {
     // Force dark backgrounds
     backgrounds: {
       default: "dark",
-      values: [
-        { name: "dark", value: "#121212" },
-        { name: "light", value: "#ffffff" },
-      ],
+      options: {
+        dark: { name: "Dark", value: "#141623" },
+        light: { name: "Light", value: "#ffffff" },
+      },
     },
 
     options: {
