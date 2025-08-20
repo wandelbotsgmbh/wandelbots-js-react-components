@@ -39,6 +39,7 @@ The component automatically determines the appropriate state to display based on
         ProgramState.RUNNING,
         ProgramState.PAUSED,
         ProgramState.STOPPING,
+        ProgramState.ERROR,
       ],
       description: "The current state of the program execution",
       table: {

@@ -71,6 +71,7 @@ const meta: Meta = {
         ProgramState.RUNNING,
         ProgramState.PAUSED,
         ProgramState.STOPPING,
+        ProgramState.ERROR,
       ],
       description: "The current state of the program execution",
     },

@@ -92,6 +92,11 @@ export const ProgramStateIndicator = externalizeComponent(
                 label: t("ProgramStateIndicator.Stopped.lb"),
                 color: theme.palette.error.main,
               }
+            case ProgramState.ERROR:
+              return {
+                label: t("ProgramStateIndicator.Error.lb"),
+                color: theme.palette.error.main,
+              }
             case ProgramState.IDLE:
             default:
               return {

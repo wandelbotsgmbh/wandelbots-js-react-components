@@ -18,11 +18,12 @@ const meta: Meta<typeof ProgramControl> = {
         ProgramState.RUNNING,
         ProgramState.PAUSED,
         ProgramState.STOPPING,
+        ProgramState.ERROR,
       ],
       description: "The current state of the program control",
       table: {
         type: {
-          summary: "'idle' | 'running' | 'paused' | 'stopping'",
+          summary: "'idle' | 'running' | 'paused' | 'stopping' | 'error'",
         },
       },
     },

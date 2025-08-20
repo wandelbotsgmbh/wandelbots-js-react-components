@@ -50,6 +50,7 @@
   "CycleTimer.Time.lb": "{{time}} min.",
   "ProgramControl.Start.bt": "Start",
   "ProgramControl.Resume.bt": "Resume",
+  "ProgramControl.Retry.bt": "Retry",
   "ProgramControl.Pause.bt": "Pause",
   "ProgramControl.Stop.bt": "Stop",
   "ProgramStateIndicator.Running.lb": "Running",

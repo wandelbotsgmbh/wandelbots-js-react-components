@@ -9,6 +9,7 @@ export enum ProgramState {
   RUNNING = "running",
   PAUSED = "paused",
   STOPPING = "stopping",
+  ERROR = "error",
 }
 
 export interface ProgramControlProps {
@@ -51,7 +52,7 @@ interface ButtonConfig {
  * A control component for program execution with run, pause, and stop functionality.
  *
  * Features:
- * - State machine with idle, running, paused, and stopping states
+ * - State machine with idle, running, paused, stopping, and error states
  * - Two variants: with_pause (3 buttons) and without_pause (2 buttons)
  * - Optional manual reset functionality
  * - Responsive design with 110px circular buttons
@@ -76,11 +77,15 @@ export const ProgramControl = externalizeComponent(
         const baseConfigs: Record<string, ButtonConfig> = {
           run: {
             enabled:
-              state === ProgramState.IDLE || state === ProgramState.PAUSED,
+              state === ProgramState.IDLE ||
+              state === ProgramState.PAUSED ||
+              state === ProgramState.ERROR,
             label:
               state === ProgramState.PAUSED
                 ? t("ProgramControl.Resume.bt")
-                : t("ProgramControl.Start.bt"),
+                : state === ProgramState.ERROR
+                  ? t("ProgramControl.Retry.bt")
+                  : t("ProgramControl.Start.bt"),
             color: theme.palette.success.main,
             onClick: onRun,
           },
