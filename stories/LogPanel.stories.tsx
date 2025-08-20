@@ -30,6 +30,7 @@ function MyComponent() {
 logStore?.addInfo("Operation completed successfully")
 logStore?.addError("Something went wrong")
 logStore?.addWarning("Warning message")
+logStore?.addDebug("Debug information")
 \`\`\``,
       },
     },
@@ -81,6 +82,12 @@ export const Interactive: StoryObj<typeof LogPanel> = {
       )
     }
 
+    const addDebugMessage = () => {
+      logStore?.addDebug(
+        `Debug: Function called with parameters {id: ${Math.floor(Math.random() * 1000)}, timestamp: ${new Date().toISOString()}}`,
+      )
+    }
+
     return (
       <Stack spacing={2} sx={{ width: 600 }}>
         <Stack direction="row" spacing={1}>
@@ -110,6 +117,15 @@ export const Interactive: StoryObj<typeof LogPanel> = {
           >
             Add Error
           </Button>
+          <Button
+            variant="outlined"
+            size="small"
+            onClick={addDebugMessage}
+            disabled={!logStore}
+            sx={{ color: "text.disabled", borderColor: "text.disabled" }}
+          >
+            Add Debug
+          </Button>
         </Stack>
         <LogPanel {...args} onStoreReady={handleStoreReady} />
       </Stack>
@@ -133,11 +149,17 @@ export const DefaultHeight: StoryObj<typeof LogPanel> = {
     const handleStoreReady = (store: LogStore) => {
       // Add some sample messages
       store.addInfo("Nova client initialized and connected to robot controller")
+      store.addDebug(
+        "Connection parameters: {host: '192.168.1.100', port: 8080, timeout: 5000}",
+      )
       store.addWarning(
         "Joint 3 approaching velocity limit - reducing speed to 80%",
       )
       store.addError(
         "Safety zone violation detected - emergency stop triggered",
+      )
+      store.addDebug(
+        "Error context: {zone_id: 'SZ_001', tcp_position: [245.67, -123.45, 378.90]}",
       )
     }
 
@@ -163,10 +185,21 @@ export const ScrollingExample: StoryObj<typeof LogPanel> = {
       setLogStore(store)
       // Pre-populate with many messages to demonstrate scrolling
       for (let i = 1; i <= 50; i++) {
-        const level = i % 7 === 0 ? "error" : i % 3 === 0 ? "warning" : "info"
+        const level =
+          i % 10 === 0
+            ? "debug"
+            : i % 7 === 0
+              ? "error"
+              : i % 3 === 0
+                ? "warning"
+                : "info"
         const timestamp = new Date(Date.now() - (50 - i) * 1000)
 
-        if (level === "error") {
+        if (level === "debug") {
+          store.addDebug(
+            `Debug trace #${i}: Function robotController.getJointPositions() returned [${(i * 15) % 180}, ${(i * 20) % 180}, ${(i * 25) % 180}, ${(i * 30) % 180}, ${(i * 35) % 180}, ${(i * 40) % 180}] in ${(i % 10) + 1}ms`,
+          )
+        } else if (level === "error") {
           store.addError(
             `Robot motion error #${i}: Joint ${(i % 6) + 1} position feedback timeout. Communication with servo drive lost. Check encoder cables and power supply connections. Recovery requires manual joint reset procedure.`,
           )
@@ -208,10 +241,11 @@ export const ScrollingExample: StoryObj<typeof LogPanel> = {
         "Program execution paused - awaiting operator confirmation",
       ]
 
-      const levels: Array<"info" | "warning" | "error"> = [
+      const levels: Array<"info" | "warning" | "error" | "debug"> = [
         "info",
         "warning",
         "error",
+        "debug",
       ]
       const randomMessage =
         messages[Math.floor(Math.random() * messages.length)]

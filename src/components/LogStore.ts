@@ -37,4 +37,8 @@ export class LogStore {
   addError = (message: string) => {
     this.addMessage(message, "error")
   }
+
+  addDebug = (message: string) => {
+    this.addMessage(message, "debug")
+  }
 }

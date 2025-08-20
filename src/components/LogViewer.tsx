@@ -17,7 +17,7 @@ import { observer } from "mobx-react-lite"
 import { useEffect, useRef, useState } from "react"
 import { externalizeComponent } from "../externalizeComponent"
 
-export type LogLevel = "info" | "error" | "warning"
+export type LogLevel = "info" | "error" | "warning" | "debug"
 
 export type LogMessage = {
   id: string
@@ -36,6 +36,46 @@ export type LogViewerProps = {
   /** Additional styles */
   sx?: SxProps
 }
+
+/**
+ * Utility function to create a log message
+ */
+export const createLogMessage = (
+  message: string,
+  level: LogLevel,
+  id?: string,
+): LogMessage => ({
+  id: id || `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+  timestamp: new Date(),
+  message,
+  level,
+})
+
+/**
+ * Utility function to create a debug log message
+ */
+export const createDebugMessage = (message: string, id?: string): LogMessage =>
+  createLogMessage(message, "debug", id)
+
+/**
+ * Utility function to create an info log message
+ */
+export const createInfoMessage = (message: string, id?: string): LogMessage =>
+  createLogMessage(message, "info", id)
+
+/**
+ * Utility function to create a warning log message
+ */
+export const createWarningMessage = (
+  message: string,
+  id?: string,
+): LogMessage => createLogMessage(message, "warning", id)
+
+/**
+ * Utility function to create an error log message
+ */
+export const createErrorMessage = (message: string, id?: string): LogMessage =>
+  createLogMessage(message, "error", id)
 
 /**
  * A log viewer component that displays timestamped log messages with different levels.
@@ -79,6 +119,9 @@ export const LogViewer = externalizeComponent(
         case "warning":
           return theme.palette.warning.main
         case "info":
+          return theme.palette.info.main
+        case "debug":
+          return theme.palette.text.disabled
         default:
           return theme.palette.text.secondary
       }
