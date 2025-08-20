@@ -221,14 +221,14 @@ export const RobotCard = externalizeComponent(
 
       // Determine if robot should be hidden at small sizes to save space
       const shouldHideRobot = isLandscape
-        ? cardSize.width < 390 || cardSize.height < 250 // Hide robot when width < 390px in landscape
-        : cardSize.height < 350 // Hide robot at height < 200px in portrait
+        ? cardSize.width < 350
+        : cardSize.height < 200 // Hide robot at height < 200px in portrait
 
       // Determine if runtime view should be hidden when height is too low
       // Runtime should be hidden BEFORE the robot (at higher threshold)
       const shouldHideRuntime = isLandscape
-        ? cardSize.height < 283 // Landscape: hide runtime at height < 283px
-        : cardSize.height < 450 // Portrait: hide runtime much earlier at height < 450px
+        ? cardSize.height < 350 // Landscape: hide runtime at height < 350px
+        : cardSize.height < 450 // Portrait: hide runtime at height < 450px
 
       return (
         <Card
@@ -292,7 +292,7 @@ export const RobotCard = externalizeComponent(
                     gl={{ alpha: true, antialias: true }}
                   >
                     <PresetEnvironment />
-                    <Bounds fit clip observe margin={1}>
+                    <Bounds fit observe margin={1} maxDuration={0}>
                       <RobotComponent
                         connectedMotionGroup={connectedMotionGroup}
                         postModelRender={handleModelRender}
@@ -470,7 +470,7 @@ export const RobotCard = externalizeComponent(
                       gl={{ alpha: true, antialias: true }}
                     >
                       <PresetEnvironment />
-                      <Bounds fit clip observe margin={1}>
+                      <Bounds fit clip observe margin={1} maxDuration={0}>
                         <RobotComponent
                           connectedMotionGroup={connectedMotionGroup}
                           postModelRender={handleModelRender}
@@ -482,7 +482,7 @@ export const RobotCard = externalizeComponent(
 
                 {/* Bottom section with runtime, cycle time, and button */}
                 <Box>
-                  {/* Runtime view - hidden based on shouldHideRuntime */}
+                  {/* Runtime view - hidden if height is too low */}
                   {!shouldHideRuntime && (
                     <>
                       {/* Runtime display */}
@@ -524,7 +524,7 @@ export const RobotCard = externalizeComponent(
                       justifyContent: "flex-start",
                       mt: !shouldHideRuntime
                         ? { xs: 1, sm: 2, md: 5 }
-                        : { xs: 2, sm: 3, md: 4 }, // More margin when runtime is hidden
+                        : { xs: 0.5, sm: 1, md: 2 },
                       mb: { xs: 0.5, sm: 0.75, md: 1 },
                     }}
                   >
