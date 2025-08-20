@@ -1,18 +1,18 @@
 import { Home, Person, Settings, Work } from "@mui/icons-material"
 import { Box, Card, CardContent, Grid, Typography } from "@mui/material"
 import type { Meta, StoryObj } from "@storybook/react"
-import { type AppItem, AppTopBar } from "../src/components/AppTopBar"
+import { AppHeader, type AppItem } from "../src/components/AppHeader"
 
-const meta: Meta<typeof AppTopBar> = {
-  title: "Components/AppTopBar",
-  component: AppTopBar,
+const meta: Meta<typeof AppHeader> = {
+  title: "Navigation/AppHeader",
+  component: AppHeader,
   tags: ["!dev"],
   parameters: {
     layout: "fullscreen",
     docs: {
       description: {
         component:
-          "A top navigation bar component that displays the current app and provides a dropdown menu to navigate to other apps. Features a blur backdrop when the dropdown is open.",
+          "A top navigation header component that displays the current app and provides a dropdown menu to navigate to other apps. Features a blur backdrop when the dropdown is open.",
       },
     },
   },
@@ -41,7 +41,7 @@ const meta: Meta<typeof AppTopBar> = {
 }
 
 export default meta
-type Story = StoryObj<typeof AppTopBar>
+type Story = StoryObj<typeof AppHeader>
 
 const sampleApps: AppItem[] = [
   {
@@ -80,7 +80,7 @@ export const Interactive: Story = {
     docs: {
       description: {
         story:
-          "Interactive example showing the app top bar with a dropdown menu. Click the dropdown arrow to see the available apps. The background will blur when the menu is open.",
+          "Interactive example showing the app header with a dropdown menu. Click the dropdown arrow to see the available apps. The background will blur when the menu is open.",
       },
     },
   },
@@ -96,7 +96,7 @@ export const WithoutDropdown: Story = {
     docs: {
       description: {
         story:
-          "App top bar without dropdown menu when no other apps are available.",
+          "App header without dropdown menu when no other apps are available.",
       },
     },
   },
@@ -125,7 +125,7 @@ export const WithFullPageContext: Story = {
   },
   render: (args) => (
     <Box sx={{ minHeight: "100vh", backgroundColor: "#1F2233" }}>
-      <AppTopBar {...args} />
+      <AppHeader {...args} />
       <Box sx={{ p: 3 }}>
         <Typography variant="h4" gutterBottom sx={{ color: "white" }}>
           Welcome to Robot Control Studio
@@ -134,7 +134,7 @@ export const WithFullPageContext: Story = {
           variant="body1"
           sx={{ mb: 3, color: "rgba(255, 255, 255, 0.7)" }}
         >
-          This is a full page example showing how the AppTopBar looks in a real
+          This is a full page example showing how the AppHeader looks in a real
           application context. Click the dropdown arrow to see the blur backdrop
           effect over the page content.
         </Typography>
@@ -185,7 +185,7 @@ export const WithFullPageContext: Story = {
                   variant="body2"
                   sx={{ color: "rgba(255, 255, 255, 0.7)" }}
                 >
-                  This dummy content demonstrates how the AppTopBar integrates
+                  This dummy content demonstrates how the AppHeader integrates
                   with a full application layout. The blur backdrop effect
                   becomes visible when you open the app selection dropdown menu,
                   providing focus on the navigation options while keeping the
@@ -202,7 +202,7 @@ export const WithFullPageContext: Story = {
     docs: {
       description: {
         story:
-          "Full page example showing the AppTopBar in a realistic application context with dummy content. " +
+          "Full page example showing the AppHeader in a realistic application context with dummy content. " +
           "This demonstrates the blur backdrop effect when the dropdown menu is opened.",
       },
     },

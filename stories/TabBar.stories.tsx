@@ -21,7 +21,7 @@ import type { Meta, StoryObj } from "@storybook/react"
 import { TabBar } from "../src/index"
 
 const meta: Meta<typeof TabBar> = {
-  title: "Components/TabBar",
+  title: "Navigation/TabBar",
   component: TabBar,
   tags: ["!dev"],
   parameters: {

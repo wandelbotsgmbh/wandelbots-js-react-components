@@ -1,6 +1,6 @@
-# AppTopBar Component
+# AppHeader Component
 
-A navigation bar component that displays the current application's icon and name, with an optional dropdown menu for switching between different applications.
+A navigation header component that displays the current application's icon and name, with an optional dropdown menu for switching between different applications.
 
 ## Features
 
@@ -14,7 +14,7 @@ A navigation bar component that displays the current application's icon and name
 
 ```tsx
 import {
-  AppTopBar,
+  AppHeader,
   type AppItem,
 } from "@wandelbots/wandelbots-js-react-components"
 import { Home, Settings, Person } from "@mui/icons-material"
@@ -36,7 +36,7 @@ const apps: AppItem[] = [
 
 function MyApp() {
   return (
-    <AppTopBar
+    <AppHeader
       appIcon={<Person />}
       appName="Robot Control Studio"
       apps={apps}
@@ -48,7 +48,7 @@ function MyApp() {
 
 ## Props
 
-### AppTopBarProps
+### AppHeaderProps
 
 - **appIcon** (`ReactNode`): Icon component for the current application
 - **appName** (`string`): Display name of the current application

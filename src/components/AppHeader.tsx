@@ -28,7 +28,7 @@ export type AppItem = {
   onClick?: () => void
 }
 
-export type AppTopBarProps = {
+export type AppHeaderProps = {
   /** Current app icon */
   appIcon: ReactNode
   /** Current app name */
@@ -42,11 +42,11 @@ export type AppTopBarProps = {
 }
 
 /**
- * A top navigation bar component that displays the current app and provides
+ * A top navigation header component that displays the current app and provides
  * a dropdown menu to navigate to other apps.
  */
-export const AppTopBar = externalizeComponent(
-  observer((props: AppTopBarProps) => {
+export const AppHeader = externalizeComponent(
+  observer((props: AppHeaderProps) => {
     const { appIcon, appName, apps = [], onAppSelect, sx } = props
     const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
     const isMenuOpen = Boolean(anchorEl)
@@ -73,7 +73,18 @@ export const AppTopBar = externalizeComponent(
 
     return (
       <>
-        <AppBar position="static" sx={sx}>
+        <AppBar 
+          position="static" 
+          sx={{
+            boxShadow: "none",
+            backgroundImage: "none",
+            "& .MuiAppBar-root": {
+              backgroundImage: "none",
+              backgroundColor: "transparent",
+            },
+            ...sx,
+          }}
+        >
           <Toolbar sx={{ minHeight: "64px !important" }}>
             {/* App Icon */}
             <Box sx={{ mr: 2, display: "flex", alignItems: "center" }}>
