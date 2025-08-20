@@ -65,7 +65,7 @@ export interface WandelbotsDataGridProps<T = Record<string, unknown>> {
 
   /**
    * Placeholder text for the search input
-   * @default "Search"
+   * @default "Search programs"
    */
   searchPlaceholder?: string
 
@@ -102,7 +102,7 @@ export const WandelbotsDataGrid = externalizeComponent(
       getItemId,
       title,
       showCount = true,
-      searchPlaceholder = "Search",
+      searchPlaceholder = "Search programs",
       dataGridProps,
       CustomToolbar,
       selectFirstByDefault = false,
@@ -185,7 +185,7 @@ export const WandelbotsDataGrid = externalizeComponent(
                 display: "flex",
                 width: "100%",
                 gap: 1,
-                p: 1,
+                p: 0.5,
                 alignItems: "center",
               }}
             >
@@ -205,8 +205,9 @@ export const WandelbotsDataGrid = externalizeComponent(
                 sx={{
                   ml: "auto",
                   display: "flex",
-                  gap: 1,
+                  gap: 0.5,
                   alignItems: "center",
+                  pr: 1,
                 }}
               >
                 <FilterPanelTrigger
@@ -233,12 +234,7 @@ export const WandelbotsDataGrid = externalizeComponent(
                         overflow: "hidden",
                       }}
                     >
-                      <Box
-                        sx={{
-                          borderRadius: state.expanded ? "4px 0 0 4px" : "4px",
-                          borderRight: state.expanded ? "none" : undefined,
-                        }}
-                      >
+                      {!state.expanded && (
                         <QuickFilterTrigger
                           render={
                             <ToolbarButton aria-label="Search">
@@ -246,36 +242,147 @@ export const WandelbotsDataGrid = externalizeComponent(
                             </ToolbarButton>
                           }
                         />
-                      </Box>
+                      )}
                       <Box
                         sx={{
                           display: "flex",
                           overflow: "hidden",
                           transition: "all 0.3s ease-in-out",
-                          width: state.expanded ? "192px" : "0px",
+                          width: state.expanded ? "200px" : "0px",
+                          position: "relative",
                         }}
                       >
                         <Box
                           sx={{
                             flex: 1,
+                            position: "relative",
                             "& .MuiInputBase-root": {
                               height: "32px",
-                              borderRadius:
+                              borderRadius: "16px",
+                              backgroundColor: "#171927",
+                              paddingLeft: "40px",
+                              paddingRight:
                                 state.expanded && state.value !== ""
-                                  ? "0"
-                                  : "0 4px 4px 0",
+                                  ? "40px"
+                                  : "12px",
+                              color: "white",
+                              fontSize: "14px",
+                              border: "none !important",
+                              outline: "none !important",
+                              boxShadow: "none !important",
+                              "&::before": {
+                                display: "none !important",
+                                border: "none !important",
+                              },
+                              "&::after": {
+                                display: "none !important",
+                                border: "none !important",
+                              },
+                              "&:hover": {
+                                "&::before": {
+                                  display: "none !important",
+                                  border: "none !important",
+                                },
+                                "&::after": {
+                                  display: "none !important",
+                                  border: "none !important",
+                                },
+                              },
+                              "&:focus-within": {
+                                outline: "none !important",
+                                boxShadow: "none !important",
+                                "&::before": {
+                                  display: "none !important",
+                                  border: "none !important",
+                                },
+                                "&::after": {
+                                  display: "none !important",
+                                  border: "none !important",
+                                },
+                              },
+                              "&.Mui-focused": {
+                                outline: "none !important",
+                                boxShadow: "none !important",
+                                "&::before": {
+                                  display: "none !important",
+                                  border: "none !important",
+                                },
+                                "&::after": {
+                                  display: "none !important",
+                                  border: "none !important",
+                                },
+                              },
+                              "& .MuiInputBase-input": {
+                                padding: "8px 0",
+                                border: "none !important",
+                                outline: "none !important",
+                                boxShadow: "none !important",
+                                "&:focus": {
+                                  outline: "none !important",
+                                  boxShadow: "none !important",
+                                  border: "none !important",
+                                },
+                                "&::placeholder": {
+                                  color: "rgba(255, 255, 255, 0.3)",
+                                  opacity: 1,
+                                },
+                              },
+                              "& fieldset": {
+                                border: "none !important",
+                                display: "none !important",
+                              },
+                              "& .MuiOutlinedInput-notchedOutline": {
+                                border: "none !important",
+                                display: "none !important",
+                              },
                             },
                           }}
                         >
+                          {state.expanded && (
+                            <SearchIcon
+                              fontSize="small"
+                              sx={{
+                                position: "absolute",
+                                left: "12px",
+                                top: "50%",
+                                transform: "translateY(-50%)",
+                                color: "rgba(255, 255, 255, 0.6)",
+                                zIndex: 1,
+                                pointerEvents: "none",
+                              }}
+                            />
+                          )}
                           <QuickFilterControl placeholder={searchPlaceholder} />
                         </Box>
                         {state.expanded && state.value !== "" && (
                           <QuickFilterClear
                             render={
-                              <Box sx={{ borderRadius: "0 4px 4px 0" }}>
-                                <ToolbarButton aria-label="Clear">
-                                  <ClearIcon fontSize="small" />
-                                </ToolbarButton>
+                              <Box
+                                sx={{
+                                  position: "absolute",
+                                  right: "8px",
+                                  top: "50%",
+                                  transform: "translateY(-50%)",
+                                  zIndex: 1,
+                                }}
+                              >
+                                <Box
+                                  sx={{
+                                    minWidth: "24px",
+                                    width: "24px",
+                                    height: "24px",
+                                    padding: 0,
+                                    color: "rgba(255, 255, 255, 0.6)",
+                                    "&:hover": {
+                                      backgroundColor:
+                                        "rgba(255, 255, 255, 0.1)",
+                                    },
+                                  }}
+                                >
+                                  <ToolbarButton aria-label="Clear">
+                                    <ClearIcon fontSize="small" />
+                                  </ToolbarButton>
+                                </Box>
                               </Box>
                             }
                           />
@@ -298,6 +405,33 @@ export const WandelbotsDataGrid = externalizeComponent(
             height: "100%",
             display: "flex",
             flexDirection: "column",
+            // Apply scrollbar styling like in the theme
+            "& *": {
+              scrollbarWidth: "none",
+              msOverflowStyle: "none",
+              "&::-webkit-scrollbar": {
+                display: "none",
+              },
+            },
+            "&:hover *": {
+              scrollbarWidth: "thin",
+              scrollbarColor: `${theme.palette.divider} transparent`,
+              "&::-webkit-scrollbar": {
+                display: "block",
+                width: "8px",
+                height: "8px",
+              },
+              "&::-webkit-scrollbar-track": {
+                background: "transparent",
+              },
+              "&::-webkit-scrollbar-thumb": {
+                background: theme.palette.divider,
+                borderRadius: "4px",
+              },
+              "&::-webkit-scrollbar-thumb:hover": {
+                background: theme.palette.action.hover,
+              },
+            },
             ...sx,
           }}
         >
@@ -371,7 +505,10 @@ export const WandelbotsDataGrid = externalizeComponent(
                 border: "none",
                 margin: "1px 0",
                 position: "relative",
+                // Disable all default MUI hover effects
+                backgroundColor: "transparent !important",
                 "&:hover": {
+                  backgroundColor: "transparent !important",
                   "&::before": {
                     content: '""',
                     position: "absolute",
@@ -386,11 +523,15 @@ export const WandelbotsDataGrid = externalizeComponent(
                 },
                 // Disable MUI's built-in selection styling completely
                 "&.Mui-selected": {
-                  "&:hover": {},
+                  backgroundColor: "transparent !important",
+                  "&:hover": {
+                    backgroundColor: "transparent !important",
+                  },
                 },
                 // Highlight selected row with a distinct color using data attribute
                 ...(selectedRowId !== null && {
                   [`&[data-id="${selectedRowId}"]`]: {
+                    backgroundColor: "transparent !important",
                     "&::before": {
                       content: '""',
                       position: "absolute",
@@ -401,6 +542,9 @@ export const WandelbotsDataGrid = externalizeComponent(
                       backgroundColor: "rgba(255, 255, 255, 0.08) !important",
                       borderRadius: "16px",
                       zIndex: 0,
+                    },
+                    "&:hover": {
+                      backgroundColor: "transparent !important",
                     },
                     "&:hover::before": {
                       backgroundColor: "rgba(255, 255, 255, 0.12) !important",
@@ -420,6 +564,9 @@ export const WandelbotsDataGrid = externalizeComponent(
                 },
                 "&:focus-within": {
                   outline: "none",
+                },
+                "&:hover": {
+                  backgroundColor: "transparent !important",
                 },
               },
               "& .MuiDataGrid-columnHeader": {
