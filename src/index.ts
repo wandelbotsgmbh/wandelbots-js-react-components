@@ -20,6 +20,11 @@ export * from "./components/ProgramStateIndicator"
 export * from "./components/RobotCard"
 export * from "./components/RobotListItem"
 export * from "./components/robots/AxisConfig"
+export {
+  extractManufacturer,
+  getDefaultHomeConfig,
+  MANUFACTURER_HOME_CONFIGS,
+} from "./components/robots/manufacturerHomePositions"
 export * from "./components/robots/Robot"
 export { defaultGetModel } from "./components/robots/robotModelLogic"
 export * from "./components/robots/SupportedRobot"

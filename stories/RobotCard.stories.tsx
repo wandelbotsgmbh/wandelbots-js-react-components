@@ -8,6 +8,7 @@ import type {
 } from "@wandelbots/nova-js/v1"
 import { ProgramState } from "../src/components/ProgramControl"
 import { RobotCard } from "../src/components/RobotCard"
+import { getDefaultHomeConfig } from "../src/components/robots/manufacturerHomePositions"
 import { Robot } from "../src/components/robots/Robot"
 import { rapidlyChangingMotionState } from "./robots/motionState"
 import { getDHParams } from "./robots/robotStoryConfig"
@@ -22,9 +23,23 @@ function RobotCardWithMockConnectedMotionGroup(
     dhParameters?: DHParameter[]
   },
 ) {
+  // Get manufacturer-specific default joint config
+  const defaultJointConfig = getDefaultHomeConfig(props.modelFromController)
+
+  // Create custom motion state with manufacturer-specific joint positions
+  const customMotionState = {
+    ...rapidlyChangingMotionState,
+    state: {
+      ...rapidlyChangingMotionState.state,
+      joint_position: {
+        joints: defaultJointConfig || [0, 0, 0, 0, 0, 0],
+      },
+    },
+  }
+
   // Create the mock ConnectedMotionGroup with reactive properties
   const mockConnectedMotionGroup = {
-    rapidlyChangingMotionState,
+    rapidlyChangingMotionState: customMotionState,
     modelFromController: props.modelFromController,
     dhParameters: props.dhParameters || [],
     // Add other required properties for ConnectedMotionGroup interface
@@ -178,9 +193,25 @@ export const Interactive = {
     onDriveToHomePress?: () => void
     onDriveToHomeRelease?: () => void
   }) {
+    // Get manufacturer-specific default joint config
+    const defaultJointConfig = getDefaultHomeConfig(
+      args.modelFromController || "UniversalRobots_UR5e",
+    )
+
+    // Create custom motion state with manufacturer-specific joint positions
+    const customMotionState = {
+      ...rapidlyChangingMotionState,
+      state: {
+        ...rapidlyChangingMotionState.state,
+        joint_position: {
+          joints: defaultJointConfig || [0, 0, 0, 0, 0, 0],
+        },
+      },
+    }
+
     // Create mock ConnectedMotionGroup directly in render
     const mockConnectedMotionGroup = {
-      rapidlyChangingMotionState,
+      rapidlyChangingMotionState: customMotionState,
       modelFromController: args.modelFromController || "UniversalRobots_UR5e",
       dhParameters: [
         { a: 0, alpha: 1.570796, d: 0.1625, theta: 0 },

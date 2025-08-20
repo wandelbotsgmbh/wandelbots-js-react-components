@@ -1,5 +1,5 @@
 import { Box, Button, Card, Divider, Typography, useTheme } from "@mui/material"
-import { Bounds, useBounds } from "@react-three/drei"
+import { Bounds } from "@react-three/drei"
 import { Canvas } from "@react-three/fiber"
 import type {
   ConnectedMotionGroup,
@@ -17,25 +17,6 @@ import type { ProgramState } from "./ProgramControl"
 import { ProgramStateIndicator } from "./ProgramStateIndicator"
 import { Robot } from "./robots/Robot"
 
-// Component to refresh bounds when model renders
-function BoundsRefresher({
-  modelRenderTrigger,
-  children,
-}: {
-  modelRenderTrigger: number
-  children: React.ReactNode
-}) {
-  const bounds = useBounds()
-
-  useEffect(() => {
-    if (modelRenderTrigger > 0) {
-      bounds.refresh().clip().fit()
-    }
-  }, [modelRenderTrigger, bounds])
-
-  return <>{children}</>
-}
-
 export interface RobotCardProps {
   /** Name of the robot displayed at the top */
   robotName: string
@@ -51,6 +32,22 @@ export interface RobotCardProps {
   onDriveToHomePress?: () => void
   /** Callback fired when "Drive to Home" button is released */
   onDriveToHomeRelease?: () => void
+  /**
+   * Callback fired when "Drive to Home" button is pressed, with the default home position.
+   * If provided, this will be called instead of onDriveToHomePress, providing the recommended
+   * home position joint configuration based on the robot manufacturer.
+   */
+  onDriveToHomePressWithConfig?: (homePosition: number[]) => void
+  /**
+   * Callback fired when "Drive to Home" button is released after using onDriveToHomePressWithConfig.
+   * If provided, this will be called instead of onDriveToHomeRelease.
+   */
+  onDriveToHomeReleaseWithConfig?: () => void
+  /**
+   * Custom default joint configuration to use if manufacturer-based defaults are not available.
+   * Joint values should be in radians.
+   */
+  defaultJointConfig?: number[]
   /** Connected motion group for the robot */
   connectedMotionGroup: ConnectedMotionGroup
   /** Custom robot component to render (optional, defaults to Robot) */
@@ -136,7 +133,6 @@ export const RobotCard = externalizeComponent(
       const { t } = useTranslation()
       const [isDriveToHomePressed, setIsDriveToHomePressed] = useState(false)
       const driveButtonRef = useRef<HTMLButtonElement>(null)
-      const robotRef = useRef<Group>(null)
       const cardRef = useRef<HTMLDivElement>(null)
       const [isLandscape, setIsLandscape] = useState(false)
       const [cardSize, setCardSize] = useState<{
@@ -229,25 +225,6 @@ export const RobotCard = externalizeComponent(
         ? cardSize.width < 350 || cardSize.height < 250 // Aggressive for landscape
         : cardSize.width < 250 || cardSize.height < 180 // Less aggressive for portrait
 
-      // Calculate responsive robot scale based on card size and orientation
-      const getRobotScale = () => {
-        if (shouldHideRobot) return 0
-
-        if (isLandscape) {
-          // More aggressive scaling for landscape since robot is on side
-          if (cardSize.width < 450) return 0.8
-          if (cardSize.width < 550) return 0.9
-          return 1
-        } else {
-          // Less aggressive scaling for portrait since robot is central
-          if (cardSize.width < 300) return 0.8
-          if (cardSize.width < 400) return 0.9
-          return 1
-        }
-      }
-
-      const robotScale = getRobotScale()
-
       return (
         <Card
           ref={cardRef}
@@ -290,9 +267,10 @@ export const RobotCard = externalizeComponent(
               >
                 {!shouldHideRobot && (
                   <Canvas
+                    orthographic
                     camera={{
-                      position: [4, 4, 4], // Move camera further back for orthographic view
-                      fov: 15, // Low FOV for near-orthographic projection
+                      position: [3, 2, 3],
+                      zoom: 1,
                     }}
                     shadows
                     frameloop="demand"
@@ -310,14 +288,10 @@ export const RobotCard = externalizeComponent(
                   >
                     <PresetEnvironment />
                     <Bounds fit clip observe margin={1}>
-                      <BoundsRefresher modelRenderTrigger={modelRenderTrigger}>
-                        <group ref={robotRef} scale={robotScale}>
-                          <RobotComponent
-                            connectedMotionGroup={connectedMotionGroup}
-                            postModelRender={handleModelRender}
-                          />
-                        </group>
-                      </BoundsRefresher>
+                      <RobotComponent
+                        connectedMotionGroup={connectedMotionGroup}
+                        postModelRender={handleModelRender}
+                      />
                     </Bounds>
                   </Canvas>
                 )}
@@ -470,9 +444,10 @@ export const RobotCard = externalizeComponent(
                 >
                   {!shouldHideRobot && (
                     <Canvas
+                      orthographic
                       camera={{
-                        position: [3, 3, 3], // Closer camera position for portrait to make robot larger
-                        fov: 20, // Slightly higher FOV for portrait to fill better
+                        position: [3, 2, 3],
+                        zoom: 1,
                       }}
                       shadows
                       frameloop="demand"
@@ -482,24 +457,16 @@ export const RobotCard = externalizeComponent(
                         height: "100%",
                         background: "transparent",
                         position: "absolute",
-                        top: 0,
-                        left: 0,
                       }}
                       dpr={[1, 2]}
                       gl={{ alpha: true, antialias: true }}
                     >
                       <PresetEnvironment />
-                      <Bounds fit observe margin={1}>
-                        <BoundsRefresher
-                          modelRenderTrigger={modelRenderTrigger}
-                        >
-                          <group ref={robotRef} scale={robotScale}>
-                            <RobotComponent
-                              connectedMotionGroup={connectedMotionGroup}
-                              postModelRender={handleModelRender}
-                            />
-                          </group>
-                        </BoundsRefresher>
+                      <Bounds fit clip observe margin={1}>
+                        <RobotComponent
+                          connectedMotionGroup={connectedMotionGroup}
+                          postModelRender={handleModelRender}
+                        />
                       </Bounds>
                     </Canvas>
                   )}
