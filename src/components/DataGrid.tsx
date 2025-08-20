@@ -14,9 +14,10 @@ import {
   QuickFilterTrigger,
   Toolbar,
   ToolbarButton,
+  useGridApiRef,
 } from "@mui/x-data-grid"
 import { observer } from "mobx-react-lite"
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { externalizeComponent } from "../externalizeComponent"
 
 export interface WandelbotsDataGridProps<T = Record<string, unknown>> {
@@ -108,6 +109,7 @@ export const WandelbotsDataGrid = externalizeComponent(
       sx,
     }: WandelbotsDataGridProps<T>) => {
       const theme = useTheme()
+      const apiRef = useGridApiRef()
 
       // Internal state for selection when not controlled
       const [internalSelectedItem, setInternalSelectedItem] =
@@ -115,6 +117,18 @@ export const WandelbotsDataGrid = externalizeComponent(
 
       // Prepare rows for the DataGrid
       const rows = useMemo(() => data.map(getRowData), [data, getRowData])
+
+      // Auto-resize columns when data changes
+      useEffect(() => {
+        if (apiRef.current && rows.length > 0) {
+          apiRef.current.autosizeColumns({
+            includeOutliers: true,
+            includeHeaders: true,
+            expand: true,
+            columns: columns.map((col) => col.field),
+          })
+        }
+      }, [rows, columns, apiRef])
 
       // Handle default selection - only use if no selectedItem is explicitly provided
       const effectiveSelectedItem = useMemo(() => {
@@ -290,6 +304,7 @@ export const WandelbotsDataGrid = externalizeComponent(
           }}
         >
           <DataGrid
+            apiRef={apiRef}
             rows={rows}
             columns={columns}
             onRowClick={handleRowClick}
@@ -316,13 +331,19 @@ export const WandelbotsDataGrid = externalizeComponent(
               ...dataGridProps?.initialState,
             }}
             {...dataGridProps}
-            // Ensure autosize properties are not overridden by dataGridProps
-            autosizeOnMount={dataGridProps?.autosizeOnMount ?? true}
+            // Ensure autosize properties are always enabled and not overridden by dataGridProps
+            autosizeOnMount={true}
             autosizeOptions={{
+              // Merge any custom autosize options first
+              ...(dataGridProps?.autosizeOptions || {}),
+              // Force these key properties to always be true to maintain autosize behavior
               includeOutliers: true,
               includeHeaders: true,
               expand: true,
-              ...dataGridProps?.autosizeOptions,
+              // Auto-size all columns by default (can be overridden by dataGridProps)
+              columns:
+                dataGridProps?.autosizeOptions?.columns ||
+                columns.map((col) => col.field),
             }}
             sx={{
               border: "none",
