@@ -75,7 +75,7 @@ const ProgramPreviewContent = () => (
         <Box
           sx={{
             height: 300,
-            bgcolor: "grey.100",
+            bgcolor: "grey.900",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -188,6 +188,55 @@ export const Interactive: Story = {
   args: {
     items: [
       {
+        id: "tab1",
+        label: "First Tab",
+        content: (
+          <Box sx={{ p: 2 }}>
+            <Typography variant="body2" color="text.secondary">
+              Content for first tab
+            </Typography>
+          </Box>
+        ),
+      },
+      {
+        id: "tab2",
+        label: "Second Tab",
+        content: (
+          <Box sx={{ p: 2 }}>
+            <Typography variant="body2" color="text.secondary">
+              Content for second tab
+            </Typography>
+          </Box>
+        ),
+      },
+      {
+        id: "tab3",
+        label: "Third Tab",
+        content: (
+          <Box sx={{ p: 2 }}>
+            <Typography variant="body2" color="text.secondary">
+              Content for third tab
+            </Typography>
+          </Box>
+        ),
+      },
+    ],
+    defaultActiveTab: 0,
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          "Interactive TabBar component with controls. Adjust the tab items, default active tab, and other properties using the controls panel below.",
+      },
+    },
+  },
+}
+
+export const WithIcons: Story = {
+  args: {
+    items: [
+      {
         id: "preview",
         label: "Program Preview",
         content: <ProgramPreviewContent />,
@@ -212,7 +261,7 @@ export const Interactive: Story = {
     docs: {
       description: {
         story:
-          "Interactive example with three tabs containing different types of content. Try switching between tabs to see the smooth transitions and styling.",
+          "TabBar with icons and rich content. Shows how tabs can include icons and more complex content sections.",
       },
     },
   },
@@ -261,42 +310,6 @@ export const WithErrorStates: Story = {
       description: {
         story:
           "Example with error states and different severity levels. The error tab is selected by default.",
-      },
-    },
-  },
-}
-
-export const MinimalTabs: Story = {
-  args: {
-    items: [
-      {
-        id: "tab1",
-        label: "First Tab",
-        content: (
-          <Box sx={{ p: 3 }}>
-            <Typography variant="h6">First Tab Content</Typography>
-            <Typography>Simple content for the first tab.</Typography>
-          </Box>
-        ),
-      },
-      {
-        id: "tab2",
-        label: "Second Tab",
-        content: (
-          <Box sx={{ p: 3 }}>
-            <Typography variant="h6">Second Tab Content</Typography>
-            <Typography>Simple content for the second tab.</Typography>
-          </Box>
-        ),
-      },
-    ],
-    defaultActiveTab: 0,
-  },
-  parameters: {
-    docs: {
-      description: {
-        story:
-          "Minimal example with just two tabs and simple content, no icons.",
       },
     },
   },

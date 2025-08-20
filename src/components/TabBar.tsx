@@ -83,7 +83,7 @@ export const TabBar = externalizeComponent(
                 display: "none", // Hide the default indicator
               },
               "& .MuiTabs-flexContainer": {
-                gap: 4,
+                gap: 2,
               },
             }}
           >
