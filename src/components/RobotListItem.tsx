@@ -61,8 +61,6 @@ export const RobotListItem = externalizeComponent(
             border: `1px solid ${theme.palette.divider}`,
             background:
               theme.palette.backgroundPaperElevation?.[8] || "#292B3F",
-            height: 80,
-            minHeight: "80px",
             borderRadius: "8px",
             padding: "20px",
             display: "flex",
