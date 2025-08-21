@@ -17,7 +17,7 @@ import {
   useGridApiRef,
 } from "@mui/x-data-grid"
 import { observer } from "mobx-react-lite"
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { externalizeComponent } from "../externalizeComponent"
 
 export interface WandelbotsDataGridProps<T = Record<string, unknown>> {
@@ -110,6 +110,7 @@ export const WandelbotsDataGrid = externalizeComponent(
     }: WandelbotsDataGridProps<T>) => {
       const theme = useTheme()
       const apiRef = useGridApiRef()
+      const containerRef = useRef<HTMLDivElement>(null)
 
       // Internal state for selection when not controlled
       const [internalSelectedItem, setInternalSelectedItem] =
@@ -129,6 +130,31 @@ export const WandelbotsDataGrid = externalizeComponent(
           })
         }
       }, [rows, columns, apiRef])
+
+      // Auto-resize columns when the DataGrid container is resized
+      useEffect(() => {
+        if (!containerRef.current || !apiRef.current) return
+
+        const resizeObserver = new ResizeObserver(() => {
+          // Use a small timeout to ensure the DataGrid has processed the size change
+          setTimeout(() => {
+            if (apiRef.current && rows.length > 0) {
+              apiRef.current.autosizeColumns({
+                includeOutliers: true,
+                includeHeaders: true,
+                expand: true,
+                columns: columns.map((col) => col.field),
+              })
+            }
+          }, 100)
+        })
+
+        resizeObserver.observe(containerRef.current)
+
+        return () => {
+          resizeObserver.disconnect()
+        }
+      }, [apiRef, rows.length, columns])
 
       // Handle default selection - only use if no selectedItem is explicitly provided
       const effectiveSelectedItem = useMemo(() => {
@@ -401,6 +427,7 @@ export const WandelbotsDataGrid = externalizeComponent(
 
       return (
         <Box
+          ref={containerRef}
           sx={{
             height: "100%",
             display: "flex",
