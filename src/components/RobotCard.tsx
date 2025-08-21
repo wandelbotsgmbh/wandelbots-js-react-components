@@ -227,7 +227,7 @@ export const RobotCard = externalizeComponent(
       // Determine if runtime view should be hidden when height is too low
       // Runtime should be hidden BEFORE the robot (at higher threshold)
       const shouldHideRuntime = isLandscape
-        ? cardSize.height < 350 // Landscape: hide runtime at height < 350px
+        ? cardSize.height < 310 // Landscape: hide runtime at height < 350px
         : cardSize.height < 450 // Portrait: hide runtime at height < 450px
 
       return (
