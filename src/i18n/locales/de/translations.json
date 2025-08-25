@@ -49,6 +49,7 @@
   "CycleTimer.Time.lb": "{{time}} min.",
   "ProgramControl.Start.bt": "Start",
   "ProgramControl.Resume.bt": "Weiter",
+  "ProgramControl.Retry.bt": "Wiederholen",
   "ProgramControl.Pause.bt": "Pause",
   "ProgramControl.Stop.bt": "Stopp",
   "ProgramStateIndicator.Running.lb": "In Betrieb",
@@ -61,5 +62,10 @@
   "ProgramStateIndicator.Auto.lb": "Auto",
   "ProgramStateIndicator.Manual.lb": "Manuell",
   "ProgramStateIndicator.ManualT1.lb": "Manuell T1",
-  "ProgramStateIndicator.ManualT2.lb": "Manuell T2"
+  "ProgramStateIndicator.ManualT2.lb": "Manuell T2",
+  "RobotSetupReadinessIndicator.Ready.lb": "Bereit",
+  "RobotSetupReadinessIndicator.RobotDisconnected.lb": "Roboter getrennt",
+  "RobotSetupReadinessIndicator.PreconditionNotFulfilled.lb": "Voraussetzung nicht erfüllt",
+  "RobotCard.Runtime.lb": "Laufzeit",
+  "RobotCard.DriveToHome.bt": "Zur Home-Position fahren"
 }

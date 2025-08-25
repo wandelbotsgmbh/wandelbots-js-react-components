@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
-import { ProgramStateIndicator } from "../src"
+import { ProgramState, ProgramStateIndicator } from "../src"
 
 const meta: Meta<typeof ProgramStateIndicator> = {
   title: "Components/ProgramStateIndicator",
@@ -34,11 +34,17 @@ The component automatically determines the appropriate state to display based on
   argTypes: {
     programState: {
       control: "select",
-      options: ["idle", "running", "paused", "stopping"],
+      options: [
+        ProgramState.IDLE,
+        ProgramState.RUNNING,
+        ProgramState.PAUSED,
+        ProgramState.STOPPING,
+        ProgramState.ERROR,
+      ],
       description: "The current state of the program execution",
       table: {
         type: {
-          summary: "'idle' | 'running' | 'paused' | 'stopping'",
+          summary: "ProgramState",
         },
       },
     },
@@ -76,7 +82,7 @@ The component automatically determines the appropriate state to display based on
     },
   },
   args: {
-    programState: "idle",
+    programState: ProgramState.IDLE,
     safetyState: "SAFETY_STATE_NORMAL",
     operationMode: "OPERATION_MODE_AUTO",
   },
@@ -87,7 +93,7 @@ type Story = StoryObj<typeof ProgramStateIndicator>
 
 export const ReadyAuto: Story = {
   args: {
-    programState: "idle",
+    programState: ProgramState.IDLE,
     safetyState: "SAFETY_STATE_NORMAL",
     operationMode: "OPERATION_MODE_AUTO",
   },
@@ -95,7 +101,7 @@ export const ReadyAuto: Story = {
 
 export const RunningAuto: Story = {
   args: {
-    programState: "running",
+    programState: ProgramState.RUNNING,
     safetyState: "SAFETY_STATE_NORMAL",
     operationMode: "OPERATION_MODE_AUTO",
   },
@@ -103,7 +109,7 @@ export const RunningAuto: Story = {
 
 export const PausedAuto: Story = {
   args: {
-    programState: "paused",
+    programState: ProgramState.PAUSED,
     safetyState: "SAFETY_STATE_NORMAL",
     operationMode: "OPERATION_MODE_AUTO",
   },
@@ -111,7 +117,7 @@ export const PausedAuto: Story = {
 
 export const ErrorAuto: Story = {
   args: {
-    programState: "running",
+    programState: ProgramState.RUNNING,
     safetyState: "SAFETY_STATE_FAULT",
     operationMode: "OPERATION_MODE_AUTO",
   },
@@ -119,7 +125,7 @@ export const ErrorAuto: Story = {
 
 export const EStopAuto: Story = {
   args: {
-    programState: "running",
+    programState: ProgramState.RUNNING,
     safetyState: "SAFETY_STATE_DEVICE_EMERGENCY_STOP",
     operationMode: "OPERATION_MODE_AUTO",
   },
@@ -127,7 +133,7 @@ export const EStopAuto: Story = {
 
 export const StoppedAuto: Story = {
   args: {
-    programState: "running",
+    programState: ProgramState.RUNNING,
     safetyState: "SAFETY_STATE_STOP",
     operationMode: "OPERATION_MODE_AUTO",
   },
@@ -135,7 +141,7 @@ export const StoppedAuto: Story = {
 
 export const RunningManual: Story = {
   args: {
-    programState: "running",
+    programState: ProgramState.RUNNING,
     safetyState: "SAFETY_STATE_NORMAL",
     operationMode: "OPERATION_MODE_MANUAL",
   },
@@ -143,7 +149,7 @@ export const RunningManual: Story = {
 
 export const RunningManualT1: Story = {
   args: {
-    programState: "running",
+    programState: ProgramState.RUNNING,
     safetyState: "SAFETY_STATE_NORMAL",
     operationMode: "OPERATION_MODE_MANUAL_T1",
   },
@@ -151,7 +157,7 @@ export const RunningManualT1: Story = {
 
 export const RunningManualT2: Story = {
   args: {
-    programState: "running",
+    programState: ProgramState.RUNNING,
     safetyState: "SAFETY_STATE_NORMAL",
     operationMode: "OPERATION_MODE_MANUAL_T2",
   },

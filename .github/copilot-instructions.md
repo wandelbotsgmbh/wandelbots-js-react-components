@@ -80,7 +80,17 @@ General-purpose UI components:
 4. **Observability**: Use `observer` wrapper for MobX reactivity
 5. **Theming**: Use MUI theme system and support custom theming
 6. **i18n**: Use react-i18next for translatable strings
-7. **Storybook**: Create comprehensive stories with controls
+7. **Storybook**: Create single-page interactive stories with controls
+
+### Storybook Guidelines
+
+- **Single Story**: Create one main interactive story per component, not multiple variant stories
+- **Single Docs Page**: Use `tags: ["!dev"]` in meta configuration to create a single docs page without expandable sections
+- **Interactive Controls**: Use argTypes to provide controls that let users test different states
+- **Explicit Options**: For enum controls, explicitly list enum values instead of using `Object.values()` to avoid extra entries
+- **Left Alignment**: Components should be left-aligned and resize dynamically based on content
+- **Descriptive Naming**: Name the story "Interactive" or use a descriptive name like "Robot Setup Readiness Indicator"
+- **Documentation**: Include component description and story description explaining the interactive features
 
 ### Code Style Patterns
 

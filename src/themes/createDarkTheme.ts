@@ -109,6 +109,80 @@ export function createDarkTheme(): Theme {
             scrollbarWidth: "thin",
             scrollbarColor: `${baseTheme.palette.divider} transparent`,
           },
+
+          // Global styles for DataGrid filter popup
+          ".MuiDataGrid-panelContent": {
+            borderRadius: "16px !important",
+            "& .MuiPaper-root": {
+              borderRadius: "16px !important",
+            },
+          },
+          ".MuiDataGrid-filterForm": {
+            borderRadius: "16px !important",
+            "& .MuiInputBase-root": {
+              borderRadius: "16px !important",
+              "& fieldset": {
+                borderRadius: "16px !important",
+              },
+              "& .MuiOutlinedInput-notchedOutline": {
+                borderRadius: "16px !important",
+              },
+            },
+            "& .MuiTextField-root": {
+              "& .MuiInputBase-root": {
+                borderRadius: "16px !important",
+                "& fieldset": {
+                  borderRadius: "16px !important",
+                },
+                "& .MuiOutlinedInput-notchedOutline": {
+                  borderRadius: "16px !important",
+                },
+              },
+            },
+          },
+          ".MuiDataGrid-filterFormValueInput": {
+            "& .MuiInputBase-root": {
+              borderRadius: "16px !important",
+              "& fieldset": {
+                borderRadius: "16px !important",
+              },
+              "& .MuiOutlinedInput-notchedOutline": {
+                borderRadius: "16px !important",
+              },
+            },
+          },
+        },
+      },
+      MuiDataGrid: {
+        styleOverrides: {
+          root: {
+            // Main DataGrid styling can go here if needed
+          },
+          panelContent: {
+            borderRadius: "16px !important",
+          },
+          filterForm: {
+            "& .MuiInputBase-root": {
+              borderRadius: "10px !important",
+              "& fieldset": {
+                borderRadius: "10px !important",
+              },
+              "& .MuiOutlinedInput-notchedOutline": {
+                borderRadius: "10px !important",
+              },
+            },
+          },
+          filterFormValueInput: {
+            "& .MuiInputBase-root": {
+              borderRadius: "10px !important",
+              "& fieldset": {
+                borderRadius: "10px !important",
+              },
+              "& .MuiOutlinedInput-notchedOutline": {
+                borderRadius: "10px !important",
+              },
+            },
+          },
         },
       },
       MuiButton: {
@@ -287,5 +361,5 @@ export function createDarkTheme(): Theme {
         },
       },
     },
-  }
+  } as Theme
 }
