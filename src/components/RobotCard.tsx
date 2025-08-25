@@ -292,7 +292,7 @@ export const RobotCard = externalizeComponent(
                     gl={{ alpha: true, antialias: true }}
                   >
                     <PresetEnvironment />
-                    <Bounds fit observe margin={1} maxDuration={0}>
+                    <Bounds fit observe margin={1} maxDuration={1}>
                       <RobotComponent
                         connectedMotionGroup={connectedMotionGroup}
                         postModelRender={handleModelRender}
@@ -470,7 +470,7 @@ export const RobotCard = externalizeComponent(
                       gl={{ alpha: true, antialias: true }}
                     >
                       <PresetEnvironment />
-                      <Bounds fit clip observe margin={1} maxDuration={0}>
+                      <Bounds fit clip observe margin={1} maxDuration={1}>
                         <RobotComponent
                           connectedMotionGroup={connectedMotionGroup}
                           postModelRender={handleModelRender}
