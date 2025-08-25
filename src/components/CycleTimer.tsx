@@ -9,13 +9,13 @@ import { useInterpolation } from "./utils/interpolation"
 export interface CycleTimerProps {
   /**
    * Callback that receives the timer control functions:
-   * - `startNewCycle(maxTimeSeconds, elapsedSeconds?)` - Start a new timer cycle
+   * - `startNewCycle(maxTimeSeconds?, elapsedSeconds?)` - Start a new timer cycle (if maxTimeSeconds is omitted, runs as count-up timer)
    * - `pause()` - Pause the countdown while preserving remaining time
    * - `resume()` - Resume countdown from where it was paused
    * - `isPaused()` - Check current pause state
    */
   onCycleComplete: (controls: {
-    startNewCycle: (maxTimeSeconds: number, elapsedSeconds?: number) => void
+    startNewCycle: (maxTimeSeconds?: number, elapsedSeconds?: number) => void
     pause: () => void
     resume: () => void
     isPaused: () => boolean
@@ -33,13 +33,15 @@ export interface CycleTimerProps {
 }
 
 /**
- * A circular gauge timer component that shows the remaining time of a cycle
+ * A circular gauge timer component that shows the remaining time of a cycle or counts up
  *
  * Features:
  * - Circular gauge with 264px diameter and 40px thickness
- * - Shows remaining time prominently in the center (60px font)
- * - Displays "remaining time" label at top and total time at bottom
- * - Automatically counts down and triggers callback when reaching zero
+ * - Two modes: count-down (with max time) or count-up (without max time)
+ * - Count-down mode: shows remaining time prominently, counts down to zero
+ * - Count-up mode: shows elapsed time, gauge progresses in minute steps
+ * - Displays appropriate labels based on mode
+ * - Automatically counts down/up and triggers callback when reaching zero (count-down only)
  * - Full timer control: start, pause, resume functionality
  * - Support for starting with elapsed time (resume mid-cycle)
  * - Smooth spring-based progress animations for all state transitions
@@ -56,29 +58,32 @@ export interface CycleTimerProps {
  *
  * Usage:
  * ```tsx
+ * // Count-down timer (with max time)
  * <CycleTimer
  *   onCycleComplete={(controls) => {
- *     // Start a 5-minute cycle
+ *     // Start a 5-minute countdown cycle
  *     controls.startNewCycle(300)
  *
  *     // Or start a 5-minute cycle with 2 minutes already elapsed
  *     controls.startNewCycle(300, 120)
- *
- *     // Pause the timer
- *     controls.pause()
- *
- *     // Resume the timer
- *     controls.resume()
- *
- *     // Check if paused
- *     const paused = controls.isPaused()
  *   }}
  *   onCycleEnd={() => console.log('Cycle completed!')}
+ * />
+ *
+ * // Count-up timer (no max time)
+ * <CycleTimer
+ *   onCycleComplete={(controls) => {
+ *     // Start count-up timer
+ *     controls.startNewCycle()
+ *
+ *     // Or start count-up timer with some elapsed time
+ *     controls.startNewCycle(undefined, 120)
+ *   }}
  * />
  * ```
  *
  * Control Functions:
- * - `startNewCycle(maxTimeSeconds, elapsedSeconds?)` - Start a new timer cycle
+ * - `startNewCycle(maxTimeSeconds?, elapsedSeconds?)` - Start a new timer cycle (omit maxTimeSeconds for count-up mode)
  * - `pause()` - Pause the countdown while preserving remaining time
  * - `resume()` - Resume countdown from where it was paused
  * - `isPaused()` - Check current pause state
@@ -96,7 +101,7 @@ export const CycleTimer = externalizeComponent(
       const theme = useTheme()
       const { t } = useTranslation()
       const [remainingTime, setRemainingTime] = useState(0)
-      const [maxTime, setMaxTime] = useState(0)
+      const [maxTime, setMaxTime] = useState<number | null>(null)
       const [isRunning, setIsRunning] = useState(false)
       const [isPausedState, setIsPausedState] = useState(false)
       const [currentProgress, setCurrentProgress] = useState(0)
@@ -115,36 +120,55 @@ export const CycleTimer = externalizeComponent(
       })
 
       const startNewCycle = useCallback(
-        (maxTimeSeconds: number, elapsedSeconds: number = 0) => {
-          setMaxTime(maxTimeSeconds)
-          const remainingSeconds = Math.max(0, maxTimeSeconds - elapsedSeconds)
-          setRemainingTime(remainingSeconds)
+        (maxTimeSeconds?: number, elapsedSeconds: number = 0) => {
+          setMaxTime(maxTimeSeconds ?? null)
           setIsPausedState(false)
           pausedTimeRef.current = 0
 
-          // Animate progress smoothly to starting position
-          // For new cycles (no elapsed time), animate from current position to 0%
-          // For resumed cycles, animate to the appropriate progress percentage
-          const initialProgress =
-            elapsedSeconds > 0 ? (elapsedSeconds / maxTimeSeconds) * 100 : 0
-          if (elapsedSeconds === 0) {
-            progressInterpolator.setTarget([0])
-          } else {
-            progressInterpolator.setTarget([initialProgress])
-          }
+          if (maxTimeSeconds !== undefined) {
+            // Count-down mode: set remaining time
+            const remainingSeconds = Math.max(
+              0,
+              maxTimeSeconds - elapsedSeconds,
+            )
+            setRemainingTime(remainingSeconds)
 
-          if (remainingSeconds === 0) {
-            setIsRunning(false)
-            startTimeRef.current = null
-            // Trigger completion callback immediately if time is already up
-            if (onCycleEnd) {
-              setTimeout(() => onCycleEnd(), 0)
+            // Animate progress smoothly to starting position
+            const initialProgress =
+              elapsedSeconds > 0 ? (elapsedSeconds / maxTimeSeconds) * 100 : 0
+            if (elapsedSeconds === 0) {
+              progressInterpolator.setTarget([0])
+            } else {
+              progressInterpolator.setTarget([initialProgress])
             }
-          } else if (autoStart) {
-            startTimeRef.current = Date.now() - elapsedSeconds * 1000
-            setIsRunning(true)
+
+            if (remainingSeconds === 0) {
+              setIsRunning(false)
+              startTimeRef.current = null
+              // Trigger completion callback immediately if time is already up
+              if (onCycleEnd) {
+                setTimeout(() => onCycleEnd(), 0)
+              }
+            } else if (autoStart) {
+              startTimeRef.current = Date.now() - elapsedSeconds * 1000
+              setIsRunning(true)
+            } else {
+              startTimeRef.current = null
+            }
           } else {
-            startTimeRef.current = null
+            // Count-up mode: start from elapsed time
+            setRemainingTime(elapsedSeconds)
+
+            // For count-up mode, progress is based on minute steps
+            const initialProgress = ((elapsedSeconds / 60) % 1) * 100
+            progressInterpolator.setTarget([initialProgress])
+
+            if (autoStart) {
+              startTimeRef.current = Date.now() - elapsedSeconds * 1000
+              setIsRunning(true)
+            } else {
+              startTimeRef.current = null
+            }
           }
         },
         [autoStart, onCycleEnd, progressInterpolator],
@@ -159,8 +183,16 @@ export const CycleTimer = externalizeComponent(
           // Calculate exact progress position and smoothly animate to it when pausing
           // This ensures the visual progress matches the actual elapsed time
           const totalElapsed = pausedTimeRef.current / 1000
-          const exactProgress = Math.min(100, (totalElapsed / maxTime) * 100)
-          progressInterpolator.setTarget([exactProgress])
+
+          if (maxTime !== null) {
+            // Count-down mode
+            const exactProgress = Math.min(100, (totalElapsed / maxTime) * 100)
+            progressInterpolator.setTarget([exactProgress])
+          } else {
+            // Count-up mode: progress based on minute steps
+            const exactProgress = ((totalElapsed / 60) % 1) * 100
+            progressInterpolator.setTarget([exactProgress])
+          }
         }
         setIsRunning(false)
         setIsPausedState(true)
@@ -202,30 +234,39 @@ export const CycleTimer = externalizeComponent(
         if (isRunning) {
           // Single animation frame loop that handles both time updates and progress
           const updateTimer = () => {
-            if (startTimeRef.current && maxTime > 0) {
+            if (startTimeRef.current) {
               const now = Date.now()
               const elapsed =
                 (now - startTimeRef.current + pausedTimeRef.current) / 1000
-              const remaining = Math.max(0, maxTime - elapsed)
 
-              // Update remaining time based on timestamp calculation
-              setRemainingTime(Math.ceil(remaining))
+              if (maxTime !== null) {
+                // Count-down mode
+                const remaining = Math.max(0, maxTime - elapsed)
+                setRemainingTime(Math.ceil(remaining))
 
-              // Smoothly animate progress based on elapsed time for fluid visual feedback
-              const progress = Math.min(100, (elapsed / maxTime) * 100)
-              progressInterpolator.setTarget([progress])
+                // Smoothly animate progress based on elapsed time for fluid visual feedback
+                const progress = Math.min(100, (elapsed / maxTime) * 100)
+                progressInterpolator.setTarget([progress])
 
-              if (remaining <= 0) {
-                setIsRunning(false)
-                startTimeRef.current = null
-                setRemainingTime(0)
-                // Animate to 100% completion with smooth spring transition
-                progressInterpolator.setTarget([100])
-                // Call onCycleEnd when timer reaches zero to notify about completion
-                if (onCycleEnd) {
-                  setTimeout(() => onCycleEnd(), 0)
+                if (remaining <= 0) {
+                  setIsRunning(false)
+                  startTimeRef.current = null
+                  setRemainingTime(0)
+                  // Animate to 100% completion with smooth spring transition
+                  progressInterpolator.setTarget([100])
+                  // Call onCycleEnd when timer reaches zero to notify about completion
+                  if (onCycleEnd) {
+                    setTimeout(() => onCycleEnd(), 0)
+                  }
+                  return
                 }
-                return
+              } else {
+                // Count-up mode
+                setRemainingTime(Math.floor(elapsed))
+
+                // For count-up mode, progress completes every minute (0-100% per minute)
+                const progress = ((elapsed / 60) % 1) * 100
+                progressInterpolator.setTarget([progress])
               }
 
               // Continue animation loop while running
@@ -272,9 +313,16 @@ export const CycleTimer = externalizeComponent(
       // Keep interpolator synchronized with static progress when timer is stopped
       // Ensures correct visual state when component initializes or timer stops
       useEffect(() => {
-        if (!isRunning && !isPausedState && maxTime > 0) {
-          const staticProgress = ((maxTime - remainingTime) / maxTime) * 100
-          progressInterpolator.setTarget([staticProgress])
+        if (!isRunning && !isPausedState) {
+          if (maxTime !== null && maxTime > 0) {
+            // Count-down mode
+            const staticProgress = ((maxTime - remainingTime) / maxTime) * 100
+            progressInterpolator.setTarget([staticProgress])
+          } else if (maxTime === null) {
+            // Count-up mode
+            const staticProgress = ((remainingTime / 60) % 1) * 100
+            progressInterpolator.setTarget([staticProgress])
+          }
         }
       }, [
         isRunning,
@@ -361,11 +409,15 @@ export const CycleTimer = externalizeComponent(
                 fontSize: "14px",
               }}
             >
-              {compact
-                ? // Compact mode: show remaining time with "min." suffix
-                  `${formatTime(remainingTime)} ${t("CycleTimer.Time.lb", { time: "" }).replace(/\s*$/, "")}`
-                : // Full mode: show "remaining / of total min." format
-                  `${formatTime(remainingTime)} / ${t("CycleTimer.Time.lb", { time: formatTime(maxTime) })}`}
+              {maxTime !== null
+                ? // Count-down mode: show remaining time
+                  compact
+                  ? // Compact mode: show remaining time with "min." suffix
+                    `${formatTime(remainingTime)} ${t("CycleTimer.Time.lb", { time: "" }).replace(/\s*$/, "")}`
+                  : // Full mode: show "remaining / of total min." format
+                    `${formatTime(remainingTime)} / ${t("CycleTimer.Time.lb", { time: formatTime(maxTime) })}`
+                : // Count-up mode: show elapsed time only
+                  formatTime(remainingTime)}
             </Typography>
           </Box>
         )
@@ -425,42 +477,60 @@ export const CycleTimer = externalizeComponent(
               gap: 1,
             }}
           >
-            {/* "remaining time" label */}
-            <Typography
-              variant="body2"
-              sx={{
-                fontSize: "12px",
-                color: theme.palette.text.secondary,
-                marginBottom: 0.5,
-              }}
-            >
-              {t("CycleTimer.RemainingTime.lb")}
-            </Typography>
+            {maxTime !== null ? (
+              // Count-down mode: show remaining time with labels
+              <>
+                {/* "remaining time" label */}
+                <Typography
+                  variant="body2"
+                  sx={{
+                    fontSize: "12px",
+                    color: theme.palette.text.secondary,
+                    marginBottom: 0.5,
+                  }}
+                >
+                  {t("CycleTimer.RemainingTime.lb")}
+                </Typography>
 
-            {/* Main timer display */}
-            <Typography
-              variant="h1"
-              sx={{
-                fontSize: "48px",
-                fontWeight: 500,
-                color: theme.palette.text.primary,
-                lineHeight: 1,
-                marginBottom: 0.5,
-              }}
-            >
-              {formatTime(remainingTime)}
-            </Typography>
+                {/* Main timer display */}
+                <Typography
+                  variant="h1"
+                  sx={{
+                    fontSize: "48px",
+                    fontWeight: 500,
+                    color: theme.palette.text.primary,
+                    lineHeight: 1,
+                    marginBottom: 0.5,
+                  }}
+                >
+                  {formatTime(remainingTime)}
+                </Typography>
 
-            {/* Total time display */}
-            <Typography
-              variant="body2"
-              sx={{
-                fontSize: "12px",
-                color: theme.palette.text.secondary,
-              }}
-            >
-              {t("CycleTimer.OfTime.lb", { time: formatTime(maxTime) })}
-            </Typography>
+                {/* Total time display */}
+                <Typography
+                  variant="body2"
+                  sx={{
+                    fontSize: "12px",
+                    color: theme.palette.text.secondary,
+                  }}
+                >
+                  {t("CycleTimer.OfTime.lb", { time: formatTime(maxTime) })}
+                </Typography>
+              </>
+            ) : (
+              // Count-up mode: show elapsed time only
+              <Typography
+                variant="h1"
+                sx={{
+                  fontSize: "48px",
+                  fontWeight: 500,
+                  color: theme.palette.text.primary,
+                  lineHeight: 1,
+                }}
+              >
+                {formatTime(remainingTime)}
+              </Typography>
+            )}
           </Box>
         </Box>
       )
