@@ -18,6 +18,7 @@ A circular gauge timer component that shows the remaining time of a cycle or cou
 - **Two modes:** Count-down (with max time) or Count-up (without max time)
 - **Visual progress with circular gauge** (264px diameter)
 - **Complete timer control interface** (start, pause, resume, elapsed time support)
+- **Error state support:** Pauses timer and shows error styling (red color) with automatic resume when resolved
 - **Count-down mode:** Shows remaining time with "remaining time" and "of total" labels
 - **Count-up mode:** Shows elapsed time only, gauge progresses in minute steps
 - **Automatic callback triggers** when cycles complete (count-down only)
@@ -88,6 +89,16 @@ A circular gauge timer component that shows the remaining time of a cycle or cou
       control: "text",
       description: "Additional CSS classes",
     },
+    hasError: {
+      control: "boolean",
+      description:
+        "Whether the timer is in an error state (pauses timer and shows error styling)",
+      table: {
+        defaultValue: {
+          summary: "false",
+        },
+      },
+    },
   },
 }
 
@@ -95,14 +106,17 @@ export default meta
 type Story = StoryObj<typeof meta>
 
 /**
- * Count-down timer with automatic timer functionality.
+ * Count-down timer with automatic timer functionality and error state demonstration.
  * Click "Start New Cycle" to begin a countdown, then use pause/resume controls.
+ * Use "Trigger Error" to see error state behavior - the timer pauses and shows red styling.
+ * Use "Resolve Error" to clear the error state - the timer resumes if it was running before.
  */
 export const Default: Story = {
   args: {
     autoStart: true,
   },
   render: function Render(args) {
+    const [hasError, setHasError] = React.useState(false)
     const controlsRef: React.MutableRefObject<{
       startNewCycle: (maxTime?: number, elapsedSeconds?: number) => void
       pause: () => void
@@ -142,6 +156,14 @@ export const Default: Story = {
       }
     }
 
+    const triggerError = () => {
+      setHasError(true)
+    }
+
+    const resolveError = () => {
+      setHasError(false)
+    }
+
     return (
       <Box
         sx={{
@@ -153,6 +175,7 @@ export const Default: Story = {
       >
         <CycleTimer
           {...args}
+          hasError={hasError}
           onCycleComplete={handleCycleComplete}
           onCycleEnd={handleCycleEnd}
         />
@@ -189,6 +212,32 @@ export const Default: Story = {
           </Button>
           <Button variant="outlined" onClick={resumeTimer}>
             Resume timer
+          </Button>
+        </Box>
+
+        <Box
+          sx={{
+            display: "flex",
+            gap: 2,
+            flexWrap: "wrap",
+            justifyContent: "center",
+          }}
+        >
+          <Button
+            variant="outlined"
+            color="error"
+            onClick={triggerError}
+            disabled={hasError}
+          >
+            Trigger Error
+          </Button>
+          <Button
+            variant="outlined"
+            color="success"
+            onClick={resolveError}
+            disabled={!hasError}
+          >
+            Resolve Error
           </Button>
         </Box>
       </Box>
@@ -352,10 +401,7 @@ export const ModeTransitions: Story = {
           gap: 4,
         }}
       >
-        <CycleTimer
-          {...args}
-          onCycleComplete={handleCycleComplete}
-        />
+        <CycleTimer {...args} onCycleComplete={handleCycleComplete} />
 
         <Box
           sx={{
@@ -365,10 +411,18 @@ export const ModeTransitions: Story = {
             justifyContent: "center",
           }}
         >
-          <Button variant="contained" color="primary" onClick={switchToCountDown}>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={switchToCountDown}
+          >
             Switch to Count-Down (5 min)
           </Button>
-          <Button variant="contained" color="secondary" onClick={switchToCountUp}>
+          <Button
+            variant="contained"
+            color="secondary"
+            onClick={switchToCountUp}
+          >
             Switch to Count-Up
           </Button>
         </Box>
@@ -381,8 +435,8 @@ export const ModeTransitions: Story = {
             maxWidth: 500,
           }}
         >
-          Switch between count-down and count-up modes to see the smooth fade 
-          transition animation. Text content fades out, then fades back in with 
+          Switch between count-down and count-up modes to see the smooth fade
+          transition animation. Text content fades out, then fades back in with
           the new mode's layout (labels vs. no labels).
         </Box>
       </Box>

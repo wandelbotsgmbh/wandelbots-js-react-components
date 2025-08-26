@@ -30,6 +30,8 @@ export interface CycleTimerProps {
   compact?: boolean
   /** Additional CSS classes */
   className?: string
+  /** Whether the timer is in an error state (pauses timer and shows error styling) */
+  hasError?: boolean
 }
 
 /**
@@ -44,6 +46,7 @@ export interface CycleTimerProps {
  * - Automatically counts down/up and triggers callback when reaching zero (count-down only)
  * - Full timer control: start, pause, resume functionality
  * - Support for starting with elapsed time (resume mid-cycle)
+ * - Error state support: pauses timer and shows error styling (red color)
  * - Smooth spring-based progress animations for all state transitions
  * - Fully localized with i18next
  * - Material-UI theming integration
@@ -55,6 +58,7 @@ export interface CycleTimerProps {
  * @param variant - Visual variant: "default" (large gauge) or "small" (animated icon with text)
  * @param compact - For small variant: whether to hide remaining time details
  * @param className - Additional CSS classes
+ * @param hasError - Whether the timer is in an error state (pauses timer and shows error styling)
  *
  * Usage:
  * ```tsx
@@ -80,6 +84,14 @@ export interface CycleTimerProps {
  *     controls.startNewCycle(undefined, 120)
  *   }}
  * />
+ *
+ * // Timer with error state
+ * <CycleTimer
+ *   hasError={errorCondition}
+ *   onCycleComplete={(controls) => {
+ *     controls.startNewCycle(300)
+ *   }}
+ * />
  * ```
  *
  * Control Functions:
@@ -97,6 +109,7 @@ export const CycleTimer = externalizeComponent(
       variant = "default",
       compact = false,
       className,
+      hasError = false,
     }: CycleTimerProps) => {
       const theme = useTheme()
       const { t } = useTranslation()
@@ -108,6 +121,7 @@ export const CycleTimer = externalizeComponent(
       const animationRef = useRef<number | null>(null)
       const startTimeRef = useRef<number | null>(null)
       const pausedTimeRef = useRef<number>(0)
+      const [wasRunningBeforeError, setWasRunningBeforeError] = useState(false)
 
       // Track mode changes for fade transitions
       const [showLabels, setShowLabels] = useState(true)
@@ -235,6 +249,30 @@ export const CycleTimer = externalizeComponent(
       const isPaused = useCallback(() => {
         return isPausedState
       }, [isPausedState])
+
+      // Handle error state changes
+      useEffect(() => {
+        if (hasError) {
+          // Error occurred - pause timer if running and remember state
+          if (isRunning && !isPausedState) {
+            setWasRunningBeforeError(true)
+            pause()
+          }
+        } else {
+          // Error resolved - resume if was running before error
+          if (wasRunningBeforeError && isPausedState) {
+            setWasRunningBeforeError(false)
+            resume()
+          }
+        }
+      }, [
+        hasError,
+        isRunning,
+        isPausedState,
+        wasRunningBeforeError,
+        pause,
+        resume,
+      ])
 
       // Call onCycleComplete immediately to provide the timer control functions
       useEffect(() => {
@@ -405,7 +443,11 @@ export const CycleTimer = externalizeComponent(
                   cy="10"
                   r="8"
                   fill="none"
-                  stroke={theme.palette.success.main}
+                  stroke={
+                    hasError
+                      ? theme.palette.error.light
+                      : theme.palette.success.main
+                  }
                   strokeWidth="2"
                   opacity={0.3}
                 />
@@ -415,7 +457,11 @@ export const CycleTimer = externalizeComponent(
                   cy="10"
                   r="8"
                   fill="none"
-                  stroke={theme.palette.success.main}
+                  stroke={
+                    hasError
+                      ? theme.palette.error.light
+                      : theme.palette.success.main
+                  }
                   strokeWidth="2"
                   strokeLinecap="round"
                   strokeDasharray={`${2 * Math.PI * 8}`}
@@ -475,7 +521,9 @@ export const CycleTimer = externalizeComponent(
               opacity: isPausedState ? 0.6 : 1,
               transition: "opacity 0.2s ease",
               [`& .MuiGauge-valueArc`]: {
-                fill: theme.palette.success.main,
+                fill: hasError
+                  ? theme.palette.error.light
+                  : theme.palette.success.main,
               },
               [`& .MuiGauge-referenceArc`]: {
                 fill: "white",
