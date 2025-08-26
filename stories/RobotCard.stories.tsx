@@ -143,7 +143,7 @@ const meta: Meta = {
     onCycleTimerReady: {
       action: "onCycleTimerReady",
       description:
-        "Callback to receive cycle timer controls for external timer management",
+        "Callback to receive cycle timer controls for external timer management. Use controls.startNewCycle(maxTime) for count-down mode or controls.startNewCycle() for count-up mode.",
     },
     onCycleEnd: {
       action: "onCycleEnd",
@@ -154,6 +154,11 @@ const meta: Meta = {
       description:
         "Whether the cycle timer should auto-start when a new cycle is set",
     },
+    cycleTimerHasError: {
+      control: "boolean",
+      description:
+        "Whether the cycle timer is in an error state (pauses timer and shows error styling)",
+    },
   },
   args: {
     robotName: "UR5e Robot",
@@ -163,6 +168,7 @@ const meta: Meta = {
     driveToHomeEnabled: true,
     modelFromController: "UniversalRobots_UR5e",
     cycleTimerAutoStart: true,
+    cycleTimerHasError: false,
   },
 }
 

@@ -63,18 +63,19 @@ export interface RobotCardProps {
     variant?: "default" | "small"
     compact?: boolean
     onCycleComplete: (controls: {
-      startNewCycle: (maxTimeSeconds: number, elapsedSeconds?: number) => void
+      startNewCycle: (maxTimeSeconds?: number, elapsedSeconds?: number) => void
       pause: () => void
       resume: () => void
       isPaused: () => boolean
     }) => void
     onCycleEnd?: () => void
     autoStart?: boolean
+    hasError?: boolean
     className?: string
   }>
   /** Callback to receive cycle timer controls for external timer management */
   onCycleTimerReady?: (controls: {
-    startNewCycle: (maxTimeSeconds: number, elapsedSeconds?: number) => void
+    startNewCycle: (maxTimeSeconds?: number, elapsedSeconds?: number) => void
     pause: () => void
     resume: () => void
     isPaused: () => boolean
@@ -83,6 +84,8 @@ export interface RobotCardProps {
   onCycleEnd?: () => void
   /** Whether the cycle timer should auto-start when a new cycle is set */
   cycleTimerAutoStart?: boolean
+  /** Whether the cycle timer is in an error state (pauses timer and shows error styling) */
+  cycleTimerHasError?: boolean
   /** Additional CSS class name */
   className?: string
 }
@@ -105,7 +108,7 @@ export interface RobotCardProps {
  * - Robot name displayed in Typography h6 at top-left
  * - Program state indicator below the name
  * - Auto-fitting 3D robot model that scales with container size
- * - Compact cycle time component with small variant
+ * - Compact cycle time component with small variant, error state, and count-up/count-down mode support
  * - Transparent gray divider line
  * - "Drive to Home" button with press-and-hold functionality
  * - Localization support via react-i18next
@@ -127,6 +130,7 @@ export const RobotCard = externalizeComponent(
       onCycleTimerReady,
       onCycleEnd,
       cycleTimerAutoStart = true,
+      cycleTimerHasError = false,
       className,
     }: RobotCardProps) => {
       const theme = useTheme()
@@ -143,7 +147,10 @@ export const RobotCard = externalizeComponent(
 
       // Store cycle timer controls for external control
       const cycleControlsRef = useRef<{
-        startNewCycle: (maxTimeSeconds: number, elapsedSeconds?: number) => void
+        startNewCycle: (
+          maxTimeSeconds?: number,
+          elapsedSeconds?: number,
+        ) => void
         pause: () => void
         resume: () => void
         isPaused: () => boolean
@@ -201,7 +208,7 @@ export const RobotCard = externalizeComponent(
       const handleCycleComplete = useCallback(
         (controls: {
           startNewCycle: (
-            maxTimeSeconds: number,
+            maxTimeSeconds?: number,
             elapsedSeconds?: number,
           ) => void
           pause: () => void
@@ -364,6 +371,7 @@ export const RobotCard = externalizeComponent(
                           onCycleComplete={handleCycleComplete}
                           onCycleEnd={onCycleEnd}
                           autoStart={cycleTimerAutoStart}
+                          hasError={cycleTimerHasError}
                         />
                       </Box>
 
@@ -503,6 +511,7 @@ export const RobotCard = externalizeComponent(
                         onCycleComplete={handleCycleComplete}
                         onCycleEnd={onCycleEnd}
                         autoStart={cycleTimerAutoStart}
+                        hasError={cycleTimerHasError}
                       />
 
                       {/* Divider */}
