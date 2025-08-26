@@ -1,5 +1,5 @@
 import { Box, Button, Card, Divider, Typography, useTheme } from "@mui/material"
-import { Bounds } from "@react-three/drei"
+import { Bounds, useBounds } from "@react-three/drei"
 import { Canvas } from "@react-three/fiber"
 import type {
   ConnectedMotionGroup,
@@ -13,6 +13,28 @@ import type { Group } from "three"
 import { externalizeComponent } from "../externalizeComponent"
 import { PresetEnvironment } from "./3d-viewport/PresetEnvironment"
 import { CycleTimer } from "./CycleTimer"
+import { useAutorun } from "./utils/hooks"
+
+// Component that handles bounds refreshing when motion state changes
+function BoundsRefresher({
+  connectedMotionGroup,
+}: {
+  connectedMotionGroup: ConnectedMotionGroup
+}) {
+  const bounds = useBounds()
+
+  useAutorun(() => {
+    // Access the rapidly changing motion state to make the autorun reactive to changes
+    connectedMotionGroup.rapidlyChangingMotionState.state.joint_position
+    connectedMotionGroup.rapidlyChangingMotionState.tcp_pose
+
+    // Refresh bounds when robot pose/position changes
+    bounds.refresh().clip().fit()
+  })
+
+  return null
+}
+
 import type { ProgramState } from "./ProgramControl"
 import { ProgramStateIndicator } from "./ProgramStateIndicator"
 import { Robot } from "./robots/Robot"
@@ -300,6 +322,9 @@ export const RobotCard = externalizeComponent(
                   >
                     <PresetEnvironment />
                     <Bounds fit observe margin={1} maxDuration={1}>
+                      <BoundsRefresher
+                        connectedMotionGroup={connectedMotionGroup}
+                      />
                       <RobotComponent
                         connectedMotionGroup={connectedMotionGroup}
                         postModelRender={handleModelRender}
@@ -479,6 +504,9 @@ export const RobotCard = externalizeComponent(
                     >
                       <PresetEnvironment />
                       <Bounds fit clip observe margin={1} maxDuration={1}>
+                        <BoundsRefresher
+                          connectedMotionGroup={connectedMotionGroup}
+                        />
                         <RobotComponent
                           connectedMotionGroup={connectedMotionGroup}
                           postModelRender={handleModelRender}
