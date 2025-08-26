@@ -306,6 +306,91 @@ export const CountUp: Story = {
 }
 
 /**
+ * Demonstrates fade transitions when switching between count-down and count-up modes.
+ * Click the mode switching buttons to see smooth text fade animations.
+ */
+export const ModeTransitions: Story = {
+  args: {
+    autoStart: true,
+  },
+  render: function Render(args) {
+    const controlsRef: React.MutableRefObject<{
+      startNewCycle: (maxTime?: number, elapsedSeconds?: number) => void
+      pause: () => void
+      resume: () => void
+      isPaused: () => boolean
+    } | null> = React.useRef(null)
+
+    const handleCycleComplete = (controls: {
+      startNewCycle: (maxTime?: number, elapsedSeconds?: number) => void
+      pause: () => void
+      resume: () => void
+      isPaused: () => boolean
+    }) => {
+      controlsRef.current = controls
+      console.log("Mode transition timer controls ready.")
+    }
+
+    const switchToCountDown = () => {
+      if (controlsRef.current) {
+        controlsRef.current.startNewCycle(300) // 5 minutes countdown
+      }
+    }
+
+    const switchToCountUp = () => {
+      if (controlsRef.current) {
+        controlsRef.current.startNewCycle() // Count-up mode
+      }
+    }
+
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          gap: 4,
+        }}
+      >
+        <CycleTimer
+          {...args}
+          onCycleComplete={handleCycleComplete}
+        />
+
+        <Box
+          sx={{
+            display: "flex",
+            gap: 2,
+            flexWrap: "wrap",
+            justifyContent: "center",
+          }}
+        >
+          <Button variant="contained" color="primary" onClick={switchToCountDown}>
+            Switch to Count-Down (5 min)
+          </Button>
+          <Button variant="contained" color="secondary" onClick={switchToCountUp}>
+            Switch to Count-Up
+          </Button>
+        </Box>
+
+        <Box
+          sx={{
+            typography: "body2",
+            color: "text.secondary",
+            textAlign: "center",
+            maxWidth: 500,
+          }}
+        >
+          Switch between count-down and count-up modes to see the smooth fade 
+          transition animation. Text content fades out, then fades back in with 
+          the new mode's layout (labels vs. no labels).
+        </Box>
+      </Box>
+    )
+  },
+}
+
+/**
  * CycleTimer with manual start mode.
  * The timer will not start automatically when a new cycle is set.
  */

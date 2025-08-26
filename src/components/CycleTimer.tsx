@@ -1,4 +1,4 @@
-import { Box, Typography, useTheme } from "@mui/material"
+import { Box, Fade, Typography, useTheme } from "@mui/material"
 import { Gauge } from "@mui/x-charts/Gauge"
 import { observer } from "mobx-react-lite"
 import { useCallback, useEffect, useRef, useState } from "react"
@@ -109,6 +109,10 @@ export const CycleTimer = externalizeComponent(
       const startTimeRef = useRef<number | null>(null)
       const pausedTimeRef = useRef<number>(0)
 
+      // Track mode changes for fade transitions
+      const [showLabels, setShowLabels] = useState(true)
+      const prevMaxTimeRef = useRef<number | null | undefined>(undefined)
+
       // Spring-based interpolator for smooth gauge progress animations
       // Uses physics simulation to create natural, smooth transitions between progress values
       const [progressInterpolator] = useInterpolation([0], {
@@ -118,6 +122,28 @@ export const CycleTimer = externalizeComponent(
           setCurrentProgress(progress)
         },
       })
+
+      // Handle mode changes with fade transitions for labels only
+      useEffect(() => {
+        const currentIsCountUp = maxTime === null
+        const prevMaxTime = prevMaxTimeRef.current
+        const prevIsCountUp = prevMaxTime === null
+
+        // Check if mode actually changed (not just first render)
+        if (
+          prevMaxTimeRef.current !== undefined &&
+          prevIsCountUp !== currentIsCountUp
+        ) {
+          // Mode changed - labels will fade based on the Fade component conditions
+          // We just need to ensure showLabels is true so Fade can control visibility
+          setShowLabels(true)
+        } else {
+          // No mode change or first time - set initial state
+          setShowLabels(true)
+        }
+
+        prevMaxTimeRef.current = maxTime
+      }, [maxTime])
 
       const startNewCycle = useCallback(
         (maxTimeSeconds?: number, elapsedSeconds: number = 0) => {
@@ -477,36 +503,53 @@ export const CycleTimer = externalizeComponent(
               gap: 1,
             }}
           >
-            {maxTime !== null ? (
-              // Count-down mode: show remaining time with labels
-              <>
-                {/* "remaining time" label */}
+            {/* "remaining time" label - always reserves space to prevent layout shift */}
+            <Box
+              sx={{
+                height: "16px", // Fixed height to prevent layout shift
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                marginBottom: 0.5,
+              }}
+            >
+              <Fade in={showLabels && maxTime !== null} timeout={300}>
                 <Typography
                   variant="body2"
                   sx={{
                     fontSize: "12px",
                     color: theme.palette.text.secondary,
-                    marginBottom: 0.5,
                   }}
                 >
                   {t("CycleTimer.RemainingTime.lb")}
                 </Typography>
+              </Fade>
+            </Box>
 
-                {/* Main timer display */}
-                <Typography
-                  variant="h1"
-                  sx={{
-                    fontSize: "48px",
-                    fontWeight: 500,
-                    color: theme.palette.text.primary,
-                    lineHeight: 1,
-                    marginBottom: 0.5,
-                  }}
-                >
-                  {formatTime(remainingTime)}
-                </Typography>
+            {/* Main timer display - never fades, always visible */}
+            <Typography
+              variant="h1"
+              sx={{
+                fontSize: "48px",
+                fontWeight: 500,
+                color: theme.palette.text.primary,
+                lineHeight: 1,
+                marginBottom: 0.5,
+              }}
+            >
+              {formatTime(remainingTime)}
+            </Typography>
 
-                {/* Total time display */}
+            {/* Total time display - always reserves space to prevent layout shift */}
+            <Box
+              sx={{
+                height: "16px", // Fixed height to prevent layout shift
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <Fade in={showLabels && maxTime !== null} timeout={300}>
                 <Typography
                   variant="body2"
                   sx={{
@@ -514,23 +557,12 @@ export const CycleTimer = externalizeComponent(
                     color: theme.palette.text.secondary,
                   }}
                 >
-                  {t("CycleTimer.OfTime.lb", { time: formatTime(maxTime) })}
+                  {maxTime !== null
+                    ? t("CycleTimer.OfTime.lb", { time: formatTime(maxTime) })
+                    : ""}
                 </Typography>
-              </>
-            ) : (
-              // Count-up mode: show elapsed time only
-              <Typography
-                variant="h1"
-                sx={{
-                  fontSize: "48px",
-                  fontWeight: 500,
-                  color: theme.palette.text.primary,
-                  lineHeight: 1,
-                }}
-              >
-                {formatTime(remainingTime)}
-              </Typography>
-            )}
+              </Fade>
+            </Box>
           </Box>
         </Box>
       )
