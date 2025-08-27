@@ -24,6 +24,11 @@ function BoundsRefresher({
   const bounds = useBounds()
 
   useAutorun(() => {
+    // Ensure rapidlyChangingMotionState exists before accessing its properties
+    if (!connectedMotionGroup.rapidlyChangingMotionState?.state) {
+      return
+    }
+    
     // Access the rapidly changing motion state to make the autorun reactive to changes
     connectedMotionGroup.rapidlyChangingMotionState.state.joint_position
     connectedMotionGroup.rapidlyChangingMotionState.tcp_pose
