@@ -48,8 +48,10 @@
   "CycleTimer.RemainingTime.lb": "Time remaining",
   "CycleTimer.OfTime.lb": "of {{time}} min.",
   "CycleTimer.Time.lb": "{{time}} min.",
+  "CycleTimer.Error.lb": "Error",
   "ProgramControl.Start.bt": "Start",
   "ProgramControl.Resume.bt": "Resume",
+  "ProgramControl.Retry.bt": "Retry",
   "ProgramControl.Pause.bt": "Pause",
   "ProgramControl.Stop.bt": "Stop",
   "ProgramStateIndicator.Running.lb": "Running",
@@ -62,5 +64,10 @@
   "ProgramStateIndicator.Auto.lb": "Auto",
   "ProgramStateIndicator.Manual.lb": "Manual",
   "ProgramStateIndicator.ManualT1.lb": "Manual T1",
-  "ProgramStateIndicator.ManualT2.lb": "Manual T2"
+  "ProgramStateIndicator.ManualT2.lb": "Manual T2",
+  "RobotSetupReadinessIndicator.Ready.lb": "Ready",
+  "RobotSetupReadinessIndicator.RobotDisconnected.lb": "Robot disconnected",
+  "RobotSetupReadinessIndicator.PreconditionNotFulfilled.lb": "Precondition not fulfilled",
+  "RobotCard.Runtime.lb": "Runtime",
+  "RobotCard.DriveToHome.bt": "Drive to Home"
 }

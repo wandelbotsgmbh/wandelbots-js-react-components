@@ -4,7 +4,13 @@ import { observer } from "mobx-react-lite"
 import { useTranslation } from "react-i18next"
 import { externalizeComponent } from "../externalizeComponent"
 
-export type ProgramState = "idle" | "running" | "paused" | "stopping"
+export enum ProgramState {
+  IDLE = "idle",
+  RUNNING = "running",
+  PAUSED = "paused",
+  STOPPING = "stopping",
+  ERROR = "error",
+}
 
 export interface ProgramControlProps {
   /** The current state of the program control */
@@ -46,7 +52,7 @@ interface ButtonConfig {
  * A control component for program execution with run, pause, and stop functionality.
  *
  * Features:
- * - State machine with idle, running, paused, and stopping states
+ * - State machine with idle, running, paused, stopping, and error states
  * - Two variants: with_pause (3 buttons) and without_pause (2 buttons)
  * - Optional manual reset functionality
  * - Responsive design with 110px circular buttons
@@ -70,22 +76,28 @@ export const ProgramControl = externalizeComponent(
       const getButtonConfigs = (): ButtonConfig[] => {
         const baseConfigs: Record<string, ButtonConfig> = {
           run: {
-            enabled: state === "idle" || state === "paused",
+            enabled:
+              state === ProgramState.IDLE ||
+              state === ProgramState.PAUSED ||
+              state === ProgramState.ERROR,
             label:
-              state === "paused"
+              state === ProgramState.PAUSED
                 ? t("ProgramControl.Resume.bt")
-                : t("ProgramControl.Start.bt"),
+                : state === ProgramState.ERROR
+                  ? t("ProgramControl.Retry.bt")
+                  : t("ProgramControl.Start.bt"),
             color: theme.palette.success.main,
             onClick: onRun,
           },
           pause: {
-            enabled: state === "running",
+            enabled: state === ProgramState.RUNNING,
             label: t("ProgramControl.Pause.bt"),
             color: "#FFFFFF33",
             onClick: onPause || (() => {}),
           },
           stop: {
-            enabled: state === "running" || state === "paused",
+            enabled:
+              state === ProgramState.RUNNING || state === ProgramState.PAUSED,
             label: t("ProgramControl.Stop.bt"),
             color: theme.palette.error.main,
             onClick: onStop,
@@ -157,7 +169,7 @@ export const ProgramControl = externalizeComponent(
                   variant="contained"
                   disabled={
                     !config.enabled ||
-                    (state === "stopping" && !requiresManualReset)
+                    (state === ProgramState.STOPPING && !requiresManualReset)
                   }
                   onClick={config.onClick}
                   sx={{
@@ -167,14 +179,17 @@ export const ProgramControl = externalizeComponent(
                     backgroundColor: config.color,
                     opacity:
                       config.enabled &&
-                      !(state === "stopping" && !requiresManualReset)
+                      !(state === ProgramState.STOPPING && !requiresManualReset)
                         ? 1
                         : 0.3,
                     "&:hover": {
                       backgroundColor: config.color,
                       opacity:
                         config.enabled &&
-                        !(state === "stopping" && !requiresManualReset)
+                        !(
+                          state === ProgramState.STOPPING &&
+                          !requiresManualReset
+                        )
                           ? 0.8
                           : 0.3,
                     },
@@ -194,13 +209,13 @@ export const ProgramControl = externalizeComponent(
                   sx={{
                     color:
                       config.enabled &&
-                      !(state === "stopping" && !requiresManualReset)
+                      !(state === ProgramState.STOPPING && !requiresManualReset)
                         ? config.color
                         : theme.palette.text.disabled,
                     textAlign: "center",
                     opacity:
                       config.enabled &&
-                      !(state === "stopping" && !requiresManualReset)
+                      !(state === ProgramState.STOPPING && !requiresManualReset)
                         ? 1
                         : 0.3,
                   }}

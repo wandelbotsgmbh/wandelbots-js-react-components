@@ -139,6 +139,7 @@
   "dependencies": {
     "@monaco-editor/react": "^4.7.0",
     "@mui/x-charts": "^8.9.0",
+    "@mui/x-data-grid": "^8.10.1",
     "@shikijs/monaco": "^3.1.0",
     "i18next-browser-languagedetector": "^8.0.4",
     "lodash-es": "^4.17.21",

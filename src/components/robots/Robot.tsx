@@ -1,15 +1,16 @@
-import { type ThreeElements } from "@react-three/fiber"
+import type { ThreeElements } from "@react-three/fiber"
 
 import type { ConnectedMotionGroup } from "@wandelbots/nova-js/v1"
 import type { Group } from "three"
-import { SupportedRobot } from "./SupportedRobot"
 import { defaultGetModel } from "./robotModelLogic"
+import { SupportedRobot } from "./SupportedRobot"
 
 export type RobotProps = {
   connectedMotionGroup: ConnectedMotionGroup
   getModel?: (modelFromController: string) => string
   flangeRef?: React.Ref<Group>
   transparentColor?: string
+  postModelRender?: () => void
 } & ThreeElements["group"]
 
 /**
@@ -28,6 +29,7 @@ export function Robot({
   getModel = defaultGetModel,
   flangeRef,
   transparentColor,
+  postModelRender,
   ...props
 }: RobotProps) {
   if (!connectedMotionGroup.dhParameters) {
@@ -44,6 +46,7 @@ export function Robot({
       getModel={getModel}
       flangeRef={flangeRef}
       transparentColor={transparentColor}
+      postModelRender={postModelRender}
       {...props}
     />
   )

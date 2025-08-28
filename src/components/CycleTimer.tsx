@@ -1,4 +1,4 @@
-import { Box, Typography, useTheme } from "@mui/material"
+import { Box, Fade, Typography, useTheme } from "@mui/material"
 import { Gauge } from "@mui/x-charts/Gauge"
 import { observer } from "mobx-react-lite"
 import { useCallback, useEffect, useRef, useState } from "react"
@@ -9,13 +9,13 @@ import { useInterpolation } from "./utils/interpolation"
 export interface CycleTimerProps {
   /**
    * Callback that receives the timer control functions:
-   * - `startNewCycle(maxTimeSeconds, elapsedSeconds?)` - Start a new timer cycle
+   * - `startNewCycle(maxTimeSeconds?, elapsedSeconds?)` - Start a new timer cycle (if maxTimeSeconds is omitted, runs as count-up timer)
    * - `pause()` - Pause the countdown while preserving remaining time
    * - `resume()` - Resume countdown from where it was paused
    * - `isPaused()` - Check current pause state
    */
   onCycleComplete: (controls: {
-    startNewCycle: (maxTimeSeconds: number, elapsedSeconds?: number) => void
+    startNewCycle: (maxTimeSeconds?: number, elapsedSeconds?: number) => void
     pause: () => void
     resume: () => void
     isPaused: () => boolean
@@ -30,18 +30,23 @@ export interface CycleTimerProps {
   compact?: boolean
   /** Additional CSS classes */
   className?: string
+  /** Whether the timer is in an error state (pauses timer and shows error styling) */
+  hasError?: boolean
 }
 
 /**
- * A circular gauge timer component that shows the remaining time of a cycle
+ * A circular gauge timer component that shows the remaining time of a cycle or counts up
  *
  * Features:
  * - Circular gauge with 264px diameter and 40px thickness
- * - Shows remaining time prominently in the center (60px font)
- * - Displays "remaining time" label at top and total time at bottom
- * - Automatically counts down and triggers callback when reaching zero
+ * - Two modes: count-down (with max time) or count-up (without max time)
+ * - Count-down mode: shows remaining time prominently, counts down to zero
+ * - Count-up mode: shows elapsed time, gauge progresses in minute steps
+ * - Displays appropriate labels based on mode
+ * - Automatically counts down/up and triggers callback when reaching zero (count-down only)
  * - Full timer control: start, pause, resume functionality
  * - Support for starting with elapsed time (resume mid-cycle)
+ * - Error state support: pauses timer and shows error styling (red color)
  * - Smooth spring-based progress animations for all state transitions
  * - Fully localized with i18next
  * - Material-UI theming integration
@@ -53,32 +58,44 @@ export interface CycleTimerProps {
  * @param variant - Visual variant: "default" (large gauge) or "small" (animated icon with text)
  * @param compact - For small variant: whether to hide remaining time details
  * @param className - Additional CSS classes
+ * @param hasError - Whether the timer is in an error state (pauses timer and shows error styling)
  *
  * Usage:
  * ```tsx
+ * // Count-down timer (with max time)
  * <CycleTimer
  *   onCycleComplete={(controls) => {
- *     // Start a 5-minute cycle
+ *     // Start a 5-minute countdown cycle
  *     controls.startNewCycle(300)
  *
  *     // Or start a 5-minute cycle with 2 minutes already elapsed
  *     controls.startNewCycle(300, 120)
- *
- *     // Pause the timer
- *     controls.pause()
- *
- *     // Resume the timer
- *     controls.resume()
- *
- *     // Check if paused
- *     const paused = controls.isPaused()
  *   }}
  *   onCycleEnd={() => console.log('Cycle completed!')}
+ * />
+ *
+ * // Count-up timer (no max time)
+ * <CycleTimer
+ *   onCycleComplete={(controls) => {
+ *     // Start count-up timer
+ *     controls.startNewCycle()
+ *
+ *     // Or start count-up timer with some elapsed time
+ *     controls.startNewCycle(undefined, 120)
+ *   }}
+ * />
+ *
+ * // Timer with error state
+ * <CycleTimer
+ *   hasError={errorCondition}
+ *   onCycleComplete={(controls) => {
+ *     controls.startNewCycle(300)
+ *   }}
  * />
  * ```
  *
  * Control Functions:
- * - `startNewCycle(maxTimeSeconds, elapsedSeconds?)` - Start a new timer cycle
+ * - `startNewCycle(maxTimeSeconds?, elapsedSeconds?)` - Start a new timer cycle (omit maxTimeSeconds for count-up mode)
  * - `pause()` - Pause the countdown while preserving remaining time
  * - `resume()` - Resume countdown from where it was paused
  * - `isPaused()` - Check current pause state
@@ -92,17 +109,29 @@ export const CycleTimer = externalizeComponent(
       variant = "default",
       compact = false,
       className,
+      hasError = false,
     }: CycleTimerProps) => {
       const theme = useTheme()
       const { t } = useTranslation()
       const [remainingTime, setRemainingTime] = useState(0)
-      const [maxTime, setMaxTime] = useState(0)
+      const [maxTime, setMaxTime] = useState<number | null>(null)
       const [isRunning, setIsRunning] = useState(false)
       const [isPausedState, setIsPausedState] = useState(false)
       const [currentProgress, setCurrentProgress] = useState(0)
       const animationRef = useRef<number | null>(null)
       const startTimeRef = useRef<number | null>(null)
       const pausedTimeRef = useRef<number>(0)
+      const [wasRunningBeforeError, setWasRunningBeforeError] = useState(false)
+
+      // Brief animation states for pause and error visual feedback
+      const [showPauseAnimation, setShowPauseAnimation] = useState(false)
+      const [showErrorAnimation, setShowErrorAnimation] = useState(false)
+      const pauseAnimationTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+      const errorAnimationTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+
+      // Track mode changes for fade transitions
+      const [showLabels, setShowLabels] = useState(true)
+      const prevMaxTimeRef = useRef<number | null | undefined>(undefined)
 
       // Spring-based interpolator for smooth gauge progress animations
       // Uses physics simulation to create natural, smooth transitions between progress values
@@ -114,37 +143,78 @@ export const CycleTimer = externalizeComponent(
         },
       })
 
+      // Handle mode changes with fade transitions for labels only
+      useEffect(() => {
+        const currentIsCountUp = maxTime === null
+        const prevMaxTime = prevMaxTimeRef.current
+        const prevIsCountUp = prevMaxTime === null
+
+        // Check if mode actually changed (not just first render)
+        if (
+          prevMaxTimeRef.current !== undefined &&
+          prevIsCountUp !== currentIsCountUp
+        ) {
+          // Mode changed - labels will fade based on the Fade component conditions
+          // We just need to ensure showLabels is true so Fade can control visibility
+          setShowLabels(true)
+        } else {
+          // No mode change or first time - set initial state
+          setShowLabels(true)
+        }
+
+        prevMaxTimeRef.current = maxTime
+      }, [maxTime])
+
       const startNewCycle = useCallback(
-        (maxTimeSeconds: number, elapsedSeconds: number = 0) => {
-          setMaxTime(maxTimeSeconds)
-          const remainingSeconds = Math.max(0, maxTimeSeconds - elapsedSeconds)
-          setRemainingTime(remainingSeconds)
+        (maxTimeSeconds?: number, elapsedSeconds: number = 0) => {
+          setMaxTime(maxTimeSeconds ?? null)
           setIsPausedState(false)
           pausedTimeRef.current = 0
 
-          // Animate progress smoothly to starting position
-          // For new cycles (no elapsed time), animate from current position to 0%
-          // For resumed cycles, animate to the appropriate progress percentage
-          const initialProgress =
-            elapsedSeconds > 0 ? (elapsedSeconds / maxTimeSeconds) * 100 : 0
-          if (elapsedSeconds === 0) {
-            progressInterpolator.setTarget([0])
-          } else {
-            progressInterpolator.setTarget([initialProgress])
-          }
+          if (maxTimeSeconds !== undefined) {
+            // Count-down mode: set remaining time
+            const remainingSeconds = Math.max(
+              0,
+              maxTimeSeconds - elapsedSeconds,
+            )
+            setRemainingTime(remainingSeconds)
 
-          if (remainingSeconds === 0) {
-            setIsRunning(false)
-            startTimeRef.current = null
-            // Trigger completion callback immediately if time is already up
-            if (onCycleEnd) {
-              setTimeout(() => onCycleEnd(), 0)
+            // Animate progress smoothly to starting position
+            const initialProgress =
+              elapsedSeconds > 0 ? (elapsedSeconds / maxTimeSeconds) * 100 : 0
+            if (elapsedSeconds === 0) {
+              progressInterpolator.setTarget([0])
+            } else {
+              progressInterpolator.setTarget([initialProgress])
             }
-          } else if (autoStart) {
-            startTimeRef.current = Date.now() - elapsedSeconds * 1000
-            setIsRunning(true)
+
+            if (remainingSeconds === 0) {
+              setIsRunning(false)
+              startTimeRef.current = null
+              // Trigger completion callback immediately if time is already up
+              if (onCycleEnd) {
+                setTimeout(() => onCycleEnd(), 0)
+              }
+            } else if (autoStart) {
+              startTimeRef.current = Date.now() - elapsedSeconds * 1000
+              setIsRunning(true)
+            } else {
+              startTimeRef.current = null
+            }
           } else {
-            startTimeRef.current = null
+            // Count-up mode: start from elapsed time
+            setRemainingTime(elapsedSeconds)
+
+            // For count-up mode, progress is based on minute steps
+            const initialProgress = ((elapsedSeconds / 60) % 1) * 100
+            progressInterpolator.setTarget([initialProgress])
+
+            if (autoStart) {
+              startTimeRef.current = Date.now() - elapsedSeconds * 1000
+              setIsRunning(true)
+            } else {
+              startTimeRef.current = null
+            }
           }
         },
         [autoStart, onCycleEnd, progressInterpolator],
@@ -159,11 +229,32 @@ export const CycleTimer = externalizeComponent(
           // Calculate exact progress position and smoothly animate to it when pausing
           // This ensures the visual progress matches the actual elapsed time
           const totalElapsed = pausedTimeRef.current / 1000
-          const exactProgress = Math.min(100, (totalElapsed / maxTime) * 100)
-          progressInterpolator.setTarget([exactProgress])
+
+          if (maxTime !== null) {
+            // Count-down mode
+            const exactProgress = Math.min(100, (totalElapsed / maxTime) * 100)
+            progressInterpolator.setTarget([exactProgress])
+          } else {
+            // Count-up mode: progress based on minute steps
+            const exactProgress = ((totalElapsed / 60) % 1) * 100
+            progressInterpolator.setTarget([exactProgress])
+          }
         }
         setIsRunning(false)
         setIsPausedState(true)
+
+        // Trigger brief pause animation
+        setShowPauseAnimation(true)
+
+        // Clear any existing timeout
+        if (pauseAnimationTimeoutRef.current) {
+          clearTimeout(pauseAnimationTimeoutRef.current)
+        }
+
+        // Reset animation after longer duration
+        pauseAnimationTimeoutRef.current = setTimeout(() => {
+          setShowPauseAnimation(false)
+        }, 800) // 800ms smooth animation
       }, [isRunning, maxTime, progressInterpolator])
 
       const resume = useCallback(() => {
@@ -177,6 +268,49 @@ export const CycleTimer = externalizeComponent(
       const isPaused = useCallback(() => {
         return isPausedState
       }, [isPausedState])
+
+      // Handle error state changes
+      useEffect(() => {
+        if (hasError) {
+          // Error occurred - pause timer if running and remember state
+          if (isRunning && !isPausedState) {
+            setWasRunningBeforeError(true)
+            pause()
+          }
+
+          // Trigger brief error animation
+          setShowErrorAnimation(true)
+
+          // Clear any existing timeout
+          if (errorAnimationTimeoutRef.current) {
+            clearTimeout(errorAnimationTimeoutRef.current)
+          }
+
+          // Reset animation after longer duration
+          errorAnimationTimeoutRef.current = setTimeout(() => {
+            setShowErrorAnimation(false)
+          }, 600) // 600ms smooth animation
+        } else {
+          // Error resolved - resume if was running before error
+          if (wasRunningBeforeError && isPausedState) {
+            setWasRunningBeforeError(false)
+            resume()
+          }
+
+          // Clear error animation if error is resolved
+          setShowErrorAnimation(false)
+          if (errorAnimationTimeoutRef.current) {
+            clearTimeout(errorAnimationTimeoutRef.current)
+          }
+        }
+      }, [
+        hasError,
+        isRunning,
+        isPausedState,
+        wasRunningBeforeError,
+        pause,
+        resume,
+      ])
 
       // Call onCycleComplete immediately to provide the timer control functions
       useEffect(() => {
@@ -202,30 +336,39 @@ export const CycleTimer = externalizeComponent(
         if (isRunning) {
           // Single animation frame loop that handles both time updates and progress
           const updateTimer = () => {
-            if (startTimeRef.current && maxTime > 0) {
+            if (startTimeRef.current) {
               const now = Date.now()
               const elapsed =
                 (now - startTimeRef.current + pausedTimeRef.current) / 1000
-              const remaining = Math.max(0, maxTime - elapsed)
 
-              // Update remaining time based on timestamp calculation
-              setRemainingTime(Math.ceil(remaining))
+              if (maxTime !== null) {
+                // Count-down mode
+                const remaining = Math.max(0, maxTime - elapsed)
+                setRemainingTime(Math.ceil(remaining))
 
-              // Smoothly animate progress based on elapsed time for fluid visual feedback
-              const progress = Math.min(100, (elapsed / maxTime) * 100)
-              progressInterpolator.setTarget([progress])
+                // Smoothly animate progress based on elapsed time for fluid visual feedback
+                const progress = Math.min(100, (elapsed / maxTime) * 100)
+                progressInterpolator.setTarget([progress])
 
-              if (remaining <= 0) {
-                setIsRunning(false)
-                startTimeRef.current = null
-                setRemainingTime(0)
-                // Animate to 100% completion with smooth spring transition
-                progressInterpolator.setTarget([100])
-                // Call onCycleEnd when timer reaches zero to notify about completion
-                if (onCycleEnd) {
-                  setTimeout(() => onCycleEnd(), 0)
+                if (remaining <= 0) {
+                  setIsRunning(false)
+                  startTimeRef.current = null
+                  setRemainingTime(0)
+                  // Animate to 100% completion with smooth spring transition
+                  progressInterpolator.setTarget([100])
+                  // Call onCycleEnd when timer reaches zero to notify about completion
+                  if (onCycleEnd) {
+                    setTimeout(() => onCycleEnd(), 0)
+                  }
+                  return
                 }
-                return
+              } else {
+                // Count-up mode
+                setRemainingTime(Math.floor(elapsed))
+
+                // For count-up mode, progress completes every minute (0-100% per minute)
+                const progress = ((elapsed / 60) % 1) * 100
+                progressInterpolator.setTarget([progress])
               }
 
               // Continue animation loop while running
@@ -269,12 +412,31 @@ export const CycleTimer = externalizeComponent(
         }
       }, [progressInterpolator])
 
+      // Cleanup animation timeouts on unmount
+      useEffect(() => {
+        return () => {
+          if (pauseAnimationTimeoutRef.current) {
+            clearTimeout(pauseAnimationTimeoutRef.current)
+          }
+          if (errorAnimationTimeoutRef.current) {
+            clearTimeout(errorAnimationTimeoutRef.current)
+          }
+        }
+      }, [])
+
       // Keep interpolator synchronized with static progress when timer is stopped
       // Ensures correct visual state when component initializes or timer stops
       useEffect(() => {
-        if (!isRunning && !isPausedState && maxTime > 0) {
-          const staticProgress = ((maxTime - remainingTime) / maxTime) * 100
-          progressInterpolator.setTarget([staticProgress])
+        if (!isRunning && !isPausedState) {
+          if (maxTime !== null && maxTime > 0) {
+            // Count-down mode
+            const staticProgress = ((maxTime - remainingTime) / maxTime) * 100
+            progressInterpolator.setTarget([staticProgress])
+          } else if (maxTime === null) {
+            // Count-up mode
+            const staticProgress = ((remainingTime / 60) % 1) * 100
+            progressInterpolator.setTarget([staticProgress])
+          }
         }
       }, [
         isRunning,
@@ -301,92 +463,92 @@ export const CycleTimer = externalizeComponent(
             sx={{
               display: "flex",
               alignItems: "center",
-              gap: 0.125, // Minimal gap - 1px
+              m: 0,
+              gap: 1, // 8px gap between circle and text
             }}
           >
-            {/* Animated progress gauge icon */}
+            {/* Animated progress ring icon */}
             <Box
               sx={{
-                position: "relative",
-                width: 40,
-                height: 40,
+                width: 20,
+                height: 20,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                borderRadius: "50%",
-                overflow: "visible",
+                opacity: showPauseAnimation || showErrorAnimation ? 0.6 : 1,
+                transition: "opacity 0.5s ease-out",
               }}
             >
-              <Gauge
-                width={40}
-                height={40}
-                value={progressValue}
-                valueMin={0}
-                valueMax={100}
-                innerRadius="70%"
-                outerRadius="95%"
-                skipAnimation={true}
-                sx={{
-                  opacity: isPausedState ? 0.6 : 1,
-                  transition: "opacity 0.2s ease",
-                  [`& .MuiGauge-valueArc`]: {
-                    fill: theme.palette.success.main,
-                  },
-                  [`& .MuiGauge-referenceArc`]: {
-                    fill: theme.palette.success.main,
-                    opacity: 0.3,
-                  },
-                  [`& .MuiGauge-valueText`]: {
-                    display: "none",
-                  },
-                  [`& .MuiGauge-text`]: {
-                    display: "none",
-                  },
-                  [`& text`]: {
-                    display: "none",
-                  },
-                  // Hide any inner circle elements that might flash
-                  [`& .MuiGauge-referenceArcBackground`]: {
-                    display: "none",
-                  },
-                  [`& .MuiGauge-valueArcBackground`]: {
-                    display: "none",
-                  },
-                  [`& circle`]: {
-                    display: "none",
-                  },
-                }}
-              />
-
-              {/* Inner circle overlay to prevent flashing */}
-              <Box
-                sx={{
-                  position: "absolute",
-                  top: "50%",
-                  left: "50%",
-                  transform: "translate(-50%, -50%)",
-                  width: 13,
-                  height: 13,
-                  borderRadius: "50%",
-                  backgroundColor: theme.palette.background?.paper || "white",
-                  pointerEvents: "none",
-                }}
-              />
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 20 20"
+                style={{ transform: "rotate(-90deg)" }}
+                role="img"
+                aria-label="Timer progress"
+              >
+                {/* Background ring */}
+                <circle
+                  cx="10"
+                  cy="10"
+                  r="8"
+                  fill="none"
+                  stroke={
+                    hasError
+                      ? theme.palette.error.light
+                      : theme.palette.success.main
+                  }
+                  strokeWidth="2"
+                  opacity={0.3}
+                  style={{
+                    transition: "stroke 0.5s ease-out",
+                  }}
+                />
+                {/* Progress ring */}
+                <circle
+                  cx="10"
+                  cy="10"
+                  r="8"
+                  fill="none"
+                  stroke={
+                    hasError
+                      ? theme.palette.error.light
+                      : theme.palette.success.main
+                  }
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeDasharray={`${2 * Math.PI * 8}`}
+                  strokeDashoffset={`${2 * Math.PI * 8 * (1 - progressValue / 100)}`}
+                  style={{
+                    transition:
+                      "stroke-dashoffset 0.1s ease-out, stroke 0.5s ease-out",
+                  }}
+                />
+              </svg>
             </Box>
 
             {/* Timer text display */}
             <Typography
               variant="body2"
               sx={{
-                color: theme.palette.text.primary,
+                color: hasError
+                  ? theme.palette.error.light
+                  : theme.palette.text.primary,
                 fontSize: "14px",
+                transition: "color 0.5s ease-out",
               }}
             >
-              {compact
-                ? // Compact mode: show only remaining time
-                  formatTime(remainingTime)
-                : // Full mode: show "remaining / of total min." format
-                  `${formatTime(remainingTime)} / ${t("CycleTimer.Time.lb", { time: formatTime(maxTime) })}`}
+              {hasError
+                ? t("CycleTimer.Error.lb", "Error")
+                : maxTime !== null
+                  ? // Count-down mode: show remaining time
+                    compact
+                    ? // Compact mode: show remaining time with "min." suffix
+                      `${formatTime(remainingTime)} ${t("CycleTimer.Time.lb", { time: "" }).replace(/\s*$/, "")}`
+                    : // Full mode: show "remaining / of total min." format
+                      `${formatTime(remainingTime)} / ${t("CycleTimer.Time.lb", { time: formatTime(maxTime) })}`
+                  : // Count-up mode: show elapsed time only
+                    formatTime(remainingTime)}
             </Typography>
           </Box>
         )
@@ -415,10 +577,13 @@ export const CycleTimer = externalizeComponent(
             outerRadius="90%"
             skipAnimation={true}
             sx={{
-              opacity: isPausedState ? 0.6 : 1,
-              transition: "opacity 0.2s ease",
+              opacity: showPauseAnimation || showErrorAnimation ? 0.6 : 1,
+              transition: "opacity 0.5s ease-out",
               [`& .MuiGauge-valueArc`]: {
-                fill: theme.palette.success.main,
+                fill: hasError
+                  ? theme.palette.error.light
+                  : theme.palette.success.main,
+                transition: "fill 0.5s ease-out",
               },
               [`& .MuiGauge-referenceArc`]: {
                 fill: "white",
@@ -446,42 +611,102 @@ export const CycleTimer = externalizeComponent(
               gap: 1,
             }}
           >
-            {/* "remaining time" label */}
-            <Typography
-              variant="body2"
+            {/* "remaining time" label - always reserves space to prevent layout shift */}
+            <Box
               sx={{
-                fontSize: "12px",
-                color: theme.palette.text.secondary,
+                height: "16px", // Fixed height to prevent layout shift
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
                 marginBottom: 0.5,
               }}
             >
-              {t("CycleTimer.RemainingTime.lb")}
-            </Typography>
+              <Fade
+                in={showLabels && maxTime !== null && !hasError}
+                timeout={300}
+              >
+                <Typography
+                  variant="body2"
+                  sx={{
+                    fontSize: "12px",
+                    color: theme.palette.text.secondary,
+                  }}
+                >
+                  {t("CycleTimer.RemainingTime.lb")}
+                </Typography>
+              </Fade>
+            </Box>
 
-            {/* Main timer display */}
-            <Typography
-              variant="h1"
+            {/* Main timer display with error state transition */}
+            <Box
               sx={{
-                fontSize: "48px",
-                fontWeight: 500,
-                color: theme.palette.text.primary,
-                lineHeight: 1,
+                position: "relative",
+                height: "48px", // Fixed height to prevent layout shift
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
                 marginBottom: 0.5,
               }}
             >
-              {formatTime(remainingTime)}
-            </Typography>
+              {/* Error text */}
+              <Fade in={hasError} timeout={500}>
+                <Typography
+                  variant="h3"
+                  sx={{
+                    position: "absolute",
+                    fontSize: "40px",
+                    fontWeight: 400,
+                    color: "#FFFFFF",
+                    lineHeight: "116.7%",
+                  }}
+                >
+                  {t("CycleTimer.Error.lb", "Error")}
+                </Typography>
+              </Fade>
 
-            {/* Total time display */}
-            <Typography
-              variant="body2"
+              {/* Normal timer text */}
+              <Fade in={!hasError} timeout={500}>
+                <Typography
+                  variant="h1"
+                  sx={{
+                    position: "absolute",
+                    fontSize: "48px",
+                    fontWeight: 500,
+                    color: theme.palette.text.primary,
+                    lineHeight: 1,
+                  }}
+                >
+                  {formatTime(remainingTime)}
+                </Typography>
+              </Fade>
+            </Box>
+
+            {/* Total time display - always reserves space to prevent layout shift */}
+            <Box
               sx={{
-                fontSize: "12px",
-                color: theme.palette.text.secondary,
+                height: "16px", // Fixed height to prevent layout shift
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
               }}
             >
-              {t("CycleTimer.OfTime.lb", { time: formatTime(maxTime) })}
-            </Typography>
+              <Fade
+                in={showLabels && maxTime !== null && !hasError}
+                timeout={300}
+              >
+                <Typography
+                  variant="body2"
+                  sx={{
+                    fontSize: "12px",
+                    color: theme.palette.text.secondary,
+                  }}
+                >
+                  {maxTime !== null
+                    ? t("CycleTimer.OfTime.lb", { time: formatTime(maxTime) })
+                    : ""}
+                </Typography>
+              </Fade>
+            </Box>
           </Box>
         </Box>
       )

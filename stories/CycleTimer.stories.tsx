@@ -12,19 +12,23 @@ const meta: Meta<typeof CycleTimer> = {
     docs: {
       description: {
         component: `
-A circular gauge timer component that shows the remaining time of a cycle.
+A circular gauge timer component that shows the remaining time of a cycle or counts up elapsed time.
 
 **Key Features:**
-- **Visual countdown with circular progress gauge** (264px diameter)
+- **Two modes:** Count-down (with max time) or Count-up (without max time)
+- **Visual progress with circular gauge** (264px diameter)
 - **Complete timer control interface** (start, pause, resume, elapsed time support)
-- **Automatic callback triggers** when cycles complete
+- **Error state support:** Pauses timer and shows error styling (red color) with automatic resume when resolved
+- **Count-down mode:** Shows remaining time with "remaining time" and "of total" labels
+- **Count-up mode:** Shows elapsed time only, gauge progresses in minute steps
+- **Automatic callback triggers** when cycles complete (count-down only)
 - **Two display variants:** large gauge with centered time display, or compact icon with text
 - Smooth spring-based progress animations for all state transitions
 - Fully localized with i18next
 - Material-UI theming integration
 
 **Control Functions:**
-- \`startNewCycle(maxTimeSeconds, elapsedSeconds?)\` - Start a new timer cycle
+- \`startNewCycle(maxTimeSeconds?, elapsedSeconds?)\` - Start a new timer cycle (omit maxTimeSeconds for count-up mode)
 - \`pause()\` - Pause the countdown while preserving remaining time  
 - \`resume()\` - Resume countdown from where it was paused
 - \`isPaused()\` - Check current pause state
@@ -49,12 +53,11 @@ A circular gauge timer component that shows the remaining time of a cycle.
     onCycleEnd: {
       action: "onCycleEnd",
       description:
-        "Callback fired when a cycle actually completes (reaches zero)",
+        "Callback fired when a cycle actually completes (reaches zero) - only for count-down mode",
     },
     autoStart: {
       control: "boolean",
-      description:
-        "Whether the timer should start automatically when maxTime is set",
+      description: "Whether the timer should start automatically when started",
       table: {
         defaultValue: {
           summary: "true",
@@ -86,6 +89,16 @@ A circular gauge timer component that shows the remaining time of a cycle.
       control: "text",
       description: "Additional CSS classes",
     },
+    hasError: {
+      control: "boolean",
+      description:
+        "Whether the timer is in an error state (pauses timer and shows error styling)",
+      table: {
+        defaultValue: {
+          summary: "false",
+        },
+      },
+    },
   },
 }
 
@@ -93,23 +106,26 @@ export default meta
 type Story = StoryObj<typeof meta>
 
 /**
- * Default CycleTimer with automatic timer functionality.
+ * Count-down timer with automatic timer functionality and error state demonstration.
  * Click "Start New Cycle" to begin a countdown, then use pause/resume controls.
+ * Use "Trigger Error" to see error state behavior - the timer pauses and shows red styling.
+ * Use "Resolve Error" to clear the error state - the timer resumes if it was running before.
  */
 export const Default: Story = {
   args: {
     autoStart: true,
   },
   render: function Render(args) {
+    const [hasError, setHasError] = React.useState(false)
     const controlsRef: React.MutableRefObject<{
-      startNewCycle: (maxTime: number, elapsedSeconds?: number) => void
+      startNewCycle: (maxTime?: number, elapsedSeconds?: number) => void
       pause: () => void
       resume: () => void
       isPaused: () => boolean
     } | null> = React.useRef(null)
 
     const handleCycleComplete = (controls: {
-      startNewCycle: (maxTime: number, elapsedSeconds?: number) => void
+      startNewCycle: (maxTime?: number, elapsedSeconds?: number) => void
       pause: () => void
       resume: () => void
       isPaused: () => boolean
@@ -140,6 +156,14 @@ export const Default: Story = {
       }
     }
 
+    const triggerError = () => {
+      setHasError(true)
+    }
+
+    const resolveError = () => {
+      setHasError(false)
+    }
+
     return (
       <Box
         sx={{
@@ -151,6 +175,7 @@ export const Default: Story = {
       >
         <CycleTimer
           {...args}
+          hasError={hasError}
           onCycleComplete={handleCycleComplete}
           onCycleEnd={handleCycleEnd}
         />
@@ -189,6 +214,231 @@ export const Default: Story = {
             Resume timer
           </Button>
         </Box>
+
+        <Box
+          sx={{
+            display: "flex",
+            gap: 2,
+            flexWrap: "wrap",
+            justifyContent: "center",
+          }}
+        >
+          <Button
+            variant="outlined"
+            color="error"
+            onClick={triggerError}
+            disabled={hasError}
+          >
+            Trigger Error
+          </Button>
+          <Button
+            variant="outlined"
+            color="success"
+            onClick={resolveError}
+            disabled={!hasError}
+          >
+            Resolve Error
+          </Button>
+        </Box>
+      </Box>
+    )
+  },
+}
+
+/**
+ * Count-up timer that shows elapsed time without a maximum.
+ * The gauge progresses in minute steps and continues counting up indefinitely.
+ * Perfect for tracking work sessions or elapsed operation time.
+ */
+export const CountUp: Story = {
+  args: {
+    autoStart: true,
+  },
+  render: function Render(args) {
+    const controlsRef: React.MutableRefObject<{
+      startNewCycle: (maxTime?: number, elapsedSeconds?: number) => void
+      pause: () => void
+      resume: () => void
+      isPaused: () => boolean
+    } | null> = React.useRef(null)
+
+    const handleCycleComplete = (controls: {
+      startNewCycle: (maxTime?: number, elapsedSeconds?: number) => void
+      pause: () => void
+      resume: () => void
+      isPaused: () => boolean
+    }) => {
+      controlsRef.current = controls
+      console.log("Count-up timer controls ready.")
+    }
+
+    const startCountUp = (elapsedMinutes: number = 0) => {
+      if (controlsRef.current) {
+        // Start count-up timer (no max time)
+        controlsRef.current.startNewCycle(undefined, elapsedMinutes * 60)
+      }
+    }
+
+    const pauseTimer = () => {
+      if (controlsRef.current) {
+        controlsRef.current.pause()
+      }
+    }
+
+    const resumeTimer = () => {
+      if (controlsRef.current) {
+        controlsRef.current.resume()
+      }
+    }
+
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          gap: 4,
+        }}
+      >
+        <CycleTimer {...args} onCycleComplete={handleCycleComplete} />
+
+        <Box
+          sx={{
+            display: "flex",
+            gap: 2,
+            flexWrap: "wrap",
+            justifyContent: "center",
+          }}
+        >
+          <Button variant="contained" onClick={() => startCountUp(0)}>
+            Start from 0:00
+          </Button>
+          <Button variant="contained" onClick={() => startCountUp(2)}>
+            Start from 2:00
+          </Button>
+          <Button variant="contained" onClick={() => startCountUp(10)}>
+            Start from 10:00
+          </Button>
+        </Box>
+
+        <Box
+          sx={{
+            display: "flex",
+            gap: 2,
+            flexWrap: "wrap",
+            justifyContent: "center",
+          }}
+        >
+          <Button variant="outlined" onClick={pauseTimer}>
+            Pause timer
+          </Button>
+          <Button variant="outlined" onClick={resumeTimer}>
+            Resume timer
+          </Button>
+        </Box>
+
+        <Box
+          sx={{
+            typography: "body2",
+            color: "text.secondary",
+            textAlign: "center",
+            maxWidth: 500,
+          }}
+        >
+          Count-up mode shows elapsed time without a maximum limit. The gauge
+          progresses in minute steps, completing a full circle every minute. No
+          "remaining time" or "total time" labels are shown.
+        </Box>
+      </Box>
+    )
+  },
+}
+
+/**
+ * Demonstrates fade transitions when switching between count-down and count-up modes.
+ * Click the mode switching buttons to see smooth text fade animations.
+ */
+export const ModeTransitions: Story = {
+  args: {
+    autoStart: true,
+  },
+  render: function Render(args) {
+    const controlsRef: React.MutableRefObject<{
+      startNewCycle: (maxTime?: number, elapsedSeconds?: number) => void
+      pause: () => void
+      resume: () => void
+      isPaused: () => boolean
+    } | null> = React.useRef(null)
+
+    const handleCycleComplete = (controls: {
+      startNewCycle: (maxTime?: number, elapsedSeconds?: number) => void
+      pause: () => void
+      resume: () => void
+      isPaused: () => boolean
+    }) => {
+      controlsRef.current = controls
+      console.log("Mode transition timer controls ready.")
+    }
+
+    const switchToCountDown = () => {
+      if (controlsRef.current) {
+        controlsRef.current.startNewCycle(300) // 5 minutes countdown
+      }
+    }
+
+    const switchToCountUp = () => {
+      if (controlsRef.current) {
+        controlsRef.current.startNewCycle() // Count-up mode
+      }
+    }
+
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          gap: 4,
+        }}
+      >
+        <CycleTimer {...args} onCycleComplete={handleCycleComplete} />
+
+        <Box
+          sx={{
+            display: "flex",
+            gap: 2,
+            flexWrap: "wrap",
+            justifyContent: "center",
+          }}
+        >
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={switchToCountDown}
+          >
+            Switch to Count-Down (5 min)
+          </Button>
+          <Button
+            variant="contained"
+            color="secondary"
+            onClick={switchToCountUp}
+          >
+            Switch to Count-Up
+          </Button>
+        </Box>
+
+        <Box
+          sx={{
+            typography: "body2",
+            color: "text.secondary",
+            textAlign: "center",
+            maxWidth: 500,
+          }}
+        >
+          Switch between count-down and count-up modes to see the smooth fade
+          transition animation. Text content fades out, then fades back in with
+          the new mode's layout (labels vs. no labels).
+        </Box>
       </Box>
     )
   },
@@ -204,14 +454,14 @@ export const ManualStart: Story = {
   },
   render: function Render(args) {
     const controlsRef: React.MutableRefObject<{
-      startNewCycle: (maxTime: number, elapsedSeconds?: number) => void
+      startNewCycle: (maxTime?: number, elapsedSeconds?: number) => void
       pause: () => void
       resume: () => void
       isPaused: () => boolean
     } | null> = React.useRef(null)
 
     const handleCycleComplete = (controls: {
-      startNewCycle: (maxTime: number, elapsedSeconds?: number) => void
+      startNewCycle: (maxTime?: number, elapsedSeconds?: number) => void
       pause: () => void
       resume: () => void
       isPaused: () => boolean
@@ -282,14 +532,14 @@ export const ContinuousCycles: Story = {
     const [cycleCount, setCycleCount] = React.useState(0)
     const [isAutoRestart, setIsAutoRestart] = React.useState(false)
     const controlsRef: React.MutableRefObject<{
-      startNewCycle: (maxTime: number, elapsedSeconds?: number) => void
+      startNewCycle: (maxTime?: number, elapsedSeconds?: number) => void
       pause: () => void
       resume: () => void
       isPaused: () => boolean
     } | null> = React.useRef(null)
 
     const handleCycleComplete = (controls: {
-      startNewCycle: (maxTime: number, elapsedSeconds?: number) => void
+      startNewCycle: (maxTime?: number, elapsedSeconds?: number) => void
       pause: () => void
       resume: () => void
       isPaused: () => boolean
@@ -388,14 +638,14 @@ export const SmallVariant: Story = {
   },
   render: function Render(args) {
     const controlsRef: React.MutableRefObject<{
-      startNewCycle: (maxTime: number, elapsedSeconds?: number) => void
+      startNewCycle: (maxTime?: number, elapsedSeconds?: number) => void
       pause: () => void
       resume: () => void
       isPaused: () => boolean
     } | null> = React.useRef(null)
 
     const handleCycleComplete = (controls: {
-      startNewCycle: (maxTime: number, elapsedSeconds?: number) => void
+      startNewCycle: (maxTime?: number, elapsedSeconds?: number) => void
       pause: () => void
       resume: () => void
       isPaused: () => boolean
@@ -461,14 +711,14 @@ export const SmallCompact: Story = {
   },
   render: function Render(args) {
     const controlsRef: React.MutableRefObject<{
-      startNewCycle: (maxTime: number, elapsedSeconds?: number) => void
+      startNewCycle: (maxTime?: number, elapsedSeconds?: number) => void
       pause: () => void
       resume: () => void
       isPaused: () => boolean
     } | null> = React.useRef(null)
 
     const handleCycleComplete = (controls: {
-      startNewCycle: (maxTime: number, elapsedSeconds?: number) => void
+      startNewCycle: (maxTime?: number, elapsedSeconds?: number) => void
       pause: () => void
       resume: () => void
       isPaused: () => boolean
@@ -533,6 +783,111 @@ export const SmallCompact: Story = {
 }
 
 /**
+ * Small variant with count-up timer.
+ * Shows elapsed time with animated progress icon, no maximum limit.
+ */
+export const SmallCountUp: Story = {
+  args: {
+    variant: "small",
+    autoStart: true,
+  },
+  render: function Render(args) {
+    const controlsRef: React.MutableRefObject<{
+      startNewCycle: (maxTime?: number, elapsedSeconds?: number) => void
+      pause: () => void
+      resume: () => void
+      isPaused: () => boolean
+    } | null> = React.useRef(null)
+
+    const handleCycleComplete = (controls: {
+      startNewCycle: (maxTime?: number, elapsedSeconds?: number) => void
+      pause: () => void
+      resume: () => void
+      isPaused: () => boolean
+    }) => {
+      controlsRef.current = controls
+      console.log("Small count-up timer controls ready.")
+    }
+
+    const startCountUp = (elapsedMinutes: number = 0) => {
+      if (controlsRef.current) {
+        // Start count-up timer (no max time)
+        controlsRef.current.startNewCycle(undefined, elapsedMinutes * 60)
+      }
+    }
+
+    const pauseTimer = () => {
+      if (controlsRef.current) {
+        controlsRef.current.pause()
+      }
+    }
+
+    const resumeTimer = () => {
+      if (controlsRef.current) {
+        controlsRef.current.resume()
+      }
+    }
+
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          gap: 4,
+        }}
+      >
+        <CycleTimer {...args} onCycleComplete={handleCycleComplete} />
+
+        <Box
+          sx={{
+            display: "flex",
+            gap: 2,
+            flexWrap: "wrap",
+            justifyContent: "center",
+          }}
+        >
+          <Button variant="contained" onClick={() => startCountUp(0)}>
+            Start from 0:00
+          </Button>
+          <Button variant="contained" onClick={() => startCountUp(5)}>
+            Start from 5:00
+          </Button>
+        </Box>
+
+        <Box
+          sx={{
+            display: "flex",
+            gap: 2,
+            flexWrap: "wrap",
+            justifyContent: "center",
+          }}
+        >
+          <Button variant="outlined" onClick={pauseTimer}>
+            Pause timer
+          </Button>
+          <Button variant="outlined" onClick={resumeTimer}>
+            Resume timer
+          </Button>
+        </Box>
+
+        <Box
+          sx={{
+            typography: "body2",
+            color: "text.secondary",
+            textAlign: "center",
+            maxWidth: 400,
+          }}
+        >
+          Small count-up variant shows elapsed time with an animated progress
+          icon. The gauge completes a full circle every minute.
+        </Box>
+      </Box>
+    )
+  },
+}
+
+/**
  * Pause/Resume functionality demo.
  * Demonstrates the complete timer control interface including pause and resume.
  */
@@ -543,14 +898,14 @@ export const PauseResumeDemo: Story = {
   render: function Render(args) {
     const [isPaused, setIsPaused] = React.useState(false)
     const controlsRef: React.MutableRefObject<{
-      startNewCycle: (maxTime: number, elapsedSeconds?: number) => void
+      startNewCycle: (maxTime?: number, elapsedSeconds?: number) => void
       pause: () => void
       resume: () => void
       isPaused: () => boolean
     } | null> = React.useRef(null)
 
     const handleCycleComplete = (controls: {
-      startNewCycle: (maxTime: number, elapsedSeconds?: number) => void
+      startNewCycle: (maxTime?: number, elapsedSeconds?: number) => void
       pause: () => void
       resume: () => void
       isPaused: () => boolean
