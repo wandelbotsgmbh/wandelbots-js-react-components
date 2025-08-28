@@ -123,6 +123,12 @@ export const CycleTimer = externalizeComponent(
       const pausedTimeRef = useRef<number>(0)
       const [wasRunningBeforeError, setWasRunningBeforeError] = useState(false)
 
+      // Brief animation states for pause and error visual feedback
+      const [showPauseAnimation, setShowPauseAnimation] = useState(false)
+      const [showErrorAnimation, setShowErrorAnimation] = useState(false)
+      const pauseAnimationTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+      const errorAnimationTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+
       // Track mode changes for fade transitions
       const [showLabels, setShowLabels] = useState(true)
       const prevMaxTimeRef = useRef<number | null | undefined>(undefined)
@@ -236,6 +242,19 @@ export const CycleTimer = externalizeComponent(
         }
         setIsRunning(false)
         setIsPausedState(true)
+
+        // Trigger brief pause animation
+        setShowPauseAnimation(true)
+
+        // Clear any existing timeout
+        if (pauseAnimationTimeoutRef.current) {
+          clearTimeout(pauseAnimationTimeoutRef.current)
+        }
+
+        // Reset animation after longer duration
+        pauseAnimationTimeoutRef.current = setTimeout(() => {
+          setShowPauseAnimation(false)
+        }, 800) // 800ms smooth animation
       }, [isRunning, maxTime, progressInterpolator])
 
       const resume = useCallback(() => {
@@ -258,11 +277,30 @@ export const CycleTimer = externalizeComponent(
             setWasRunningBeforeError(true)
             pause()
           }
+
+          // Trigger brief error animation
+          setShowErrorAnimation(true)
+
+          // Clear any existing timeout
+          if (errorAnimationTimeoutRef.current) {
+            clearTimeout(errorAnimationTimeoutRef.current)
+          }
+
+          // Reset animation after longer duration
+          errorAnimationTimeoutRef.current = setTimeout(() => {
+            setShowErrorAnimation(false)
+          }, 600) // 600ms smooth animation
         } else {
           // Error resolved - resume if was running before error
           if (wasRunningBeforeError && isPausedState) {
             setWasRunningBeforeError(false)
             resume()
+          }
+
+          // Clear error animation if error is resolved
+          setShowErrorAnimation(false)
+          if (errorAnimationTimeoutRef.current) {
+            clearTimeout(errorAnimationTimeoutRef.current)
           }
         }
       }, [
@@ -374,6 +412,18 @@ export const CycleTimer = externalizeComponent(
         }
       }, [progressInterpolator])
 
+      // Cleanup animation timeouts on unmount
+      useEffect(() => {
+        return () => {
+          if (pauseAnimationTimeoutRef.current) {
+            clearTimeout(pauseAnimationTimeoutRef.current)
+          }
+          if (errorAnimationTimeoutRef.current) {
+            clearTimeout(errorAnimationTimeoutRef.current)
+          }
+        }
+      }, [])
+
       // Keep interpolator synchronized with static progress when timer is stopped
       // Ensures correct visual state when component initializes or timer stops
       useEffect(() => {
@@ -425,8 +475,8 @@ export const CycleTimer = externalizeComponent(
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                opacity: isPausedState ? 0.6 : 1,
-                transition: "opacity 0.2s ease",
+                opacity: showPauseAnimation || showErrorAnimation ? 0.6 : 1,
+                transition: "opacity 0.5s ease-out",
               }}
             >
               <svg
@@ -450,6 +500,9 @@ export const CycleTimer = externalizeComponent(
                   }
                   strokeWidth="2"
                   opacity={0.3}
+                  style={{
+                    transition: "stroke 0.5s ease-out",
+                  }}
                 />
                 {/* Progress ring */}
                 <circle
@@ -467,7 +520,8 @@ export const CycleTimer = externalizeComponent(
                   strokeDasharray={`${2 * Math.PI * 8}`}
                   strokeDashoffset={`${2 * Math.PI * 8 * (1 - progressValue / 100)}`}
                   style={{
-                    transition: "stroke-dashoffset 0.1s ease-out",
+                    transition:
+                      "stroke-dashoffset 0.1s ease-out, stroke 0.5s ease-out",
                   }}
                 />
               </svg>
@@ -518,12 +572,13 @@ export const CycleTimer = externalizeComponent(
             outerRadius="90%"
             skipAnimation={true}
             sx={{
-              opacity: isPausedState ? 0.6 : 1,
-              transition: "opacity 0.2s ease",
+              opacity: showPauseAnimation || showErrorAnimation ? 0.6 : 1,
+              transition: "opacity 0.5s ease-out",
               [`& .MuiGauge-valueArc`]: {
                 fill: hasError
                   ? theme.palette.error.light
                   : theme.palette.success.main,
+                transition: "fill 0.5s ease-out",
               },
               [`& .MuiGauge-referenceArc`]: {
                 fill: "white",
