@@ -531,19 +531,24 @@ export const CycleTimer = externalizeComponent(
             <Typography
               variant="body2"
               sx={{
-                color: theme.palette.text.primary,
+                color: hasError
+                  ? theme.palette.error.light
+                  : theme.palette.text.primary,
                 fontSize: "14px",
+                transition: "color 0.5s ease-out",
               }}
             >
-              {maxTime !== null
-                ? // Count-down mode: show remaining time
-                  compact
-                  ? // Compact mode: show remaining time with "min." suffix
-                    `${formatTime(remainingTime)} ${t("CycleTimer.Time.lb", { time: "" }).replace(/\s*$/, "")}`
-                  : // Full mode: show "remaining / of total min." format
-                    `${formatTime(remainingTime)} / ${t("CycleTimer.Time.lb", { time: formatTime(maxTime) })}`
-                : // Count-up mode: show elapsed time only
-                  formatTime(remainingTime)}
+              {hasError
+                ? t("CycleTimer.Error.lb", "Error")
+                : maxTime !== null
+                  ? // Count-down mode: show remaining time
+                    compact
+                    ? // Compact mode: show remaining time with "min." suffix
+                      `${formatTime(remainingTime)} ${t("CycleTimer.Time.lb", { time: "" }).replace(/\s*$/, "")}`
+                    : // Full mode: show "remaining / of total min." format
+                      `${formatTime(remainingTime)} / ${t("CycleTimer.Time.lb", { time: formatTime(maxTime) })}`
+                  : // Count-up mode: show elapsed time only
+                    formatTime(remainingTime)}
             </Typography>
           </Box>
         )
@@ -616,7 +621,10 @@ export const CycleTimer = externalizeComponent(
                 marginBottom: 0.5,
               }}
             >
-              <Fade in={showLabels && maxTime !== null} timeout={300}>
+              <Fade
+                in={showLabels && maxTime !== null && !hasError}
+                timeout={300}
+              >
                 <Typography
                   variant="body2"
                   sx={{
@@ -629,19 +637,49 @@ export const CycleTimer = externalizeComponent(
               </Fade>
             </Box>
 
-            {/* Main timer display - never fades, always visible */}
-            <Typography
-              variant="h1"
+            {/* Main timer display with error state transition */}
+            <Box
               sx={{
-                fontSize: "48px",
-                fontWeight: 500,
-                color: theme.palette.text.primary,
-                lineHeight: 1,
+                position: "relative",
+                height: "48px", // Fixed height to prevent layout shift
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
                 marginBottom: 0.5,
               }}
             >
-              {formatTime(remainingTime)}
-            </Typography>
+              {/* Error text */}
+              <Fade in={hasError} timeout={500}>
+                <Typography
+                  variant="h3"
+                  sx={{
+                    position: "absolute",
+                    fontSize: "40px",
+                    fontWeight: 400,
+                    color: "#FFFFFF",
+                    lineHeight: "116.7%",
+                  }}
+                >
+                  {t("CycleTimer.Error.lb", "Error")}
+                </Typography>
+              </Fade>
+
+              {/* Normal timer text */}
+              <Fade in={!hasError} timeout={500}>
+                <Typography
+                  variant="h1"
+                  sx={{
+                    position: "absolute",
+                    fontSize: "48px",
+                    fontWeight: 500,
+                    color: theme.palette.text.primary,
+                    lineHeight: 1,
+                  }}
+                >
+                  {formatTime(remainingTime)}
+                </Typography>
+              </Fade>
+            </Box>
 
             {/* Total time display - always reserves space to prevent layout shift */}
             <Box
@@ -652,7 +690,10 @@ export const CycleTimer = externalizeComponent(
                 justifyContent: "center",
               }}
             >
-              <Fade in={showLabels && maxTime !== null} timeout={300}>
+              <Fade
+                in={showLabels && maxTime !== null && !hasError}
+                timeout={300}
+              >
                 <Typography
                   variant="body2"
                   sx={{

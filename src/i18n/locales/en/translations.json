@@ -48,6 +48,7 @@
   "CycleTimer.RemainingTime.lb": "Time remaining",
   "CycleTimer.OfTime.lb": "of {{time}} min.",
   "CycleTimer.Time.lb": "{{time}} min.",
+  "CycleTimer.Error.lb": "Error",
   "ProgramControl.Start.bt": "Start",
   "ProgramControl.Resume.bt": "Resume",
   "ProgramControl.Retry.bt": "Retry",
