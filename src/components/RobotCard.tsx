@@ -15,14 +15,17 @@ import { PresetEnvironment } from "./3d-viewport/PresetEnvironment"
 import { CycleTimer } from "./CycleTimer"
 import { useAutorun } from "./utils/hooks"
 
-// Component that handles bounds refreshing when motion state changes
+// Component that handles bounds refreshing when motion state changes or model renders
 function BoundsRefresher({
   connectedMotionGroup,
+  modelRenderTrigger,
 }: {
   connectedMotionGroup: ConnectedMotionGroup
+  modelRenderTrigger: number
 }) {
   const bounds = useBounds()
 
+  // Trigger bounds fit when robot motion state changes
   useAutorun(() => {
     // Ensure rapidlyChangingMotionState exists before accessing its properties
     if (!connectedMotionGroup.rapidlyChangingMotionState?.state) {
@@ -33,9 +36,16 @@ function BoundsRefresher({
     connectedMotionGroup.rapidlyChangingMotionState.state.joint_position
     connectedMotionGroup.rapidlyChangingMotionState.tcp_pose
 
-    // Refresh bounds when robot pose/position changes
-    bounds.refresh().clip().fit()
+    // Fit bounds when robot pose/position changes
+    bounds.fit()
   })
+
+  // Trigger bounds fit when model renders
+  useEffect(() => {
+    if (modelRenderTrigger > 0) {
+      bounds.fit()
+    }
+  }, [modelRenderTrigger, bounds])
 
   return null
 }
@@ -326,9 +336,10 @@ export const RobotCard = externalizeComponent(
                     gl={{ alpha: true, antialias: true }}
                   >
                     <PresetEnvironment />
-                    <Bounds fit margin={1} maxDuration={1}>
+                    <Bounds fit observe clip margin={1} maxDuration={1}>
                       <BoundsRefresher
                         connectedMotionGroup={connectedMotionGroup}
+                        modelRenderTrigger={modelRenderTrigger}
                       />
                       <RobotComponent
                         connectedMotionGroup={connectedMotionGroup}
@@ -508,9 +519,10 @@ export const RobotCard = externalizeComponent(
                       gl={{ alpha: true, antialias: true }}
                     >
                       <PresetEnvironment />
-                      <Bounds fit clip margin={1} maxDuration={1}>
+                      <Bounds fit observe clip margin={1} maxDuration={1}>
                         <BoundsRefresher
                           connectedMotionGroup={connectedMotionGroup}
+                          modelRenderTrigger={modelRenderTrigger}
                         />
                         <RobotComponent
                           connectedMotionGroup={connectedMotionGroup}
