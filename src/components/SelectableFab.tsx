@@ -1,4 +1,4 @@
-import { Fab, styled, type FabProps } from "@mui/material"
+import { Fab, type FabProps, styled } from "@mui/material"
 
 const StyledSelectableFab = styled(Fab, {
   shouldForwardProp: (prop) => prop !== "selected",

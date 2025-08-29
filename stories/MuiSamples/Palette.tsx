@@ -1,4 +1,4 @@
-import { Box, Grid, Tooltip, Typography, type Theme } from "@mui/material"
+import { Box, Grid, type Theme, Tooltip, Typography } from "@mui/material"
 import { useTheme } from "@mui/material/styles"
 
 const colorCategories: Array<
