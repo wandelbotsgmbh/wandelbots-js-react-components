@@ -1,17 +1,13 @@
 import { Stack, Tooltip, Typography, useTheme } from "@mui/material"
-import { forwardRef, useEffect, useState } from "react"
+import { useEffect, useState } from "react"
 
-export const CopyableText = forwardRef(
-  (
-    {
-      label,
-      value,
-    }: {
-      label?: string
-      value: string
-    },
-    ref: React.ForwardedRef<HTMLDivElement>,
-  ) => {
+export const CopyableText = (props: {
+  label?: string
+  value: string
+  ref?: React.Ref<HTMLDivElement>
+}) => {
+  const { value, ref } = props
+  // Note: label prop is available but not currently used in the component
     const theme = useTheme()
     const [tooltipOpen, setTooltipOpen] = useState(false)
 
@@ -30,11 +26,13 @@ export const CopyableText = forwardRef(
         console.error(err)
 
         // Let's fall back to selecting the text so the user can manually copy easily
-        const selection = window.getSelection()!
-        const range = document.createRange()
-        range.selectNodeContents(ref.current as any)
-        selection.removeAllRanges()
-        selection.addRange(range)
+        const selection = window.getSelection()
+        if (selection && ref && "current" in ref && ref.current) {
+          const range = document.createRange()
+          range.selectNodeContents(ref.current)
+          selection.removeAllRanges()
+          selection.addRange(range)
+        }
       }
       return false
     }
@@ -83,5 +81,4 @@ export const CopyableText = forwardRef(
         </Stack>
       </Tooltip>
     )
-  },
-)
+}

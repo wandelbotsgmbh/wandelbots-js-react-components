@@ -1,6 +1,5 @@
 import { Box, Grid, Tooltip, Typography, type Theme } from "@mui/material"
 import { useTheme } from "@mui/material/styles"
-import React from "react"
 
 const colorCategories: Array<
   keyof Theme["palette"] | keyof Theme["paletteExt"]
@@ -20,7 +19,7 @@ const colorCategories: Array<
   "backgroundPaperElevation",
 ]
 
-const PaletteOverview: React.FC = () => {
+const PaletteOverview = () => {
   const theme = useTheme()
 
   return (

@@ -24,6 +24,8 @@ export interface TabBarProps {
   onTabChange?: (index: number) => void
   /** Additional styling */
   sx?: SxProps
+  /** Ref to the root container element */
+  ref?: React.Ref<HTMLDivElement>
 }
 
 interface TabPanelProps {
@@ -55,7 +57,7 @@ function TabPanel(props: TabPanelProps) {
  */
 export const TabBar = externalizeComponent(
   observer((props: TabBarProps) => {
-    const { items, defaultActiveTab = 0, onTabChange, sx } = props
+    const { items, defaultActiveTab = 0, onTabChange, sx, ref } = props
     const [activeTab, setActiveTab] = useState(defaultActiveTab)
 
     const handleTabChange = (
@@ -68,6 +70,7 @@ export const TabBar = externalizeComponent(
 
     return (
       <Box
+        ref={ref}
         sx={{ height: "100%", display: "flex", flexDirection: "column", ...sx }}
       >
         {/* Tabs */}
