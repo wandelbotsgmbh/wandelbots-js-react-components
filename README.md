@@ -84,7 +84,7 @@ type WandelscriptEditorProps = {
 
 #### Theming
 
-The UI components presented in this library will respect the Material UI theme of the application they are rendered within, allowing customization with the [MUI theming system](mui.com/material-ui).
+The UI components presented in this library will respect the Material UI theme of the application they are rendered within, allowing customization with the [MUI theming system](http://mui.com/material-ui).
 
 Using the Wandelbots MUI theme
 To make the components look exactly like they do in the storybook, pass the [Wandelbots MUI theme](https://wandelbotsgmbh.github.io/wandelbots-js-react-components/?path=/docs/theming-wandelbots-mui-theme--docs) to ThemeProvider.

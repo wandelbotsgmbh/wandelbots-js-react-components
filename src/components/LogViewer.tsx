@@ -45,7 +45,7 @@ export const createLogMessage = (
   level: LogLevel,
   id?: string,
 ): LogMessage => ({
-  id: id || `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+  id: id || `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
   timestamp: new Date(),
   message,
   level,
