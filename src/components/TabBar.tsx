@@ -74,14 +74,13 @@ export const TabBar = externalizeComponent(
         sx={{ height: "100%", display: "flex", flexDirection: "column", ...sx }}
       >
         {/* Tabs */}
-        <Box sx={{ px: 3, pt: 3, pb: 3 }}>
+        <Box sx={{ px: 0, py: 0 }}>
           <Tabs
             value={activeTab}
             onChange={handleTabChange}
             sx={{
-              minHeight: "auto",
+              minHeight: "32px",
               backgroundColor: "transparent",
-              mt: 3,
               "& .MuiTabs-indicator": {
                 display: "none", // Hide the default indicator
               },
@@ -98,16 +97,15 @@ export const TabBar = externalizeComponent(
                 iconPosition="start"
                 disableRipple
                 sx={{
-                  minHeight: "auto",
-                  minWidth: "auto",
-                  padding: "4px 8px",
-                  borderRadius: "10px",
+                  minHeight: "32px",
+                  height: "32px",
+                  padding: "0px 10px",
+                  borderRadius: "12px",
                   backgroundColor: (theme) =>
                     theme.palette.backgroundPaperElevation?.[11] || "#32344B",
                   color: "text.primary",
                   opacity: activeTab === index ? 1 : 0.38,
-                  textTransform: "none",
-                  fontWeight: 500,
+                  fontSize: "13px",
                   transition: "all 0.2s ease-in-out",
                   "&:hover": {
                     opacity: activeTab === index ? 1 : 0.6,
@@ -131,7 +129,7 @@ export const TabBar = externalizeComponent(
         </Box>
 
         {/* Border line */}
-        <Box sx={{ mx: 3, borderBottom: 1, borderColor: "divider" }} />
+        <Box sx={{ mt: "32px", borderBottom: 1, borderColor: "divider" }} />
 
         {/* Tab Content */}
         <Box sx={{ flex: 1, overflow: "auto" }}>

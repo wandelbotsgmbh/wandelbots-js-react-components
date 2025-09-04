@@ -66,7 +66,7 @@ type Story = StoryObj<typeof TabBar>
 
 // Sample content components for the stories
 const ProgramPreviewContent = () => (
-  <Box sx={{ p: 3 }}>
+  <Box sx={{ p: 0 }}>
     <Card sx={{ mb: 3, backgroundColor: "transparent" }} elevation={0}>
       <CardContent sx={{ p: 0 }}>
         <Typography variant="h6" gutterBottom>
@@ -98,7 +98,7 @@ const ProgramPreviewContent = () => (
 )
 
 const DetailsContent = () => (
-  <Box sx={{ p: 3 }}>
+  <Box sx={{ p: 0 }}>
     <Card sx={{ mb: 3, backgroundColor: "transparent" }} elevation={0}>
       <CardContent sx={{ p: 0 }}>
         <Typography variant="h6" gutterBottom>
