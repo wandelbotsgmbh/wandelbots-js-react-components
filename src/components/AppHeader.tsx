@@ -85,7 +85,7 @@ export const AppHeader = externalizeComponent(
             ...sx,
           }}
         >
-          <Toolbar sx={{ minHeight: "64px !important" }}>
+          <Toolbar sx={{ minHeight: "62px !important" }}>
             {/* App Icon */}
             <Box sx={{ mr: 2, display: "flex", alignItems: "center" }}>
               {appIcon}

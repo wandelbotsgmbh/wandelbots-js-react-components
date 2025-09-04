@@ -173,9 +173,9 @@ export const ProgramControl = externalizeComponent(
                   }
                   onClick={config.onClick}
                   sx={{
-                    width: "110px",
-                    height: "110px",
-                    borderRadius: "110px",
+                    width: "88px",
+                    height: "88px",
+                    borderRadius: "88px",
                     backgroundColor: config.color,
                     opacity:
                       config.enabled &&
@@ -197,7 +197,7 @@ export const ProgramControl = externalizeComponent(
                       backgroundColor: config.color,
                       opacity: 0.3,
                     },
-                    minWidth: "110px",
+                    minWidth: "88px",
                     flexShrink: 0,
                   }}
                 >
