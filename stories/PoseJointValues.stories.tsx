@@ -9,7 +9,8 @@ const meta: Meta<typeof PoseJointValues> = {
   argTypes: {
     showCopyButton: {
       control: "boolean",
-      description: "Whether to show the copy functionality when clicking the component",
+      description:
+        "Whether to show the copy functionality when clicking the component",
     },
   },
   args: {
@@ -22,13 +23,18 @@ const meta: Meta<typeof PoseJointValues> = {
       rapidlyChangingMotionState: {
         state: {
           joint_position: {
-            joints: [0.1234, -1.5678, 2.3456, -0.7890, 1.2345, -2.6789],
+            joints: [0.1234, -1.5678, 2.3456, -0.789, 1.2345, -2.6789],
           },
         },
       },
     } as unknown as MotionStreamConnection
 
-    return <PoseJointValues motionStream={mockMotionStream} showCopyButton={args.showCopyButton} />
+    return (
+      <PoseJointValues
+        motionStream={mockMotionStream}
+        showCopyButton={args.showCopyButton}
+      />
+    )
   },
 }
 

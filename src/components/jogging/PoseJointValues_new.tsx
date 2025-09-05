@@ -8,7 +8,7 @@ import { useAnimationFrame } from "../utils/hooks"
 export const PoseJointValues = observer(
   ({
     motionStream,
-    showCopyButton = false,
+    showCopyButton = true,
   }: {
     motionStream: MotionStreamConnection
     showCopyButton?: boolean

@@ -7,10 +7,10 @@ import { CopyableText } from "../CopyableText"
 import { useAnimationFrame } from "../utils/hooks"
 
 export const PoseCartesianValues = observer(
-  ({ 
-    motionStream, 
-    showCopyButton = false 
-  }: { 
+  ({
+    motionStream,
+    showCopyButton = false,
+  }: {
     motionStream: MotionStreamConnection
     showCopyButton?: boolean
   }) => {

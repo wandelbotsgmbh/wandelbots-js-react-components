@@ -9,7 +9,8 @@ const meta: Meta<typeof PoseCartesianValues> = {
   argTypes: {
     showCopyButton: {
       control: "boolean",
-      description: "Whether to show the copy functionality when clicking the component",
+      description:
+        "Whether to show the copy functionality when clicking the component",
     },
   },
   args: {
@@ -36,7 +37,12 @@ const meta: Meta<typeof PoseCartesianValues> = {
       },
     } as unknown as MotionStreamConnection
 
-    return <PoseCartesianValues motionStream={mockMotionStream} showCopyButton={args.showCopyButton} />
+    return (
+      <PoseCartesianValues
+        motionStream={mockMotionStream}
+        showCopyButton={args.showCopyButton}
+      />
+    )
   },
 }
 
