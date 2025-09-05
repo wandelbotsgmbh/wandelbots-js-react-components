@@ -19,31 +19,31 @@ export const useAnimations = () => {
   const pulseCountRef = useRef<number>(0)
 
   const triggerPauseAnimation = useCallback(() => {
-    setAnimationState(prev => ({ ...prev, showPauseAnimation: true }))
-    
+    setAnimationState((prev) => ({ ...prev, showPauseAnimation: true }))
+
     if (pauseAnimationTimeoutRef.current) {
       clearTimeout(pauseAnimationTimeoutRef.current)
     }
-    
+
     pauseAnimationTimeoutRef.current = setTimeout(() => {
-      setAnimationState(prev => ({ ...prev, showPauseAnimation: false }))
+      setAnimationState((prev) => ({ ...prev, showPauseAnimation: false }))
     }, 800)
   }, [])
 
   const triggerErrorAnimation = useCallback(() => {
-    setAnimationState(prev => ({ ...prev, showErrorAnimation: true }))
-    
+    setAnimationState((prev) => ({ ...prev, showErrorAnimation: true }))
+
     if (errorAnimationTimeoutRef.current) {
       clearTimeout(errorAnimationTimeoutRef.current)
     }
-    
+
     errorAnimationTimeoutRef.current = setTimeout(() => {
-      setAnimationState(prev => ({ ...prev, showErrorAnimation: false }))
+      setAnimationState((prev) => ({ ...prev, showErrorAnimation: false }))
     }, 600)
   }, [])
 
   const clearErrorAnimation = useCallback(() => {
-    setAnimationState(prev => ({ ...prev, showErrorAnimation: false }))
+    setAnimationState((prev) => ({ ...prev, showErrorAnimation: false }))
     if (errorAnimationTimeoutRef.current) {
       clearTimeout(errorAnimationTimeoutRef.current)
     }
@@ -51,10 +51,10 @@ export const useAnimations = () => {
 
   const startPulsatingAnimation = useCallback((onComplete?: () => void) => {
     pulseCountRef.current = 0
-    setAnimationState(prev => ({ 
-      ...prev, 
+    setAnimationState((prev) => ({
+      ...prev,
       showPulsatingText: true,
-      pulsatingFinished: false 
+      pulsatingFinished: false,
     }))
 
     pulsatingIntervalRef.current = setInterval(() => {
@@ -66,18 +66,18 @@ export const useAnimations = () => {
           clearInterval(pulsatingIntervalRef.current)
           pulsatingIntervalRef.current = null
         }
-        setAnimationState(prev => ({
+        setAnimationState((prev) => ({
           ...prev,
           showPulsatingText: false,
-          pulsatingFinished: true
+          pulsatingFinished: true,
         }))
         if (onComplete) {
           onComplete()
         }
       } else {
-        setAnimationState(prev => ({ 
-          ...prev, 
-          showPulsatingText: !prev.showPulsatingText 
+        setAnimationState((prev) => ({
+          ...prev,
+          showPulsatingText: !prev.showPulsatingText,
         }))
       }
     }, 800)
@@ -88,39 +88,39 @@ export const useAnimations = () => {
       clearInterval(pulsatingIntervalRef.current)
       pulsatingIntervalRef.current = null
     }
-    setAnimationState(prev => ({
+    setAnimationState((prev) => ({
       ...prev,
       showPulsatingText: false,
-      pulsatingFinished: false
+      pulsatingFinished: false,
     }))
     pulseCountRef.current = 0
   }, [])
 
   const triggerFadeTransition = useCallback(() => {
-    setAnimationState(prev => ({ 
-      ...prev, 
-      showLabels: false, 
-      showMainText: false 
+    setAnimationState((prev) => ({
+      ...prev,
+      showLabels: false,
+      showMainText: false,
     }))
-    
+
     if (fadeTimeoutRef.current) {
       clearTimeout(fadeTimeoutRef.current)
     }
-    
+
     fadeTimeoutRef.current = setTimeout(() => {
-      setAnimationState(prev => ({ 
-        ...prev, 
-        showLabels: true, 
-        showMainText: true 
+      setAnimationState((prev) => ({
+        ...prev,
+        showLabels: true,
+        showMainText: true,
       }))
     }, 200)
   }, [])
 
   const setInitialAnimationState = useCallback(() => {
-    setAnimationState(prev => ({ 
-      ...prev, 
-      showLabels: true, 
-      showMainText: true 
+    setAnimationState((prev) => ({
+      ...prev,
+      showLabels: true,
+      showMainText: true,
     }))
   }, [])
 
