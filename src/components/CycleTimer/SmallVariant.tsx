@@ -169,9 +169,9 @@ export const SmallVariant = ({
                   ? theme.palette.success.main
                   : theme.palette.text.secondary
                 : theme.palette.text.primary,
-          fontSize: currentState === "idle" ? "10px" : "14px",
-          lineHeight: currentState === "idle" ? "166%" : "normal",
-          letterSpacing: currentState === "idle" ? "0.17px" : "normal",
+          fontSize: "14px",
+          lineHeight: "normal",
+          letterSpacing: "normal",
           opacity:
             currentState === "idle"
               ? showIdlePulsating

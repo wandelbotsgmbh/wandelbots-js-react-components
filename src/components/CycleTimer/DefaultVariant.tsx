@@ -126,22 +126,28 @@ export const DefaultVariant = ({
                       ? theme.palette.success.main
                       : theme.palette.text.secondary
                     : theme.palette.text.secondary,
-                opacity:
-                  currentState === "measured" && pulsatingFinished
-                    ? showPulsatingText
-                      ? 1
-                      : 0.6
-                    : 1,
-                transition: "color 0.8s ease-in-out, opacity 2s ease-in-out",
+                transition: "color 0.8s ease-in-out",
               }}
             >
-              {currentState === "measuring"
-                ? t("CycleTimer.CycleTime.lb", "Cycle Time")
-                : currentState === "measured"
+              <span
+                style={{
+                  opacity:
+                    currentState === "measured" && pulsatingFinished
+                      ? showPulsatingText
+                        ? 1
+                        : 0.6
+                      : 1,
+                  transition: "opacity 2s ease-in-out",
+                }}
+              >
+                {currentState === "measuring"
                   ? t("CycleTimer.CycleTime.lb", "Cycle Time")
-                  : currentState === "countdown"
-                    ? t("CycleTimer.RemainingTime.lb", "Remaining Time")
-                    : ""}
+                  : currentState === "measured"
+                    ? t("CycleTimer.CycleTime.lb", "Cycle Time")
+                    : currentState === "countdown"
+                      ? t("CycleTimer.RemainingTime.lb", "Remaining Time")
+                      : ""}
+              </span>
             </Typography>
           </Fade>
         </Box>
@@ -174,14 +180,17 @@ export const DefaultVariant = ({
                 textAlign: "center",
                 width: "200px",
                 height: "20px",
-                opacity: showIdlePulsating ? 1 : 0.6,
-                transition: "opacity 2s ease-in-out",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
               }}
             >
-              <span>
+              <span
+                style={{
+                  opacity: showIdlePulsating ? 1 : 0.6,
+                  transition: "opacity 2s ease-in-out",
+                }}
+              >
                 {t(
                   "CycleTimer.WaitingForCycle.lb",
                   "Waiting for program cycle",
@@ -192,6 +201,8 @@ export const DefaultVariant = ({
                   display: "inline-block",
                   width: "18px",
                   textAlign: "left",
+                  opacity: showIdlePulsating ? 1 : 0.6,
+                  transition: "opacity 2s ease-in-out",
                 }}
               >
                 {".".repeat(idleDotsCount)}
@@ -232,17 +243,23 @@ export const DefaultVariant = ({
                 fontSize: "48px",
                 fontWeight: 500,
                 color: theme.palette.text.primary,
-                opacity:
-                  currentState === "measured" && pulsatingFinished
-                    ? showPulsatingText
-                      ? 1
-                      : 0.6
-                    : 1,
                 lineHeight: 1,
-                transition: "color 0.8s ease-in-out, opacity 2s ease-in-out",
+                transition: "color 0.8s ease-in-out",
               }}
             >
-              {formatTime(remainingTime)}
+              <span
+                style={{
+                  opacity:
+                    currentState === "measured" && pulsatingFinished
+                      ? showPulsatingText
+                        ? 1
+                        : 0.6
+                      : 1,
+                  transition: "opacity 2s ease-in-out",
+                }}
+              >
+                {formatTime(remainingTime)}
+              </span>
             </Typography>
           </Fade>
         </Box>
@@ -277,24 +294,30 @@ export const DefaultVariant = ({
                       ? theme.palette.success.main
                       : theme.palette.text.secondary
                     : theme.palette.text.secondary,
-                opacity:
-                  currentState === "measured" && pulsatingFinished
-                    ? showPulsatingText
-                      ? 1
-                      : 0.6
-                    : 1,
-                transition: "color 0.8s ease-in-out, opacity 2s ease-in-out",
+                transition: "color 0.8s ease-in-out",
               }}
             >
-              {currentState === "measuring"
-                ? t("CycleTimer.Measuring.lb", "measuring...")
-                : currentState === "measured"
-                  ? t("CycleTimer.Determined.lb", "determined")
-                  : currentState === "countdown" && maxTime !== null
-                    ? t("CycleTimer.OfTime.lb", {
-                        time: formatTime(maxTime),
-                      })
-                    : ""}
+              <span
+                style={{
+                  opacity:
+                    currentState === "measured" && pulsatingFinished
+                      ? showPulsatingText
+                        ? 1
+                        : 0.6
+                      : 1,
+                  transition: "opacity 2s ease-in-out",
+                }}
+              >
+                {currentState === "measuring"
+                  ? t("CycleTimer.Measuring.lb", "measuring...")
+                  : currentState === "measured"
+                    ? t("CycleTimer.Determined.lb", "determined")
+                    : currentState === "countdown" && maxTime !== null
+                      ? t("CycleTimer.OfTime.lb", {
+                          time: formatTime(maxTime),
+                        })
+                      : ""}
+              </span>
             </Typography>
           </Fade>
         </Box>
