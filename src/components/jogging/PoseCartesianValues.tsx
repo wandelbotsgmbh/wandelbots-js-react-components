@@ -2,12 +2,35 @@ import { Button, Stack, Typography } from "@mui/material"
 import { poseToWandelscriptString } from "@wandelbots/nova-js"
 import type {
   ConnectedMotionGroup,
+  MotionGroupStateResponse,
   MotionStreamConnection,
 } from "@wandelbots/nova-js/v1"
 import { observer } from "mobx-react-lite"
 import { useRef, useState } from "react"
 import { CopyableText } from "../CopyableText"
 import { useAnimationFrame } from "../utils/hooks"
+
+/** Minimal interface for what PoseCartesianValues needs from motion stream */
+type MotionStateProvider = {
+  rapidlyChangingMotionState: MotionGroupStateResponse
+}
+
+/** Creates a motion state provider from either a MotionStreamConnection or ConnectedMotionGroup */
+function createMotionStateProvider(
+  motionStream?: MotionStreamConnection,
+  connectedMotionGroup?: ConnectedMotionGroup,
+): MotionStateProvider | undefined {
+  if (motionStream) {
+    return motionStream
+  }
+  if (connectedMotionGroup) {
+    return {
+      rapidlyChangingMotionState:
+        connectedMotionGroup.rapidlyChangingMotionState,
+    }
+  }
+  return undefined
+}
 
 export type PoseCartesianValuesProps = {
   /** Either a MotionStreamConnection or ConnectedMotionGroup */
@@ -25,15 +48,10 @@ export const PoseCartesianValues = observer(
     const poseHolderRef = useRef<HTMLDivElement>(null)
     const [copyMessage, setCopyMessage] = useState("")
 
-    // Use the provided motionStream or create a mock-like object from connectedMotionGroup
-    const activeMotionStream =
-      motionStream ||
-      (connectedMotionGroup
-        ? ({
-            rapidlyChangingMotionState:
-              connectedMotionGroup.rapidlyChangingMotionState,
-          } as MotionStreamConnection)
-        : undefined)
+    const activeMotionStream = createMotionStateProvider(
+      motionStream,
+      connectedMotionGroup,
+    )
 
     if (!activeMotionStream) {
       throw new Error(

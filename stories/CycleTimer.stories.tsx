@@ -142,6 +142,16 @@ export const Default: Story = {
       resume: () => void
       isPaused: () => boolean
     } | null> = React.useRef(null)
+    const autoRestartTimeoutRef = React.useRef<NodeJS.Timeout | null>(null)
+
+    // Cleanup timeout on unmount
+    React.useEffect(() => {
+      return () => {
+        if (autoRestartTimeoutRef.current) {
+          clearTimeout(autoRestartTimeoutRef.current)
+        }
+      }
+    }, [])
 
     const handleCycleComplete = (controls: {
       startNewCycle: (maxTime?: number, elapsedSeconds?: number) => void
@@ -162,11 +172,17 @@ export const Default: Story = {
       setCycleCount((prev) => prev + 1)
 
       if (isAutoRestart) {
+        // Clear any existing timeout before setting a new one
+        if (autoRestartTimeoutRef.current) {
+          clearTimeout(autoRestartTimeoutRef.current)
+        }
+
         // Automatically start a new 10-second cycle
-        setTimeout(() => {
+        autoRestartTimeoutRef.current = setTimeout(() => {
           if (controlsRef.current) {
             controlsRef.current.startNewCycle(10)
           }
+          autoRestartTimeoutRef.current = null
         }, 1000)
       }
     }

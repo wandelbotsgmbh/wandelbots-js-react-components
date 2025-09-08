@@ -146,7 +146,7 @@ export const useTimerLogic = ({
           setTimerState((prev) => ({ ...prev, isRunning: false }))
           startTimeRef.current = null
           if (onCycleEnd) {
-            setTimeout(() => onCycleEnd(), 0)
+            queueMicrotask(() => onCycleEnd())
           }
         } else if (autoStart) {
           setTimeout(() => {
@@ -305,7 +305,7 @@ export const useTimerLogic = ({
               startTimeRef.current = null
               progressInterpolator.setTarget([100])
               if (onCycleEnd) {
-                setTimeout(() => onCycleEnd(), 0)
+                queueMicrotask(() => onCycleEnd())
               }
               return
             }
