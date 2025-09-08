@@ -117,7 +117,7 @@ export const DefaultVariant = ({
               currentState !== "countup" &&
               currentState !== "success"
             }
-            timeout={200}
+            timeout={300}
           >
             <Typography
               variant="body2"
@@ -237,7 +237,7 @@ export const DefaultVariant = ({
               currentState !== "idle" &&
               currentState !== "success"
             }
-            timeout={200}
+            timeout={300}
           >
             <Typography
               variant="h1"
@@ -280,7 +280,7 @@ export const DefaultVariant = ({
               currentState !== "countup" &&
               currentState !== "success"
             }
-            timeout={200}
+            timeout={300}
           >
             <Typography
               variant="body2"
