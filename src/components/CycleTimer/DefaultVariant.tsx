@@ -86,7 +86,10 @@ export const DefaultVariant = ({
           top: "50%",
           left: "50%",
           transform: "translate(-50%, -50%)",
+          width: 225,
+          height: 225,
           borderRadius: "50%",
+          backgroundColor: "#292B3F",
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
@@ -249,12 +252,7 @@ export const DefaultVariant = ({
             >
               <span
                 style={{
-                  opacity:
-                    currentState === "measured" && pulsatingFinished
-                      ? showPulsatingText
-                        ? 1
-                        : 0.6
-                      : 1,
+                  opacity: 1,
                   transition: "opacity 2s ease-in-out",
                 }}
               >
