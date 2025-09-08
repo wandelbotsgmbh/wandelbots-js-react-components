@@ -53,10 +53,10 @@ export const useTimerLogic = ({
       ...prev,
       currentState: "idle",
       maxTime: null,
-      remainingTime: 0,
+      // Don't reset remainingTime - keep the last value
       isRunning: false,
       isPausedState: false,
-      currentProgress: 0, // Immediately reset progress to 0
+      currentProgress: 0, // Reset progress to 0 for gauge
     }))
     pausedTimeRef.current = 0
     startTimeRef.current = null
