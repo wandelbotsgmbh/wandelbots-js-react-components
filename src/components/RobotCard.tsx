@@ -12,7 +12,6 @@ import { useTranslation } from "react-i18next"
 import type { Group } from "three"
 import { externalizeComponent } from "../externalizeComponent"
 import { PresetEnvironment } from "./3d-viewport/PresetEnvironment"
-import { CycleTimer } from "./CycleTimer"
 import type { ProgramState } from "./ProgramControl"
 import { ProgramStateIndicator } from "./ProgramStateIndicator"
 import { Robot } from "./robots/Robot"
@@ -58,34 +57,8 @@ export interface RobotCardProps {
     transparentColor?: string
     getModel?: (modelFromController: string) => string
   }>
-  /** Custom cycle timer component (optional, defaults to CycleTimer) */
-  cycleTimerComponent?: React.ComponentType<{
-    variant?: "default" | "small"
-    compact?: boolean
-    onCycleComplete: (controls: {
-      startNewCycle: (maxTimeSeconds?: number, elapsedSeconds?: number) => void
-      pause: () => void
-      resume: () => void
-      isPaused: () => boolean
-    }) => void
-    onCycleEnd?: () => void
-    autoStart?: boolean
-    hasError?: boolean
-    className?: string
-  }>
-  /** Callback to receive cycle timer controls for external timer management */
-  onCycleTimerReady?: (controls: {
-    startNewCycle: (maxTimeSeconds?: number, elapsedSeconds?: number) => void
-    pause: () => void
-    resume: () => void
-    isPaused: () => boolean
-  }) => void
-  /** Callback fired when a cycle completes (reaches zero) */
-  onCycleEnd?: () => void
-  /** Whether the cycle timer should auto-start when a new cycle is set */
-  cycleTimerAutoStart?: boolean
-  /** Whether the cycle timer is in an error state (pauses timer and shows error styling) */
-  cycleTimerHasError?: boolean
+  /** Custom component to render in the content area (optional) */
+  customContentComponent?: React.ComponentType<Record<string, unknown>>
   /** Additional CSS class name */
   className?: string
 }
@@ -108,11 +81,31 @@ export interface RobotCardProps {
  * - Robot name displayed in Typography h6 at top-left
  * - Program state indicator below the name
  * - Auto-fitting 3D robot model that scales with container size
- * - Compact cycle time component with small variant, error state, and count-up/count-down mode support
+ * - Customizable content area for displaying custom React components
  * - Transparent gray divider line
  * - "Drive to Home" button with press-and-hold functionality
  * - Localization support via react-i18next
  * - Material-UI theming integration
+ *
+ * Usage with custom content:
+ * ```tsx
+ * // Example custom timer component
+ * const CustomTimer = () => (
+ *   <Box>
+ *     <Typography variant="body1" sx={{ color: "text.secondary" }}>
+ *       Runtime
+ *     </Typography>
+ *     <Typography variant="h6">05:23</Typography>
+ *   </Box>
+ * )
+ *
+ * <RobotCard
+ *   robotName="UR5e Robot"
+ *   programState={ProgramState.RUNNING}
+ *   customContentComponent={CustomTimer}
+ *   // ... other props
+ * />
+ * ```
  */
 export const RobotCard = externalizeComponent(
   observer(
@@ -126,11 +119,7 @@ export const RobotCard = externalizeComponent(
       onDriveToHomeRelease,
       connectedMotionGroup,
       robotComponent: RobotComponent = Robot,
-      cycleTimerComponent: CycleTimerComponent = CycleTimer,
-      onCycleTimerReady,
-      onCycleEnd,
-      cycleTimerAutoStart = true,
-      cycleTimerHasError = false,
+      customContentComponent: CustomContentComponent,
       className,
     }: RobotCardProps) => {
       const theme = useTheme()
@@ -144,17 +133,6 @@ export const RobotCard = externalizeComponent(
         height: number
       }>({ width: 400, height: 600 })
       const [modelRenderTrigger, setModelRenderTrigger] = useState(0)
-
-      // Store cycle timer controls for external control
-      const cycleControlsRef = useRef<{
-        startNewCycle: (
-          maxTimeSeconds?: number,
-          elapsedSeconds?: number,
-        ) => void
-        pause: () => void
-        resume: () => void
-        isPaused: () => boolean
-      } | null>(null)
 
       // Hook to detect aspect ratio and size changes
       useEffect(() => {
@@ -204,38 +182,16 @@ export const RobotCard = externalizeComponent(
         }
       }, [isDriveToHomePressed, onDriveToHomeRelease])
 
-      // Store and provide cycle timer controls for external use
-      const handleCycleComplete = useCallback(
-        (controls: {
-          startNewCycle: (
-            maxTimeSeconds?: number,
-            elapsedSeconds?: number,
-          ) => void
-          pause: () => void
-          resume: () => void
-          isPaused: () => boolean
-        }) => {
-          // Store the controls for potential future use
-          cycleControlsRef.current = controls
-
-          // Notify parent component that timer controls are ready
-          if (onCycleTimerReady) {
-            onCycleTimerReady(controls)
-          }
-        },
-        [onCycleTimerReady],
-      )
-
       // Determine if robot should be hidden at small sizes to save space
       const shouldHideRobot = isLandscape
         ? cardSize.width < 350
         : cardSize.height < 200 // Hide robot at height < 200px in portrait
 
-      // Determine if runtime view should be hidden when height is too low
-      // Runtime should be hidden BEFORE the robot (at higher threshold)
-      const shouldHideRuntime = isLandscape
-        ? cardSize.height < 310 // Landscape: hide runtime at height < 350px
-        : cardSize.height < 450 // Portrait: hide runtime at height < 450px
+      // Determine if custom content should be hidden when height is too low
+      // Custom content should be hidden BEFORE the robot (at higher threshold)
+      const shouldHideCustomContent = isLandscape
+        ? cardSize.height < 310 // Landscape: hide custom content at height < 310px
+        : cardSize.height < 450 // Portrait: hide custom content at height < 450px
 
       return (
         <Card
@@ -337,7 +293,7 @@ export const RobotCard = externalizeComponent(
                   />
                 </Box>
 
-                {/* Bottom section with runtime, cycle time, and button */}
+                {/* Bottom section with custom content and button */}
                 <Box
                   sx={{
                     p: { xs: 1.5, sm: 2, md: 3 },
@@ -348,32 +304,10 @@ export const RobotCard = externalizeComponent(
                     justifyContent: "space-between",
                   }}
                 >
-                  {/* Runtime view - hidden if height is too low in landscape mode */}
-                  {!shouldHideRuntime && (
+                  {/* Custom content section - hidden if height is too low in landscape mode */}
+                  {!shouldHideCustomContent && CustomContentComponent && (
                     <Box>
-                      {/* Runtime display */}
-                      <Typography
-                        variant="body1"
-                        sx={{
-                          mb: 0,
-                          color: theme.palette.text.secondary,
-                          textAlign: "left",
-                        }}
-                      >
-                        {t("RobotCard.Runtime.lb")}
-                      </Typography>
-
-                      {/* Compact cycle time component directly below runtime */}
-                      <Box sx={{ textAlign: "left" }}>
-                        <CycleTimerComponent
-                          variant="small"
-                          compact
-                          onCycleComplete={handleCycleComplete}
-                          onCycleEnd={onCycleEnd}
-                          autoStart={cycleTimerAutoStart}
-                          hasError={cycleTimerHasError}
-                        />
-                      </Box>
+                      <CustomContentComponent />
 
                       {/* Divider */}
                       <Divider
@@ -387,7 +321,14 @@ export const RobotCard = externalizeComponent(
                     </Box>
                   )}
 
-                  <Box sx={{ mt: !shouldHideRuntime ? "auto" : 0 }}>
+                  <Box
+                    sx={{
+                      mt:
+                        !shouldHideCustomContent && CustomContentComponent
+                          ? "auto"
+                          : 0,
+                    }}
+                  >
                     {/* Drive to Home button with some space */}
                     <Box
                       sx={{
@@ -488,31 +429,12 @@ export const RobotCard = externalizeComponent(
                   )}
                 </Box>
 
-                {/* Bottom section with runtime, cycle time, and button */}
+                {/* Bottom section with custom content and button */}
                 <Box>
-                  {/* Runtime view - hidden if height is too low */}
-                  {!shouldHideRuntime && (
+                  {/* Custom content section - hidden if height is too low */}
+                  {!shouldHideCustomContent && CustomContentComponent && (
                     <>
-                      {/* Runtime display */}
-                      <Typography
-                        variant="body1"
-                        sx={{
-                          mb: 0,
-                          color: theme.palette.text.secondary,
-                        }}
-                      >
-                        {t("RobotCard.Runtime.lb")}
-                      </Typography>
-
-                      {/* Compact cycle time component directly below runtime */}
-                      <CycleTimerComponent
-                        variant="small"
-                        compact
-                        onCycleComplete={handleCycleComplete}
-                        onCycleEnd={onCycleEnd}
-                        autoStart={cycleTimerAutoStart}
-                        hasError={cycleTimerHasError}
-                      />
+                      <CustomContentComponent />
 
                       {/* Divider */}
                       <Divider
@@ -531,9 +453,10 @@ export const RobotCard = externalizeComponent(
                     sx={{
                       display: "flex",
                       justifyContent: "flex-start",
-                      mt: !shouldHideRuntime
-                        ? { xs: 1, sm: 2, md: 5 }
-                        : { xs: 0.5, sm: 1, md: 2 },
+                      mt:
+                        !shouldHideCustomContent && CustomContentComponent
+                          ? { xs: 1, sm: 2, md: 5 }
+                          : { xs: 0.5, sm: 1, md: 2 },
                       mb: { xs: 0.5, sm: 0.75, md: 1 },
                     }}
                   >

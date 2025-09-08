@@ -13,6 +13,14 @@ import { Robot } from "../src/components/robots/Robot"
 import { rapidlyChangingMotionState } from "./robots/motionState"
 import { getDHParams } from "./robots/robotStoryConfig"
 
+// Example custom content component for demonstration
+const ExampleCustomContent = () => (
+  <Box>
+    <Box sx={{ mb: 1, color: "text.secondary", fontSize: "14px" }}>Runtime</Box>
+    <Box sx={{ fontSize: "18px", fontWeight: "bold" }}>05:23</Box>
+  </Box>
+)
+
 // Component that creates a mock ConnectedMotionGroup for the story with real robot models
 function RobotCardWithMockConnectedMotionGroup(
   props: Omit<
@@ -140,24 +148,9 @@ const meta: Meta = {
       ],
       description: "Robot model to display",
     },
-    onCycleTimerReady: {
-      action: "onCycleTimerReady",
-      description:
-        "Callback to receive cycle timer controls for external timer management. Use controls.startNewCycle(maxTime) for count-down mode or controls.startNewCycle() for count-up mode.",
-    },
-    onCycleEnd: {
-      action: "onCycleEnd",
-      description: "Callback fired when a cycle completes (reaches zero)",
-    },
-    cycleTimerAutoStart: {
+    showCustomContent: {
       control: "boolean",
-      description:
-        "Whether the cycle timer should auto-start when a new cycle is set",
-    },
-    cycleTimerHasError: {
-      control: "boolean",
-      description:
-        "Whether the cycle timer is in an error state (pauses timer and shows error styling)",
+      description: "Whether to show custom content component example",
     },
   },
   args: {
@@ -167,8 +160,7 @@ const meta: Meta = {
     operationMode: "OPERATION_MODE_AUTO",
     driveToHomeEnabled: true,
     modelFromController: "UniversalRobots_UR5e",
-    cycleTimerAutoStart: true,
-    cycleTimerHasError: false,
+    showCustomContent: false,
   },
 }
 
@@ -214,6 +206,9 @@ export const Basic: Story = {
           driveToHomeEnabled={args.driveToHomeEnabled}
           modelFromController={args.modelFromController}
           dhParameters={dhParameters}
+          customContentComponent={
+            args.showCustomContent ? ExampleCustomContent : undefined
+          }
         />
       </Box>
     )
