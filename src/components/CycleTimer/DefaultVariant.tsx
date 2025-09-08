@@ -61,9 +61,9 @@ export const DefaultVariant = ({
             transition: "fill 0.5s ease-out",
           },
           [`& .MuiGauge-referenceArc`]: {
-            fill: currentState === "idle" ? "#292B3F" : "white",
-            stroke: currentState === "idle" ? "#181927" : "transparent",
-            strokeWidth: currentState === "idle" ? 2 : 0,
+            fill: currentState === "idle" ? "#171927" : "#171927",
+            stroke: "transparent",
+            strokeWidth: 0,
             transition:
               "fill 0.5s ease-out, stroke 0.5s ease-out, stroke-width 0.5s ease-out",
           },
