@@ -26,6 +26,8 @@ export const SmallVariant = ({
     showPauseAnimation,
     showPulsatingText,
     pulsatingFinished,
+    showIdlePulsating,
+    idleDotsCount,
   } = animationState
 
   // Simple text-only mode for compact variant in certain states
@@ -103,17 +105,21 @@ export const SmallVariant = ({
                 hasError
                   ? theme.palette.error.light
                   : currentState === "measured"
-                    ? pulsatingFinished
-                      ? theme.palette.text.secondary
-                      : showPulsatingText
-                        ? theme.palette.success.main
-                        : theme.palette.text.secondary
+                    ? showPulsatingText || pulsatingFinished
+                      ? theme.palette.success.main
+                      : theme.palette.text.secondary
                     : theme.palette.success.main
               }
               strokeWidth="2"
-              opacity={0.3}
+              opacity={
+                currentState === "measured" && pulsatingFinished
+                  ? showPulsatingText
+                    ? 1
+                    : 0.6
+                  : 0.3
+              }
               style={{
-                transition: "stroke 0.8s ease-in-out",
+                transition: "stroke 0.8s ease-in-out, opacity 2s ease-in-out",
               }}
             />
             {/* Progress ring */}
@@ -126,11 +132,9 @@ export const SmallVariant = ({
                 hasError
                   ? theme.palette.error.light
                   : currentState === "measured"
-                    ? pulsatingFinished
-                      ? theme.palette.text.secondary
-                      : showPulsatingText
-                        ? theme.palette.success.main
-                        : theme.palette.text.secondary
+                    ? showPulsatingText || pulsatingFinished
+                      ? theme.palette.success.main
+                      : theme.palette.text.secondary
                     : theme.palette.success.main
               }
               strokeWidth="2"
@@ -138,8 +142,14 @@ export const SmallVariant = ({
               strokeDasharray={`${2 * Math.PI * 8}`}
               strokeDashoffset={`${2 * Math.PI * 8 * (1 - (currentState === "idle" ? 0 : timerState.currentProgress) / 100)}`}
               style={{
+                opacity:
+                  currentState === "measured" && pulsatingFinished
+                    ? showPulsatingText
+                      ? 1
+                      : 0.6
+                    : 1,
                 transition:
-                  "stroke-dashoffset 0.1s ease-out, stroke 0.8s ease-in-out",
+                  "stroke-dashoffset 0.1s ease-out, stroke 0.8s ease-in-out, opacity 2s ease-in-out",
               }}
             />
           </svg>
@@ -155,35 +165,65 @@ export const SmallVariant = ({
             : currentState === "idle"
               ? "rgba(255, 255, 255, 0.7)"
               : currentState === "measured"
-                ? pulsatingFinished
-                  ? theme.palette.text.secondary
-                  : showPulsatingText
-                    ? theme.palette.success.main
-                    : theme.palette.text.secondary
+                ? showPulsatingText || pulsatingFinished
+                  ? theme.palette.success.main
+                  : theme.palette.text.secondary
                 : theme.palette.text.primary,
-          fontSize: currentState === "idle" ? "12px" : "14px",
+          fontSize: currentState === "idle" ? "10px" : "14px",
           lineHeight: currentState === "idle" ? "166%" : "normal",
           letterSpacing: currentState === "idle" ? "0.17px" : "normal",
-          transition: "color 0.8s ease-in-out, font-size 0.3s ease-out",
+          opacity:
+            currentState === "idle"
+              ? showIdlePulsating
+                ? 1
+                : 0.6
+              : currentState === "measured" && pulsatingFinished
+                ? showPulsatingText
+                  ? 1
+                  : 0.6
+                : 1,
+          transition:
+            "color 0.8s ease-in-out, font-size 0.3s ease-out, opacity 2s ease-in-out",
         }}
       >
-        {hasError
-          ? t("CycleTimer.Error.lb", "Error")
-          : currentState === "idle"
-            ? t("CycleTimer.WaitingForCycle.lb", "Waiting for program cycle")
-            : currentState === "measuring"
-              ? compact
-                ? `${formatTime(remainingTime)} ${t("CycleTimer.Time.lb", { time: "" }).replace(/\s*$/, "")}`
-                : `${formatTime(remainingTime)} / ${t("CycleTimer.Measuring.lb", "measuring...")}`
-              : currentState === "measured"
-                ? compact
-                  ? `${formatTime(remainingTime)} ${t("CycleTimer.Time.lb", { time: "" }).replace(/\s*$/, "")}`
-                  : `${formatTime(remainingTime)} / ${t("CycleTimer.Determined.lb", "determined")}`
-                : currentState === "countdown" && maxTime !== null
-                  ? compact
-                    ? `${formatTime(remainingTime)} ${t("CycleTimer.Time.lb", { time: "" }).replace(/\s*$/, "")}`
-                    : `${formatTime(remainingTime)} / ${t("CycleTimer.Time.lb", { time: formatTime(maxTime) })}`
-                  : formatTime(remainingTime)}
+        {hasError ? (
+          t("CycleTimer.Error.lb", "Error")
+        ) : currentState === "idle" ? (
+          <>
+            <span>
+              {t("CycleTimer.WaitingForCycle.lb", "Waiting for program cycle")}
+            </span>
+            <span
+              style={{
+                display: "inline-block",
+                width: "18px",
+                textAlign: "left",
+              }}
+            >
+              {".".repeat(idleDotsCount)}
+            </span>
+          </>
+        ) : currentState === "measuring" ? (
+          compact ? (
+            `${formatTime(remainingTime)} ${t("CycleTimer.Time.lb", { time: "" }).replace(/\s*$/, "")}`
+          ) : (
+            `${formatTime(remainingTime)} / ${t("CycleTimer.Measuring.lb", "measuring...")}`
+          )
+        ) : currentState === "measured" ? (
+          compact ? (
+            `${formatTime(remainingTime)} ${t("CycleTimer.Time.lb", { time: "" }).replace(/\s*$/, "")}`
+          ) : (
+            `${formatTime(remainingTime)} / ${t("CycleTimer.Determined.lb", "determined")}`
+          )
+        ) : currentState === "countdown" && maxTime !== null ? (
+          compact ? (
+            `${formatTime(remainingTime)} ${t("CycleTimer.Time.lb", { time: "" }).replace(/\s*$/, "")}`
+          ) : (
+            `${formatTime(remainingTime)} / ${t("CycleTimer.Time.lb", { time: formatTime(maxTime) })}`
+          )
+        ) : (
+          formatTime(remainingTime)
+        )}
       </Typography>
     </Box>
   )

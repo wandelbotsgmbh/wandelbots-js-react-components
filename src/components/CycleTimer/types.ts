@@ -55,4 +55,6 @@ export interface AnimationState {
   pulsatingFinished: boolean
   showLabels: boolean
   showMainText: boolean
+  showIdlePulsating: boolean
+  idleDotsCount: number
 }

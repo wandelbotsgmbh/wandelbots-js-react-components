@@ -56,25 +56,27 @@ export const useTimerLogic = ({
       remainingTime: 0,
       isRunning: false,
       isPausedState: false,
+      currentProgress: 0, // Immediately reset progress to 0
     }))
     pausedTimeRef.current = 0
     startTimeRef.current = null
-    progressInterpolator.setTarget([0])
+    progressInterpolator.setImmediate([0]) // Use setImmediate for instant reset
   }, [progressInterpolator])
 
   const startMeasuring = useCallback(
     (elapsedSeconds: number = 0) => {
+      const initialProgress = ((elapsedSeconds / 60) % 1) * 100
       setTimerState((prev) => ({
         ...prev,
         currentState: "measuring",
         maxTime: null,
         remainingTime: elapsedSeconds,
         isPausedState: false,
+        currentProgress: initialProgress, // Immediately set progress
       }))
       pausedTimeRef.current = 0
 
-      const initialProgress = ((elapsedSeconds / 60) % 1) * 100
-      progressInterpolator.setTarget([initialProgress])
+      progressInterpolator.setImmediate([initialProgress]) // Use setImmediate for instant reset
 
       if (autoStart) {
         startTimeRef.current = Date.now() - elapsedSeconds * 1000
@@ -88,17 +90,18 @@ export const useTimerLogic = ({
 
   const startCountUp = useCallback(
     (elapsedSeconds: number = 0) => {
+      const initialProgress = ((elapsedSeconds / 60) % 1) * 100
       setTimerState((prev) => ({
         ...prev,
         currentState: "countup",
         maxTime: null,
         remainingTime: elapsedSeconds,
         isPausedState: false,
+        currentProgress: initialProgress, // Immediately set progress
       }))
       pausedTimeRef.current = 0
 
-      const initialProgress = ((elapsedSeconds / 60) % 1) * 100
-      progressInterpolator.setTarget([initialProgress])
+      progressInterpolator.setImmediate([initialProgress]) // Use setImmediate for instant reset
 
       if (autoStart) {
         startTimeRef.current = Date.now() - elapsedSeconds * 1000
@@ -128,13 +131,16 @@ export const useTimerLogic = ({
       if (maxTimeSeconds !== undefined) {
         // Count-down mode
         const remainingSeconds = Math.max(0, maxTimeSeconds - elapsedSeconds)
-        setTimerState((prev) => ({ ...prev, remainingTime: remainingSeconds }))
-
         const initialProgress =
           elapsedSeconds > 0 ? (elapsedSeconds / maxTimeSeconds) * 100 : 0
 
-        progressInterpolator.setTarget([initialProgress])
-        progressInterpolator.update(1)
+        setTimerState((prev) => ({
+          ...prev,
+          remainingTime: remainingSeconds,
+          currentProgress: initialProgress, // Immediately set progress
+        }))
+
+        progressInterpolator.setImmediate([initialProgress]) // Use setImmediate for instant reset
 
         if (remainingSeconds === 0) {
           setTimerState((prev) => ({ ...prev, isRunning: false }))
@@ -152,11 +158,14 @@ export const useTimerLogic = ({
         }
       } else {
         // Count-up mode
-        setTimerState((prev) => ({ ...prev, remainingTime: elapsedSeconds }))
-
         const initialProgress = ((elapsedSeconds / 60) % 1) * 100
-        progressInterpolator.setTarget([initialProgress])
-        progressInterpolator.update(1)
+        setTimerState((prev) => ({
+          ...prev,
+          remainingTime: elapsedSeconds,
+          currentProgress: initialProgress, // Immediately set progress
+        }))
+
+        progressInterpolator.setImmediate([initialProgress]) // Use setImmediate for instant reset
 
         if (autoStart) {
           setTimeout(() => {

@@ -9,6 +9,8 @@ export const useAnimations = () => {
     pulsatingFinished: false,
     showLabels: true,
     showMainText: true,
+    showIdlePulsating: false,
+    idleDotsCount: 0,
   })
 
   // Refs for managing timeouts and intervals
@@ -17,6 +19,8 @@ export const useAnimations = () => {
   const pulsatingIntervalRef = useRef<NodeJS.Timeout | null>(null)
   const fadeTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const pulseCountRef = useRef<number>(0)
+  const idlePulsatingIntervalRef = useRef<NodeJS.Timeout | null>(null)
+  const idleDotsIntervalRef = useRef<NodeJS.Timeout | null>(null)
 
   const triggerPauseAnimation = useCallback(() => {
     setAnimationState((prev) => ({ ...prev, showPauseAnimation: true }))
@@ -51,36 +55,32 @@ export const useAnimations = () => {
 
   const startPulsatingAnimation = useCallback((onComplete?: () => void) => {
     pulseCountRef.current = 0
+    // Start with fade to success color
     setAnimationState((prev) => ({
       ...prev,
       showPulsatingText: true,
       pulsatingFinished: false,
     }))
 
-    pulsatingIntervalRef.current = setInterval(() => {
-      pulseCountRef.current += 1
+    // After initial success color fade, start slow pulsating like idle
+    setTimeout(() => {
+      setAnimationState((prev) => ({
+        ...prev,
+        pulsatingFinished: true, // This will keep the success color and start slow pulsating
+      }))
 
-      if (pulseCountRef.current >= 8) {
-        // 4 complete cycles (on->off->on->off = 8 state changes)
-        if (pulsatingIntervalRef.current) {
-          clearInterval(pulsatingIntervalRef.current)
-          pulsatingIntervalRef.current = null
-        }
-        setAnimationState((prev) => ({
-          ...prev,
-          showPulsatingText: false,
-          pulsatingFinished: true,
-        }))
-        if (onComplete) {
-          onComplete()
-        }
-      } else {
+      // Start slow pulsating animation similar to idle
+      pulsatingIntervalRef.current = setInterval(() => {
         setAnimationState((prev) => ({
           ...prev,
           showPulsatingText: !prev.showPulsatingText,
         }))
+      }, 2000) // Same slow timing as idle pulsating
+
+      if (onComplete) {
+        onComplete()
       }
-    }, 800)
+    }, 800) // Initial success color display duration
   }, [])
 
   const stopPulsatingAnimation = useCallback(() => {
@@ -88,12 +88,52 @@ export const useAnimations = () => {
       clearInterval(pulsatingIntervalRef.current)
       pulsatingIntervalRef.current = null
     }
+    // Reset all pulsating states to ensure colors are reset
     setAnimationState((prev) => ({
       ...prev,
       showPulsatingText: false,
       pulsatingFinished: false,
     }))
     pulseCountRef.current = 0
+  }, [])
+
+  const startIdleAnimations = useCallback(() => {
+    // Start pulsating animation for the text
+    setAnimationState((prev) => ({
+      ...prev,
+      showIdlePulsating: true,
+    }))
+
+    idlePulsatingIntervalRef.current = setInterval(() => {
+      setAnimationState((prev) => ({
+        ...prev,
+        showIdlePulsating: !prev.showIdlePulsating,
+      }))
+    }, 2000) // Slower pulsate every 2 seconds
+
+    // Start animated dots
+    idleDotsIntervalRef.current = setInterval(() => {
+      setAnimationState((prev) => ({
+        ...prev,
+        idleDotsCount: (prev.idleDotsCount + 1) % 4, // Cycle through 0, 1, 2, 3
+      }))
+    }, 800) // Change dots every 800ms
+  }, [])
+
+  const stopIdleAnimations = useCallback(() => {
+    if (idlePulsatingIntervalRef.current) {
+      clearInterval(idlePulsatingIntervalRef.current)
+      idlePulsatingIntervalRef.current = null
+    }
+    if (idleDotsIntervalRef.current) {
+      clearInterval(idleDotsIntervalRef.current)
+      idleDotsIntervalRef.current = null
+    }
+    setAnimationState((prev) => ({
+      ...prev,
+      showIdlePulsating: false,
+      idleDotsCount: 0,
+    }))
   }, [])
 
   const triggerFadeTransition = useCallback(() => {
@@ -138,6 +178,12 @@ export const useAnimations = () => {
     if (pulsatingIntervalRef.current) {
       clearInterval(pulsatingIntervalRef.current)
     }
+    if (idlePulsatingIntervalRef.current) {
+      clearInterval(idlePulsatingIntervalRef.current)
+    }
+    if (idleDotsIntervalRef.current) {
+      clearInterval(idleDotsIntervalRef.current)
+    }
   }, [])
 
   return {
@@ -147,6 +193,8 @@ export const useAnimations = () => {
     clearErrorAnimation,
     startPulsatingAnimation,
     stopPulsatingAnimation,
+    startIdleAnimations,
+    stopIdleAnimations,
     triggerFadeTransition,
     setInitialAnimationState,
     cleanup,

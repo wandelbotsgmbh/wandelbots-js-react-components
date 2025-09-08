@@ -52,6 +52,8 @@ export const CycleTimer = externalizeComponent(
         clearErrorAnimation,
         startPulsatingAnimation,
         stopPulsatingAnimation,
+        startIdleAnimations,
+        stopIdleAnimations,
         triggerFadeTransition,
         setInitialAnimationState,
         cleanup,
@@ -82,6 +84,11 @@ export const CycleTimer = externalizeComponent(
             stopPulsatingAnimation()
           }
 
+          // Stop idle animations if leaving idle state
+          if (prevState === "idle") {
+            stopIdleAnimations()
+          }
+
           // Trigger fade transition
           triggerFadeTransition()
         } else {
@@ -89,10 +96,17 @@ export const CycleTimer = externalizeComponent(
           setInitialAnimationState()
         }
 
+        // Start idle animations if entering idle state
+        if (timerState.currentState === "idle") {
+          startIdleAnimations()
+        }
+
         prevStateRef.current = timerState.currentState
       }, [
         timerState.currentState,
         stopPulsatingAnimation,
+        stopIdleAnimations,
+        startIdleAnimations,
         triggerFadeTransition,
         setInitialAnimationState,
       ])

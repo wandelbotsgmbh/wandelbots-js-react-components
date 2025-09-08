@@ -27,6 +27,8 @@ export const DefaultVariant = ({
     pulsatingFinished,
     showLabels,
     showMainText,
+    showIdlePulsating,
+    idleDotsCount,
   } = animationState
 
   return (
@@ -47,8 +49,9 @@ export const DefaultVariant = ({
         value={currentState === "idle" ? 0 : currentProgress}
         valueMin={0}
         valueMax={100}
-        innerRadius={currentState === "idle" ? "75%" : "76%"}
-        outerRadius="90%"
+        innerRadius="85%"
+        outerRadius="100%"
+        margin={0}
         skipAnimation={true}
         text={() => ""}
         sx={{
@@ -83,8 +86,6 @@ export const DefaultVariant = ({
           top: "50%",
           left: "50%",
           transform: "translate(-50%, -50%)",
-          width: 200,
-          height: 200,
           borderRadius: "50%",
           display: "flex",
           flexDirection: "column",
@@ -102,7 +103,7 @@ export const DefaultVariant = ({
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            marginBottom: 0.5,
+            marginBottom: 1,
           }}
         >
           <Fade
@@ -121,13 +122,17 @@ export const DefaultVariant = ({
                 fontSize: "12px",
                 color:
                   currentState === "measured"
-                    ? pulsatingFinished
-                      ? theme.palette.text.secondary
-                      : showPulsatingText
-                        ? theme.palette.success.main
-                        : theme.palette.text.secondary
+                    ? showPulsatingText || pulsatingFinished
+                      ? theme.palette.success.main
+                      : theme.palette.text.secondary
                     : theme.palette.text.secondary,
-                transition: "color 0.8s ease-in-out",
+                opacity:
+                  currentState === "measured" && pulsatingFinished
+                    ? showPulsatingText
+                      ? 1
+                      : 0.6
+                    : 1,
+                transition: "color 0.8s ease-in-out, opacity 2s ease-in-out",
               }}
             >
               {currentState === "measuring"
@@ -167,11 +172,30 @@ export const DefaultVariant = ({
                 lineHeight: "166%",
                 letterSpacing: "0.17px",
                 textAlign: "center",
-                width: "150px",
+                width: "200px",
                 height: "20px",
+                opacity: showIdlePulsating ? 1 : 0.6,
+                transition: "opacity 2s ease-in-out",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
               }}
             >
-              {t("CycleTimer.WaitingForCycle.lb", "Waiting for program cycle")}
+              <span>
+                {t(
+                  "CycleTimer.WaitingForCycle.lb",
+                  "Waiting for program cycle",
+                )}
+              </span>
+              <span
+                style={{
+                  display: "inline-block",
+                  width: "18px",
+                  textAlign: "left",
+                }}
+              >
+                {".".repeat(idleDotsCount)}
+              </span>
             </Typography>
           </Fade>
 
@@ -207,12 +231,15 @@ export const DefaultVariant = ({
                 position: "absolute",
                 fontSize: "48px",
                 fontWeight: 500,
-                color:
-                  currentState === "measured"
-                    ? theme.palette.text.primary
-                    : theme.palette.text.primary,
+                color: theme.palette.text.primary,
+                opacity:
+                  currentState === "measured" && pulsatingFinished
+                    ? showPulsatingText
+                      ? 1
+                      : 0.6
+                    : 1,
                 lineHeight: 1,
-                transition: "color 0.5s ease-out",
+                transition: "color 0.8s ease-in-out, opacity 2s ease-in-out",
               }}
             >
               {formatTime(remainingTime)}
@@ -225,6 +252,7 @@ export const DefaultVariant = ({
           sx={{
             height: "16px",
             display: "flex",
+            marginTop: 0.5,
             alignItems: "center",
             justifyContent: "center",
           }}
@@ -245,13 +273,17 @@ export const DefaultVariant = ({
                 fontSize: "12px",
                 color:
                   currentState === "measured"
-                    ? pulsatingFinished
-                      ? theme.palette.text.secondary
-                      : showPulsatingText
-                        ? theme.palette.success.main
-                        : theme.palette.text.secondary
+                    ? showPulsatingText || pulsatingFinished
+                      ? theme.palette.success.main
+                      : theme.palette.text.secondary
                     : theme.palette.text.secondary,
-                transition: "color 0.8s ease-in-out",
+                opacity:
+                  currentState === "measured" && pulsatingFinished
+                    ? showPulsatingText
+                      ? 1
+                      : 0.6
+                    : 1,
+                transition: "color 0.8s ease-in-out, opacity 2s ease-in-out",
               }}
             >
               {currentState === "measuring"
