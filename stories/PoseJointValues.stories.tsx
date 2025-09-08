@@ -1,8 +1,16 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
-import type { MotionStreamConnection } from "@wandelbots/nova-js/v1"
+import type {
+  ConnectedMotionGroup,
+  MotionStreamConnection,
+} from "@wandelbots/nova-js/v1"
 import { PoseJointValues } from "../src"
 
-const meta: Meta<typeof PoseJointValues> = {
+type StoryArgs = {
+  showCopyButton: boolean
+  usageType: "motionStream" | "connectedMotionGroup"
+}
+
+const meta: Meta<StoryArgs> = {
   title: "Jogging/PoseJointValues",
   tags: ["!dev"],
   component: PoseJointValues,
@@ -12,9 +20,16 @@ const meta: Meta<typeof PoseJointValues> = {
       description:
         "Whether to show the copy functionality when clicking the component",
     },
+    usageType: {
+      control: "select",
+      options: ["motionStream", "connectedMotionGroup"],
+      description:
+        "Choose whether to use motionStream or connectedMotionGroup prop",
+    },
   },
   args: {
     showCopyButton: false,
+    usageType: "motionStream",
   },
 
   render: function Component(args) {
@@ -29,6 +44,22 @@ const meta: Meta<typeof PoseJointValues> = {
       },
     } as unknown as MotionStreamConnection
 
+    // Create a mock ConnectedMotionGroup with the same motion state
+    const mockConnectedMotionGroup = {
+      rapidlyChangingMotionState: mockMotionStream.rapidlyChangingMotionState,
+      motionGroupId: "0@mock-ur5e",
+      controllerId: "mock-ur5e",
+    } as unknown as ConnectedMotionGroup
+
+    if (args.usageType === "connectedMotionGroup") {
+      return (
+        <PoseJointValues
+          connectedMotionGroup={mockConnectedMotionGroup}
+          showCopyButton={args.showCopyButton}
+        />
+      )
+    }
+
     return (
       <PoseJointValues
         motionStream={mockMotionStream}
@@ -40,8 +71,13 @@ const meta: Meta<typeof PoseJointValues> = {
 
 export default meta
 
-type Story = StoryObj<typeof PoseJointValues>
+type Story = StoryObj<StoryArgs>
 
+/**
+ * Displays joint values in array format.
+ * Can accept either a MotionStreamConnection or ConnectedMotionGroup.
+ * Use the controls to switch between usage patterns.
+ */
 export const Interactive: Story = {
   name: "Pose Joint Values",
 }

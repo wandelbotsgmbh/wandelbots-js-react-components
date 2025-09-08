@@ -1,25 +1,50 @@
 import { Button, Stack, Typography } from "@mui/material"
-import type { MotionStreamConnection } from "@wandelbots/nova-js/v1"
+import type {
+  ConnectedMotionGroup,
+  MotionStreamConnection,
+} from "@wandelbots/nova-js/v1"
 import { observer } from "mobx-react-lite"
 import { useRef, useState } from "react"
 import { CopyableText } from "../CopyableText"
 import { useAnimationFrame } from "../utils/hooks"
 
+export type PoseJointValuesProps = {
+  /** Either a MotionStreamConnection or ConnectedMotionGroup */
+  motionStream?: MotionStreamConnection
+  connectedMotionGroup?: ConnectedMotionGroup
+  showCopyButton?: boolean
+}
+
 export const PoseJointValues = observer(
   ({
     motionStream,
+    connectedMotionGroup,
     showCopyButton = false,
-  }: {
-    motionStream: MotionStreamConnection
-    showCopyButton?: boolean
-  }) => {
+  }: PoseJointValuesProps) => {
     const poseHolderRef = useRef<HTMLDivElement>(null)
     const [copyMessage, setCopyMessage] = useState("")
 
+    // Use the provided motionStream or create a mock-like object from connectedMotionGroup
+    const activeMotionStream =
+      motionStream ||
+      (connectedMotionGroup
+        ? ({
+            rapidlyChangingMotionState:
+              connectedMotionGroup.rapidlyChangingMotionState,
+          } as MotionStreamConnection)
+        : undefined)
+
+    if (!activeMotionStream) {
+      throw new Error(
+        "PoseJointValues requires either motionStream or connectedMotionGroup prop",
+      )
+    }
+
     function getCurrentPoseString() {
+      if (!activeMotionStream) return ""
       const { joints } =
-        motionStream.rapidlyChangingMotionState.state.joint_position
-      return `[${joints.map((j) => parseFloat(j.toFixed(4))).join(", ")}]`
+        activeMotionStream.rapidlyChangingMotionState.state.joint_position
+      return `[${joints.map((j: number) => parseFloat(j.toFixed(4))).join(", ")}]`
     }
 
     const handleCopy = async () => {

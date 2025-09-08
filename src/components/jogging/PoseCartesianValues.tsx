@@ -1,24 +1,49 @@
 import { Button, Stack, Typography } from "@mui/material"
 import { poseToWandelscriptString } from "@wandelbots/nova-js"
-import type { MotionStreamConnection } from "@wandelbots/nova-js/v1"
+import type {
+  ConnectedMotionGroup,
+  MotionStreamConnection,
+} from "@wandelbots/nova-js/v1"
 import { observer } from "mobx-react-lite"
 import { useRef, useState } from "react"
 import { CopyableText } from "../CopyableText"
 import { useAnimationFrame } from "../utils/hooks"
 
+export type PoseCartesianValuesProps = {
+  /** Either a MotionStreamConnection or ConnectedMotionGroup */
+  motionStream?: MotionStreamConnection
+  connectedMotionGroup?: ConnectedMotionGroup
+  showCopyButton?: boolean
+}
+
 export const PoseCartesianValues = observer(
   ({
     motionStream,
+    connectedMotionGroup,
     showCopyButton = false,
-  }: {
-    motionStream: MotionStreamConnection
-    showCopyButton?: boolean
-  }) => {
+  }: PoseCartesianValuesProps) => {
     const poseHolderRef = useRef<HTMLDivElement>(null)
     const [copyMessage, setCopyMessage] = useState("")
 
+    // Use the provided motionStream or create a mock-like object from connectedMotionGroup
+    const activeMotionStream =
+      motionStream ||
+      (connectedMotionGroup
+        ? ({
+            rapidlyChangingMotionState:
+              connectedMotionGroup.rapidlyChangingMotionState,
+          } as MotionStreamConnection)
+        : undefined)
+
+    if (!activeMotionStream) {
+      throw new Error(
+        "PoseCartesianValues requires either motionStream or connectedMotionGroup prop",
+      )
+    }
+
     function getCurrentPoseString() {
-      const tcpPose = motionStream.rapidlyChangingMotionState.tcp_pose
+      if (!activeMotionStream) return ""
+      const tcpPose = activeMotionStream.rapidlyChangingMotionState.tcp_pose
       if (!tcpPose) return ""
       return poseToWandelscriptString(tcpPose)
     }

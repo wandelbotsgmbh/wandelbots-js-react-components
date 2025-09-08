@@ -1,8 +1,16 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
-import type { MotionStreamConnection } from "@wandelbots/nova-js/v1"
+import type {
+  ConnectedMotionGroup,
+  MotionStreamConnection,
+} from "@wandelbots/nova-js/v1"
 import { PoseCartesianValues } from "../src"
 
-const meta: Meta<typeof PoseCartesianValues> = {
+type StoryArgs = {
+  showCopyButton: boolean
+  usageType: "motionStream" | "connectedMotionGroup"
+}
+
+const meta: Meta<StoryArgs> = {
   title: "Jogging/PoseCartesianValues",
   tags: ["!dev"],
   component: PoseCartesianValues,
@@ -12,9 +20,16 @@ const meta: Meta<typeof PoseCartesianValues> = {
       description:
         "Whether to show the copy functionality when clicking the component",
     },
+    usageType: {
+      control: "select",
+      options: ["motionStream", "connectedMotionGroup"],
+      description:
+        "Choose whether to use motionStream or connectedMotionGroup prop",
+    },
   },
   args: {
     showCopyButton: false,
+    usageType: "motionStream",
   },
 
   render: function Component(args) {
@@ -37,6 +52,22 @@ const meta: Meta<typeof PoseCartesianValues> = {
       },
     } as unknown as MotionStreamConnection
 
+    // Create a mock ConnectedMotionGroup with the same motion state
+    const mockConnectedMotionGroup = {
+      rapidlyChangingMotionState: mockMotionStream.rapidlyChangingMotionState,
+      motionGroupId: "0@mock-ur5e",
+      controllerId: "mock-ur5e",
+    } as unknown as ConnectedMotionGroup
+
+    if (args.usageType === "connectedMotionGroup") {
+      return (
+        <PoseCartesianValues
+          connectedMotionGroup={mockConnectedMotionGroup}
+          showCopyButton={args.showCopyButton}
+        />
+      )
+    }
+
     return (
       <PoseCartesianValues
         motionStream={mockMotionStream}
@@ -47,9 +78,11 @@ const meta: Meta<typeof PoseCartesianValues> = {
 }
 
 export default meta
-type Story = StoryObj<typeof meta>
+type Story = StoryObj<StoryArgs>
 
 /**
  * Displays TCP pose values in Wandelscript format.
+ * Can accept either a MotionStreamConnection or ConnectedMotionGroup.
+ * Use the controls to switch between usage patterns.
  */
 export const Interactive: Story = {}
