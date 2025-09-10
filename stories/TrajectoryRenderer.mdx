@@ -7,7 +7,7 @@ import * as TrajectoryRenderer from './TrajectoryRenderer.stories';
 
 The `TrajectoryRenderer` component visualizes the planned trajectory of the robot.
 
-This component should be used with [wandelbots-js](https://github.com/wandelbotsgmbh/wandelbots-js). Pass the `GetTrajectoryResponse` from `NovaCellAPIClient.motion.getMotionTrajectory` to the component.
+This component should be used with [nova-js](https://github.com/wandelbotsgmbh/nova-js). Pass the `GetTrajectoryResponse` from `NovaCellAPIClient.motion.getMotionTrajectory` to the component.
 If the Plan Motion or Plan Trajectory endpoint is used, an motion will be generated which afterwards can be fetched from the `listMotions` endpoint. That motion id can be used to fetch the trajectory.
 
 ```tsx

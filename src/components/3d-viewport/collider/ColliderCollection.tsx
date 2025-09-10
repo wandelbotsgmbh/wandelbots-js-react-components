@@ -1,5 +1,5 @@
-import type { GroupProps } from "@react-three/fiber"
-import type { Collider } from "@wandelbots/wandelbots-js"
+import type { ThreeElements } from "@react-three/fiber"
+import type { Collider } from "@wandelbots/nova-api/v1"
 import ColliderElement from "./ColliderElement"
 
 export type MeshChildrenProvider = (
@@ -11,7 +11,7 @@ type ColliderCollectionProps = {
   name?: string
   colliders: Record<string, Collider>
   meshChildrenProvider: MeshChildrenProvider
-} & GroupProps
+} & ThreeElements["group"]
 
 export default function ColliderCollection({
   name,

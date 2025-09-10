@@ -1,4 +1,4 @@
-import type { ColliderShape } from "@wandelbots/wandelbots-js"
+import type { ColliderShape } from "@wandelbots/nova-api/v1"
 import * as THREE from "three"
 import { ConvexGeometry } from "three-stdlib"
 
@@ -10,15 +10,27 @@ export function colliderShapeToBufferGeometry(
     case "convex_hull":
       return new ConvexGeometry(
         shape.vertices.map(
-          (vertex) => new THREE.Vector3(vertex[0] / 1000, vertex[1] / 1000, vertex[2] / 1000),
+          (vertex) =>
+            new THREE.Vector3(
+              vertex[0] / 1000,
+              vertex[1] / 1000,
+              vertex[2] / 1000,
+            ),
         ),
       )
     case "box":
-      return new THREE.BoxGeometry(shape.size_x / 1000, shape.size_y / 1000, shape.size_z / 1000)
+      return new THREE.BoxGeometry(
+        shape.size_x / 1000,
+        shape.size_y / 1000,
+        shape.size_z / 1000,
+      )
     case "sphere":
       return new THREE.SphereGeometry(shape.radius / 1000)
     case "capsule":
-      return new THREE.CapsuleGeometry(shape.radius / 1000, shape.cylinder_height / 1000)
+      return new THREE.CapsuleGeometry(
+        shape.radius / 1000,
+        shape.cylinder_height / 1000,
+      )
     case "cylinder":
       return new THREE.CylinderGeometry(
         shape.radius / 1000,

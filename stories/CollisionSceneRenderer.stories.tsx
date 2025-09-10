@@ -1,22 +1,15 @@
 import { useTheme } from "@mui/material"
 import type { Meta, StoryObj } from "@storybook/react"
-import type {
-  CollisionScene,
-  MotionGroupStateResponse,
-} from "@wandelbots/wandelbots-js"
+import type { CollisionScene } from "@wandelbots/nova-api/v1"
 import * as THREE from "three"
+import CollisionSceneRenderer from "../src/components/3d-viewport/collider/CollisionSceneRenderer"
 import { Setup } from "../src/Setup"
-import CollisionSceneElement from "../src/components/3d-viewport/collider/CollisionScene"
-import {
-  DEMO_CONVEX_HULL,
-  UR5E_DH_PARAMETERS,
-  UR5E_LINK_CHAIN,
-} from "./convexHull"
+import { DEMO_CONVEX_HULL } from "./convexHull"
 
 export default {
   tags: ["!dev"],
-  title: "3D View/CollisionSceneElement",
-  component: CollisionSceneElement,
+  title: "3D View/CollisionSceneRenderer",
+  component: CollisionSceneRenderer,
   decorators: [
     (Story) => (
       <div
@@ -36,12 +29,12 @@ export default {
       </div>
     ),
   ],
-} satisfies Meta<typeof CollisionSceneElement>
+} satisfies Meta<typeof CollisionSceneRenderer>
 
-type Story = StoryObj<typeof CollisionSceneElement>
+type Story = StoryObj<typeof CollisionSceneRenderer>
 
-function CollisionSceneElementScene(
-  props: React.ComponentProps<typeof CollisionSceneElement>,
+function CollisionSceneRendererScene(
+  _props: React.ComponentProps<typeof CollisionSceneRenderer>,
 ) {
   const scene: CollisionScene = {
     colliders: {
@@ -120,55 +113,13 @@ function CollisionSceneElementScene(
         },
       },
     },
-    motion_groups: {
-      "0@ur5e": {
-        link_chain: UR5E_LINK_CHAIN,
-        tool: {
-          cylinder: {
-            shape: { shape_type: "cylinder", height: 20, radius: 40 },
-            pose: {
-              position: [0, 10, 0],
-            },
-          },
-          sphere: {
-            shape: {
-              shape_type: "box",
-              size_x: 20,
-              size_y: 80,
-              size_z: 20,
-              box_type: "FULL",
-            },
-            pose: {
-              position: [0, 40, 0],
-            },
-          },
-        },
-      },
-    },
-  }
-
-  const rapidlyChangingMotionState: MotionGroupStateResponse = {
-    state: {
-      controller: "ur5e",
-      joint_limit_reached: { limit_reached: [] },
-      joint_position: { joints: [0, 0, Math.PI / 2, 0, 0, 0] },
-      joint_current: { joints: [0, 0, 0, 0, 0, 0] },
-      joint_velocity: { joints: [0, 0, 0, 0, 0, 0] },
-      motion_group: "0",
-      tcp_pose: {
-        position: { x: 0, y: 0, z: 0 },
-        orientation: { x: 0, y: 0, z: 0 },
-        tcp: "Flange",
-      },
-      velocity: {},
-    },
   }
 
   const theme = useTheme()
   return (
-    <CollisionSceneElement
+    <CollisionSceneRenderer
       scene={scene}
-      meshChildrenProvider={(colliderKey, collider) => (
+      meshChildrenProvider={(colliderKey, _collider) => (
         <meshStandardMaterial
           color={
             colliderKey === "test/convex-hull"
@@ -179,19 +130,12 @@ function CollisionSceneElementScene(
           transparent
         />
       )}
-      motionGroupStates={{
-        "0@ur5e": {
-          state: rapidlyChangingMotionState,
-          dhParameters: UR5E_DH_PARAMETERS,
-          mountingPosition: new THREE.Vector3(0, 0, -1),
-        },
-      }}
     />
   )
 }
 
-export const CollisionSceneElementSt = {
+export const CollisionSceneRendererSt = {
   args: {},
-  render: (args) => <CollisionSceneElementScene {...args} />,
+  render: (args) => <CollisionSceneRendererScene {...args} />,
   name: "Default",
 } satisfies Story

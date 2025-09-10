@@ -1,4 +1,4 @@
-import type { Collider } from "@wandelbots/wandelbots-js"
+import type { Collider } from "@wandelbots/nova-api/v1"
 import type React from "react"
 import * as THREE from "three"
 import { colliderShapeToBufferGeometry } from "./colliderShapeToBufferGeometry"
@@ -22,7 +22,11 @@ export default function ColliderElement({
   return (
     <mesh
       name={name}
-      position={new THREE.Vector3(position[0], position[1], position[2]).divideScalar(1000)}
+      position={new THREE.Vector3(
+        position[0],
+        position[1],
+        position[2],
+      ).divideScalar(1000)}
       rotation={new THREE.Euler(rotation[0], rotation[1], rotation[2], "XYZ")}
       geometry={colliderShapeToBufferGeometry(collider.shape)}
     >

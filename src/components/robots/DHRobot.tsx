@@ -2,9 +2,8 @@ import { Line } from "@react-three/drei"
 import type { DHParameter } from "@wandelbots/nova-api/v1"
 import React, { useRef } from "react"
 import type * as THREE from "three"
-import { Matrix4 } from "three"
+import { Matrix4, Quaternion, Vector3 } from "three"
 import type { LineGeometry } from "three/examples/jsm/lines/LineGeometry.js"
-import { getDHLine, getDHLines } from "../utils/dhParameter"
 import RobotAnimator from "./RobotAnimator"
 import type { DHRobotProps } from "./SupportedRobot"
 
@@ -18,11 +17,46 @@ export function DHRobot({
 }: DHRobotProps) {
   // reused in every update
   const accumulatedMatrix = new Matrix4()
-  const dhLines = getDHLines(
-    accumulatedMatrix,
-    dhParameters,
-    rapidlyChangingMotionState.state.joint_position.joints,
-  )
+
+  // Store direct references to avoid searching by name
+  const lineRefs = useRef<any[]>([])
+  const meshRefs = useRef<(THREE.Mesh | null)[]>([])
+
+  // Initialize refs array when dhParameters change
+  React.useEffect(() => {
+    lineRefs.current = new Array(dhParameters.length).fill(null)
+    meshRefs.current = new Array(dhParameters.length).fill(null)
+  }, [dhParameters.length])
+
+  // Updates accumulatedMatrix with every execution
+  // Reset the matrix to identity if you start a new position update
+  function getLinePoints(
+    dhParameter: DHParameter,
+    jointRotation: number,
+  ): {
+    a: THREE.Vector3
+    b: THREE.Vector3
+  } {
+    const position = new Vector3()
+    const quaternion = new Quaternion()
+    const scale = new Vector3()
+    accumulatedMatrix.decompose(position, quaternion, scale)
+    const prevPosition = position.clone() // Update the previous position
+
+    const matrix = new Matrix4()
+      .makeRotationY(
+        dhParameter.theta! +
+          jointRotation * (dhParameter.reverse_rotation_direction ? -1 : 1),
+      ) // Rotate around Z
+      .multiply(new Matrix4().makeTranslation(0, dhParameter.d! / 1000, 0)) // Translate along Z
+      .multiply(new Matrix4().makeTranslation(dhParameter.a! / 1000, 0, 0)) // Translate along X
+      .multiply(new Matrix4().makeRotationX(dhParameter.alpha!)) // Rotate around X
+
+    // Accumulate transformations
+    accumulatedMatrix.multiply(matrix)
+    accumulatedMatrix.decompose(position, quaternion, scale)
+    return { a: prevPosition, b: position }
+  }
 
   function setJointLineRotation(
     jointIndex: number,
@@ -34,18 +68,16 @@ export function DHRobot({
       return
     }
 
-    const dhParameter = dhParameters[jointIndex]
-    if (!dhParameter) {
+    const dh_parameter = dhParameters[jointIndex]
+    if (!dh_parameter) {
       return
     }
 
-    const dhLine = getDHLine(accumulatedMatrix, dhParameter, jointValue)
+    const { a, b } = getLinePoints(dh_parameter, jointValue)
     const lineGeometry = line.geometry as LineGeometry
-    lineGeometry.setPositions(
-      [dhLine.start.toArray(), dhLine.end.toArray()].flat(),
-    )
+    lineGeometry.setPositions([a.toArray(), b.toArray()].flat())
 
-    mesh.position.set(dhLine.end.x, dhLine.end.y, dhLine.end.z)
+    mesh.position.set(b.x, b.y, b.z)
   }
 
   function setRotation(joints: THREE.Object3D[], jointValues: number[]) {
@@ -78,8 +110,12 @@ export function DHRobot({
             <sphereGeometry args={[0.01, 32, 32]} />
             <meshStandardMaterial color={"black"} depthTest={true} />
           </mesh>
-
           {dhParameters!.map((param, index) => {
+            const { a, b } = getLinePoints(
+              param,
+              rapidlyChangingMotionState.state.joint_position.joints[index] ??
+                0,
+            )
             const jointName = `dhrobot_J0${index}`
             return (
               <group name={jointName} key={jointName}>
@@ -88,15 +124,17 @@ export function DHRobot({
                     lineRefs.current[index] = ref
                   }}
                   name={CHILD_LINE}
-                  points={[dhLines[index].start, dhLines[index].end]}
+                  points={[a, b]}
                   color={"white"}
                   lineWidth={5}
-                  segments
                 />
                 <mesh
+                  ref={(ref) => {
+                    meshRefs.current[index] = ref
+                  }}
                   name={CHILD_MESH}
                   key={"mesh_" + index}
-                  position={dhLines[index].end}
+                  position={b}
                 >
                   <sphereGeometry args={[0.01, 32, 32]} />
                   <meshStandardMaterial color={"black"} depthTest={true} />
