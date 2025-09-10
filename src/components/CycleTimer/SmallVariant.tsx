@@ -31,7 +31,7 @@ export const SmallVariant = ({
   } = animationState
 
   // Simple text-only mode for compact variant in certain states
-  if (compact && (currentState === "countup" || currentState === "idle")) {
+  if (compact && currentState === "idle") {
     return (
       <Box
         className={className}
@@ -72,10 +72,7 @@ export const SmallVariant = ({
       }}
     >
       {/* Animated progress ring icon */}
-      {!(
-        currentState === "countup" ||
-        (currentState === "idle" && compact)
-      ) && (
+      {!(currentState === "idle" && compact) && (
         <Box
           sx={{
             width: 20,

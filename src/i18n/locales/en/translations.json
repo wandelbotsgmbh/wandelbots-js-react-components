@@ -53,6 +53,7 @@
   "CycleTimer.CycleTime.lb": "Cycle Time",
   "CycleTimer.Measuring.lb": "measuring...",
   "CycleTimer.Determined.lb": "determined",
+  "Timer.error": "Error",
   "ProgramControl.Start.bt": "Start",
   "ProgramControl.Resume.bt": "Resume",
   "ProgramControl.Retry.bt": "Retry",
