@@ -134,21 +134,20 @@ export const useTimerLogic = ({
   )
 
   const completeMeasuring = useCallback(() => {
-    if (timerState.currentState === "measuring") {
-      setTimerState((prev) => ({
-        ...prev,
-        isRunning: false,
-        currentState: "measured",
-      }))
-      startTimeRef.current = null
+    // Always trigger completion regardless of current state
+    setTimerState((prev) => ({
+      ...prev,
+      isRunning: false,
+      currentState: "measured",
+    }))
+    startTimeRef.current = null
 
-      onStartPulsating(() => {
-        if (onMeasuringComplete) {
-          onMeasuringComplete()
-        }
-      })
-    }
-  }, [timerState.currentState, onStartPulsating, onMeasuringComplete])
+    onStartPulsating(() => {
+      if (onMeasuringComplete) {
+        onMeasuringComplete()
+      }
+    })
+  }, [onStartPulsating, onMeasuringComplete])
 
   const pause = useCallback(() => {
     if (startTimeRef.current && timerState.isRunning) {

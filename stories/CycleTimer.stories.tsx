@@ -32,8 +32,8 @@ A circular gauge timer component with multiple states for different cycle tracki
 - Material-UI theming integration
 
 **Control Functions:**
-- \`startNewCycle(maxTimeSeconds, elapsedSeconds?)\` - Start countdown timer
-- \`startMeasuring(elapsedSeconds?)\` - Start measuring mode with special labels
+- \`startNewCycle(maxTimeSeconds, elapsedSeconds?)\` - Start countdown timer with optional elapsed time offset
+- \`startMeasuring(elapsedSeconds?)\` - Start measuring mode with optional elapsed time offset
 - \`setIdle()\` - Set to idle state
 - \`completeMeasuring()\` - Complete measuring and trigger success animation
 - \`pause()\` / \`resume()\` - Pause and resume timer
@@ -174,6 +174,18 @@ export const Default: Story = {
       }
     }
 
+    const startCountdownWithOffset = () => {
+      if (controlsRef.current) {
+        controlsRef.current.startNewCycle(120, 30) // 120 second countdown, started with 30 seconds already elapsed
+      }
+    }
+
+    const startMeasuringWithOffset = () => {
+      if (controlsRef.current) {
+        controlsRef.current.startMeasuring(45) // Start measuring with 45 seconds already elapsed
+      }
+    }
+
     const pauseTimer = () => {
       if (controlsRef.current) {
         controlsRef.current.pause()
@@ -229,6 +241,13 @@ export const Default: Story = {
           </Button>
           <Button
             variant="contained"
+            onClick={startMeasuringWithOffset}
+            size="small"
+          >
+            Start Measuring (45s)
+          </Button>
+          <Button
+            variant="contained"
             onClick={completeMeasuring}
             size="small"
           >
@@ -240,6 +259,13 @@ export const Default: Story = {
             size="small"
           >
             Start 90s Countdown
+          </Button>
+          <Button
+            variant="contained"
+            onClick={startCountdownWithOffset}
+            size="small"
+          >
+            Start 120s (30s elapsed)
           </Button>
           <Button
             variant="outlined"
