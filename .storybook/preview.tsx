@@ -19,10 +19,22 @@ const preview: Preview = {
     },
 
     options: {
-      storySort: (a, b) =>
-        a.id === b.id
-          ? 0
-          : a.id.localeCompare(b.id, undefined, { numeric: true }),
+      storySort: {
+        order: [
+          "Getting Started",
+          "3D View", [
+            "Robot",
+            "TrajectoryRenderer", 
+            "SafetyZonesRenderer",
+            "CollisionSceneRenderer",
+          ],
+          "Jogging",
+          "Safety",
+          "Components",
+          "Navigation",
+          "*", // Everything else
+        ],
+      },
     },
 
     // From mui integration guide https://storybook.js.org/recipes/@mui/material

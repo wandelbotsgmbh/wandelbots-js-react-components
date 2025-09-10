@@ -1,0 +1,53 @@
+import { Meta, Story } from '@storybook/addon-docs/blocks';
+import * as CollisionSceneRenderer from './CollisionSceneRenderer.stories';
+
+<Meta of={CollisionSceneRenderer} />
+
+# Collision Scene Renderer
+
+The `CollisionSceneRenderer` component visualizes a collision scene which can be created and fetched via the collision scene API endpoint.
+
+This component should be used with [nova-js](https://github.com/wandelbotsgmbh/nova-js). Pass the `scene` from the `Get Collision Scene API endpoint` to the component.
+
+```tsx
+
+const scene: CollisionScene = {
+    colliders: {
+      ...
+      "test/box/rotated": {
+        shape: {
+          shape_type: "box",
+          size_x: 100,
+          size_y: 200,
+          size_z: 300,
+          box_type: "FULL",
+        },
+        pose: {
+          position: [200, 0, -400],
+          orientation: [Math.PI * 0.75, Math.PI * 0.5, 0],
+        },
+      },
+      ...
+    },
+  }
+
+return (
+  <CollisionSceneRenderer
+    scene={scene}
+    meshChildrenProvider={(colliderKey, collider) => (
+      <meshStandardMaterial
+        color={
+  	colliderKey === "test/convex-hull"
+  	  ? theme.palette.tertiary.main
+  	  : theme.palette.primary.main
+        }
+        opacity={0.5}
+        transparent
+      />
+    )}
+  />
+)
+```
+
+<Story of={CollisionSceneRenderer.CollisionSceneRendererSt} />
+

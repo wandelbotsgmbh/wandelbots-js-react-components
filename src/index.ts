@@ -1,3 +1,4 @@
+export { default as CollisionSceneRenderer } from "./components/3d-viewport/collider/CollisionSceneRenderer"
 export * from "./components/3d-viewport/PresetEnvironment"
 export * from "./components/3d-viewport/SafetyZonesRenderer"
 export * from "./components/3d-viewport/TrajectoryRenderer"
@@ -21,9 +22,9 @@ export * from "./components/RobotCard"
 export * from "./components/RobotListItem"
 export * from "./components/robots/AxisConfig"
 export {
+  MANUFACTURER_HOME_CONFIGS,
   extractManufacturer,
   getDefaultHomeConfig,
-  MANUFACTURER_HOME_CONFIGS,
 } from "./components/robots/manufacturerHomePositions"
 export * from "./components/robots/Robot"
 export { defaultGetModel } from "./components/robots/robotModelLogic"
