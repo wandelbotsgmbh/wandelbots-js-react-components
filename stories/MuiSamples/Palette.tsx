@@ -1,6 +1,5 @@
-import { Box, Grid, Tooltip, Typography, type Theme } from "@mui/material"
+import { Box, Grid, type Theme, Tooltip, Typography } from "@mui/material"
 import { useTheme } from "@mui/material/styles"
-import React from "react"
 
 const colorCategories: Array<
   keyof Theme["palette"] | keyof Theme["paletteExt"]
@@ -20,7 +19,7 @@ const colorCategories: Array<
   "backgroundPaperElevation",
 ]
 
-const PaletteOverview: React.FC = () => {
+const PaletteOverview = () => {
   const theme = useTheme()
 
   return (
@@ -41,7 +40,7 @@ const PaletteOverview: React.FC = () => {
           >
             {theme.palette[category] &&
               Object.keys(theme.palette[category]).map((shade) => (
-                <Grid item key={shade} sx={{ alignItems: "center" }}>
+                <Grid key={shade} sx={{ alignItems: "center" }}>
                   <Typography variant="body2">{shade}</Typography>
                   <Tooltip title={(theme.palette[category] as any)[shade]}>
                     <Box
@@ -58,7 +57,7 @@ const PaletteOverview: React.FC = () => {
             {category === "primary" &&
               theme.paletteExt?.primary &&
               Object.keys(theme.paletteExt.primary).map((shade) => (
-                <Grid item key={shade} sx={{ alignItems: "center" }}>
+                <Grid key={shade} sx={{ alignItems: "center" }}>
                   <Typography variant="body2">{shade}</Typography>
                   <Tooltip title={(theme.paletteExt?.primary as any)?.[shade]}>
                     <Box
@@ -77,7 +76,7 @@ const PaletteOverview: React.FC = () => {
             {category === "secondary" &&
               theme.paletteExt?.secondary &&
               Object.keys(theme.paletteExt.secondary).map((shade) => (
-                <Grid item key={shade} sx={{ alignItems: "center" }}>
+                <Grid key={shade} sx={{ alignItems: "center" }}>
                   <Typography variant="body2">{shade}</Typography>
                   <Tooltip
                     title={(theme.paletteExt?.secondary as any)?.[shade]}

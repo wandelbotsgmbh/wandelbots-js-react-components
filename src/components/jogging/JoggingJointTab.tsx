@@ -1,5 +1,5 @@
-import { Divider, Stack } from "@mui/material"
-import { radiansToDegrees } from "@wandelbots/wandelbots-js"
+import { Divider, Stack, Typography, useTheme } from "@mui/material"
+import { radiansToDegrees } from "@wandelbots/nova-js"
 import { observer } from "mobx-react-lite"
 import type { ReactNode } from "react"
 import { JoggingJointLimitDetector } from "./JoggingJointLimitDetector"
@@ -9,6 +9,7 @@ import { JoggingVelocitySlider } from "./JoggingVelocitySlider"
 
 export const JoggingJointTab = observer(
   ({ store, children }: { store: JoggingStore; children: ReactNode }) => {
+    const theme = useTheme()
     async function startJointJogging(opts: {
       joint: number
       direction: "-" | "+"
@@ -52,27 +53,47 @@ export const JoggingJointTab = observer(
                   : undefined
 
               return (
-                <JoggingJointRotationControl
+                <Stack
                   key={`joint-${joint.index}`}
-                  disabled={store.isLocked}
-                  lowerLimitDegs={lowerLimitDegs}
-                  upperLimitDegs={upperLimitDegs}
-                  getValueDegs={() => {
-                    const value =
-                      store.jogger.motionStream.rapidlyChangingMotionState.state
-                        .joint_position.joints[joint.index]
-                    return value !== undefined
-                      ? radiansToDegrees(value)
-                      : undefined
-                  }}
-                  startJogging={(direction: "-" | "+") =>
-                    startJointJogging({
-                      joint: joint.index,
-                      direction,
-                    })
-                  }
-                  stopJogging={stopJointJogging}
-                />
+                  direction="row"
+                  alignItems="center"
+                  justifyContent={"center"}
+                  spacing={1.5}
+                  width={"100%"}
+                >
+                  {store.showJointsLegend && (
+                    <Typography
+                      color={
+                        store.isLocked
+                          ? theme.palette.text.disabled
+                          : theme.palette.text.secondary
+                      }
+                    >
+                      {`G${joint.index + 1}`}
+                    </Typography>
+                  )}
+
+                  <JoggingJointRotationControl
+                    disabled={store.isLocked}
+                    lowerLimitDegs={lowerLimitDegs}
+                    upperLimitDegs={upperLimitDegs}
+                    getValueDegs={() => {
+                      const value =
+                        store.jogger.motionStream.rapidlyChangingMotionState
+                          .state.joint_position.joints[joint.index]
+                      return value !== undefined
+                        ? radiansToDegrees(value)
+                        : undefined
+                    }}
+                    startJogging={(direction: "-" | "+") =>
+                      startJointJogging({
+                        joint: joint.index,
+                        direction,
+                      })
+                    }
+                    stopJogging={stopJointJogging}
+                  />
+                </Stack>
               )
             })}
           </Stack>

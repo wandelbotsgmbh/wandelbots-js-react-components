@@ -3,6 +3,7 @@ import {
   Stack,
   SvgIcon,
   Typography,
+  type PopoverOrigin,
   type TypographyProps,
 } from "@mui/material"
 import { observer, useLocalObservable } from "mobx-react-lite"
@@ -14,8 +15,11 @@ export type IndicatorWithExplanationProps = {
   color: TypographyProps["color"]
   title?: ReactNode
   name: ReactNode
+  label?: ReactNode
   explanation: ReactNode
   literalValue?: string
+  anchorOrigin?: PopoverOrigin
+  transformOrigin?: PopoverOrigin
 }
 
 export const IndicatorWithExplanation = observer(
@@ -25,8 +29,11 @@ export const IndicatorWithExplanation = observer(
     color,
     title,
     name,
+    label,
     explanation,
     literalValue,
+    anchorOrigin,
+    transformOrigin,
   }: IndicatorWithExplanationProps) => {
     const state = useLocalObservable(() => ({
       anchorEl: null as HTMLElement | null,
@@ -51,6 +58,8 @@ export const IndicatorWithExplanation = observer(
           aria-haspopup="true"
           onMouseEnter={state.openPopover}
           onMouseLeave={state.closePopover}
+          direction="row"
+          spacing={1}
           sx={{
             cursor: "pointer",
           }}
@@ -61,6 +70,9 @@ export const IndicatorWithExplanation = observer(
               color,
             }}
           />
+          {label && (<div style={{
+              color,
+            }}>{label}</div>)}
         </Stack>
         <Popover
           id={id}
@@ -69,14 +81,18 @@ export const IndicatorWithExplanation = observer(
           }}
           open={state.isPopoverOpen}
           anchorEl={state.anchorEl}
-          anchorOrigin={{
-            vertical: "bottom",
-            horizontal: "left",
-          }}
-          transformOrigin={{
-            vertical: "top",
-            horizontal: "left",
-          }}
+          anchorOrigin={
+            anchorOrigin ?? {
+              vertical: "bottom",
+              horizontal: "left",
+            }
+          }
+          transformOrigin={
+            transformOrigin ?? {
+              vertical: "top",
+              horizontal: "left",
+            }
+          }
           onClose={state.closePopover}
           disableRestoreFocus
         >

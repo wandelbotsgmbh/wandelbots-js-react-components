@@ -1,15 +1,19 @@
-import type { Meta, StoryObj } from "@storybook/react"
+import type { Meta, StoryObj } from "@storybook/react-vite"
 import { SafetyBar } from "../src"
 
 const meta: Meta<typeof SafetyBar> = {
   title: "Safety/SafetyBar",
   component: SafetyBar,
-  tags: ["autodocs"],
+  tags: ["!dev"],
+  parameters: {
+    layout: "padded",
+  },
   args: {
     isVirtual: false,
     motionGroupId: "robot1",
     operationMode: "OPERATION_MODE_AUTO",
     safetyState: "SAFETY_STATE_NORMAL",
+    compact: true,
   },
   argTypes: {
     isVirtual: {
@@ -35,6 +39,13 @@ const meta: Meta<typeof SafetyBar> = {
         "OPERATION_MODE_MANUAL_T2",
       ],
       description: "Current operation mode of the robot",
+    },
+    compact: {
+      control: "boolean",
+      description: "Whether to display the safety bar in compact mode",
+      table: {
+        defaultValue: { summary: "true" },
+      },
     },
     safetyState: {
       control: "select",
@@ -62,9 +73,9 @@ const meta: Meta<typeof SafetyBar> = {
 }
 
 export default meta
-type Story = StoryObj<typeof SafetyBar>
+type Story = StoryObj<typeof meta>
 
-export const Default: Story = {}
+export const Interactive: Story = {}
 
 export const VirtualRobot: Story = {
   args: {
@@ -94,5 +105,21 @@ export const ProtectiveStop: Story = {
 export const ErrorState: Story = {
   args: {
     safetyState: "SAFETY_STATE_FAULT",
+  },
+}
+
+export const CompactView: Story = {
+  args: {
+    compact: true,
+    safetyState: "SAFETY_STATE_NORMAL",
+    operationMode: "OPERATION_MODE_AUTO",
+  },
+}
+
+export const ExtendedView: Story = {
+  args: {
+    compact: false,
+    safetyState: "SAFETY_STATE_NORMAL",
+    operationMode: "OPERATION_MODE_AUTO",
   },
 }

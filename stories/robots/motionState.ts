@@ -1,4 +1,4 @@
-import type { MotionGroupStateResponse } from "@wandelbots/wandelbots-js"
+import type { MotionGroupStateResponse } from "@wandelbots/nova-js/v1"
 
 export const rapidlyChangingMotionState: MotionGroupStateResponse = {
   state: {
@@ -24,5 +24,6 @@ export const rapidlyChangingMotionState: MotionGroupStateResponse = {
     joint_limit_reached: {
       limit_reached: [false, false, false, false, false, false],
     },
+    sequence_number: "0",
   },
 }

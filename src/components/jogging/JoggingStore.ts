@@ -1,10 +1,10 @@
+import { tryParseJson } from "@wandelbots/nova-js"
 import type {
   CoordinateSystem,
   JoggerConnection,
   MotionGroupSpecification,
   RobotTcp,
-} from "@wandelbots/wandelbots-js"
-import { tryParseJson } from "@wandelbots/wandelbots-js"
+} from "@wandelbots/nova-js/v1"
 import { countBy } from "lodash-es"
 import keyBy from "lodash-es/keyBy"
 import uniqueId from "lodash-es/uniqueId"
@@ -103,6 +103,30 @@ export class JoggingStore {
   minRotationVelocityDegPerSec: number = 1
   /** Maximum rotation velocity user can choose on the velocity slider in °/s */
   maxRotationVelocityDegPerSec: number = 60
+
+  /** Whether to show the coordinate system select dropdown in the UI */
+  showCoordSystemSelect: boolean = true
+
+  /** Whether to show the TCP select dropdown in the UI */
+  showTcpSelect: boolean = true
+
+  /** Whether to show the orientation select dropdown in the UI */
+  showOrientationSelect: boolean = true
+
+  /** Whether to show the increment select dropdown in the UI */
+  showIncrementSelect: boolean = true
+
+  /** Whether to show icons in the jogging tabs */
+  showTabIcons: boolean = false
+
+  /** Whether to show the label to the right of the velocity slider */
+  showVelocitySliderLabel: boolean = true
+
+  /** Whether to show the legend before the slider */
+  showVelocityLegend: boolean = false
+
+  /** Whether to show the legend before the joints */
+  showJointsLegend: boolean = false
 
   disposers: IReactionDisposer[] = []
 
@@ -261,11 +285,11 @@ export class JoggingStore {
     return [
       {
         id: "cartesian",
-        label: "Cartesian",
+        label: "cartesian",
       },
       {
         id: "joint",
-        label: "Joints",
+        label: "joint",
       },
     ] as const
   }

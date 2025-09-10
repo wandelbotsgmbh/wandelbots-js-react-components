@@ -1,7 +1,5 @@
 import { CssBaseline, ThemeProvider } from "@mui/material"
-import type { Preview } from "@storybook/react"
-import React from "react"
-import { useDarkMode } from "storybook-dark-mode"
+import type { Preview } from "@storybook/react-vite"
 import { createNovaMuiTheme } from "../src"
 import { DocsContainer } from "./DocsContainer"
 import "./global.css"
@@ -12,13 +10,12 @@ const preview: Preview = {
       container: DocsContainer,
     },
 
-    // Duplicate functionality with storybook-dark-mode
-    backgrounds: { disable: true },
-
-    darkMode: {
-      stylePreview: true,
-      darkClass: "dark",
-      lightClass: "light",
+    backgrounds: {
+      default: "dark",
+      options: {
+        dark: { name: "dark", value: "#141623" },
+        light: { name: "light", value: "#ffffff" },
+      },
     },
 
     options: {
@@ -37,11 +34,14 @@ const preview: Preview = {
       },
     },
   },
+  initialGlobals: {
+    backgrounds: { value: "dark" },
+  },
   decorators: [
     (Story) => {
-      const isDark = useDarkMode()
+      // Force dark theme for all components
       const muiTheme = createNovaMuiTheme({
-        palette: { mode: isDark ? "dark" : "light" },
+        palette: { mode: "dark" },
       })
 
       return (

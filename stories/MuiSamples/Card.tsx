@@ -16,8 +16,8 @@ import Card from "@mui/material/Card"
 import CardActions from "@mui/material/CardActions"
 import CardContent from "@mui/material/CardContent"
 import { red } from "@mui/material/colors"
-import Typography from "@mui/material/Typography"
 import type { Theme } from "@mui/material/styles"
+import Typography from "@mui/material/Typography"
 import React from "react"
 
 export default function CardExample() {
@@ -41,7 +41,7 @@ export default function CardExample() {
 
   return (
     <Grid container spacing={2}>
-      <Grid item>
+      <Grid>
         <Typography variant="h6">Simple</Typography>
         <Card sx={{ minWidth: 275 }}>
           <CardContent>
@@ -75,7 +75,7 @@ export default function CardExample() {
           </CardActions>
         </Card>
       </Grid>
-      <Grid item>
+      <Grid>
         <Typography variant="h6">Outlined</Typography>
         <Card variant="outlined" sx={{ minWidth: 275 }}>
           <CardContent>
@@ -109,7 +109,7 @@ export default function CardExample() {
           </CardActions>
         </Card>
       </Grid>
-      <Grid item>
+      <Grid>
         <Typography variant="h6">Complex</Typography>
         <Card sx={{ minWidth: 345 }}>
           <CardHeader

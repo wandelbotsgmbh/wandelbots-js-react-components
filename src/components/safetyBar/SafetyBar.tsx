@@ -1,8 +1,8 @@
-import { Divider, Stack } from "@mui/material"
+import { Divider, Stack, type PopoverOrigin } from "@mui/material"
 import type {
   RobotControllerStateOperationModeEnum,
   RobotControllerStateSafetyStateEnum,
-} from "@wandelbots/wandelbots-js"
+} from "@wandelbots/nova-js/v1"
 import { observer } from "mobx-react-lite"
 import { externalizeComponent } from "../../externalizeComponent"
 import { ControllerTypeIndicator } from "./ControllerTypeIndicator"
@@ -14,30 +14,58 @@ export interface SafetyBarProps {
   motionGroupId: string
   operationMode: RobotControllerStateOperationModeEnum
   safetyState: RobotControllerStateSafetyStateEnum
+  anchorOrigin?: PopoverOrigin
+  transformOrigin?: PopoverOrigin
+  compact?: boolean
 }
 
 export const SafetyBar = externalizeComponent(
-  observer((props: SafetyBarProps) => {
-    return (
-      <Stack
-        direction="row"
-        gap="8px"
-        alignItems="center"
-        sx={{ height: "24px" }}
-      >
-        <SafetyStateIndicator safetyState={props.safetyState} />
+  observer(
+    ({
+      isVirtual,
+      motionGroupId,
+      operationMode,
+      safetyState,
+      anchorOrigin,
+      transformOrigin,
+      compact = true,
+    }: SafetyBarProps) => {
+      const gap = compact ? 1 : 2
 
-        <Divider orientation="vertical" flexItem />
+      return (
+        <Stack
+          direction="row"
+          gap={gap}
+          alignItems="center"
+          sx={{ height: "24px" }}
+        >
+          <SafetyStateIndicator
+            safetyState={safetyState}
+            anchorOrigin={anchorOrigin}
+            transformOrigin={transformOrigin}
+            compact={compact}
+          />
 
-        <OperationModeIndicator operationMode={props.operationMode} />
+          <Divider orientation="vertical" flexItem />
 
-        <Divider orientation="vertical" flexItem />
+          <OperationModeIndicator
+            operationMode={operationMode}
+            anchorOrigin={anchorOrigin}
+            transformOrigin={transformOrigin}
+            compact={compact}
+          />
 
-        <ControllerTypeIndicator
-          isVirtual={props.isVirtual}
-          motionGroupId={props.motionGroupId}
-        />
-      </Stack>
-    )
-  }),
+          <Divider orientation="vertical" flexItem />
+
+          <ControllerTypeIndicator
+            isVirtual={isVirtual}
+            motionGroupId={motionGroupId}
+            anchorOrigin={anchorOrigin}
+            transformOrigin={transformOrigin}
+            compact={compact}
+          />
+        </Stack>
+      )
+    },
+  ),
 )

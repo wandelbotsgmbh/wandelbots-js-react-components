@@ -1,5 +1,5 @@
-import { useTheme } from "@mui/material"
-import type { RobotControllerStateOperationModeEnum } from "@wandelbots/wandelbots-js"
+import { useTheme, type PopoverOrigin } from "@mui/material"
+import type { RobotControllerStateOperationModeEnum } from "@wandelbots/nova-js/v1"
 import { observer } from "mobx-react-lite"
 import { Trans, useTranslation } from "react-i18next"
 import OperationModeAutomaticIcon from "./icons/operation-mode-automatic.svg"
@@ -9,10 +9,18 @@ import { IndicatorWithExplanation } from "./IndicatorWithExplanation"
 
 interface OperationModeIndicatorProps {
   operationMode: RobotControllerStateOperationModeEnum
+  anchorOrigin?: PopoverOrigin
+  transformOrigin?: PopoverOrigin
+  compact: boolean
 }
 
 export const OperationModeIndicator = observer(
-  ({ operationMode }: OperationModeIndicatorProps) => {
+  ({
+    operationMode,
+    anchorOrigin,
+    transformOrigin,
+    compact,
+  }: OperationModeIndicatorProps) => {
     const { t } = useTranslation()
     const theme = useTheme()
 
@@ -24,13 +32,16 @@ export const OperationModeIndicator = observer(
             icon={OperationModeAutomaticIcon}
             title={t("SafetyBar.OperationMode.ti")}
             name={t("SafetyBar.OperationMode.Automatic.ti")}
-            color={"rgba(255, 255, 255, 0.57)"}
+            label={compact ? null : t("SafetyBar.OperationMode.Automatic.ti")}
+            color={theme.palette.text.secondary}
             explanation={
               <Trans i18nKey="SafetyBar.OperationMode.Auto.Explanation.lb">
                 The robot controller is in automatic operation mode. Automated
                 movement without manual confirmation is possible in this mode.
               </Trans>
             }
+            anchorOrigin={anchorOrigin}
+            transformOrigin={transformOrigin}
           />
         )
       case "OPERATION_MODE_MANUAL":
@@ -43,6 +54,7 @@ export const OperationModeIndicator = observer(
             color={theme.palette.warning.main}
             title={t("SafetyBar.OperationMode.ti")}
             name={t("SafetyBar.OperationMode.Manual.lb")}
+            label={compact ? null : t("SafetyBar.OperationMode.Manual.lb")}
             explanation={
               <Trans i18nKey="SafetyBar.OperationMode.Manual.Explanation.lb">
                 The robot controller is in manual operation mode. On a physical
@@ -51,6 +63,8 @@ export const OperationModeIndicator = observer(
               </Trans>
             }
             literalValue={operationMode}
+            anchorOrigin={anchorOrigin}
+            transformOrigin={transformOrigin}
           />
         )
       }
@@ -62,6 +76,7 @@ export const OperationModeIndicator = observer(
             color={theme.palette.warning.main}
             title={t("SafetyBar.OperationMode.ti")}
             name={t("SafetyBar.OperationMode.Error.lb")}
+            label={compact ? null : t("SafetyBar.OperationMode.Error.lb")}
             explanation={
               <Trans i18nKey="SafetyBar.OperationMode.Error.Explanation.lb">
                 The robot controller has entered an unexpected operation mode.
@@ -69,6 +84,8 @@ export const OperationModeIndicator = observer(
               </Trans>
             }
             literalValue={operationMode}
+            anchorOrigin={anchorOrigin}
+            transformOrigin={transformOrigin}
           />
         )
     }

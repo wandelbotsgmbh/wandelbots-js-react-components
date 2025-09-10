@@ -1,8 +1,8 @@
-import type { GroupProps } from "@react-three/fiber"
+import type { ThreeElements } from "@react-three/fiber"
 import type {
   DHParameter,
   MotionGroupStateResponse,
-} from "@wandelbots/wandelbots-api-client"
+} from "@wandelbots/nova-api/v1"
 import { Suspense, useCallback, useEffect, useState } from "react"
 import { DHRobot } from "./DHRobot"
 
@@ -18,7 +18,7 @@ import { defaultGetModel } from "./robotModelLogic"
 export type DHRobotProps = {
   rapidlyChangingMotionState: MotionGroupStateResponse
   dhParameters: Array<DHParameter>
-} & GroupProps
+} & ThreeElements["group"]
 
 export type SupportedRobotProps = {
   rapidlyChangingMotionState: MotionGroupStateResponse
@@ -28,7 +28,7 @@ export type SupportedRobotProps = {
   getModel?: (modelFromController: string) => string
   postModelRender?: () => void
   transparentColor?: string
-} & GroupProps
+} & ThreeElements["group"]
 
 export const SupportedRobot = externalizeComponent(
   ({
@@ -69,12 +69,8 @@ export const SupportedRobot = externalizeComponent(
       <ErrorBoundary
         fallback={dhrobot}
         onError={(err) => {
-          if (err.message.includes("404: Not Found")) {
-            // Missing model; show the fallback for now
-            console.error(err)
-          } else {
-            throw err
-          }
+          // Missing model; show the fallback for now
+          console.error(err)
         }}
       >
         <Suspense fallback={dhrobot}>

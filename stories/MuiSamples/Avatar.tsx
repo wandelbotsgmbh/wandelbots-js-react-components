@@ -14,6 +14,8 @@ const avatarSetStyle = {
   },
 }
 
+const maxAvatars = 4
+
 export default function AvatarExample() {
   return (
     <Box
@@ -102,8 +104,8 @@ export default function AvatarExample() {
         </Avatar>
       </Box>
       <Box component="div" sx={avatarSetStyle}>
-        {/* @ts-expect-error Union type complexity issue in MUI v6 */}
-        <AvatarGroup max={4}>
+        {/* @ts-ignore - Complex union type issue with MUI v7 AvatarGroup */}
+        <AvatarGroup max={maxAvatars}>
           <Avatar
             alt="Remy Sharp"
             src="https://material-ui.com/static/images/avatar/1.jpg"

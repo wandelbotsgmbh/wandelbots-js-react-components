@@ -4,8 +4,9 @@ import {
   ToggleButton,
   Typography,
   useTheme,
+  type Theme,
 } from "@mui/material"
-import { degreesToRadians, radiansToDegrees } from "@wandelbots/wandelbots-js"
+import { degreesToRadians, radiansToDegrees } from "@wandelbots/nova-js"
 import { observer } from "mobx-react-lite"
 import { useTranslation } from "react-i18next"
 import XAxisIcon from "../../icons/axis-x.svg"
@@ -140,21 +141,38 @@ export const JoggingCartesianTab = observer(
       await store.deactivate()
     }
 
+    function getAxisColors(
+      axisId: "X" | "Y" | "Z",
+      motionType: "translate" | "rotate",
+      theme: Theme,
+    ) {
+      const axisColors =
+        theme.componentsExt?.JoggingPanel?.JoggingCartesian?.Axis
+
+      if (!axisColors) return undefined
+
+      if (motionType === "translate") {
+        return axisColors[axisId]
+      }
+
+      return axisColors.CustomRotation ?? axisColors[axisId]
+    }
+
     const axisList = [
       {
         id: "x",
-        colors: theme.componentsExt?.JoggingCartesian?.Axis?.X,
         icon: <XAxisIcon />,
+        colors: getAxisColors("X", store.selectedCartesianMotionType, theme),
       },
       {
         id: "y",
-        colors: theme.componentsExt?.JoggingCartesian?.Axis?.Y,
         icon: <YAxisIcon />,
+        colors: getAxisColors("Y", store.selectedCartesianMotionType, theme),
       },
       {
         id: "z",
-        colors: theme.componentsExt?.JoggingCartesian?.Axis?.Z,
         icon: <ZAxisIcon />,
+        colors: getAxisColors("Z", store.selectedCartesianMotionType, theme),
       },
     ] as const
 
@@ -227,7 +245,9 @@ export const JoggingCartesianTab = observer(
                       <Typography
                         sx={{
                           fontSize: "24px",
-                          color: theme.palette.text.primary,
+                          color:
+                            axis.colors?.labelColor ??
+                            theme.palette.text.primary,
                         }}
                       >
                         {axis.id.toUpperCase()}
@@ -269,7 +289,9 @@ export const JoggingCartesianTab = observer(
                       <Typography
                         sx={{
                           fontSize: "24px",
-                          color: theme.palette.text.primary,
+                          color:
+                            axis.colors?.labelColor ??
+                            theme.palette.text.primary,
                         }}
                       >
                         {axis.id.toUpperCase()}

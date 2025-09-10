@@ -110,7 +110,7 @@ jobs:
           cd no-draco-models
           zip ../no-draco-models.zip *.glb
           cd ..
-          
+
       - name: Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -122,7 +122,7 @@ jobs:
     needs: build
     env:
       HUSKY: 0
-    if: ${{ github.event_name == 'pull_request' }}
+    if: ${{ github.event_name == 'pull_request' && github.actor != 'dependabot[bot]' }}
     permissions:
       contents: write # to be able to publish a GitHub release
       issues: write # to be able to comment on released issues
@@ -153,7 +153,7 @@ jobs:
         run: |
           # Clean base version (remove v prefix)
           CLEAN_VERSION=$(echo $LATEST_VERSION | sed 's/^v//')
-          
+
           # Extract the pull request number
           PR_NUMBER=$(echo $GITHUB_REF | sed 's/refs\/pull\/\([0-9]*\)\/.*/\1/')
           # Extract the branch name and clean it
@@ -173,7 +173,7 @@ jobs:
           npm config set access public
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-          
+
       - name: Verify npm authentication
         run: npm whoami
         env:

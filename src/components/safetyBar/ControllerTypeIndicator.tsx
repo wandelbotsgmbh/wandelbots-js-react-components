@@ -1,4 +1,4 @@
-import { useTheme } from "@mui/material"
+import { useTheme, type PopoverOrigin } from "@mui/material"
 import { observer } from "mobx-react-lite"
 import { Trans, useTranslation } from "react-i18next"
 import ControllerTypePhysicalIcon from "./icons/controller-type-physical.svg"
@@ -8,10 +8,19 @@ import { IndicatorWithExplanation } from "./IndicatorWithExplanation"
 interface ControllerTypeIndicatorProps {
   isVirtual: boolean
   motionGroupId: string
+  anchorOrigin?: PopoverOrigin
+  transformOrigin?: PopoverOrigin
+  compact: boolean
 }
 
 export const ControllerTypeIndicator = observer(
-  ({ isVirtual, motionGroupId }: ControllerTypeIndicatorProps) => {
+  ({
+    isVirtual,
+    motionGroupId,
+    anchorOrigin,
+    transformOrigin,
+    compact,
+  }: ControllerTypeIndicatorProps) => {
     const theme = useTheme()
     const { t } = useTranslation()
 
@@ -22,6 +31,7 @@ export const ControllerTypeIndicator = observer(
           icon={ControllerTypeVirtualIcon}
           color={theme.palette.tertiary.main}
           name={t("SafetyBar.ControllerType.Virtual.lb")}
+          label={compact ? null : t("SafetyBar.ControllerType.Virtual.lb")}
           explanation={
             <Trans
               i18nKey="SafetyBar.MotionGroup.Virtual.Explanation.lb"
@@ -34,6 +44,8 @@ export const ControllerTypeIndicator = observer(
               without special safety precautions.
             </Trans>
           }
+          anchorOrigin={anchorOrigin}
+          transformOrigin={transformOrigin}
         />
       )
     }
@@ -44,6 +56,7 @@ export const ControllerTypeIndicator = observer(
         icon={ControllerTypePhysicalIcon}
         color={theme.palette.primary.main}
         name={t("SafetyBar.ControllerType.Physical.lb")}
+        label={compact ? null : t("SafetyBar.ControllerType.Physical.lb")}
         explanation={
           <Trans
             i18nKey="SafetyBar.MotionGroup.Physical.Explanation.lb"
@@ -53,6 +66,8 @@ export const ControllerTypeIndicator = observer(
             components={{ code: <code />, strong: <strong /> }}
           />
         }
+        anchorOrigin={anchorOrigin}
+        transformOrigin={transformOrigin}
       />
     )
   },

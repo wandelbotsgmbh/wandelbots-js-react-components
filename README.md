@@ -2,207 +2,197 @@
 
 [![NPM version](https://img.shields.io/npm/v/@wandelbots/wandelbots-js-react-components.svg)](https://npmjs.org/package/@wandelbots/wandelbots-js-react-components) [![npm bundle size](https://img.shields.io/bundlephobia/minzip/@wandelbots/wandelbots-js-react-components)](https://bundlephobia.com/package/@wandelbots/wandelbots-js-react-components) [![Release](https://github.com/wandelbotsgmbh/wandelbots-js-react-components/actions/workflows/release.yml/badge.svg)](https://github.com/wandelbotsgmbh/wandelbots-js-react-components/actions/workflows/release.yml) [![](https://img.shields.io/badge/-storybook-%23ff69b4)](https://wandelbotsgmbh.github.io/wandelbots-js-react-components)
 
-A growing collection of ready-made React UI components based on MaterialUI and React Three Fiber for use with the Wandelbots platform.
+React UI components for building robotics applications on the [Wandelbots Nova platform](https://www.wandelbots.com/).
+
+Built with TypeScript, Material-UI, and React Three Fiber. Provides robot control interfaces, 3D visualizations, and automation components that integrate with the Nova ecosystem.
+
+## Quick Start
 
 ```bash
 npm install @wandelbots/wandelbots-js-react-components
 ```
 
-### Basic usage:
+## Getting Started
 
-Import your desired components or functions from the package:
+For setup instructions, integration examples, and basic usage patterns, visit the **[Getting Started Guide](https://wandelbotsgmbh.github.io/wandelbots-js-react-components/?path=/docs/gettingstarted--docs)** in our Storybook documentation.
 
-```jsx
-import { JoggingPanel, ... } from '@wandelbots/wandelbots-js-react-components'
-```
+## Documentation
 
-See the [Storybook](https://wandelbotsgmbh.github.io/wandelbots-js-react-components) for implementation details of each component.
+See the [Storybook](https://wandelbotsgmbh.github.io/wandelbots-js-react-components) for interactive examples and API documentation.
 
-### Index
+## Components
 
-<table>
-  <tr>
-    <td valign="top">
-      <ul>
-        <li><a href="#ui">UI</a></li>
-        <ul>
-          <li><a href="#joggingpanel">JoggingPanel</a></li>
-          <li><a href="#wandelscripteditor">WandelscriptEditor</a></li>
-          <li><a href="#theming">Theming</a></li>
-        </ul>
-        <li><a href="#viewport">3D Viewport</a></li>
-        <ul>
-          <li><a href="#robot">Robot</a></li>
-          <li><a href="#lightning">Lightning</a></li>
-          <li><a href="#safety">Safety Zones</a></li>
-        </ul>
-      </ul>
-    </td>
-  </tr>
-</table>
+### Robot Control & Jogging
 
-### UI
+Manual robot control interfaces.
 
-#### JoggingPanel
+**[JoggingPanel](https://wandelbotsgmbh.github.io/wandelbots-js-react-components/?path=/docs/jogging-joggingpanel--docs)** - Complete jogging interface with cartesian and joint controls
 
-<a href="https://wandelbotsgmbh.github.io/wandelbots-js-react-components/?path=/docs/jogging-joggingpanel--docs">
-<img width="20%" alt="jogging" src="https://github.com/user-attachments/assets/07d8bd72-9378-4199-8f54-d101c857797c">
-</a>
+- Dual-mode operation (Cartesian & Joint space)
+- Real-time velocity control
+- Multiple coordinate systems support
 
-The JoggingPanel is a high-level user interface for manually moving a robot using the Wandelbots stack. It needs only a `NovaClient` instance from [wandelbots-js](https://github.com/wandelbotsgmbh/wandelbots-js) and the id of a motion group to connect to.
+**Individual Jogging Controls**
 
-```tsx
-type JoggingPanelProps = {
-  /** Connection to a Nova instance to use for jogging */
-  nova: NovaClient
-  /** Id of the motion group to move e.g. 0@ur5e **/
-  motionGroupId: string
-  /** Callback with the jogging panel's state store for further customization/config */
-  onSetup: (store: JoggingStore) => void
-  /** Any children will go at the bottom of the panel under the default components */
-  children?: React.ReactNode
-}
-```
+- **[JoggingCartesianAxisControl](https://wandelbotsgmbh.github.io/wandelbots-js-react-components/?path=/docs/jogging-joggingcartesianaxiscontrol--docs)** - Single-axis cartesian movement
+- **[JoggingJointRotationControl](https://wandelbotsgmbh.github.io/wandelbots-js-react-components/?path=/docs/jogging-joggingjointrotationcontrol--docs)** - Individual joint controls
+- **[VelocitySlider](https://wandelbotsgmbh.github.io/wandelbots-js-react-components/?path=/docs/jogging-velocityslider--docs)** - Speed adjustment interface
 
-#### WandelscriptEditor
+### Program Execution
 
-The WandelscriptEditor provides an interface for editing snippets of Wandelscript code with the appropriate syntax highlighting. It uses the [Monaco](https://microsoft.github.io/monaco-editor/) editor under the hood.
+Program control and monitoring components.
 
-```tsx
-type WandelscriptEditorProps = {
-  /** The current Wandelscript content of the code editor (controlled component) */
-  code?: string
-  /** What to do when the user edits the code */
-  onChange?: (
-    code: string | undefined,
-    ev: editor.IModelContentChangedEvent,
-  ) => void
-  /** Callback to further configure monaco on startup if needed */
-  monacoSetup?: (monaco: Monaco) => void
-}
-```
+**[ProgramControl](https://wandelbotsgmbh.github.io/wandelbots-js-react-components/?path=/docs/components-programcontrol--docs)** - Program lifecycle management
 
-#### Theming
+- Play, pause, stop functionality
+- State machine integration
+- Manual reset capabilities
 
-The UI components presented in this library will respect the Material UI theme of the application they are rendered within, allowing customization with the [MUI theming system](mui.com/material-ui).
+**[ProgramStateIndicator](https://wandelbotsgmbh.github.io/wandelbots-js-react-components/?path=/docs/components-programstateindicator--docs)** - Visual program status
 
-Using the Wandelbots MUI theme
-To make the components look exactly like they do in the storybook, pass the [Wandelbots MUI theme](https://wandelbotsgmbh.github.io/wandelbots-js-react-components/?path=/docs/theming-wandelbots-mui-theme--docs) to ThemeProvider.
+- Live execution state monitoring
+- Error state visualization
 
-```tsx
-import { ThemeProvider } from "@mui/material";
-import { createNovaMuiTheme, JoggingPanel } from "@wandelbots/wandelbots-js-react-components"
+### 3D Visualization & Robotics
 
-const theme = createNovaMuiTheme()
+3D components for robot visualization.
 
-<ThemeProvider theme={theme}>
-  <JoggingPanel ... />
-</ThemeProvider>
-```
+**[Robot](https://wandelbotsgmbh.github.io/wandelbots-js-react-components/?path=/docs/3d-view-robot--docs)** - Real-time 3D robot rendering
 
-### Viewport
+- Live pose updates from motion groups
+- Extensive robot model support from major manufacturers
+- [Supported Models](https://wandelbotsgmbh.github.io/wandelbots-js-react-components/?path=/story/3d-view-robot-supported-models--abb-1010-037-15) - ABB, FANUC, KUKA, Universal Robots, Yaskawa (100+ models)
+- Automatic model loading from CDN
 
-#### Robot
+**[SafetyZonesRenderer](https://wandelbotsgmbh.github.io/wandelbots-js-react-components/?path=/docs/3d-view-safetyzonesrenderer--docs)** - 3D safety visualization
 
-<a href="https://wandelbotsgmbh.github.io/wandelbots-js-react-components/?path=/docs/3d-view-robot--docs">
-<img width="20%" alt="Robot" src="https://github.com/user-attachments/assets/da661136-8b53-48ba-85de-63b09e3b51f3">
-</a>
+- Real-time safety zone rendering
+- Visual collision boundaries
 
-This `Robot` component adds the robot to the 3D viewport. Use it together with the `connectedMotionGroup` from `@wandelbots/wandelbots-js`.
+**[TrajectoryRenderer](https://wandelbotsgmbh.github.io/wandelbots-js-react-components/?path=/docs/3d-view-trajectoryrenderer--docs)** - Motion path visualization
 
-```tsx
-<Robot connectedMotionGroup={connectedMotionGroup} />
-```
+- Real-time trajectory display
+- Path planning visualization
 
-The robot model are loaded from the [jsdelivr CDN](https://cdn.jsdelivr.net/gh/wandelbotsgmbh/wandelbots-js-react-components/public/models/).
+### Safety & Monitoring
 
-In case you want to use the application offline, you can download the models and host them locally. You can override the URL resolver of the `Robot` component by passing a `getModel` function like:
+Safety components for production environments.
 
-```tsx
-<Robot
-  getModel={() => `public/${connectedMotionGroup.modelFromController}.glb`}
-  connectedMotionGroup={connectedMotionGroup}
-/>
-```
+**[SafetyBar](https://wandelbotsgmbh.github.io/wandelbots-js-react-components/?path=/docs/safety-safetybar--docs)** - Centralized safety status
 
-```tsx
-export type ConnectecMotionGroupRobotProps = {
-  connectedMotionGroup: ConnectedMotionGroup // The connected motion group from wandelbots-js
-  getModel?: (modelFromController: string) => string // A function that returns the URL of the robot model
-  transparentColor?: string // Whether the robot should be displayed transparently
-} & GroupProps
-```
+- Real-time safety monitoring
+- Emergency stop integration
 
-##### SupportedRobot
+### Code Editing
 
-The `SupportedRobot` can be used to display a robot model without the need for a `connectedMotionGroup` from `@wandelbots/wandelbots-js`.
+Code editing capabilities for robot programming.
 
-```tsx
-<SupportedRobot
-  rapidlyChangingMotionState={rapidlyChangingMotionState}
-  dhParameters={dhParameters as any}
-  modelFromController={modelFromController || ""}
-  getModel={() => `./robot-pad/models/${modelFromController}.glb`}
-/>
-```
+**[WandelscriptEditor](https://wandelbotsgmbh.github.io/wandelbots-js-react-components/?path=/docs/wandelscript-wandelscripteditor--docs)** - Code editor
 
-```tsx
-export type SupportedRobotProps = {
-  rapidlyChangingMotionState: MotionGroupStateResponse // The motion state of the robot
-  modelFromController: string // The model name of the robot
-  dhParameters: DHParameter[] // The DH parameters of the robot
-  getModel?: (modelFromController: string) => string // A function that returns the URL of the robot model
-  transparentColor?: string // Whether the robot should be displayed transparently
-} & GroupProps
-```
+- Monaco editor integration
+- Wandelscript syntax highlighting
+- IntelliSense support
 
-#### Lighting
+### Data & Interface Components
 
-The `PresetEnvironment` component adds a default lighting setup to the 3D viewport.
+UI components for data display and user interaction.
 
-```tsx
-<PresetEnvironment>
-```
+**Data Components**
 
-#### Safety
+- **[DataGrid](https://wandelbotsgmbh.github.io/wandelbots-js-react-components/?path=/docs/components-datagrid--docs)** - Data tables with robotics data formatting
+- **[LogPanel](https://wandelbotsgmbh.github.io/wandelbots-js-react-components/?path=/docs/components-logpanel--docs)** - Real-time log display and filtering
+- **[CycleTimer](https://wandelbotsgmbh.github.io/wandelbots-js-react-components/?path=/docs/components-cycletimer--docs)** - Production cycle timing and metrics
 
-<a href="https://wandelbotsgmbh.github.io/wandelbots-js-react-components/?path=/docs/3d-view-safetyzonesrenderer--docs">
-<img width="20%" alt="Bildschirmfoto 2024-09-19 um 14 26 40" src="https://github.com/user-attachments/assets/be5ef8c3-5cd2-4d6d-bfc3-cbf4eb4fc04c">
-</a>
+**Robot Management**
 
-The `SafetyZonesRenderer` component visualizes the safety zones of the controller.
+- **[RobotCard](https://wandelbotsgmbh.github.io/wandelbots-js-react-components/?path=/docs/components-robotcard--docs)** - Robot overview cards with status
+- **[RobotListItem](https://wandelbotsgmbh.github.io/wandelbots-js-react-components/?path=/docs/components-robotlistitem--docs)** - List view for multiple robots
+- **[RobotSetupReadinessIndicator](https://wandelbotsgmbh.github.io/wandelbots-js-react-components/?path=/docs/components-robotsetupreadinessindicator--docs)** - Setup validation status
 
-```tsx
-<SafetyZonesRenderer safetyZones={connectedMotionGroup.safetyZones || []} />
-```
+**Navigation**
 
-## Contributing
+- **[AppHeader](https://wandelbotsgmbh.github.io/wandelbots-js-react-components/?path=/docs/navigation-appheader--docs)** - Application header with branding
+- **[TabBar](https://wandelbotsgmbh.github.io/wandelbots-js-react-components/?path=/docs/navigation-tabbar--docs)** - Multi-section navigation
 
-To set up wandelbots-js-react-components for development, first clone the repo and run:
+### Theming & Styling
+
+Styling system for consistent robotics applications.
+
+**[Theming components](https://wandelbotsgmbh.github.io/wandelbots-js-react-components/?path=/docs/theming-theming-components--docs)** - Interactive theming examples
+
+- Component theming demonstrations
+- Customization patterns
+
+**[Wandelbots MUI Theme](https://wandelbotsgmbh.github.io/wandelbots-js-react-components/?path=/docs/theming-wandelbots-mui-theme--docs)** - Material-UI theme
+
+- Dark/light mode support
+- Robotics-specific color schemes
+- Material Design integration
+
+## Architecture & Integration
+
+### Nova Platform Integration
+
+Components integrate with the Wandelbots Nova ecosystem:
+
+- **NovaClient Integration** - Components accept either `NovaClient` instances or URL strings
+- **Real-time Updates** - WebSocket connections for live robot state updates
+- **Motion Group Management** - Direct integration with `ConnectedMotionGroup` objects
+- **State Synchronization** - Automatic state management with MobX reactivity
+
+### Technical Foundation
+
+- **TypeScript** - Full type safety and enhanced developer experience
+- **Material-UI v6/v7** - Professional design system and theming
+- **React Three Fiber** - High-performance 3D rendering for robotics visualization
+- **MobX** - Reactive state management for real-time updates
+- **i18next** - Internationalization support for global deployment
+
+## Installation & Setup
+
+### Prerequisites
+
+- React 18+ or 19+
+- Material-UI v6 or v7
+- @emotion/react and @emotion/styled
+
+### Optional Dependencies (for 3D components)
+
+- @react-three/fiber, @react-three/drei, three, three-stdlib
+
+See the [Getting Started Guide](https://wandelbotsgmbh.github.io/wandelbots-js-react-components/?path=/docs/gettingstarted--docs) for complete setup instructions and integration examples.
+
+## Development
+
+To set up the project for development:
 
 ```bash
+git clone https://github.com/wandelbotsgmbh/wandelbots-js-react-components.git
+cd wandelbots-js-react-components
 npm install
-```
-
-Then you can run the storybook to develop the components:
-
-```bash
-npm run dev
+npm run dev  # Start Storybook development server
 ```
 
 ### Local Testing
 
-To test the package locally, you can run:
+Build and test the package locally:
 
 ```bash
 npm run build
 npm pack
+npm install /path/to/wandelbots-wandelbots-js-react-components-x.x.x.tgz
 ```
 
-this will generate a `.tgz` file in the root of the project. You can then install this package in another project with:
+> **Note:** Use `npm install` with the `.tgz` file instead of `npm link` due to peer dependency requirements with React Three Fiber components.
 
-```bash
-npm install /path/to/wandelbots-wandelbots-js-react-components-0.0.1.tgz
-```
+## Contributing
 
-`npm link` leads to issues with the react three fiber components (`peerDependencies` are not supported), so it is recommended to use `npm install` with the `.tgz` file.
+We welcome contributions! Please see our contributing guidelines and feel free to submit issues and pull requests.
+
+## License
+
+This project is licensed under the terms specified in the LICENSE file.
+
+---
+
+[Explore the Storybook](https://wandelbotsgmbh.github.io/wandelbots-js-react-components) • [Visit Wandelbots.com](https://www.wandelbots.com/)

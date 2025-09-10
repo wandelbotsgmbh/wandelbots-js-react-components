@@ -1,14 +1,13 @@
 import { type FC } from "react"
 import { I18nextProvider } from "react-i18next"
-// @ts-expect-error invalid type-only import error
-import i18n from "./i18n/config"
+import { i18n } from "./i18n/config"
 
 /**
  * Our components require a certain context that may or may not
  * be provided by the user application; this wrapper ensures
  * they can be used either way.
  */
-export function externalizeComponent<T extends JSX.ElementType>(
+export function externalizeComponent<T extends React.JSX.ElementType>(
   Component: T,
 ): T {
   const WrappedComponent = ((props: T) => (

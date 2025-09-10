@@ -11,6 +11,7 @@ import {
 
 export const JoggingOptions = observer(({ store }: { store: JoggingStore }) => {
   const { t } = useTranslation()
+  const joggingOptions: React.ReactElement[] = []
 
   function translateOrientation(orientation: OrientationId): string {
     switch (orientation) {
@@ -23,55 +24,44 @@ export const JoggingOptions = observer(({ store }: { store: JoggingStore }) => {
     }
   }
 
-  return (
-    <Box
-      component="div"
-      sx={{
-        display: "grid",
-        gap: "16px",
-        gridTemplateColumns: "1fr 1fr",
-        gridTemplateRows: "min-height min-height",
-        "& label": {
-          opacity: 0.7,
-          fontSize: "12px",
-          marginBottom: "4px",
-        },
-      }}
-    >
-      {/* Coordinate system */}
+  if (store.showCoordSystemSelect) {
+    joggingOptions.push(
       <AdornedSelect
+        key="coord"
         labelId="jogging-coord-select"
-        labelValue={"Coordinate Sys."}
+        labelValue={t("Jogging.CoordinateSystem.hlb")}
         value={store.selectedCoordSystemId}
         size="small"
         variant="filled"
         displayEmpty={true}
-        onChange={(event) => {
+        onChange={(event) =>
           store.setSelectedCoordSystemId(event.target.value as string)
-        }}
+        }
         disabled={store.isLocked}
       >
         {store.coordSystems.map((cs) => (
           <MenuItem key={cs.coordinate_system} value={cs.coordinate_system}>
-            {/* Distinguish coordinate systems with the same name */}
             {cs.name && store.coordSystemCountByName[cs.name] > 1
               ? `${cs.name} / ${cs.coordinate_system}`
               : cs.name || cs.coordinate_system}
           </MenuItem>
         ))}
-      </AdornedSelect>
+      </AdornedSelect>,
+    )
+  }
 
-      {/* TCP selection */}
-
+  if (store.showTcpSelect) {
+    joggingOptions.push(
       <AdornedSelect
+        key="tcp"
         labelId="jogging-tcp-select"
         labelValue="TCP"
         value={store.selectedTcpId}
         size="small"
         variant="filled"
-        onChange={(event) => {
+        onChange={(event) =>
           store.setSelectedTcpId(event.target.value as string)
-        }}
+        }
         disabled={store.isLocked}
       >
         {store.tcps.map((tcp) => (
@@ -79,17 +69,21 @@ export const JoggingOptions = observer(({ store }: { store: JoggingStore }) => {
             {tcp.id}
           </MenuItem>
         ))}
-      </AdornedSelect>
+      </AdornedSelect>,
+    )
+  }
 
-      {/* Orientation */}
+  if (store.showOrientationSelect) {
+    joggingOptions.push(
       <AdornedSelect
+        key="orientation"
         labelValue={t("Jogging.Cartesian.Orientation.lb")}
         id="orientation-select"
         labelId="orientation-select"
         value={store.selectedOrientation}
-        onChange={(event) => {
+        onChange={(event) =>
           store.setSelectedOrientation(event.target.value as OrientationId)
-        }}
+        }
         disabled={store.isLocked}
       >
         {ORIENTATION_IDS.map((orientationId) => (
@@ -97,18 +91,22 @@ export const JoggingOptions = observer(({ store }: { store: JoggingStore }) => {
             {translateOrientation(orientationId)}
           </MenuItem>
         ))}
-      </AdornedSelect>
+      </AdornedSelect>,
+    )
+  }
 
-      {/* Increment selection */}
+  if (store.showIncrementSelect) {
+    joggingOptions.push(
       <AdornedSelect
-        labelValue={"Increment"}
+        key="increment"
+        labelValue={t("Jogging.Increment.hlb")}
         labelId="jogging-increment-select"
         size="small"
         variant="filled"
         value={store.activeDiscreteIncrement?.id || "continuous"}
-        onChange={(event) => {
+        onChange={(event) =>
           store.setSelectedIncrementId(event.target.value as IncrementOptionId)
-        }}
+        }
         disabled={store.isLocked}
       >
         <MenuItem key="continuous" value="continuous">
@@ -124,7 +122,35 @@ export const JoggingOptions = observer(({ store }: { store: JoggingStore }) => {
                   : `${inc.degrees}°`}
               </MenuItem>
             ))}
-      </AdornedSelect>
+      </AdornedSelect>,
+    )
+  }
+
+  return (
+    <Box
+      component="div"
+      sx={{
+        display: "grid",
+        gap: "16px",
+        gridTemplateColumns: "1fr 1fr",
+        gridAutoRows: "min-content",
+        "& label": { opacity: 0.7, fontSize: "12px", marginBottom: "4px" },
+      }}
+    >
+      {joggingOptions.map((select, idx) => (
+        <Box
+          key={idx}
+          sx={{
+            gridColumn:
+              joggingOptions.length % 2 === 1 &&
+              idx === joggingOptions.length - 1
+                ? "span 2"
+                : "auto",
+          }}
+        >
+          {select}
+        </Box>
+      ))}
     </Box>
   )
 })

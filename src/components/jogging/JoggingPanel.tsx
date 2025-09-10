@@ -1,9 +1,12 @@
+import MoveIcon from "@mui/icons-material/OpenWith"
+import ShareIcon from "@mui/icons-material/Share"
 import { Stack, Tab, Tabs, type SxProps } from "@mui/material"
-import { NovaClient } from "@wandelbots/wandelbots-js"
+import { NovaClient } from "@wandelbots/nova-js/v1"
 import { isString } from "lodash-es"
 import { runInAction } from "mobx"
 import { observer, useLocalObservable } from "mobx-react-lite"
 import { useEffect } from "react"
+import { useTranslation } from "react-i18next"
 import { externalizeComponent } from "../../externalizeComponent"
 import { LoadingCover } from "../LoadingCover"
 import { JoggingCartesianTab } from "./JoggingCartesianTab"
@@ -120,6 +123,8 @@ const JoggingPanelInner = observer(
     children?: React.ReactNode
     childrenJoint?: React.ReactNode
   }) => {
+    const { t } = useTranslation()
+
     function renderTabContent() {
       if (store.currentTab.id === "cartesian") {
         return (
@@ -144,14 +149,37 @@ const JoggingPanelInner = observer(
           onChange={store.onTabChange}
           variant="fullWidth"
         >
-          {store.tabs.map((tab) => (
-            <Tab
-              key={tab.id}
-              label={tab.label}
-              id={`jogging-tab-${tab.id}`}
-              aria-controls={`jogging-tab-${tab.id}`}
-            />
-          ))}
+          {store.tabs.map((tab) => {
+            const label =
+              tab.label === "cartesian"
+                ? t("Jogging.Cartesian.bt")
+                : t("Jogging.Joints.bt")
+
+            const icon =
+              tab.label === "cartesian" ? (
+                <MoveIcon fontSize="small" sx={{ mr: 1 }} />
+              ) : (
+                <ShareIcon fontSize="small" sx={{ mr: 1 }} />
+              )
+
+            return (
+              <Tab
+                key={tab.id}
+                label={
+                  store.showTabIcons ? (
+                    <Stack direction="row" alignItems="center">
+                      {icon}
+                      {label}
+                    </Stack>
+                  ) : (
+                    label
+                  )
+                }
+                id={`jogging-tab-${tab.id}`}
+                aria-controls={`jogging-tab-${tab.id}`}
+              />
+            )
+          })}
         </Tabs>
 
         {/* Current tab content */}

@@ -1,5 +1,5 @@
 import { Typography, useTheme } from "@mui/material"
-import type { Meta, StoryObj } from "@storybook/react"
+import type { Meta, StoryObj } from "@storybook/react-vite"
 import { useRef } from "react"
 import { JoggingCartesianAxisControl } from "../src"
 import { useAnimationFrame } from "../src/components/utils/hooks"
@@ -21,7 +21,7 @@ const meta: Meta<typeof JoggingCartesianAxisControl> = {
     const joggingValueRef = useRef(0)
 
     const theme = useTheme()
-    const colors = theme.componentsExt?.JoggingCartesian?.Axis?.X
+    const colors = theme.componentsExt?.JoggingPanel?.JoggingCartesian?.Axis?.X
 
     useAnimationFrame(() => {
       if (joggingDirRef.current === "+") {

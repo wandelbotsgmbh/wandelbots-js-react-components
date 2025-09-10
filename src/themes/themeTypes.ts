@@ -25,15 +25,27 @@ export interface AxisControlComponentColors {
     disabled?: string
     hovered?: string
   }
+  labelColor?: string
 }
 
 interface NovaComponentsExtension {
   componentsExt?: {
-    JoggingCartesian?: {
-      Axis?: {
-        X?: AxisControlComponentColors
-        Y?: AxisControlComponentColors
-        Z?: AxisControlComponentColors
+    JoggingPanel?: {
+      JoggingCartesian?: {
+        Axis?: {
+          X?: AxisControlComponentColors
+          Y?: AxisControlComponentColors
+          Z?: AxisControlComponentColors
+          CustomRotation?: AxisControlComponentColors
+        }
+      }
+      JoggingJoint?: {
+        Joint?: {
+          arrowColor?: string
+        }
+      }
+      VelocitySlider?: {
+        sliderLegendColor?: string
       }
     }
     WandelscriptEditor?: {

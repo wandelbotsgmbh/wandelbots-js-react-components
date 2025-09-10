@@ -1,10 +1,10 @@
-import type { Meta, StoryObj } from "@storybook/react"
-import type { GetTrajectoryResponse } from "@wandelbots/wandelbots-js"
+import type { Meta, StoryObj } from "@storybook/react-vite"
+import type { GetTrajectoryResponse } from "@wandelbots/nova-js/v1"
 import { Vector3 } from "three"
 import { TrajectoryRenderer } from "../src/components/3d-viewport/TrajectoryRenderer"
 import { Setup } from "../src/Setup"
 
-export default {
+const meta: Meta<typeof TrajectoryRenderer> = {
   tags: ["!dev"],
   title: "3D View/TrajectoryRenderer",
   component: TrajectoryRenderer,
@@ -27,7 +27,9 @@ export default {
       </div>
     ),
   ],
-} satisfies Meta<typeof TrajectoryRenderer>
+}
+
+export default meta
 
 type Story = StoryObj<typeof TrajectoryRenderer>
 
