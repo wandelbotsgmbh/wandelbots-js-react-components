@@ -1,7 +1,7 @@
 import type { SxProps } from "@mui/material"
 import { Box, Tab, Tabs } from "@mui/material"
 import { observer } from "mobx-react-lite"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { externalizeComponent } from "../externalizeComponent"
 
 export interface TabItem {
@@ -18,6 +18,8 @@ export interface TabItem {
 export interface TabBarProps {
   /** Array of tab items to display */
   items: TabItem[]
+  /** Controlled active tab index */
+  activeTab?: number
   /** Default active tab index */
   defaultActiveTab?: number
   /** Callback when tab changes */
@@ -57,14 +59,39 @@ function TabPanel(props: TabPanelProps) {
  */
 export const TabBar = externalizeComponent(
   observer((props: TabBarProps) => {
-    const { items, defaultActiveTab = 0, onTabChange, sx, ref } = props
-    const [activeTab, setActiveTab] = useState(defaultActiveTab)
+    const {
+      items,
+      activeTab,
+      defaultActiveTab = 0,
+      onTabChange,
+      sx,
+      ref,
+    } = props
+    const isControlled = activeTab !== undefined
+    const [uncontrolledActiveTab, setUncontrolledActiveTab] =
+      useState(defaultActiveTab)
+
+    // Keep uncontrolled state in range when items change
+    useEffect(() => {
+      if (isControlled) return
+      if (items.length === 0) return
+      if (
+        uncontrolledActiveTab < 0 ||
+        uncontrolledActiveTab > items.length - 1
+      ) {
+        setUncontrolledActiveTab(0)
+      }
+    }, [items.length, isControlled, uncontrolledActiveTab])
+
+    const currentValue = isControlled ? activeTab! : uncontrolledActiveTab
 
     const handleTabChange = (
       _event: React.SyntheticEvent,
       newValue: number,
     ) => {
-      setActiveTab(newValue)
+      if (!isControlled) {
+        setUncontrolledActiveTab(newValue)
+      }
       onTabChange?.(newValue)
     }
 
@@ -76,7 +103,7 @@ export const TabBar = externalizeComponent(
         {/* Tabs */}
         <Box sx={{ px: 0, py: 0 }}>
           <Tabs
-            value={activeTab}
+            value={currentValue}
             onChange={handleTabChange}
             sx={{
               minHeight: "32px",
@@ -104,11 +131,11 @@ export const TabBar = externalizeComponent(
                   backgroundColor: (theme) =>
                     theme.palette.backgroundPaperElevation?.[11] || "#32344B",
                   color: "text.primary",
-                  opacity: activeTab === index ? 1 : 0.38,
+                  opacity: currentValue === index ? 1 : 0.38,
                   fontSize: "13px",
                   transition: "all 0.2s ease-in-out",
                   "&:hover": {
-                    opacity: activeTab === index ? 1 : 0.6,
+                    opacity: currentValue === index ? 1 : 0.6,
                   },
                   "&.Mui-selected": {
                     opacity: 1,
@@ -134,7 +161,7 @@ export const TabBar = externalizeComponent(
         {/* Tab Content */}
         <Box sx={{ flex: 1, overflow: "auto" }}>
           {items.map((item, index) => (
-            <TabPanel key={item.id} value={activeTab} index={index}>
+            <TabPanel key={item.id} value={currentValue} index={index}>
               {item.content}
             </TabPanel>
           ))}

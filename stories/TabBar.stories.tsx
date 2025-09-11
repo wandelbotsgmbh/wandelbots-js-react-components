@@ -9,6 +9,7 @@ import {
 import {
   Alert,
   Box,
+  Button,
   Card,
   CardContent,
   List,
@@ -18,6 +19,7 @@ import {
   Typography,
 } from "@mui/material"
 import type { Meta, StoryObj } from "@storybook/react"
+import { useState } from "react"
 import { TabBar } from "../src/index"
 
 const meta: Meta<typeof TabBar> = {
@@ -45,6 +47,10 @@ Features the Wandelbots design system styling with rounded tabs and smooth trans
     items: {
       description: "Array of tab items to display",
       control: { type: "object" },
+    },
+    activeTab: {
+      description: "Controlled active tab index (overrides defaultActiveTab)",
+      control: { type: "number", min: 0, max: 10 },
     },
     defaultActiveTab: {
       description: "Index of the tab that should be active by default",
@@ -310,6 +316,89 @@ export const WithErrorStates: Story = {
       description: {
         story:
           "Example with error states and different severity levels. The error tab is selected by default.",
+      },
+    },
+  },
+}
+
+export const Controlled: Story = {
+  render: () => {
+    const [activeTab, setActiveTab] = useState(0)
+
+    const items = [
+      {
+        id: "tab1",
+        label: "First Tab",
+        content: (
+          <Box sx={{ p: 2 }}>
+            <Typography variant="body2" color="text.secondary">
+              Content for first tab
+            </Typography>
+          </Box>
+        ),
+      },
+      {
+        id: "tab2",
+        label: "Second Tab",
+        content: (
+          <Box sx={{ p: 2 }}>
+            <Typography variant="body2" color="text.secondary">
+              Content for second tab
+            </Typography>
+          </Box>
+        ),
+      },
+      {
+        id: "tab3",
+        label: "Third Tab",
+        content: (
+          <Box sx={{ p: 2 }}>
+            <Typography variant="body2" color="text.secondary">
+              Content for third tab
+            </Typography>
+          </Box>
+        ),
+      },
+    ]
+
+    return (
+      <Box>
+        <Box sx={{ mb: 2, display: "flex", gap: 1 }}>
+          <Button
+            variant={activeTab === 0 ? "contained" : "outlined"}
+            onClick={() => setActiveTab(0)}
+            size="small"
+          >
+            Go to Tab 1
+          </Button>
+          <Button
+            variant={activeTab === 1 ? "contained" : "outlined"}
+            onClick={() => setActiveTab(1)}
+            size="small"
+          >
+            Go to Tab 2
+          </Button>
+          <Button
+            variant={activeTab === 2 ? "contained" : "outlined"}
+            onClick={() => setActiveTab(2)}
+            size="small"
+          >
+            Go to Tab 3
+          </Button>
+        </Box>
+        <TabBar
+          items={items}
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+        />
+      </Box>
+    )
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          "Controlled TabBar example. The active tab is controlled externally via the `activeTab` prop. Use the buttons above to programmatically change the active tab, or click on the tabs directly.",
       },
     },
   },
