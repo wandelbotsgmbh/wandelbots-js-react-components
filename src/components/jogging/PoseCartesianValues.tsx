@@ -2,14 +2,13 @@ import { Button, Stack, Typography } from "@mui/material"
 import { poseToWandelscriptString } from "@wandelbots/nova-js"
 import type {
   ConnectedMotionGroup,
-  MotionGroupStateResponse,
   MotionStreamConnection,
 } from "@wandelbots/nova-js/v1"
 import { observer } from "mobx-react-lite"
 import { useRef, useState } from "react"
 import { externalizeComponent } from "../../externalizeComponent"
 import { CopyableText } from "../CopyableText"
-import { useAutorun } from "../utils/hooks"
+import { useAnimationFrame } from "../utils/hooks"
 
 export type PoseCartesianValuesProps = {
   /** Either a MotionStreamConnection or ConnectedMotionGroup */
@@ -35,12 +34,10 @@ export const PoseCartesianValues = externalizeComponent(
       }
 
       function getCurrentPoseString() {
-        let tcpPose: MotionGroupStateResponse["tcp_pose"] | undefined
-        if (motionStream) {
-          tcpPose = motionStream.rapidlyChangingMotionState.tcp_pose
-        } else if (connectedMotionGroup) {
-          tcpPose = connectedMotionGroup.rapidlyChangingMotionState.tcp_pose
-        }
+        const tcpPose = motionStream
+          ? motionStream.rapidlyChangingMotionState.tcp_pose
+          : connectedMotionGroup?.rapidlyChangingMotionState.tcp_pose
+
         if (!tcpPose) return ""
         return poseToWandelscriptString(tcpPose)
       }
@@ -56,30 +53,16 @@ export const PoseCartesianValues = externalizeComponent(
         }
       }
 
-      useAutorun(() => {
+      useAnimationFrame(() => {
         if (!poseHolderRef.current) {
           return
         }
-
-        let tcpPose: MotionGroupStateResponse["tcp_pose"] | undefined
-        if (motionStream) {
-          tcpPose = motionStream.rapidlyChangingMotionState.tcp_pose
-        } else if (connectedMotionGroup) {
-          tcpPose = connectedMotionGroup.rapidlyChangingMotionState.tcp_pose
+        const newPoseContent = getCurrentPoseString()
+        if (poseHolderRef.current.textContent === newPoseContent) {
+          return
         }
 
-        if (!tcpPose) return
-
-        const newPoseContent = poseToWandelscriptString(tcpPose)
-
-        requestAnimationFrame(() => {
-          if (
-            poseHolderRef.current &&
-            poseHolderRef.current.textContent !== newPoseContent
-          ) {
-            poseHolderRef.current.textContent = newPoseContent
-          }
-        })
+        poseHolderRef.current.textContent = newPoseContent
       })
 
       return (

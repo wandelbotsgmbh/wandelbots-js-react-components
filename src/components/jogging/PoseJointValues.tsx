@@ -7,7 +7,7 @@ import { observer } from "mobx-react-lite"
 import { useRef, useState } from "react"
 import { externalizeComponent } from "../../externalizeComponent"
 import { CopyableText } from "../CopyableText"
-import { useAutorun } from "../utils/hooks"
+import { useAnimationFrame } from "../utils/hooks"
 
 export type PoseJointValuesProps = {
   /** Either a MotionStreamConnection or ConnectedMotionGroup */
@@ -33,17 +33,12 @@ export const PoseJointValues = externalizeComponent(
       }
 
       function getCurrentPoseString() {
-        let joints: number[]
-        if (motionStream) {
-          joints =
-            motionStream.rapidlyChangingMotionState.state.joint_position.joints
-        } else if (connectedMotionGroup) {
-          joints =
-            connectedMotionGroup.rapidlyChangingMotionState.state.joint_position
-              .joints
-        } else {
-          return ""
-        }
+        const joints = motionStream
+          ? motionStream.rapidlyChangingMotionState.state.joint_position.joints
+          : connectedMotionGroup?.rapidlyChangingMotionState.state
+              .joint_position.joints
+
+        if (!joints) return ""
         return `[${joints.map((j: number) => parseFloat(j.toFixed(4))).join(", ")}]`
       }
 
@@ -58,33 +53,16 @@ export const PoseJointValues = externalizeComponent(
         }
       }
 
-      useAutorun(() => {
+      useAnimationFrame(() => {
         if (!poseHolderRef.current) {
           return
         }
-
-        let joints: number[]
-        if (motionStream) {
-          joints =
-            motionStream.rapidlyChangingMotionState.state.joint_position.joints
-        } else if (connectedMotionGroup) {
-          joints =
-            connectedMotionGroup.rapidlyChangingMotionState.state.joint_position
-              .joints
-        } else {
+        const newPoseContent = getCurrentPoseString()
+        if (poseHolderRef.current.textContent === newPoseContent) {
           return
         }
 
-        const newPoseContent = `[${joints.map((j: number) => parseFloat(j.toFixed(4))).join(", ")}]`
-
-        requestAnimationFrame(() => {
-          if (
-            poseHolderRef.current &&
-            poseHolderRef.current.textContent !== newPoseContent
-          ) {
-            poseHolderRef.current.textContent = newPoseContent
-          }
-        })
+        poseHolderRef.current.textContent = newPoseContent
       })
 
       return (
