@@ -1,8 +1,10 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
+import type { Joints } from "@wandelbots/nova-api/v1"
 import { PoseJointValues } from "../src"
 
 type StoryArgs = {
-  pose: number[]
+  joints: Joints
+  showCopyButton: boolean
 }
 
 const meta: Meta<StoryArgs> = {
@@ -10,17 +12,29 @@ const meta: Meta<StoryArgs> = {
   tags: ["!dev"],
   component: PoseJointValues,
   argTypes: {
-    pose: {
+    joints: {
       control: "object",
-      description: "Array of joint values in radians",
+      description: "Joint configuration object with joints array in radians",
+    },
+    showCopyButton: {
+      control: "boolean",
+      description: "Whether to show the copy button",
     },
   },
   args: {
-    pose: [0.1234, -1.5678, 2.3456, -0.789, 1.2345, -2.6789],
+    joints: {
+      joints: [0.1234, -1.5678, 2.3456, -0.789, 1.2345, -2.6789],
+    },
+    showCopyButton: false,
   },
 
   render: function Component(args) {
-    return <PoseJointValues pose={args.pose} />
+    return (
+      <PoseJointValues
+        joints={args.joints}
+        showCopyButton={args.showCopyButton}
+      />
+    )
   },
 }
 
@@ -30,8 +44,9 @@ type Story = StoryObj<StoryArgs>
 
 /**
  * Displays joint values in array format with 4 decimal precision.
- * Takes a simple number array representing joint positions in radians.
+ * Takes a Joints object containing an array of joint positions in radians.
  * Use the controls to modify the joint values and see the formatted output.
+ * Toggle the copy button to enable manual copying of the joint values string.
  */
 export const Interactive: Story = {
   name: "Pose Joint Values",

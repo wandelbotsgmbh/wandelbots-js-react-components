@@ -3,7 +3,8 @@ import type { TcpPose } from "@wandelbots/nova-js/v1"
 import { PoseCartesianValues } from "../src"
 
 type StoryArgs = {
-  pose: TcpPose
+  tcpPose: TcpPose
+  showCopyButton: boolean
 }
 
 const meta: Meta<StoryArgs> = {
@@ -11,13 +12,17 @@ const meta: Meta<StoryArgs> = {
   tags: ["!dev"],
   component: PoseCartesianValues,
   argTypes: {
-    pose: {
+    tcpPose: {
       control: "object",
       description: "TCP pose object containing position and orientation",
     },
+    showCopyButton: {
+      control: "boolean",
+      description: "Whether to show the copy button",
+    },
   },
   args: {
-    pose: {
+    tcpPose: {
       position: {
         x: -221.9,
         y: -607.5,
@@ -31,10 +36,16 @@ const meta: Meta<StoryArgs> = {
       coordinate_system: "world",
       tcp: "flange",
     },
+    showCopyButton: false,
   },
 
   render: function Component(args) {
-    return <PoseCartesianValues pose={args.pose} />
+    return (
+      <PoseCartesianValues
+        tcpPose={args.tcpPose}
+        showCopyButton={args.showCopyButton}
+      />
+    )
   },
 }
 
@@ -45,5 +56,6 @@ type Story = StoryObj<StoryArgs>
  * Displays TCP pose values in Wandelscript format.
  * Takes a simple TcpPose object containing position (x, y, z) and orientation (x, y, z, w) values.
  * Use the controls to modify the pose values and see the formatted output.
+ * Toggle the copy button to enable manual copying of the pose string.
  */
 export const Interactive: Story = {}
