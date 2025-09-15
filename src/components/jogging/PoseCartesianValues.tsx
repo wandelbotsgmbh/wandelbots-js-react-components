@@ -9,7 +9,7 @@ import { observer } from "mobx-react-lite"
 import { useRef, useState } from "react"
 import { externalizeComponent } from "../../externalizeComponent"
 import { CopyableText } from "../CopyableText"
-import { useAnimationFrame } from "../utils/hooks"
+import { useAutorun } from "../utils/hooks"
 
 /** Minimal interface for what PoseCartesianValues needs from motion stream */
 type MotionStateProvider = {
@@ -79,16 +79,24 @@ export const PoseCartesianValues = externalizeComponent(
         }
       }
 
-      useAnimationFrame(() => {
-        if (!poseHolderRef.current) {
-          return
-        }
-        const newPoseContent = getCurrentPoseString()
-        if (poseHolderRef.current.textContent === newPoseContent) {
+      useAutorun(() => {
+        if (!poseHolderRef.current || !activeMotionStream) {
           return
         }
 
-        poseHolderRef.current.textContent = newPoseContent
+        const tcpPose = activeMotionStream.rapidlyChangingMotionState.tcp_pose
+        if (!tcpPose) return
+
+        const newPoseContent = poseToWandelscriptString(tcpPose)
+
+        requestAnimationFrame(() => {
+          if (
+            poseHolderRef.current &&
+            poseHolderRef.current.textContent !== newPoseContent
+          ) {
+            poseHolderRef.current.textContent = newPoseContent
+          }
+        })
       })
 
       return (

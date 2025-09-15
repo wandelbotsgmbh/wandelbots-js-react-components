@@ -8,7 +8,7 @@ import { observer } from "mobx-react-lite"
 import { useRef, useState } from "react"
 import { externalizeComponent } from "../../externalizeComponent"
 import { CopyableText } from "../CopyableText"
-import { useAnimationFrame } from "../utils/hooks"
+import { useAutorun } from "../utils/hooks"
 
 /** Minimal interface for what PoseJointValues needs from motion stream */
 type MotionStateProvider = {
@@ -78,16 +78,23 @@ export const PoseJointValues = externalizeComponent(
         }
       }
 
-      useAnimationFrame(() => {
-        if (!poseHolderRef.current) {
+      useAutorun(() => {
+        if (!poseHolderRef.current || !activeMotionStream) {
           return
         }
 
-        const newPoseContent = getCurrentPoseString()
-        if (poseHolderRef.current.textContent === newPoseContent) {
-          return
-        }
-        poseHolderRef.current.textContent = newPoseContent
+        const { joints } =
+          activeMotionStream.rapidlyChangingMotionState.state.joint_position
+        const newPoseContent = `[${joints.map((j: number) => parseFloat(j.toFixed(4))).join(", ")}]`
+
+        requestAnimationFrame(() => {
+          if (
+            poseHolderRef.current &&
+            poseHolderRef.current.textContent !== newPoseContent
+          ) {
+            poseHolderRef.current.textContent = newPoseContent
+          }
+        })
       })
 
       return (
