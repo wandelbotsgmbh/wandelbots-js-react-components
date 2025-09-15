@@ -11,28 +11,6 @@ import { externalizeComponent } from "../../externalizeComponent"
 import { CopyableText } from "../CopyableText"
 import { useAutorun } from "../utils/hooks"
 
-/** Minimal interface for what PoseCartesianValues needs from motion stream */
-type MotionStateProvider = {
-  rapidlyChangingMotionState: MotionGroupStateResponse
-}
-
-/** Creates a motion state provider from either a MotionStreamConnection or ConnectedMotionGroup */
-function createMotionStateProvider(
-  motionStream?: MotionStreamConnection,
-  connectedMotionGroup?: ConnectedMotionGroup,
-): MotionStateProvider | undefined {
-  if (motionStream) {
-    return motionStream
-  }
-  if (connectedMotionGroup) {
-    return {
-      rapidlyChangingMotionState:
-        connectedMotionGroup.rapidlyChangingMotionState,
-    }
-  }
-  return undefined
-}
-
 export type PoseCartesianValuesProps = {
   /** Either a MotionStreamConnection or ConnectedMotionGroup */
   motionStream?: MotionStreamConnection
@@ -50,20 +28,19 @@ export const PoseCartesianValues = externalizeComponent(
       const poseHolderRef = useRef<HTMLDivElement>(null)
       const [copyMessage, setCopyMessage] = useState("")
 
-      const activeMotionStream = createMotionStateProvider(
-        motionStream,
-        connectedMotionGroup,
-      )
-
-      if (!activeMotionStream) {
+      if (!motionStream && !connectedMotionGroup) {
         throw new Error(
           "PoseCartesianValues requires either motionStream or connectedMotionGroup prop",
         )
       }
 
       function getCurrentPoseString() {
-        if (!activeMotionStream) return ""
-        const tcpPose = activeMotionStream.rapidlyChangingMotionState.tcp_pose
+        let tcpPose: MotionGroupStateResponse["tcp_pose"] | undefined
+        if (motionStream) {
+          tcpPose = motionStream.rapidlyChangingMotionState.tcp_pose
+        } else if (connectedMotionGroup) {
+          tcpPose = connectedMotionGroup.rapidlyChangingMotionState.tcp_pose
+        }
         if (!tcpPose) return ""
         return poseToWandelscriptString(tcpPose)
       }
@@ -80,11 +57,17 @@ export const PoseCartesianValues = externalizeComponent(
       }
 
       useAutorun(() => {
-        if (!poseHolderRef.current || !activeMotionStream) {
+        if (!poseHolderRef.current) {
           return
         }
 
-        const tcpPose = activeMotionStream.rapidlyChangingMotionState.tcp_pose
+        let tcpPose: MotionGroupStateResponse["tcp_pose"] | undefined
+        if (motionStream) {
+          tcpPose = motionStream.rapidlyChangingMotionState.tcp_pose
+        } else if (connectedMotionGroup) {
+          tcpPose = connectedMotionGroup.rapidlyChangingMotionState.tcp_pose
+        }
+
         if (!tcpPose) return
 
         const newPoseContent = poseToWandelscriptString(tcpPose)

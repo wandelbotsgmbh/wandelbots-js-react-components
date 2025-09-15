@@ -1,7 +1,6 @@
 import { Button, Stack, Typography } from "@mui/material"
 import type {
   ConnectedMotionGroup,
-  MotionGroupStateResponse,
   MotionStreamConnection,
 } from "@wandelbots/nova-js/v1"
 import { observer } from "mobx-react-lite"
@@ -9,28 +8,6 @@ import { useRef, useState } from "react"
 import { externalizeComponent } from "../../externalizeComponent"
 import { CopyableText } from "../CopyableText"
 import { useAutorun } from "../utils/hooks"
-
-/** Minimal interface for what PoseJointValues needs from motion stream */
-type MotionStateProvider = {
-  rapidlyChangingMotionState: MotionGroupStateResponse
-}
-
-/** Creates a motion state provider from either a MotionStreamConnection or ConnectedMotionGroup */
-function createMotionStateProvider(
-  motionStream?: MotionStreamConnection,
-  connectedMotionGroup?: ConnectedMotionGroup,
-): MotionStateProvider | undefined {
-  if (motionStream) {
-    return motionStream
-  }
-  if (connectedMotionGroup) {
-    return {
-      rapidlyChangingMotionState:
-        connectedMotionGroup.rapidlyChangingMotionState,
-    }
-  }
-  return undefined
-}
 
 export type PoseJointValuesProps = {
   /** Either a MotionStreamConnection or ConnectedMotionGroup */
@@ -49,21 +26,24 @@ export const PoseJointValues = externalizeComponent(
       const poseHolderRef = useRef<HTMLDivElement>(null)
       const [copyMessage, setCopyMessage] = useState("")
 
-      const activeMotionStream = createMotionStateProvider(
-        motionStream,
-        connectedMotionGroup,
-      )
-
-      if (!activeMotionStream) {
+      if (!motionStream && !connectedMotionGroup) {
         throw new Error(
           "PoseJointValues requires either motionStream or connectedMotionGroup prop",
         )
       }
 
       function getCurrentPoseString() {
-        if (!activeMotionStream) return ""
-        const { joints } =
-          activeMotionStream.rapidlyChangingMotionState.state.joint_position
+        let joints: number[]
+        if (motionStream) {
+          joints =
+            motionStream.rapidlyChangingMotionState.state.joint_position.joints
+        } else if (connectedMotionGroup) {
+          joints =
+            connectedMotionGroup.rapidlyChangingMotionState.state.joint_position
+              .joints
+        } else {
+          return ""
+        }
         return `[${joints.map((j: number) => parseFloat(j.toFixed(4))).join(", ")}]`
       }
 
@@ -79,12 +59,22 @@ export const PoseJointValues = externalizeComponent(
       }
 
       useAutorun(() => {
-        if (!poseHolderRef.current || !activeMotionStream) {
+        if (!poseHolderRef.current) {
           return
         }
 
-        const { joints } =
-          activeMotionStream.rapidlyChangingMotionState.state.joint_position
+        let joints: number[]
+        if (motionStream) {
+          joints =
+            motionStream.rapidlyChangingMotionState.state.joint_position.joints
+        } else if (connectedMotionGroup) {
+          joints =
+            connectedMotionGroup.rapidlyChangingMotionState.state.joint_position
+              .joints
+        } else {
+          return
+        }
+
         const newPoseContent = `[${joints.map((j: number) => parseFloat(j.toFixed(4))).join(", ")}]`
 
         requestAnimationFrame(() => {
