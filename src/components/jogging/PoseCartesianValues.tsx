@@ -1,4 +1,4 @@
-import { Button, Stack, Typography } from "@mui/material"
+import { Button, Stack } from "@mui/material"
 import { poseToWandelscriptString } from "@wandelbots/nova-js"
 import type { TcpPose } from "@wandelbots/nova-js/v1"
 import { observer } from "mobx-react-lite"
@@ -13,17 +13,17 @@ export type PoseCartesianValuesProps = {
 
 export const PoseCartesianValues = externalizeComponent(
   observer(({ tcpPose, showCopyButton = false }: PoseCartesianValuesProps) => {
-    const [copyMessage, setCopyMessage] = useState("")
+    const [copyMessage, setCopyMessage] = useState<string | null>(null)
     const poseString = poseToWandelscriptString(tcpPose)
 
     const handleCopy = async () => {
       try {
         await navigator.clipboard.writeText(poseString)
         setCopyMessage("Copied!")
-        setTimeout(() => setCopyMessage(""), 2000)
+        setTimeout(() => setCopyMessage(null), 2000)
       } catch {
         setCopyMessage("Copy failed")
-        setTimeout(() => setCopyMessage(""), 2000)
+        setTimeout(() => setCopyMessage(null), 2000)
       }
     }
 
@@ -44,13 +44,8 @@ export const PoseCartesianValues = externalizeComponent(
             onClick={handleCopy}
             sx={{ flexShrink: 0 }}
           >
-            Copy
+            { copyMessage ? copyMessage : "Copy"}
           </Button>
-        )}
-        {copyMessage && (
-          <Typography variant="caption" color="success.main">
-            {copyMessage}
-          </Typography>
         )}
       </Stack>
     )

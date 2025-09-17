@@ -1,4 +1,4 @@
-import { Button, Stack, Typography } from "@mui/material"
+import { Button, Stack } from "@mui/material"
 import type { Joints } from "@wandelbots/nova-api/v1"
 import { observer } from "mobx-react-lite"
 import { useState } from "react"
@@ -12,17 +12,17 @@ export type PoseJointValuesProps = {
 
 export const PoseJointValues = externalizeComponent(
   observer(({ joints, showCopyButton = false }: PoseJointValuesProps) => {
-    const [copyMessage, setCopyMessage] = useState("")
+    const [copyMessage, setCopyMessage] = useState<string | null>(null)
     const poseString = `[${joints.joints.map((j: number) => parseFloat(j.toFixed(4))).join(", ")}]`
 
     const handleCopy = async () => {
       try {
         await navigator.clipboard.writeText(poseString)
         setCopyMessage("Copied!")
-        setTimeout(() => setCopyMessage(""), 2000)
+        setTimeout(() => setCopyMessage(null), 2000)
       } catch {
         setCopyMessage("Copy failed")
-        setTimeout(() => setCopyMessage(""), 2000)
+        setTimeout(() => setCopyMessage(null), 2000)
       }
     }
 
@@ -43,13 +43,8 @@ export const PoseJointValues = externalizeComponent(
             onClick={handleCopy}
             sx={{ flexShrink: 0 }}
           >
-            Copy
+            { copyMessage ? copyMessage : "Copy"}
           </Button>
-        )}
-        {copyMessage && (
-          <Typography variant="caption" color="success.main">
-            {copyMessage}
-          </Typography>
         )}
       </Stack>
     )
