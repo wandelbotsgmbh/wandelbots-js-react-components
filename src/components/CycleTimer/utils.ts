@@ -25,8 +25,8 @@ export const calculateProgress = (
     return Math.min(100, (elapsed / maxTime) * 100)
   }
 
-  if (currentState === "measuring" || currentState === "countup") {
-    // Count-up modes: progress based on minute steps (0-100% per minute)
+  if (currentState === "measuring") {
+    // Measuring mode: progress based on minute steps (0-100% per minute)
     return ((remainingTime / 60) % 1) * 100
   }
 
@@ -45,7 +45,7 @@ export const calculateExactProgress = (
     return Math.min(100, (totalElapsed / maxTime) * 100)
   }
 
-  if (currentState === "measuring" || currentState === "countup") {
+  if (currentState === "measuring") {
     return ((totalElapsed / 60) % 1) * 100
   }
 

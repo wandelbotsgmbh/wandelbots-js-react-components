@@ -8,19 +8,18 @@ import { useAnimations } from "./useAnimations"
 import { useTimerLogic } from "./useTimerLogic"
 
 /**
- * A circular gauge timer component that shows the remaining time of a cycle or counts up
+ * A circular gauge timer component for cycle-specific timing operations
  *
  * Features:
  * - Custom SVG circular gauge with 264px diameter and 40px thickness
- * - Multiple states: idle, measuring, measured, countdown, countup, success
+ * - Multiple states: idle, measuring, measured, countdown, success
  * - Idle state: shows "Waiting for program cycle" with transparent inner circle
  * - Measuring state: counts up with "Cycle Time" / "measuring..." labels
  * - Measured state: shows final time with "Cycle Time" / "determined" labels in pulsating green
  * - Countdown mode: shows remaining time prominently, counts down to zero
- * - Count-up mode: shows elapsed time without special labels
  * - Success state: brief green flash after cycle completion
  * - Displays appropriate labels based on state
- * - Automatically counts down/up and triggers callback when reaching zero (countdown only)
+ * - Automatically counts down and triggers callback when reaching zero
  * - Full timer control: start, pause, resume functionality
  * - Support for starting with elapsed time (resume mid-cycle)
  * - Error state support: pauses timer and shows error styling (red color)
@@ -28,7 +27,7 @@ import { useTimerLogic } from "./useTimerLogic"
  * - Pulsating text animation for completed measuring state
  * - Fully localized with i18next
  * - Material-UI theming integration
- * - Small variant with animated progress icon (gauge border only) next to text or simple text-only mode
+ * - Small variant with animated progress icon (gauge border only) next to text
  */
 export const CycleTimer = externalizeComponent(
   observer(

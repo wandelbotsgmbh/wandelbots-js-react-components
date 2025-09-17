@@ -3,13 +3,11 @@ export type CycleTimerState =
   | "measuring" // Counting up without max time, showing "Cycle Time" / "measuring..."
   | "measured" // Completed measuring state showing "Cycle Time" / "determined" with pulsating green text
   | "countdown" // Counting down with max time
-  | "countup" // Simple count up without special text
   | "success" // Brief success state after cycle completion
 
 export interface CycleTimerControls {
-  startNewCycle: (maxTimeSeconds?: number, elapsedSeconds?: number) => void
+  startNewCycle: (maxTimeSeconds: number, elapsedSeconds?: number) => void
   startMeasuring: (elapsedSeconds?: number) => void
-  startCountUp: (elapsedSeconds?: number) => void
   setIdle: () => void
   completeMeasuring: () => void
   pause: () => void
