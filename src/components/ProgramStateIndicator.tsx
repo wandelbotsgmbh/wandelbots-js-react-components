@@ -77,10 +77,20 @@ export const ProgramStateIndicator = externalizeComponent(
         // For normal safety states, check program state
         if (safetyState === "SAFETY_STATE_NORMAL") {
           switch (programState) {
+            case ProgramState.STARTING:
+              return {
+                label: t("ProgramStateIndicator.Starting.lb"),
+                color: theme.palette.warning.main,
+              }
             case ProgramState.RUNNING:
               return {
                 label: t("ProgramStateIndicator.Running.lb"),
                 color: theme.palette.success.main,
+              }
+            case ProgramState.PAUSING:
+              return {
+                label: t("ProgramStateIndicator.Pausing.lb"),
+                color: theme.palette.warning.main,
               }
             case ProgramState.PAUSED:
               return {
@@ -89,8 +99,13 @@ export const ProgramStateIndicator = externalizeComponent(
               }
             case ProgramState.STOPPING:
               return {
+                label: t("ProgramStateIndicator.Stopping.lb"),
+                color: theme.palette.warning.main,
+              }
+            case ProgramState.STOPPED:
+              return {
                 label: t("ProgramStateIndicator.Stopped.lb"),
-                color: theme.palette.error.main,
+                color: theme.palette.grey[600],
               }
             case ProgramState.ERROR:
               return {
