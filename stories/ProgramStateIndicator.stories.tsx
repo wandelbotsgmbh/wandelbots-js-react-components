@@ -36,7 +36,10 @@ The component automatically determines the appropriate state to display based on
       control: "select",
       options: [
         ProgramState.IDLE,
+        ProgramState.STOPPED,
+        ProgramState.STARTING,
         ProgramState.RUNNING,
+        ProgramState.PAUSING,
         ProgramState.PAUSED,
         ProgramState.STOPPING,
         ProgramState.ERROR,

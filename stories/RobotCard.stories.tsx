@@ -91,7 +91,10 @@ const meta: Meta = {
       control: "select",
       options: [
         ProgramState.IDLE,
+        ProgramState.STOPPED,
+        ProgramState.STARTING,
         ProgramState.RUNNING,
+        ProgramState.PAUSING,
         ProgramState.PAUSED,
         ProgramState.STOPPING,
         ProgramState.ERROR,
