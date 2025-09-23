@@ -6,12 +6,15 @@ import { externalizeComponent } from "../externalizeComponent"
 
 export enum ProgramState {
   IDLE = "idle",
-  STOPPED = "stopped",
+  PREPARING = "preparing",
   STARTING = "starting",
   RUNNING = "running",
   PAUSING = "pausing",
   PAUSED = "paused",
   STOPPING = "stopping",
+  COMPLETED = "completed",
+  FAILED = "failed",
+  STOPPED = "stopped",
   ERROR = "error",
 }
 
@@ -55,7 +58,7 @@ interface ButtonConfig {
  * A control component for program execution with run, pause, and stop functionality.
  *
  * Features:
- * - State machine with idle, stopped, starting, running, pausing, paused, stopping, and error states
+ * - State machine with idle, preparing, starting, running, pausing, paused, stopping, completed, failed, stopped, and error states
  * - Two variants: with_pause (3 buttons) and without_pause (2 buttons)
  * - Optional manual reset functionality
  * - Responsive design with 110px circular buttons
@@ -83,11 +86,13 @@ export const ProgramControl = externalizeComponent(
               state === ProgramState.IDLE ||
               state === ProgramState.STOPPED ||
               state === ProgramState.PAUSED ||
+              state === ProgramState.COMPLETED ||
+              state === ProgramState.FAILED ||
               state === ProgramState.ERROR,
             label:
               state === ProgramState.PAUSED
                 ? t("ProgramControl.Resume.bt")
-                : state === ProgramState.ERROR
+                : state === ProgramState.ERROR || state === ProgramState.FAILED
                   ? t("ProgramControl.Retry.bt")
                   : t("ProgramControl.Start.bt"),
             color: theme.palette.success.main,
@@ -101,6 +106,7 @@ export const ProgramControl = externalizeComponent(
           },
           stop: {
             enabled:
+              state === ProgramState.PREPARING ||
               state === ProgramState.STARTING ||
               state === ProgramState.RUNNING ||
               state === ProgramState.PAUSING ||
@@ -176,6 +182,7 @@ export const ProgramControl = externalizeComponent(
                   variant="contained"
                   disabled={
                     !config.enabled ||
+                    state === ProgramState.PREPARING ||
                     state === ProgramState.STARTING ||
                     state === ProgramState.PAUSING ||
                     (state === ProgramState.STOPPING && !requiresManualReset)
@@ -188,6 +195,7 @@ export const ProgramControl = externalizeComponent(
                     backgroundColor: config.color,
                     opacity:
                       config.enabled &&
+                      state !== ProgramState.PREPARING &&
                       state !== ProgramState.STARTING &&
                       state !== ProgramState.PAUSING &&
                       !(state === ProgramState.STOPPING && !requiresManualReset)
@@ -197,6 +205,7 @@ export const ProgramControl = externalizeComponent(
                       backgroundColor: config.color,
                       opacity:
                         config.enabled &&
+                        state !== ProgramState.PREPARING &&
                         state !== ProgramState.STARTING &&
                         state !== ProgramState.PAUSING &&
                         !(
@@ -222,6 +231,7 @@ export const ProgramControl = externalizeComponent(
                   sx={{
                     color:
                       config.enabled &&
+                      state !== ProgramState.PREPARING &&
                       state !== ProgramState.STARTING &&
                       state !== ProgramState.PAUSING &&
                       !(state === ProgramState.STOPPING && !requiresManualReset)
@@ -230,6 +240,7 @@ export const ProgramControl = externalizeComponent(
                     textAlign: "center",
                     opacity:
                       config.enabled &&
+                      state !== ProgramState.PREPARING &&
                       state !== ProgramState.STARTING &&
                       state !== ProgramState.PAUSING &&
                       !(state === ProgramState.STOPPING && !requiresManualReset)

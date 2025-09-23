@@ -15,19 +15,22 @@ const meta: Meta<typeof ProgramControl> = {
       control: "select",
       options: [
         ProgramState.IDLE,
-        ProgramState.STOPPED,
+        ProgramState.PREPARING,
         ProgramState.STARTING,
         ProgramState.RUNNING,
         ProgramState.PAUSING,
         ProgramState.PAUSED,
         ProgramState.STOPPING,
+        ProgramState.COMPLETED,
+        ProgramState.FAILED,
+        ProgramState.STOPPED,
         ProgramState.ERROR,
       ],
       description: "The current state of the program control",
       table: {
         type: {
           summary:
-            "'idle' | 'stopped' | 'starting' | 'running' | 'pausing' | 'paused' | 'stopping' | 'error'",
+            "'idle' | 'preparing' | 'starting' | 'running' | 'pausing' | 'paused' | 'stopping' | 'completed' | 'failed' | 'stopped' | 'error'",
         },
       },
     },
