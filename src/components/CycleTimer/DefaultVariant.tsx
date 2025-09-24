@@ -114,7 +114,6 @@ export const DefaultVariant = ({
               showLabels &&
               !hasError &&
               currentState !== "idle" &&
-              currentState !== "countup" &&
               currentState !== "success"
             }
             timeout={300}
@@ -277,7 +276,6 @@ export const DefaultVariant = ({
               showLabels &&
               !hasError &&
               currentState !== "idle" &&
-              currentState !== "countup" &&
               currentState !== "success"
             }
             timeout={300}
