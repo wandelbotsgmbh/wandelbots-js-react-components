@@ -1,9 +1,9 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
-import type { TcpPose } from "@wandelbots/nova-js/v1"
+import type { Pose } from "@wandelbots/nova-js/v2"
 import { PoseCartesianValues } from "../src"
 
 type StoryArgs = {
-  tcpPose: TcpPose
+  tcpPose: Pose
   showCopyButton: boolean
 }
 
@@ -23,18 +23,8 @@ const meta: Meta<StoryArgs> = {
   },
   args: {
     tcpPose: {
-      position: {
-        x: -221.9,
-        y: -607.5,
-        z: -139.2,
-      },
-      orientation: {
-        x: 0.0,
-        y: 0.0,
-        z: 1.0,
-      },
-      coordinate_system: "world",
-      tcp: "flange",
+      position: [-221.9, -607.5, -139.2],
+      orientation: [0.0, 0.0, 1.0],
     },
     showCopyButton: false,
   },

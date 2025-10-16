@@ -37,15 +37,9 @@ export const JoggingOptions = observer(({ store }: { store: JoggingStore }) => {
         onChange={(event) =>
           store.setSelectedCoordSystemId(event.target.value as string)
         }
-        disabled={store.isLocked}
+        disabled={true}
       >
-        {store.coordSystems.map((cs) => (
-          <MenuItem key={cs.coordinate_system} value={cs.coordinate_system}>
-            {cs.name && store.coordSystemCountByName[cs.name] > 1
-              ? `${cs.name} / ${cs.coordinate_system}`
-              : cs.name || cs.coordinate_system}
-          </MenuItem>
-        ))}
+        <MenuItem value="world">World</MenuItem>
       </AdornedSelect>,
     )
   }

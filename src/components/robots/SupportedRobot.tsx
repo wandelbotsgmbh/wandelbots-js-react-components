@@ -2,7 +2,7 @@ import type { ThreeElements } from "@react-three/fiber"
 import type {
   DHParameter,
   MotionGroupStateResponse,
-} from "@wandelbots/nova-api/v1"
+} from "@wandelbots/nova-js/v1"
 import { Suspense, useCallback, useEffect, useState } from "react"
 import { DHRobot } from "./DHRobot"
 

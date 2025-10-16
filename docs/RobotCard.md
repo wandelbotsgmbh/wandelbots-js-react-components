@@ -19,7 +19,7 @@ The `RobotCard` component is a responsive card that displays a 3D robot with sta
 
 ```tsx
 import { RobotCard } from "@wandelbots/wandelbots-js-react-components"
-import { useConnectedMotionGroup } from "@wandelbots/nova-js"
+import { useConnectedMotionGroup } from "@wandelbots/nova-js/v1"
 
 function RobotDashboard() {
   const connectedMotionGroup = useConnectedMotionGroup("0@ur5e")
@@ -146,7 +146,7 @@ Add these to your translation files:
 The component works with Nova.js ConnectedMotionGroup:
 
 ```tsx
-import { useConnectedMotionGroup } from "@wandelbots/nova-js"
+import { useConnectedMotionGroup } from "@wandelbots/nova-js/v1"
 
 function ConnectedRobotCard({ motionGroupId }) {
   const connectedMotionGroup = useConnectedMotionGroup(motionGroupId)

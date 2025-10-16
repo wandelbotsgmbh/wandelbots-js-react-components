@@ -1,4 +1,4 @@
-import type { CoordinateSystem } from "@wandelbots/nova-api/v1"
+import type { CoordinateSystem } from "@wandelbots/nova-js/v1"
 import type { ReactNode } from "react"
 import { Quaternion, Vector3 } from "three"
 

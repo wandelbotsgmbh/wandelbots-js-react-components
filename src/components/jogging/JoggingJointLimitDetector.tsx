@@ -17,14 +17,14 @@ export const JoggingJointLimitDetector = ({
   const { t } = useTranslation()
 
   const [jointLimitsReached, setJointLimitsReached] = useState(
-    store.jogger.motionStream.rapidlyChangingMotionState.state
+    store.jogger.motionStream.rapidlyChangingMotionState
       .joint_limit_reached.limit_reached,
   )
   const jointLimitsReachedRef = useRef(jointLimitsReached)
 
   useAnimationFrame(() => {
     const newLimitsReached =
-      store.jogger.motionStream.rapidlyChangingMotionState.state
+      store.jogger.motionStream.rapidlyChangingMotionState
         .joint_limit_reached.limit_reached
 
     if (!isEqual(jointLimitsReachedRef.current, newLimitsReached)) {

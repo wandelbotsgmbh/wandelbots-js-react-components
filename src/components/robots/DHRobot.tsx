@@ -1,5 +1,5 @@
 import { Line } from "@react-three/drei"
-import type { DHParameter } from "@wandelbots/nova-api/v1"
+import type { DHParameter } from "@wandelbots/nova-js/v1"
 import React, { useRef } from "react"
 import type * as THREE from "three"
 import { Matrix4, Quaternion, Vector3 } from "three"

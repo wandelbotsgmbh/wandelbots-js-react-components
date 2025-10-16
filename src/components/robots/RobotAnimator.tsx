@@ -2,7 +2,7 @@ import { useFrame, useThree } from "@react-three/fiber"
 import type {
   DHParameter,
   MotionGroupStateResponse,
-} from "@wandelbots/nova-api/v1"
+} from "@wandelbots/nova-js/v1"
 import React, { useEffect, useRef } from "react"
 import type { Group, Object3D } from "three"
 import { useAutorun } from "../utils/hooks"

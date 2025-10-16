@@ -1,5 +1,5 @@
 import type { ThreeElements } from "@react-three/fiber"
-import type { Collider } from "@wandelbots/nova-api/v1"
+import type { Collider } from "@wandelbots/nova-js/v1"
 import ColliderElement from "./ColliderElement"
 
 export type MeshChildrenProvider = (
