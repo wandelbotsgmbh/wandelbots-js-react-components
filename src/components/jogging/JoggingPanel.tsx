@@ -1,7 +1,7 @@
 import MoveIcon from "@mui/icons-material/OpenWith"
 import ShareIcon from "@mui/icons-material/Share"
 import { Stack, Tab, Tabs, type SxProps } from "@mui/material"
-import { NovaClient } from "@wandelbots/nova-js/v1"
+import { NovaClient } from "@wandelbots/nova-js/v2"
 import { isString } from "lodash-es"
 import { runInAction } from "mobx"
 import { observer, useLocalObservable } from "mobx-react-lite"
