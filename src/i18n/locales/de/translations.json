@@ -79,6 +79,7 @@
   "RobotSetupReadinessIndicator.RobotDisconnected.lb": "Roboter getrennt",
   "RobotSetupReadinessIndicator.CellOpen.lb": "Zelle offen",
   "RobotSetupReadinessIndicator.EStop.lb": "Not-Stopp",
+  "RobotSetupReadinessIndicator.ManualMode.lb": "Manueller Modus",
   "RobotSetupReadinessIndicator.PreconditionNotFulfilled.lb": "Voraussetzung nicht erfüllt",
   "RobotCard.Runtime.lb": "Laufzeit",
   "RobotCard.DriveToHome.bt": "Zur Home-Position fahren"

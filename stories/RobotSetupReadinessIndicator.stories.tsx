@@ -19,6 +19,7 @@ const meta: Meta<typeof RobotSetupReadinessIndicator> = {
         RobotSetupReadinessState.ROBOT_DISCONNECTED,
         RobotSetupReadinessState.CELL_OPEN,
         RobotSetupReadinessState.E_STOP,
+        RobotSetupReadinessState.MANUAL_MODE,
         RobotSetupReadinessState.READY,
       ],
       description: "The current setup readiness state of the robot",

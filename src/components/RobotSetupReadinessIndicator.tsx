@@ -15,6 +15,8 @@ export enum RobotSetupReadinessState {
   CELL_OPEN = "CELL_OPEN",
   /** Emergency stop is active and robot cannot operate */
   E_STOP = "E_STOP",
+  /** Robot is in manual mode and requires manual intervention */
+  MANUAL_MODE = "MANUAL_MODE",
   /** Robot is ready for operation */
   READY = "READY",
 }
@@ -30,7 +32,7 @@ export interface RobotSetupReadinessIndicatorProps {
  * A state indicator component that displays the current robot setup readiness state.
  *
  * Features:
- * - Shows five states: Precondition not fulfilled, Robot disconnected, Cell open, E-Stop, Ready
+ * - Shows six states: Precondition not fulfilled, Robot disconnected, Cell open, E-Stop, Manual mode, Ready
  * - Color-coded based on state (ready: tertiary/main, others: error/main)
  * - Rendered as Material-UI filled chip with paper-elevation-11 background
  * - Includes colored circle indicator (8px width)
@@ -74,6 +76,15 @@ export const RobotSetupReadinessIndicator = externalizeComponent(
         case RobotSetupReadinessState.E_STOP:
           return {
             label: t("RobotSetupReadinessIndicator.EStop.lb"),
+            indicatorColor: theme.palette.error.main,
+            backgroundColor:
+              theme.palette.backgroundPaperElevation?.[11] ||
+              theme.palette.background.paper,
+            textColor: theme.palette.secondary.contrastText,
+          }
+        case RobotSetupReadinessState.MANUAL_MODE:
+          return {
+            label: t("RobotSetupReadinessIndicator.ManualMode.lb"),
             indicatorColor: theme.palette.error.main,
             backgroundColor:
               theme.palette.backgroundPaperElevation?.[11] ||
