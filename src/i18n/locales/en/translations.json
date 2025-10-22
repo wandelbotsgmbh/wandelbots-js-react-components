@@ -78,6 +78,9 @@
   "ProgramStateIndicator.ManualT2.lb": "Manual T2",
   "RobotSetupReadinessIndicator.Ready.lb": "Ready",
   "RobotSetupReadinessIndicator.RobotDisconnected.lb": "Robot disconnected",
+  "RobotSetupReadinessIndicator.CellOpen.lb": "Cell open",
+  "RobotSetupReadinessIndicator.EStop.lb": "E-Stop",
+  "RobotSetupReadinessIndicator.ManualMode.lb": "Manual mode",
   "RobotSetupReadinessIndicator.PreconditionNotFulfilled.lb": "Precondition not fulfilled",
   "RobotCard.Runtime.lb": "Runtime",
   "RobotCard.DriveToHome.bt": "Drive to Home"
