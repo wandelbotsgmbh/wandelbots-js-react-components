@@ -11,6 +11,10 @@ export enum RobotSetupReadinessState {
   PRECONDITION_NOT_FULFILLED = "PRECONDITION_NOT_FULFILLED",
   /** Robot is disconnected from the system */
   ROBOT_DISCONNECTED = "ROBOT_DISCONNECTED",
+  /** Safety cell is open and robot cannot operate */
+  CELL_OPEN = "CELL_OPEN",
+  /** Emergency stop is active and robot cannot operate */
+  E_STOP = "E_STOP",
   /** Robot is ready for operation */
   READY = "READY",
 }
@@ -26,7 +30,7 @@ export interface RobotSetupReadinessIndicatorProps {
  * A state indicator component that displays the current robot setup readiness state.
  *
  * Features:
- * - Shows three states: Precondition not fulfilled, Robot disconnected, Ready
+ * - Shows five states: Precondition not fulfilled, Robot disconnected, Cell open, E-Stop, Ready
  * - Color-coded based on state (ready: tertiary/main, others: error/main)
  * - Rendered as Material-UI filled chip with paper-elevation-11 background
  * - Includes colored circle indicator (8px width)
@@ -52,6 +56,24 @@ export const RobotSetupReadinessIndicator = externalizeComponent(
         case RobotSetupReadinessState.ROBOT_DISCONNECTED:
           return {
             label: t("RobotSetupReadinessIndicator.RobotDisconnected.lb"),
+            indicatorColor: theme.palette.error.main,
+            backgroundColor:
+              theme.palette.backgroundPaperElevation?.[11] ||
+              theme.palette.background.paper,
+            textColor: theme.palette.secondary.contrastText,
+          }
+        case RobotSetupReadinessState.CELL_OPEN:
+          return {
+            label: t("RobotSetupReadinessIndicator.CellOpen.lb"),
+            indicatorColor: theme.palette.error.main,
+            backgroundColor:
+              theme.palette.backgroundPaperElevation?.[11] ||
+              theme.palette.background.paper,
+            textColor: theme.palette.secondary.contrastText,
+          }
+        case RobotSetupReadinessState.E_STOP:
+          return {
+            label: t("RobotSetupReadinessIndicator.EStop.lb"),
             indicatorColor: theme.palette.error.main,
             backgroundColor:
               theme.palette.backgroundPaperElevation?.[11] ||
