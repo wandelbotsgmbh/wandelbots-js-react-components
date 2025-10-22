@@ -12,7 +12,6 @@ export const ROBOT_STORIES_REGEX = /SupportedModels.stories.tsx$/
 const HIDDEN_ROBOTS = [
   "KUKA_KR16_R1610_2",
   "KUKA_KR210_R2700",
-  "KUKA_KR270_R2700",
   "FANUC_M20iD35",
   "YASKAWA_TURN2",
   "KUKA_DKP500_2"
