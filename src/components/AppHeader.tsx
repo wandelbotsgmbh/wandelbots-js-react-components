@@ -86,9 +86,10 @@ export const AppHeader = externalizeComponent(
           position="static"
           sx={{
             boxShadow: "none",
-            background: (theme) => theme.palette.backgroundPaperElevation?.[1],
-            "& label, a, span": {
-              textWrap: "nowrap",
+            backgroundImage: "none",
+            "& .MuiAppBar-root": {
+              backgroundImage: "none",
+              backgroundColor: "transparent",
             },
             ...sx,
           }}
