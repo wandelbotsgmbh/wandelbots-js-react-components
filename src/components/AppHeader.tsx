@@ -37,6 +37,8 @@ export type AppHeaderProps = {
   apps?: AppItem[]
   /** Callback when an app is selected */
   onAppSelect?: (app: AppItem) => void
+  /** Disable the menu button */
+  disabled?: boolean
   /** Additional styling */
   sx?: SxProps
 }
@@ -47,7 +49,14 @@ export type AppHeaderProps = {
  */
 export const AppHeader = externalizeComponent(
   observer((props: AppHeaderProps) => {
-    const { appIcon, appName, apps = [], onAppSelect, sx } = props
+    const {
+      appIcon,
+      appName,
+      apps = [],
+      onAppSelect,
+      disabled = false,
+      sx,
+    } = props
     const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
     const isMenuOpen = Boolean(anchorEl)
 
@@ -77,30 +86,26 @@ export const AppHeader = externalizeComponent(
           position="static"
           sx={{
             boxShadow: "none",
-            backgroundImage: "none",
-            "& .MuiAppBar-root": {
-              backgroundImage: "none",
-              backgroundColor: "transparent",
+            background: (theme) => theme.palette.backgroundPaperElevation?.[1],
+            "& label, a, span": {
+              textWrap: "nowrap",
             },
             ...sx,
           }}
         >
           <Toolbar sx={{ minHeight: "62px !important" }}>
             {/* App Icon */}
-            <Box sx={{ mr: 2, display: "flex", alignItems: "center" }}>
+            <Box sx={{ mr: 1, display: "flex", alignItems: "center" }}>
               {appIcon}
             </Box>
 
             {/* App Name and Dropdown */}
             <Box sx={{ display: "flex", alignItems: "center", flexGrow: 1 }}>
               <Typography
-                variant="h6"
-                component="div"
+                component="h1"
                 sx={{
-                  fontWeight: 700,
-                  fontSize: "20px",
-                  lineHeight: "24px",
-                  letterSpacing: 0,
+                  fontWeight: "bold",
+                  fontSize: "1rem",
                 }}
               >
                 {appName}
@@ -114,12 +119,13 @@ export const AppHeader = externalizeComponent(
                   aria-controls="app-menu"
                   aria-haspopup="true"
                   onClick={handleMenuOpen}
+                  disabled={disabled}
                   sx={{
-                    ml: 2,
-                    width: 30,
-                    height: 30,
-                    borderRadius: "8px",
-                    padding: "5px",
+                    ml: 1,
+                    width: 28,
+                    height: 28,
+                    borderRadius: "6px",
+                    padding: 0,
                     backgroundColor: (theme) =>
                       alpha(theme.palette.common.white, 0.1),
                     opacity: 1,
@@ -128,9 +134,9 @@ export const AppHeader = externalizeComponent(
                         alpha(theme.palette.common.white, 0.16),
                     },
                     "& .MuiSvgIcon-root": {
-                      fontSize: "10px",
-                      width: "10px",
-                      height: "8px",
+                      fontSize: "8px",
+                      width: "8px",
+                      height: "6px",
                     },
                   }}
                 >
@@ -175,21 +181,13 @@ export const AppHeader = externalizeComponent(
           }}
         >
           {apps.map((app) => (
-            <MenuItem
-              key={app.id}
-              onClick={() => handleAppSelect(app)}
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                gap: 2,
-                py: 1.5,
-                px: 2,
-              }}
-            >
+            <MenuItem key={app.id} onClick={() => handleAppSelect(app)}>
               <Box sx={{ display: "flex", alignItems: "center" }}>
                 {app.icon}
               </Box>
-              <Typography variant="body1">{app.name}</Typography>
+              <Typography variant="body1" sx={{ ml: 2 }}>
+                {app.name}
+              </Typography>
             </MenuItem>
           ))}
         </Menu>

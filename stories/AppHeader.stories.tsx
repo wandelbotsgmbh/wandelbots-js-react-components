@@ -29,6 +29,10 @@ const meta: Meta<typeof AppHeader> = {
       description: "Array of available apps to navigate to",
       control: false,
     },
+    disabled: {
+      description: "Disable the menu button",
+      control: "boolean",
+    },
     onAppSelect: {
       description: "Callback when an app is selected from the dropdown",
       action: "app selected",
@@ -75,12 +79,13 @@ export const Interactive: Story = {
     appIcon: <Home />,
     appName: "Robot Control Studio",
     apps: sampleApps,
+    disabled: false,
   },
   parameters: {
     docs: {
       description: {
         story:
-          "Interactive example showing the app header with a dropdown menu. Click the dropdown arrow to see the available apps. The background will blur when the menu is open.",
+          "Interactive example showing the app header with a dropdown menu. Click the dropdown arrow to see the available apps. The background will blur when the menu is open. Toggle the 'disabled' control to disable the menu button.",
       },
     },
   },
