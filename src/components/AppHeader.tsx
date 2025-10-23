@@ -124,7 +124,7 @@ export const AppHeader = externalizeComponent(
                     ml: 1,
                     width: 28,
                     height: 28,
-                    borderRadius: "20%",
+                    borderRadius: "6px",
                     padding: 0,
                     backgroundColor: (theme) =>
                       alpha(theme.palette.common.white, 0.1),
