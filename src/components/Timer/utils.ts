@@ -55,7 +55,10 @@ export const formatTimeLocalized = (
         duration.seconds = remainingSeconds
       }
 
-      // @ts-expect-error - DurationFormat is not yet in TypeScript types
+      // @ts-expect-error
+      // TODO: Remove suppression once Intl.DurationFormat is supported in TypeScript types.
+      // See: https://github.com/microsoft/TypeScript/issues/53971
+      // DurationFormat is a proposed API and not yet available in TypeScript's standard library types.
       const formatter = new Intl.DurationFormat(locale, { style: "narrow" })
       return formatter.format(duration)
     } catch {
