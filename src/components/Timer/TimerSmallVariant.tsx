@@ -1,8 +1,8 @@
 import { Box, Typography } from "@mui/material"
 import { useTheme } from "@mui/material/styles"
 import { useTranslation } from "react-i18next"
-import type { TimerState, TimerAnimationState } from "./types"
-import { formatTime } from "./utils"
+import type { TimerAnimationState, TimerState } from "./types"
+import { formatTimeLocalized } from "./utils"
 
 interface TimerSmallVariantProps {
   timerState: TimerState
@@ -19,7 +19,7 @@ export const TimerSmallVariant = ({
   compact,
   className,
 }: TimerSmallVariantProps) => {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const theme = useTheme()
   const { elapsedTime, currentProgress } = timerState
   const { showErrorAnimation, showPauseAnimation } = animationState
@@ -45,7 +45,9 @@ export const TimerSmallVariant = ({
             transition: "color 0.5s ease-out",
           }}
         >
-          {hasError ? t("timer.error") : formatTime(elapsedTime)}
+          {hasError
+            ? t("timer.error")
+            : formatTimeLocalized(elapsedTime, i18n.language)}
         </Typography>
       </Box>
     )
@@ -87,9 +89,7 @@ export const TimerSmallVariant = ({
             r="8"
             fill="none"
             stroke={
-              hasError
-                ? theme.palette.error.light
-                : theme.palette.success.main
+              hasError ? theme.palette.error.light : theme.palette.success.main
             }
             strokeWidth="2"
             opacity={0.3}
@@ -103,9 +103,7 @@ export const TimerSmallVariant = ({
             r="8"
             fill="none"
             stroke={
-              hasError
-                ? theme.palette.error.light
-                : theme.palette.success.main
+              hasError ? theme.palette.error.light : theme.palette.success.main
             }
             strokeWidth="2"
             strokeLinecap="round"
@@ -133,7 +131,9 @@ export const TimerSmallVariant = ({
             "color 0.8s ease-in-out, font-size 0.3s ease-out, opacity 2s ease-in-out",
         }}
       >
-        {hasError ? t("timer.error") : formatTime(elapsedTime)}
+        {hasError
+          ? t("timer.error")
+          : formatTimeLocalized(elapsedTime, i18n.language)}
       </Typography>
     </Box>
   )
