@@ -186,6 +186,24 @@ export const Default: Story = {
       }
     }
 
+    const startMeasuringHours = () => {
+      if (controlsRef.current) {
+        controlsRef.current.startMeasuring(7384) // ~2h 3m 4s elapsed
+      }
+    }
+
+    const startCountdownHours = () => {
+      if (controlsRef.current) {
+        controlsRef.current.startNewCycle(7200) // 2 hour countdown
+      }
+    }
+
+    const startCountdownDays = () => {
+      if (controlsRef.current) {
+        controlsRef.current.startNewCycle(90000) // ~25 hour countdown (1d 1h)
+      }
+    }
+
     const pauseTimer = () => {
       if (controlsRef.current) {
         controlsRef.current.pause()
@@ -225,18 +243,10 @@ export const Default: Story = {
             justifyContent: "center",
           }}
         >
-          <Button
-            variant="contained"
-            onClick={setIdle}
-            size="small"
-          >
+          <Button variant="contained" onClick={setIdle} size="small">
             Set Idle
           </Button>
-          <Button
-            variant="contained"
-            onClick={startMeasuring}
-            size="small"
-          >
+          <Button variant="contained" onClick={startMeasuring} size="small">
             Start Measuring
           </Button>
           <Button
@@ -246,18 +256,10 @@ export const Default: Story = {
           >
             Start Measuring (45s)
           </Button>
-          <Button
-            variant="contained"
-            onClick={completeMeasuring}
-            size="small"
-          >
+          <Button variant="contained" onClick={completeMeasuring} size="small">
             Complete Measuring
           </Button>
-          <Button
-            variant="contained"
-            onClick={startCountdown}
-            size="small"
-          >
+          <Button variant="contained" onClick={startCountdown} size="small">
             Start 90s Countdown
           </Button>
           <Button
@@ -268,17 +270,33 @@ export const Default: Story = {
             Start 120s (30s elapsed)
           </Button>
           <Button
-            variant="outlined"
-            onClick={pauseTimer}
+            variant="contained"
+            onClick={startMeasuringHours}
             size="small"
+            color="secondary"
           >
-            Pause
+            Measuring ~2h 3m
           </Button>
           <Button
-            variant="outlined"
-            onClick={resumeTimer}
+            variant="contained"
+            onClick={startCountdownHours}
             size="small"
+            color="secondary"
           >
+            Countdown 2h
+          </Button>
+          <Button
+            variant="contained"
+            onClick={startCountdownDays}
+            size="small"
+            color="secondary"
+          >
+            Countdown ~25h
+          </Button>
+          <Button variant="outlined" onClick={pauseTimer} size="small">
+            Pause
+          </Button>
+          <Button variant="outlined" onClick={resumeTimer} size="small">
             Resume
           </Button>
           <Button
@@ -334,9 +352,27 @@ export const SmallVariant: Story = {
       }
     }
 
+    const startMeasuringHours = () => {
+      if (controlsRef.current) {
+        controlsRef.current.startMeasuring(7384) // ~2h 3m 4s elapsed
+      }
+    }
+
     const startCountdown = () => {
       if (controlsRef.current) {
         controlsRef.current.startNewCycle(60) // 60 second countdown
+      }
+    }
+
+    const startCountdownHours = () => {
+      if (controlsRef.current) {
+        controlsRef.current.startNewCycle(7200) // 2 hour countdown
+      }
+    }
+
+    const startCountdownDays = () => {
+      if (controlsRef.current) {
+        controlsRef.current.startNewCycle(90000) // ~25 hour countdown (1d 1h)
       }
     }
 
@@ -349,25 +385,38 @@ export const SmallVariant: Story = {
           gap: 3,
         }}
       >
-        <CycleTimer
-          {...args}
-          onCycleComplete={handleCycleComplete}
-        />
+        <CycleTimer {...args} onCycleComplete={handleCycleComplete} />
 
-        <Box sx={{ display: "flex", gap: 1 }}>
-          <Button
-            variant="contained"
-            onClick={startMeasuring}
-            size="small"
-          >
+        <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
+          <Button variant="contained" onClick={startMeasuring} size="small">
             Start Measuring
+          </Button>
+          <Button variant="contained" onClick={startCountdown} size="small">
+            Start 60s Countdown
           </Button>
           <Button
             variant="contained"
-            onClick={startCountdown}
+            onClick={startMeasuringHours}
             size="small"
+            color="secondary"
           >
-            Start 60s Countdown
+            Measuring ~2h 3m
+          </Button>
+          <Button
+            variant="contained"
+            onClick={startCountdownHours}
+            size="small"
+            color="secondary"
+          >
+            Countdown 2h
+          </Button>
+          <Button
+            variant="contained"
+            onClick={startCountdownDays}
+            size="small"
+            color="secondary"
+          >
+            Countdown ~25h
           </Button>
         </Box>
       </Box>
