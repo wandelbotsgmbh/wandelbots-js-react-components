@@ -1,7 +1,7 @@
 import { Box, Typography, useTheme } from "@mui/material"
 import { useTranslation } from "react-i18next"
 import type { AnimationState, TimerState } from "./types"
-import { formatTime } from "./utils"
+import { formatTimeLocalized } from "./utils"
 
 interface SmallVariantProps {
   timerState: TimerState
@@ -18,7 +18,7 @@ export const SmallVariant = ({
   compact,
   className,
 }: SmallVariantProps) => {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const theme = useTheme()
   const { currentState, remainingTime, maxTime } = timerState
   const {
@@ -54,8 +54,8 @@ export const SmallVariant = ({
           {hasError
             ? t("CycleTimer.Error.lb", "Error")
             : currentState === "idle"
-              ? "0:00"
-              : formatTime(remainingTime)}
+              ? "0s"
+              : formatTimeLocalized(remainingTime, i18n.language)}
         </Typography>
       </Box>
     )
@@ -202,24 +202,24 @@ export const SmallVariant = ({
           </>
         ) : currentState === "measuring" ? (
           compact ? (
-            `${formatTime(remainingTime)} ${t("CycleTimer.Time.lb", { time: "" }).replace(/\s*$/, "")}`
+            `${formatTimeLocalized(remainingTime, i18n.language)} ${t("CycleTimer.Time.lb", { time: "" }).replace(/\s*$/, "")}`
           ) : (
-            `${formatTime(remainingTime)} / ${t("CycleTimer.Measuring.lb", "measuring...")}`
+            `${formatTimeLocalized(remainingTime, i18n.language)} / ${t("CycleTimer.Measuring.lb", "measuring...")}`
           )
         ) : currentState === "measured" ? (
           compact ? (
-            `${formatTime(remainingTime)} ${t("CycleTimer.Time.lb", { time: "" }).replace(/\s*$/, "")}`
+            `${formatTimeLocalized(remainingTime, i18n.language)} ${t("CycleTimer.Time.lb", { time: "" }).replace(/\s*$/, "")}`
           ) : (
-            `${formatTime(remainingTime)} / ${t("CycleTimer.Determined.lb", "determined")}`
+            `${formatTimeLocalized(remainingTime, i18n.language)} / ${t("CycleTimer.Determined.lb", "determined")}`
           )
         ) : currentState === "countdown" && maxTime !== null ? (
           compact ? (
-            `${formatTime(remainingTime)} ${t("CycleTimer.Time.lb", { time: "" }).replace(/\s*$/, "")}`
+            `${formatTimeLocalized(remainingTime, i18n.language)} ${t("CycleTimer.Time.lb", { time: "" }).replace(/\s*$/, "")}`
           ) : (
-            `${formatTime(remainingTime)} / ${t("CycleTimer.Time.lb", { time: formatTime(maxTime) })}`
+            `${formatTimeLocalized(remainingTime, i18n.language)} / ${t("CycleTimer.Time.lb", { time: formatTimeLocalized(maxTime, i18n.language) })}`
           )
         ) : (
-          formatTime(remainingTime)
+          formatTimeLocalized(remainingTime, i18n.language)
         )}
       </Typography>
     </Box>

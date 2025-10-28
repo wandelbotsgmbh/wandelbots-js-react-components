@@ -2,7 +2,7 @@ import { Box, Fade, Typography, useTheme } from "@mui/material"
 import { Gauge } from "@mui/x-charts/Gauge"
 import { useTranslation } from "react-i18next"
 import type { AnimationState, TimerState } from "./types"
-import { formatTime } from "./utils"
+import { formatTime, formatTimeLocalized } from "./utils"
 
 interface DefaultVariantProps {
   timerState: TimerState
@@ -17,7 +17,7 @@ export const DefaultVariant = ({
   hasError,
   className,
 }: DefaultVariantProps) => {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const theme = useTheme()
   const { currentState, remainingTime, maxTime, currentProgress } = timerState
   const {
@@ -310,7 +310,7 @@ export const DefaultVariant = ({
                     ? t("CycleTimer.Determined.lb", "determined")
                     : currentState === "countdown" && maxTime !== null
                       ? t("CycleTimer.OfTime.lb", {
-                          time: formatTime(maxTime),
+                          time: formatTimeLocalized(maxTime, i18n.language),
                         })
                       : ""}
               </span>
