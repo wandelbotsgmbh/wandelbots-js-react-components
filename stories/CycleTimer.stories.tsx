@@ -423,3 +423,115 @@ export const SmallVariant: Story = {
     )
   },
 }
+
+/**
+ * Compact small variant showing only the localized time without additional labels.
+ * Perfect for space-constrained UIs where you need just the essential time display.
+ */
+export const CompactVariant: Story = {
+  args: {
+    variant: "small",
+    compact: true,
+    autoStart: true,
+  },
+  render: function Render(args) {
+    const controlsRef = React.useRef<{
+      startNewCycle: (maxTimeSeconds: number, elapsedSeconds?: number) => void
+      startMeasuring: (elapsedSeconds?: number) => void
+      setIdle: () => void
+      completeMeasuring: () => void
+      pause: () => void
+      resume: () => void
+      isPaused: () => boolean
+    } | null>(null)
+
+    const handleCycleComplete = (controls: {
+      startNewCycle: (maxTimeSeconds: number, elapsedSeconds?: number) => void
+      startMeasuring: (elapsedSeconds?: number) => void
+      setIdle: () => void
+      completeMeasuring: () => void
+      pause: () => void
+      resume: () => void
+      isPaused: () => boolean
+    }) => {
+      controlsRef.current = controls
+      args.onCycleComplete(controls)
+    }
+
+    const startMeasuring = () => {
+      if (controlsRef.current) {
+        controlsRef.current.startMeasuring()
+      }
+    }
+
+    const startMeasuringHours = () => {
+      if (controlsRef.current) {
+        controlsRef.current.startMeasuring(7384) // ~2h 3m 4s elapsed
+      }
+    }
+
+    const startCountdown = () => {
+      if (controlsRef.current) {
+        controlsRef.current.startNewCycle(60) // 60 second countdown
+      }
+    }
+
+    const startCountdownHours = () => {
+      if (controlsRef.current) {
+        controlsRef.current.startNewCycle(7200) // 2 hour countdown
+      }
+    }
+
+    const startCountdownDays = () => {
+      if (controlsRef.current) {
+        controlsRef.current.startNewCycle(90000) // ~25 hour countdown (1d 1h)
+      }
+    }
+
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "flex-start",
+          gap: 3,
+        }}
+      >
+        <CycleTimer {...args} onCycleComplete={handleCycleComplete} />
+
+        <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
+          <Button variant="contained" onClick={startMeasuring} size="small">
+            Start Measuring
+          </Button>
+          <Button variant="contained" onClick={startCountdown} size="small">
+            Start 60s Countdown
+          </Button>
+          <Button
+            variant="contained"
+            onClick={startMeasuringHours}
+            size="small"
+            color="secondary"
+          >
+            Measuring ~2h 3m
+          </Button>
+          <Button
+            variant="contained"
+            onClick={startCountdownHours}
+            size="small"
+            color="secondary"
+          >
+            Countdown 2h
+          </Button>
+          <Button
+            variant="contained"
+            onClick={startCountdownDays}
+            size="small"
+            color="secondary"
+          >
+            Countdown ~25h
+          </Button>
+        </Box>
+      </Box>
+    )
+  },
+}

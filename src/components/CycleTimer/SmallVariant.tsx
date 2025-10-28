@@ -202,19 +202,19 @@ export const SmallVariant = ({
           </>
         ) : currentState === "measuring" ? (
           compact ? (
-            `${formatTimeLocalized(remainingTime, i18n.language)} ${t("CycleTimer.Time.lb", { time: "" }).replace(/\s*$/, "")}`
+            formatTimeLocalized(remainingTime, i18n.language)
           ) : (
             `${formatTimeLocalized(remainingTime, i18n.language)} / ${t("CycleTimer.Measuring.lb", "measuring...")}`
           )
         ) : currentState === "measured" ? (
           compact ? (
-            `${formatTimeLocalized(remainingTime, i18n.language)} ${t("CycleTimer.Time.lb", { time: "" }).replace(/\s*$/, "")}`
+            formatTimeLocalized(remainingTime, i18n.language)
           ) : (
             `${formatTimeLocalized(remainingTime, i18n.language)} / ${t("CycleTimer.Determined.lb", "determined")}`
           )
         ) : currentState === "countdown" && maxTime !== null ? (
           compact ? (
-            `${formatTimeLocalized(remainingTime, i18n.language)} ${t("CycleTimer.Time.lb", { time: "" }).replace(/\s*$/, "")}`
+            formatTimeLocalized(remainingTime, i18n.language)
           ) : (
             `${formatTimeLocalized(remainingTime, i18n.language)} / ${t("CycleTimer.Time.lb", { time: formatTimeLocalized(maxTime, i18n.language) })}`
           )

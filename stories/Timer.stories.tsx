@@ -51,7 +51,8 @@ A simple count-up timer component with visual progress indication.
     },
     autoStart: {
       control: "boolean",
-      description: "Whether the timer should start automatically when initialized",
+      description:
+        "Whether the timer should start automatically when initialized",
       table: {
         defaultValue: {
           summary: "true",
@@ -71,8 +72,7 @@ A simple count-up timer component with visual progress indication.
     },
     compact: {
       control: "boolean",
-      description:
-        "For small variant: whether to show compact display",
+      description: "For small variant: whether to show compact display",
       table: {
         defaultValue: {
           summary: "false",
@@ -172,11 +172,7 @@ export const Default: Story = {
           gap: 3,
         }}
       >
-        <Timer
-          {...args}
-          onTimerReady={handleTimerReady}
-          hasError={hasError}
-        />
+        <Timer {...args} onTimerReady={handleTimerReady} hasError={hasError} />
 
         <Box
           sx={{
@@ -186,39 +182,19 @@ export const Default: Story = {
             justifyContent: "center",
           }}
         >
-          <Button
-            variant="contained"
-            onClick={startTimer}
-            size="small"
-          >
+          <Button variant="contained" onClick={startTimer} size="small">
             Start Fresh
           </Button>
-          <Button
-            variant="contained"
-            onClick={startWithElapsed}
-            size="small"
-          >
+          <Button variant="contained" onClick={startWithElapsed} size="small">
             Start from 45s
           </Button>
-          <Button
-            variant="outlined"
-            onClick={pauseTimer}
-            size="small"
-          >
+          <Button variant="outlined" onClick={pauseTimer} size="small">
             Pause
           </Button>
-          <Button
-            variant="outlined"
-            onClick={resumeTimer}
-            size="small"
-          >
+          <Button variant="outlined" onClick={resumeTimer} size="small">
             Resume
           </Button>
-          <Button
-            variant="outlined"
-            onClick={resetTimer}
-            size="small"
-          >
+          <Button variant="outlined" onClick={resetTimer} size="small">
             Reset
           </Button>
           <Button
@@ -286,24 +262,13 @@ export const SmallVariant: Story = {
           gap: 3,
         }}
       >
-        <Timer
-          {...args}
-          onTimerReady={handleTimerReady}
-        />
+        <Timer {...args} onTimerReady={handleTimerReady} />
 
         <Box sx={{ display: "flex", gap: 1 }}>
-          <Button
-            variant="contained"
-            onClick={startTimer}
-            size="small"
-          >
+          <Button variant="contained" onClick={startTimer} size="small">
             Start
           </Button>
-          <Button
-            variant="outlined"
-            onClick={resetTimer}
-            size="small"
-          >
+          <Button variant="outlined" onClick={resetTimer} size="small">
             Reset
           </Button>
         </Box>
@@ -349,6 +314,12 @@ export const SmallCompact: Story = {
       }
     }
 
+    const startTimer = () => {
+      if (controlsRef.current) {
+        controlsRef.current.start()
+      }
+    }
+
     return (
       <Box
         sx={{
@@ -358,18 +329,16 @@ export const SmallCompact: Story = {
           gap: 2,
         }}
       >
-        <Timer
-          {...args}
-          onTimerReady={handleTimerReady}
-        />
+        <Timer {...args} onTimerReady={handleTimerReady} />
 
-        <Button
-          variant="outlined"
-          onClick={resetTimer}
-          size="small"
-        >
-          Reset
-        </Button>
+        <Box sx={{ display: "flex", gap: 1 }}>
+          <Button variant="contained" onClick={startTimer} size="small">
+            Start
+          </Button>
+          <Button variant="outlined" onClick={resetTimer} size="small">
+            Reset
+          </Button>
+        </Box>
       </Box>
     )
   },
