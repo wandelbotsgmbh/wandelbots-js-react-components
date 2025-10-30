@@ -321,6 +321,109 @@ export const WithErrorStates: Story = {
   },
 }
 
+export const WithBadges: Story = {
+  render: () => {
+    const [missingParams, setMissingParams] = useState(3)
+    const [notifications, setNotifications] = useState(5)
+
+    const items = [
+      {
+        id: "overview",
+        label: "Overview",
+        content: (
+          <Box sx={{ p: 3 }}>
+            <Alert severity="success" sx={{ mb: 2 }}>
+              Configuration overview
+            </Alert>
+            <Typography>All configured parameters are shown here</Typography>
+          </Box>
+        ),
+        icon: <CheckCircle />,
+      },
+      {
+        id: "parameters",
+        label: "Parameters",
+        content: (
+          <Box sx={{ p: 3 }}>
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {missingParams} parameter(s) missing
+            </Alert>
+            <Typography>Please fill in all required parameters:</Typography>
+            <List>
+              <ListItem>
+                <ListItemText primary="Robot IP Address" secondary="Required" />
+              </ListItem>
+              <ListItem>
+                <ListItemText primary="Motion Group ID" secondary="Required" />
+              </ListItem>
+              <ListItem>
+                <ListItemText
+                  primary="Safety Configuration"
+                  secondary="Required"
+                />
+              </ListItem>
+            </List>
+            <Button
+              variant="contained"
+              onClick={() => setMissingParams(0)}
+              sx={{ mt: 2 }}
+            >
+              Complete Parameters
+            </Button>
+          </Box>
+        ),
+        icon: <ErrorIcon />,
+        badge: {
+          content: missingParams,
+          color: "error" as const,
+          showZero: false,
+        },
+      },
+      {
+        id: "notifications",
+        label: "Notifications",
+        content: (
+          <Box sx={{ p: 3 }}>
+            <Alert severity="info" sx={{ mb: 2 }}>
+              You have {notifications} unread notification(s)
+            </Alert>
+            <Typography>Check your notifications regularly</Typography>
+            <Button
+              variant="outlined"
+              onClick={() => setNotifications(0)}
+              sx={{ mt: 2 }}
+            >
+              Mark All as Read
+            </Button>
+          </Box>
+        ),
+        icon: <History />,
+        badge: {
+          content: notifications,
+          color: "info" as const,
+          max: 99,
+        },
+      },
+      {
+        id: "settings",
+        label: "Settings",
+        content: <SettingsContent />,
+        icon: <Settings />,
+      },
+    ]
+
+    return <TabBar items={items} defaultActiveTab={1} />
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          "TabBar with badges to indicate missing parameters, notifications, or other status information. The badge count updates dynamically. Use this pattern to draw attention to tabs that require user interaction.",
+      },
+    },
+  },
+}
+
 export const Controlled: Story = {
   render: () => {
     const [activeTab, setActiveTab] = useState(0)

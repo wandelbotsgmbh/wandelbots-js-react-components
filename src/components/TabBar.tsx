@@ -13,6 +13,24 @@ export interface TabItem {
   content: React.ReactNode
   /** Optional icon component to display with the tab */
   icon?: React.ReactElement
+  /** Optional badge configuration */
+  badge?: {
+    /** Badge content (number or string) */
+    content: React.ReactNode
+    /** Badge color variant */
+    color?:
+      | "default"
+      | "primary"
+      | "secondary"
+      | "error"
+      | "info"
+      | "success"
+      | "warning"
+    /** Maximum number to display (e.g., 99+) */
+    max?: number
+    /** Show badge even when content is zero */
+    showZero?: boolean
+  }
 }
 
 export interface TabBarProps {
@@ -101,18 +119,36 @@ export const TabBar = externalizeComponent(
         sx={{ height: "100%", display: "flex", flexDirection: "column", ...sx }}
       >
         {/* Tabs */}
-        <Box sx={{ px: 0, py: 0 }}>
+        <Box
+          sx={{
+            px: 0,
+            py: 0,
+            overflow: "visible",
+            paddingTop: "16px",
+            paddingRight: "20px",
+          }}
+        >
           <Tabs
             value={currentValue}
             onChange={handleTabChange}
             sx={{
               minHeight: "32px",
               backgroundColor: "transparent",
+              overflow: "visible",
               "& .MuiTabs-indicator": {
                 display: "none", // Hide the default indicator
               },
               "& .MuiTabs-flexContainer": {
                 gap: 2,
+                overflow: "visible",
+                paddingTop: 0,
+                paddingBottom: 0,
+              },
+              "& .MuiTabs-scroller": {
+                overflow: "visible !important",
+              },
+              "& .MuiTab-root": {
+                overflow: "visible",
               },
             }}
           >
@@ -134,6 +170,7 @@ export const TabBar = externalizeComponent(
                   opacity: currentValue === index ? 1 : 0.38,
                   fontSize: "13px",
                   transition: "all 0.2s ease-in-out",
+                  position: "relative",
                   "&:hover": {
                     opacity: currentValue === index ? 1 : 0.6,
                   },
@@ -149,6 +186,41 @@ export const TabBar = externalizeComponent(
                   "&:active": {
                     transform: "none",
                   },
+                  ...(item.badge && {
+                    "&::after": {
+                      content: `"${item.badge.content}"`,
+                      position: "absolute",
+                      top: -6,
+                      right: -8,
+                      minWidth: "20px",
+                      height: "20px",
+                      borderRadius: "10px",
+                      backgroundColor: (theme) => {
+                        const colors = {
+                          error: theme.palette.error.main,
+                          info: theme.palette.info.main,
+                          success: theme.palette.success.main,
+                          warning: theme.palette.warning.main,
+                          primary: theme.palette.primary.main,
+                          secondary: theme.palette.secondary.main,
+                          default: theme.palette.grey[500],
+                        }
+                        return (
+                          colors[item.badge?.color || "error"] || colors.error
+                        )
+                      },
+                      color: "white",
+                      fontSize: "12px",
+                      fontWeight: 600,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      padding: "2px 6px",
+                      zIndex: 1,
+                      pointerEvents: "none",
+                      boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
+                    },
+                  }),
                 }}
               />
             ))}
@@ -156,7 +228,7 @@ export const TabBar = externalizeComponent(
         </Box>
 
         {/* Border line */}
-        <Box sx={{ mt: "32px", borderBottom: 1, borderColor: "divider" }} />
+        <Box sx={{ mt: "16px", borderBottom: 1, borderColor: "divider" }} />
 
         {/* Tab Content */}
         <Box sx={{ flex: 1, overflow: "auto" }}>
