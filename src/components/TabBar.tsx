@@ -124,8 +124,11 @@ export const TabBar = externalizeComponent(
             px: 0,
             py: 0,
             overflow: "visible",
-            paddingTop: "16px",
-            paddingRight: "20px",
+            // Extra padding to prevent badge clipping
+            // Top: accommodates badge positioned at top: -6px with 20px height
+            // Right: accommodates badge positioned at right: -8px with 20px width
+            paddingTop: (theme) => theme.spacing(2), // 16px
+            paddingRight: (theme) => theme.spacing(2.5), // 20px
           }}
         >
           <Tabs
@@ -152,83 +155,122 @@ export const TabBar = externalizeComponent(
               },
             }}
           >
-            {items.map((item, index) => (
-              <Tab
-                key={item.id}
-                label={item.label}
-                icon={item.icon}
-                iconPosition="start"
-                disableRipple
-                sx={{
-                  minHeight: "32px",
-                  height: "32px",
-                  padding: "0px 10px",
-                  borderRadius: "12px",
-                  backgroundColor: (theme) =>
-                    theme.palette.backgroundPaperElevation?.[11] || "#32344B",
-                  color: "text.primary",
-                  opacity: currentValue === index ? 1 : 0.38,
-                  fontSize: "13px",
-                  transition: "all 0.2s ease-in-out",
-                  position: "relative",
-                  "&:hover": {
-                    opacity: currentValue === index ? 1 : 0.6,
-                  },
-                  "&.Mui-selected": {
-                    opacity: 1,
+            {items.map((item, index) => {
+              // Helper functions for badge logic
+              const getBadgeContent = () => {
+                if (!item.badge) return ""
+                const content = item.badge.content
+                const max = item.badge.max
+
+                // Handle numeric content with max limit
+                if (typeof content === "number" && max && content > max) {
+                  return `${max}+`
+                }
+
+                return String(content)
+              }
+
+              const shouldShowBadge = () => {
+                if (!item.badge) return false
+                const content = item.badge.content
+                const showZero = item.badge.showZero
+
+                // If content is 0 and showZero is false, hide badge
+                if (content === 0 && !showZero) return false
+
+                return true
+              }
+
+              const badgeContent = getBadgeContent()
+              const showBadge = shouldShowBadge()
+
+              return (
+                <Tab
+                  key={item.id}
+                  label={item.label}
+                  icon={item.icon}
+                  iconPosition="start"
+                  disableRipple
+                  sx={{
+                    minHeight: "32px",
+                    height: "32px",
+                    padding: "0px 10px",
+                    borderRadius: "12px",
                     backgroundColor: (theme) =>
                       theme.palette.backgroundPaperElevation?.[11] || "#32344B",
                     color: "text.primary",
-                  },
-                  "&:focus": {
-                    outline: "none",
-                  },
-                  "&:active": {
-                    transform: "none",
-                  },
-                  ...(item.badge && {
-                    "&::after": {
-                      content: `"${item.badge.content}"`,
-                      position: "absolute",
-                      top: -6,
-                      right: -8,
-                      minWidth: "20px",
-                      height: "20px",
-                      borderRadius: "10px",
-                      backgroundColor: (theme) => {
-                        const colors = {
-                          error: theme.palette.error.main,
-                          info: theme.palette.info.main,
-                          success: theme.palette.success.main,
-                          warning: theme.palette.warning.main,
-                          primary: theme.palette.primary.main,
-                          secondary: theme.palette.secondary.main,
-                          default: theme.palette.grey[500],
-                        }
-                        return (
-                          colors[item.badge?.color || "error"] || colors.error
-                        )
-                      },
-                      color: "white",
-                      fontSize: "12px",
-                      fontWeight: 600,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      padding: "2px 6px",
-                      zIndex: 1,
-                      pointerEvents: "none",
-                      boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
+                    opacity: currentValue === index ? 1 : 0.38,
+                    fontSize: "13px",
+                    transition: "all 0.2s ease-in-out",
+                    position: "relative",
+                    "&:hover": {
+                      opacity: currentValue === index ? 1 : 0.6,
                     },
-                  }),
-                }}
-              />
-            ))}
+                    "&.Mui-selected": {
+                      opacity: 1,
+                      backgroundColor: (theme) =>
+                        theme.palette.backgroundPaperElevation?.[11] ||
+                        "#32344B",
+                      color: "text.primary",
+                    },
+                    "&:focus": {
+                      outline: "none",
+                    },
+                    "&:active": {
+                      transform: "none",
+                    },
+                    ...(showBadge && {
+                      "&::after": {
+                        content: `"${badgeContent}"`,
+                        position: "absolute",
+                        // Position badge in top-right corner, extending outside tab bounds
+                        top: -6, // Positions badge above the tab
+                        right: -8, // Positions badge to the right of the tab
+                        // Badge sizing - MUI Badge standard small size
+                        minWidth: "20px", // Min width for single digits
+                        height: "20px", // Fixed height for consistent appearance
+                        borderRadius: "10px", // Half of height for circular shape
+                        backgroundColor: (theme) => {
+                          const colors = {
+                            error: theme.palette.error.main,
+                            info: theme.palette.info.main,
+                            success: theme.palette.success.main,
+                            warning: theme.palette.warning.main,
+                            primary: theme.palette.primary.main,
+                            secondary: theme.palette.secondary.main,
+                            default: theme.palette.grey[500],
+                          }
+                          return (
+                            colors[item.badge?.color || "error"] || colors.error
+                          )
+                        },
+                        color: "white",
+                        fontSize: "12px", // Readable size for badge content
+                        fontWeight: 600, // Semi-bold for better visibility
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        padding: "2px 6px", // Horizontal padding for wider content (e.g., "99+")
+                        zIndex: 1,
+                        pointerEvents: "none", // Allow clicks to pass through to tab
+                        boxShadow: "0 2px 4px rgba(0,0,0,0.2)", // Subtle depth
+                      },
+                    }),
+                  }}
+                />
+              )
+            })}
           </Tabs>
         </Box>
 
         {/* Border line */}
-        <Box sx={{ mt: "16px", borderBottom: 1, borderColor: "divider" }} />
+        <Box
+          sx={{
+            mt: (theme) => theme.spacing(2),
+            borderBottom: 1,
+            borderColor: "divider",
+          }}
+        />
 
         {/* Tab Content */}
         <Box sx={{ flex: 1, overflow: "auto" }}>

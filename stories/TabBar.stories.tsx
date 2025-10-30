@@ -324,7 +324,8 @@ export const WithErrorStates: Story = {
 export const WithBadges: Story = {
   render: () => {
     const [missingParams, setMissingParams] = useState(3)
-    const [notifications, setNotifications] = useState(5)
+    const [notifications, setNotifications] = useState(150) // High number to test max
+    const [completedTasks, setCompletedTasks] = useState(0)
 
     const items = [
       {
@@ -336,6 +337,9 @@ export const WithBadges: Story = {
               Configuration overview
             </Alert>
             <Typography>All configured parameters are shown here</Typography>
+            <Typography variant="body2" sx={{ mt: 2 }}>
+              This tab has no badge configured.
+            </Typography>
           </Box>
         ),
         icon: <CheckCircle />,
@@ -345,38 +349,67 @@ export const WithBadges: Story = {
         label: "Parameters",
         content: (
           <Box sx={{ p: 3 }}>
-            <Alert severity="error" sx={{ mb: 2 }}>
-              {missingParams} parameter(s) missing
-            </Alert>
-            <Typography>Please fill in all required parameters:</Typography>
-            <List>
-              <ListItem>
-                <ListItemText primary="Robot IP Address" secondary="Required" />
-              </ListItem>
-              <ListItem>
-                <ListItemText primary="Motion Group ID" secondary="Required" />
-              </ListItem>
-              <ListItem>
-                <ListItemText
-                  primary="Safety Configuration"
-                  secondary="Required"
-                />
-              </ListItem>
-            </List>
-            <Button
-              variant="contained"
-              onClick={() => setMissingParams(0)}
-              sx={{ mt: 2 }}
+            <Alert
+              severity={missingParams > 0 ? "error" : "success"}
+              sx={{ mb: 2 }}
             >
-              Complete Parameters
-            </Button>
+              {missingParams > 0
+                ? `${missingParams} parameter(s) missing`
+                : "All parameters completed!"}
+            </Alert>
+            <Typography>
+              {missingParams > 0
+                ? "Please fill in all required parameters:"
+                : "Great! All parameters are configured."}
+            </Typography>
+            {missingParams > 0 && (
+              <List>
+                <ListItem>
+                  <ListItemText
+                    primary="Robot IP Address"
+                    secondary="Required"
+                  />
+                </ListItem>
+                <ListItem>
+                  <ListItemText
+                    primary="Motion Group ID"
+                    secondary="Required"
+                  />
+                </ListItem>
+                <ListItem>
+                  <ListItemText
+                    primary="Safety Configuration"
+                    secondary="Required"
+                  />
+                </ListItem>
+              </List>
+            )}
+            <Box sx={{ mt: 2, display: "flex", gap: 1 }}>
+              <Button
+                variant="contained"
+                onClick={() => setMissingParams(0)}
+                disabled={missingParams === 0}
+              >
+                Complete Parameters
+              </Button>
+              <Button
+                variant="outlined"
+                onClick={() => setMissingParams(3)}
+                disabled={missingParams === 3}
+              >
+                Reset Parameters
+              </Button>
+            </Box>
+            <Typography variant="caption" sx={{ mt: 2, display: "block" }}>
+              Badge: showZero=false (hidden when count is 0)
+            </Typography>
           </Box>
         ),
         icon: <ErrorIcon />,
         badge: {
           content: missingParams,
           color: "error" as const,
-          showZero: false,
+          showZero: false, // Badge will hide when count is 0
         },
       },
       {
@@ -388,27 +421,60 @@ export const WithBadges: Story = {
               You have {notifications} unread notification(s)
             </Alert>
             <Typography>Check your notifications regularly</Typography>
-            <Button
-              variant="outlined"
-              onClick={() => setNotifications(0)}
-              sx={{ mt: 2 }}
-            >
-              Mark All as Read
-            </Button>
+            <Box sx={{ mt: 2, display: "flex", gap: 1 }}>
+              <Button variant="outlined" onClick={() => setNotifications(0)}>
+                Mark All as Read
+              </Button>
+              <Button variant="outlined" onClick={() => setNotifications(50)}>
+                Set to 50
+              </Button>
+              <Button variant="outlined" onClick={() => setNotifications(150)}>
+                Set to 150
+              </Button>
+            </Box>
+            <Typography variant="caption" sx={{ mt: 2, display: "block" }}>
+              Badge: max=99 (shows "99+" when count exceeds 99)
+            </Typography>
           </Box>
         ),
         icon: <History />,
         badge: {
           content: notifications,
           color: "info" as const,
-          max: 99,
+          max: 99, // Will show "99+" when count exceeds 99
         },
       },
       {
-        id: "settings",
-        label: "Settings",
-        content: <SettingsContent />,
+        id: "tasks",
+        label: "Completed Tasks",
+        content: (
+          <Box sx={{ p: 3 }}>
+            <Alert severity="success" sx={{ mb: 2 }}>
+              {completedTasks} tasks completed today
+            </Alert>
+            <Typography>Track your daily progress</Typography>
+            <Box sx={{ mt: 2, display: "flex", gap: 1 }}>
+              <Button
+                variant="contained"
+                onClick={() => setCompletedTasks(completedTasks + 1)}
+              >
+                Add Task
+              </Button>
+              <Button variant="outlined" onClick={() => setCompletedTasks(0)}>
+                Reset
+              </Button>
+            </Box>
+            <Typography variant="caption" sx={{ mt: 2, display: "block" }}>
+              Badge: showZero=true (visible even when count is 0)
+            </Typography>
+          </Box>
+        ),
         icon: <Settings />,
+        badge: {
+          content: completedTasks,
+          color: "success" as const,
+          showZero: true, // Badge will show even when count is 0
+        },
       },
     ]
 
