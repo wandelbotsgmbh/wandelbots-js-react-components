@@ -6,7 +6,7 @@ const testRunnerConfig = getJestConfig()
 /**
  * @type {import('@jest/types').Config.InitialOptions}
  */
-module.exports = {
+export default {
   ...testRunnerConfig,
   reporters: [
     "default",
