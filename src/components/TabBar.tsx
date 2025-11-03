@@ -238,26 +238,31 @@ export const TabBar = externalizeComponent(
               }
 
               return (
-                <Badge
+                <Box
                   key={item.id}
-                  badgeContent={badgeContent}
-                  color={item.badge?.color || "error"}
-                  max={item.badge?.max}
-                  showZero={item.badge?.showZero}
-                  anchorOrigin={{
-                    vertical: "top",
-                    horizontal: "right",
-                  }}
-                  overlap="rectangular"
-                  sx={{
-                    "& .MuiBadge-badge": {
-                      // Ensure badge doesn't inherit tab opacity
-                      opacity: "1 !important",
-                    },
-                  }}
+                  component="span"
+                  sx={{ display: "inline-flex" }}
                 >
-                  {tab}
-                </Badge>
+                  <Badge
+                    badgeContent={badgeContent}
+                    color={item.badge?.color || "error"}
+                    max={item.badge?.max}
+                    showZero={item.badge?.showZero}
+                    anchorOrigin={{
+                      vertical: "top",
+                      horizontal: "right",
+                    }}
+                    overlap="rectangular"
+                    sx={{
+                      "& .MuiBadge-badge": {
+                        // Ensure badge doesn't inherit tab opacity
+                        opacity: "1 !important",
+                      },
+                    }}
+                  >
+                    {tab}
+                  </Badge>
+                </Box>
               )
             })}
           </Tabs>
