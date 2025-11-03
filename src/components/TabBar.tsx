@@ -71,6 +71,34 @@ function TabPanel(props: TabPanelProps) {
 }
 
 /**
+ * Wrapper component that filters out MUI Tabs internal props
+ * to prevent them from being passed to DOM elements
+ */
+interface TabWrapperProps {
+  children: React.ReactNode
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  [key: string]: any
+}
+
+function TabWrapper({ children, ...props }: TabWrapperProps) {
+  // Filter out MUI Tabs internal props that shouldn't reach the DOM
+  const {
+    fullWidth,
+    indicator,
+    onChange,
+    orientation,
+    scrollButtons,
+    selectionFollowsFocus,
+    textColor,
+    value,
+    variant,
+    ...cleanProps
+  } = props
+
+  return <Box {...cleanProps}>{children}</Box>
+}
+
+/**
  * A styled tab bar component with configurable tabs and content.
  * Features the same styling as the Wandelbots design system with rounded tabs
  * and smooth transitions.
@@ -238,26 +266,31 @@ export const TabBar = externalizeComponent(
               }
 
               return (
-                <Badge
+                <TabWrapper
                   key={item.id}
-                  badgeContent={badgeContent}
-                  color={item.badge?.color || "error"}
-                  max={item.badge?.max}
-                  showZero={item.badge?.showZero}
-                  anchorOrigin={{
-                    vertical: "top",
-                    horizontal: "right",
-                  }}
-                  overlap="rectangular"
-                  sx={{
-                    "& .MuiBadge-badge": {
-                      // Ensure badge doesn't inherit tab opacity
-                      opacity: "1 !important",
-                    },
-                  }}
+                  component="span"
+                  sx={{ display: "inline-flex" }}
                 >
-                  {tab}
-                </Badge>
+                  <Badge
+                    badgeContent={badgeContent}
+                    color={item.badge?.color || "error"}
+                    max={item.badge?.max}
+                    showZero={item.badge?.showZero}
+                    anchorOrigin={{
+                      vertical: "top",
+                      horizontal: "right",
+                    }}
+                    overlap="rectangular"
+                    sx={{
+                      "& .MuiBadge-badge": {
+                        // Ensure badge doesn't inherit tab opacity
+                        opacity: "1 !important",
+                      },
+                    }}
+                  >
+                    {tab}
+                  </Badge>
+                </TabWrapper>
               )
             })}
           </Tabs>
