@@ -3,7 +3,8 @@ import { createUnplugin } from "unplugin"
 import { glob } from "glob"
 import fs from "node:fs/promises"
 import path from "node:path"
-import dedent from "ts-dedent"
+import { fileURLToPath } from "node:url"
+import { dedent } from "ts-dedent"
 
 export const ROBOT_STORIES_REGEX = /SupportedModels.stories.tsx$/
 
@@ -14,16 +15,17 @@ const HIDDEN_ROBOTS = [
   "KUKA_KR210_R2700",
   "FANUC_M20iD35",
   "YASKAWA_TURN2",
-  "KUKA_DKP500_2"
+  "KUKA_DKP500_2",
 ]
 
 /** Generates lines of CSF code defining stories for each robot model .glb file */
 export const generateRobotStories = async () => {
+  const __dirname = path.dirname(fileURLToPath(import.meta.url))
   const modelsDir = path.resolve(__dirname, "../public/models")
   const modelFiles = await glob(path.join(modelsDir, "*.glb"))
 
   const importStanza = dedent`
-    import { robotStory } from "./robotStoryConfig"
+    import { robotStory } from "./robotStoryConfig.tsx"
   `
 
   const modelCsfAdditions: string[] = []

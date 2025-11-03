@@ -5,7 +5,7 @@ import type { Indexer } from "storybook/internal/types"
 import {
   generateRobotStories,
   robotStoryGenerationVitePlugin,
-} from "./robotStoryGeneration"
+} from "./robotStoryGeneration.ts"
 
 const config: StorybookConfig = {
   stories: [

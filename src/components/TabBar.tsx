@@ -1,5 +1,5 @@
 import type { SxProps } from "@mui/material"
-import { Box, Tab, Tabs } from "@mui/material"
+import { Badge, Box, Tab, Tabs } from "@mui/material"
 import { observer } from "mobx-react-lite"
 import { useEffect, useState } from "react"
 import { externalizeComponent } from "../externalizeComponent"
@@ -89,6 +89,8 @@ export const TabBar = externalizeComponent(
     const [uncontrolledActiveTab, setUncontrolledActiveTab] =
       useState(defaultActiveTab)
 
+    const currentValue = isControlled ? activeTab! : uncontrolledActiveTab
+
     // Keep uncontrolled state in range when items change
     useEffect(() => {
       if (isControlled) return
@@ -100,8 +102,6 @@ export const TabBar = externalizeComponent(
         setUncontrolledActiveTab(0)
       }
     }, [items.length, isControlled, uncontrolledActiveTab])
-
-    const currentValue = isControlled ? activeTab! : uncontrolledActiveTab
 
     const handleTabChange = (
       _event: React.SyntheticEvent,
@@ -124,6 +124,7 @@ export const TabBar = externalizeComponent(
             px: 0,
             py: 0,
             overflow: "visible",
+            position: "relative",
             // Extra padding to prevent badge clipping
             // Top: accommodates badge positioned at top: -6px with 20px height
             // Right: accommodates badge positioned at right: -8px with 20px width
@@ -158,7 +159,7 @@ export const TabBar = externalizeComponent(
             {items.map((item, index) => {
               // Helper functions for badge logic
               const getBadgeContent = () => {
-                if (!item.badge) return ""
+                if (!item.badge) return undefined
                 const content = item.badge.content
                 const max = item.badge.max
 
@@ -167,7 +168,7 @@ export const TabBar = externalizeComponent(
                   return `${max}+`
                 }
 
-                return String(content)
+                return content
               }
 
               const shouldShowBadge = () => {
@@ -184,13 +185,20 @@ export const TabBar = externalizeComponent(
               const badgeContent = getBadgeContent()
               const showBadge = shouldShowBadge()
 
-              return (
+              const handleTabClick = () => {
+                if (!isControlled) {
+                  setUncontrolledActiveTab(index)
+                }
+                onTabChange?.(index)
+              }
+
+              const tab = (
                 <Tab
-                  key={item.id}
                   label={item.label}
                   icon={item.icon}
                   iconPosition="start"
                   disableRipple
+                  onClick={handleTabClick}
                   sx={{
                     minHeight: "32px",
                     height: "32px",
@@ -203,6 +211,7 @@ export const TabBar = externalizeComponent(
                     fontSize: "13px",
                     transition: "all 0.2s ease-in-out",
                     position: "relative",
+                    overflow: "visible",
                     "&:hover": {
                       opacity: currentValue === index ? 1 : 0.6,
                     },
@@ -219,45 +228,39 @@ export const TabBar = externalizeComponent(
                     "&:active": {
                       transform: "none",
                     },
-                    ...(showBadge && {
-                      "&::after": {
-                        content: `"${badgeContent}"`,
-                        position: "absolute",
-                        // Position badge in top-right corner, extending outside tab bounds
-                        top: -6, // Positions badge above the tab
-                        right: -8, // Positions badge to the right of the tab
-                        // Badge sizing - MUI Badge standard small size
-                        minWidth: "20px", // Min width for single digits
-                        height: "20px", // Fixed height for consistent appearance
-                        borderRadius: "10px", // Half of height for circular shape
-                        backgroundColor: (theme) => {
-                          const colors = {
-                            error: theme.palette.error.main,
-                            info: theme.palette.info.main,
-                            success: theme.palette.success.main,
-                            warning: theme.palette.warning.main,
-                            primary: theme.palette.primary.main,
-                            secondary: theme.palette.secondary.main,
-                            default: theme.palette.grey[500],
-                          }
-                          return (
-                            colors[item.badge?.color || "error"] || colors.error
-                          )
-                        },
-                        color: "white",
-                        fontSize: "12px", // Readable size for badge content
-                        fontWeight: 600, // Semi-bold for better visibility
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        padding: "2px 6px", // Horizontal padding for wider content (e.g., "99+")
-                        zIndex: 1,
-                        pointerEvents: "none", // Allow clicks to pass through to tab
-                        boxShadow: "0 2px 4px rgba(0,0,0,0.2)", // Subtle depth
-                      },
-                    }),
                   }}
                 />
+              )
+
+              if (!showBadge) {
+                return (
+                  <Box key={item.id} sx={{ display: "inline-flex" }}>
+                    {tab}
+                  </Box>
+                )
+              }
+
+              return (
+                <Badge
+                  key={item.id}
+                  badgeContent={badgeContent}
+                  color={item.badge?.color || "error"}
+                  max={item.badge?.max}
+                  showZero={item.badge?.showZero}
+                  anchorOrigin={{
+                    vertical: "top",
+                    horizontal: "right",
+                  }}
+                  overlap="rectangular"
+                  sx={{
+                    "& .MuiBadge-badge": {
+                      // Ensure badge doesn't inherit tab opacity
+                      opacity: "1 !important",
+                    },
+                  }}
+                >
+                  {tab}
+                </Badge>
               )
             })}
           </Tabs>
