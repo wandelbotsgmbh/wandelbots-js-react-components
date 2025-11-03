@@ -194,6 +194,7 @@ export const TabBar = externalizeComponent(
 
               const tab = (
                 <Tab
+                  key={item.id}
                   label={item.label}
                   icon={item.icon}
                   iconPosition="start"
@@ -233,11 +234,7 @@ export const TabBar = externalizeComponent(
               )
 
               if (!showBadge) {
-                return (
-                  <Box key={item.id} sx={{ display: "inline-flex" }}>
-                    {tab}
-                  </Box>
-                )
+                return tab
               }
 
               return (
