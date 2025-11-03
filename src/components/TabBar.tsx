@@ -194,6 +194,7 @@ export const TabBar = externalizeComponent(
 
               const tab = (
                 <Tab
+                  key={item.id}
                   label={item.label}
                   icon={item.icon}
                   iconPosition="start"
