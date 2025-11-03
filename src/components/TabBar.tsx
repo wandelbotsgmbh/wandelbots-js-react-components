@@ -233,11 +233,7 @@ export const TabBar = externalizeComponent(
               )
 
               if (!showBadge) {
-                return (
-                  <Box key={item.id} sx={{ display: "inline-flex" }}>
-                    {tab}
-                  </Box>
-                )
+                return tab
               }
 
               return (
