@@ -1,3 +1,5 @@
 #!/usr/bin/env bash
-. ~/.nvm/nvm.sh
+if [ -f ~/.nvm/nvm.sh ]; then
+  . ~/.nvm/nvm.sh
+fi
 npx --yes npm run tsc
