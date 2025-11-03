@@ -71,6 +71,34 @@ function TabPanel(props: TabPanelProps) {
 }
 
 /**
+ * Wrapper component that filters out MUI Tabs internal props
+ * to prevent them from being passed to DOM elements
+ */
+interface TabWrapperProps {
+  children: React.ReactNode
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  [key: string]: any
+}
+
+function TabWrapper({ children, ...props }: TabWrapperProps) {
+  // Filter out MUI Tabs internal props that shouldn't reach the DOM
+  const {
+    fullWidth,
+    indicator,
+    onChange,
+    orientation,
+    scrollButtons,
+    selectionFollowsFocus,
+    textColor,
+    value,
+    variant,
+    ...cleanProps
+  } = props
+
+  return <Box {...cleanProps}>{children}</Box>
+}
+
+/**
  * A styled tab bar component with configurable tabs and content.
  * Features the same styling as the Wandelbots design system with rounded tabs
  * and smooth transitions.
@@ -238,7 +266,7 @@ export const TabBar = externalizeComponent(
               }
 
               return (
-                <Box
+                <TabWrapper
                   key={item.id}
                   component="span"
                   sx={{ display: "inline-flex" }}
@@ -262,7 +290,7 @@ export const TabBar = externalizeComponent(
                   >
                     {tab}
                   </Badge>
-                </Box>
+                </TabWrapper>
               )
             })}
           </Tabs>
