@@ -11,13 +11,13 @@ import {
   radiansToDegrees,
   XYZ_TO_VECTOR,
 } from "@wandelbots/nova-js"
-import type { Vector3Simple } from "@wandelbots/nova-js/v2"
 import { observer } from "mobx-react-lite"
 import { useTranslation } from "react-i18next"
 import XAxisIcon from "../../icons/axis-x.svg"
 import YAxisIcon from "../../icons/axis-y.svg"
 import ZAxisIcon from "../../icons/axis-z.svg"
 import RotationIcon from "../../icons/rotation.svg"
+import type { Vector3Simple } from "../../lib/JoggerConnection"
 import { useReaction } from "../utils/hooks"
 import { JoggingCartesianAxisControl } from "./JoggingCartesianAxisControl"
 import { JoggingJointLimitDetector } from "./JoggingJointLimitDetector"

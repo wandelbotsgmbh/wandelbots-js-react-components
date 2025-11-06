@@ -8,11 +8,11 @@ import { observer, useLocalObservable } from "mobx-react-lite"
 import { useEffect } from "react"
 import { useTranslation } from "react-i18next"
 import { externalizeComponent } from "../../externalizeComponent"
+import { JoggerConnection } from "../../lib/JoggerConnection"
 import { LoadingCover } from "../LoadingCover"
 import { JoggingCartesianTab } from "./JoggingCartesianTab"
 import { JoggingJointTab } from "./JoggingJointTab"
 import { JoggingStore } from "./JoggingStore"
-import { JoggerConnection } from "../../lib/JoggerConnection"
 
 export type JoggingPanelTabId = "cartesian" | "joint"
 

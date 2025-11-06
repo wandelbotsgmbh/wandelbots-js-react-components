@@ -3,7 +3,10 @@
 The library provides an easy to use way to access properties of a motion group.
 
 ```ts
-activeRobot = await nova.connectMotionGroup(`some-motion-group-id`)
+import { NovaClient, ConnectedMotionGroup } from "@wandelbots/nova-js/v2"
+
+const nova = new NovaClient({ instanceUrl: "nova-instance-url" })
+const activeRobot = await ConnectedMotionGroup.connect(nova, "motion-group-id")
 ```
 
 This connected motion group opens a websocket and listens to changes of the current joints and the TCP pose. You can read out those values by using the `rapidlyChangingMotionState` of the object. Along other properties it also provides the current `safetySetup` and `tcps`.

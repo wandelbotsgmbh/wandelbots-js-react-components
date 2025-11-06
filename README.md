@@ -30,7 +30,7 @@ Manual robot control interfaces.
 
 - Dual-mode operation (Cartesian & Joint space)
 - Real-time velocity control
-- Multiple coordinate systems support
+- Multiple coordinate systems support (Robot base or Tool)
 
 **Individual Jogging Controls**
 

@@ -1,8 +1,8 @@
 import { tryParseJson } from "@wandelbots/nova-js"
 import type {
   CoordinateSystem,
+  MotionGroupDescription,
   RobotTcp,
-  Vector3Simple,
 } from "@wandelbots/nova-js/v2"
 import { countBy } from "lodash-es"
 import keyBy from "lodash-es/keyBy"
@@ -11,6 +11,7 @@ import { autorun, makeAutoObservable, type IReactionDisposer } from "mobx"
 import type {
   JoggerConnection,
   JoggerOrientation,
+  Vector3Simple,
 } from "../../lib/JoggerConnection"
 
 const discreteIncrementOptions = [
@@ -108,7 +109,7 @@ export class JoggingStore {
   maxRotationVelocityDegPerSec: number = 60
 
   /** Whether to show the coordinate system select dropdown in the UI */
-  showCoordSystemSelect: boolean = true
+  showCoordSystemSelect: boolean = false
 
   /** Whether to show the TCP select dropdown in the UI */
   showTcpSelect: boolean = true
@@ -140,25 +141,15 @@ export class JoggingStore {
   static async loadFor(jogger: JoggerConnection) {
     const { nova } = jogger
 
-    jogger.motionStream.controllerId
-
     // Find out what TCPs this motion group has (we need it for jogging)
-    const [
-      // motionGroupSpec,
-      coordinatesystems,
-      description,
-    ] = await Promise.all([
-      // nova.api.motionGroupInfos.getMotionGroupSpecification(
-      //   jogger.motionGroupId,
-      // ),
-
+    const [coordinatesystems, description] = await Promise.all([
       // Fetch coord systems so user can select between them
       nova.api.controller.listCoordinateSystems(
         jogger.motionStream.controllerId,
         "ROTATION_VECTOR",
       ),
 
-      // Same for TCPs
+      // Same for TCPs and other info from description
       nova.api.motionGroup.getMotionGroupDescription(
         jogger.motionStream.controllerId,
         jogger.motionGroupId,
@@ -172,18 +163,13 @@ export class JoggingStore {
       orientation: tcp.pose.orientation as Vector3Simple,
     }))
 
-    return new JoggingStore(
-      jogger,
-      // motionGroupSpec,
-      coordinatesystems || [],
-      tcps,
-    )
+    return new JoggingStore(jogger, coordinatesystems || [], description, tcps)
   }
 
   constructor(
     readonly jogger: JoggerConnection,
-    // readonly motionGroupSpec: MotionGroupSpecification,
     readonly coordSystems: CoordinateSystem[],
+    readonly motionGroupDescription: MotionGroupDescription,
     readonly tcps: RobotTcp[],
   ) {
     // TODO workaround for default coord system on backend having a canonical id

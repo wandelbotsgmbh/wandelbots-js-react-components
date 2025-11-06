@@ -9,10 +9,10 @@ import type {
   OperationMode,
   RobotControllerState,
   SafetyStateType,
-  Vector3Simple,
 } from "@wandelbots/nova-js/v2"
 import { makeAutoObservable, runInAction } from "mobx"
 import * as THREE from "three"
+import type { Vector3Simple } from "./JoggerConnection"
 import { jointValuesEqual, tcpMotionEqual } from "./motionStateUpdate"
 
 const MOTION_DELTA_THRESHOLD = 0.0001

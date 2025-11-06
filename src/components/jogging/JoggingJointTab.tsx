@@ -41,19 +41,17 @@ export const JoggingJointTab = observer(
         >
           <Stack alignItems="center" gap="24px">
             {store.jogger.motionStream.joints.map((joint) => {
-              // const jointLimits =
-              //   store.motionGroupSpec.mechanical_joint_limits?.[joint.index]
-              // const lowerLimitDegs =
-              //   jointLimits?.lower_limit !== undefined
-              //     ? radiansToDegrees(jointLimits.lower_limit)
-              //     : undefined
-              // const upperLimitDegs =
-              //   jointLimits?.upper_limit !== undefined
-              //     ? radiansToDegrees(jointLimits.upper_limit)
-              //     : undefined
-              
-              const lowerLimitDegs = undefined
-              const upperLimitDegs = undefined
+              const jointLimits =
+                store.motionGroupDescription.operation_limits.auto_limits
+                  ?.joints?.[joint.index]?.position
+              const lowerLimitDegs =
+                jointLimits?.lower_limit !== undefined
+                  ? radiansToDegrees(jointLimits.lower_limit)
+                  : undefined
+              const upperLimitDegs =
+                jointLimits?.upper_limit !== undefined
+                  ? radiansToDegrees(jointLimits.upper_limit)
+                  : undefined
 
               return (
                 <Stack

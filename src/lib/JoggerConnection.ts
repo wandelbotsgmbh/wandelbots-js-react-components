@@ -9,11 +9,12 @@ import type {
   NovaClient,
   Pose,
   StartMovementResponse,
-  Vector3Simple,
 } from "@wandelbots/nova-js/v2"
 import { when } from "mobx"
 import { Vector3 } from "three/src/math/Vector3.js"
 import { MotionStreamConnection } from "./MotionStreamConnection"
+
+export type Vector3Simple = [number, number, number]
 
 export type JoggerConnectionOptions = {
   // The mode of the jogger connection - see type description of JoggerMode for details
@@ -203,7 +204,6 @@ export class JoggerConnection {
   // Will iniitialize or close websockets as necessary
   // If mode is unchanged, does nothing (unless skipReinitializeIfSameMode is false)
   async setJoggingMode(mode: JoggerMode, skipReinitializeIfSameMode = true) {
-    console.log("setting jogging mode to", mode, skipReinitializeIfSameMode)
     // If not changing mode, do nothing
     if (this.mode === mode && skipReinitializeIfSameMode) {
       return
