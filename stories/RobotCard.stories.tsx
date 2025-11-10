@@ -1,11 +1,15 @@
 import { Box, Stack } from "@mui/material"
 import type { Meta, StoryObj } from "@storybook/react-vite"
-import type { ConnectedMotionGroup, DHParameter } from "@wandelbots/nova-js/v1"
-import type { OperationMode, SafetyStateType } from "@wandelbots/nova-js/v2"
+import type {
+  DHParameter,
+  OperationMode,
+  SafetyStateType,
+} from "@wandelbots/nova-js/v2"
 import { ProgramState } from "../src/components/ProgramControl"
 import { RobotCard } from "../src/components/RobotCard"
 import { getDefaultHomeConfig } from "../src/components/robots/manufacturerHomePositions"
 import { Robot } from "../src/components/robots/Robot"
+import type { ConnectedMotionGroup } from "../src/lib/ConnectedMotionGroup"
 import { rapidlyChangingMotionState } from "./robots/motionState"
 import { getDHParams } from "./robots/robotStoryConfig"
 
@@ -33,12 +37,7 @@ function RobotCardWithMockConnectedMotionGroup(
   // Create custom motion state with manufacturer-specific joint positions
   const customMotionState = {
     ...rapidlyChangingMotionState,
-    state: {
-      ...rapidlyChangingMotionState.state,
-      joint_position: {
-        joints: defaultJointConfig || [0, 0, 0, 0, 0, 0],
-      },
-    },
+    joint_position: defaultJointConfig || [0, 0, 0, 0, 0, 0],
   }
 
   // Create the mock ConnectedMotionGroup with reactive properties

@@ -1,11 +1,11 @@
 import { Canvas } from "@react-three/fiber"
 import type { StoryObj } from "@storybook/react-vite"
-import type { ConnectedMotionGroup } from "@wandelbots/nova-js/v1"
-import { NovaClient } from "@wandelbots/nova-js/v1"
+import { NovaClient } from "@wandelbots/nova-js/v2"
 import { useEffect, useState } from "react"
 import { expect, fn, waitFor } from "storybook/test"
 import type { SupportedRobot } from "../../src"
 import { PresetEnvironment, Robot } from "../../src"
+import { ConnectedMotionGroup } from "../../src/lib/ConnectedMotionGroup"
 import { OrbitControlsAround } from "./OrbitControlsAround"
 import { sharedStoryConfig } from "./robotStoryConfig"
 
@@ -25,7 +25,10 @@ function SupportedRobotScene(
 
   useEffect(() => {
     async function fetchConnectedMotionGroup() {
-      const motionGroup = await nova.connectMotionGroup("0@mock-ur5e")
+      const motionGroup = await ConnectedMotionGroup.connect(
+        nova,
+        "0@mock-ur5e",
+      )
       setConnectedMotionGroup(motionGroup)
     }
 

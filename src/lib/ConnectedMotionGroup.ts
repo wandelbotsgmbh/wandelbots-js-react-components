@@ -3,6 +3,7 @@ import {
   type AutoReconnectingWebsocket,
 } from "@wandelbots/nova-js"
 import type {
+  DHParameter,
   MotionGroupDescription,
   MotionGroupState,
   NovaClient,
@@ -26,6 +27,14 @@ export type RobotTcpLike = {
 
 export type MotionGroupOption = {
   selectionId: string
+}
+
+const EMPTY_DH_PARAMETER: DHParameter = {
+  a: 0,
+  d: 0,
+  alpha: 0,
+  theta: 0,
+  reverse_rotation_direction: false,
 }
 
 /**
@@ -196,7 +205,7 @@ export class ConnectedMotionGroup {
         )
       }
 
-      // handle motionState message
+      // handle joint position changes
       if (
         !jointValuesEqual(
           this.rapidlyChangingMotionState.joint_position,
@@ -205,11 +214,12 @@ export class ConnectedMotionGroup {
         )
       ) {
         runInAction(() => {
-          this.rapidlyChangingMotionState = latestMotionState
+          this.rapidlyChangingMotionState.joint_position =
+            latestMotionState.joint_position
         })
       }
 
-      // handle tcpPose message
+      // handle tcp pose changes
       if (
         !tcpMotionEqual(
           this.rapidlyChangingMotionState,
@@ -266,8 +276,16 @@ export class ConnectedMotionGroup {
     })
   }
 
+  // Please note that API v2 omits 0 values
   get dhParameters() {
-    return this.description.dh_parameters
+    if (this.description.dh_parameters === undefined) {
+      return undefined
+    }
+
+    return this.description.dh_parameters.map((dh_param) => ({
+      ...EMPTY_DH_PARAMETER,
+      ...dh_param,
+    }))
   }
 
   get safetyZones() {

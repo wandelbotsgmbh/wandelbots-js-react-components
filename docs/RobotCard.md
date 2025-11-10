@@ -19,10 +19,10 @@ The `RobotCard` component is a responsive card that displays a 3D robot with sta
 
 ```tsx
 import { RobotCard } from "@wandelbots/wandelbots-js-react-components"
-import { useConnectedMotionGroup } from "@wandelbots/nova-js/v1"
+import { ConnectedMotionGroup } from "@wandelbots/wandelbots-js-react-components/lib/ConnectedMotionGroup"
 
 function RobotDashboard() {
-  const connectedMotionGroup = useConnectedMotionGroup("0@ur5e")
+  const connectedMotionGroup = ConnectedMotionGroup.connect(nova, "0@ur5e")
 
   const handleDriveToHomePress = () => {
     console.log("Starting robot movement to home position")
@@ -138,29 +138,6 @@ Add these to your translation files:
 {
   "RobotCard.Runtime.lb": "Runtime",
   "RobotCard.DriveToHome.bt": "Drive to Home"
-}
-```
-
-## Integration with Nova.js
-
-The component works with Nova.js ConnectedMotionGroup:
-
-```tsx
-import { useConnectedMotionGroup } from "@wandelbots/nova-js/v1"
-
-function ConnectedRobotCard({ motionGroupId }) {
-  const connectedMotionGroup = useConnectedMotionGroup(motionGroupId)
-
-  if (!connectedMotionGroup) {
-    return <div>Loading robot...</div>
-  }
-
-  return (
-    <RobotCard
-      connectedMotionGroup={connectedMotionGroup}
-      // ... other props
-    />
-  )
 }
 ```
 

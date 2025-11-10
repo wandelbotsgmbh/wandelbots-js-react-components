@@ -1,4 +1,6 @@
 import type { MotionGroupState, Pose } from "@wandelbots/nova-js/v2"
+import type { Vector3Simple } from "./JoggerConnection"
+import { Vector3 } from "three"
 
 export function jointValuesEqual(
   oldJointValues: number[],
@@ -73,4 +75,43 @@ export function tcpMotionEqual(
       changeDeltaThreshold,
     )
   )
+}
+
+export function unwrapRotationVector(
+  newRotationVectorApi: Vector3Simple,
+  currentRotationVectorApi: Vector3Simple,
+): Vector3Simple {
+  const currentRotationVector = new Vector3(
+    currentRotationVectorApi[0],
+    currentRotationVectorApi[1],
+    currentRotationVectorApi[2],
+  )
+
+  const newRotationVector = new Vector3(
+    newRotationVectorApi[0],
+    newRotationVectorApi[1],
+    newRotationVectorApi[2],
+  )
+
+  const currentAngle = currentRotationVector.length()
+  const currentAxis = currentRotationVector.normalize()
+
+  let newAngle = newRotationVector.length()
+  let newAxis = newRotationVector.normalize()
+
+  // Align rotation axes
+  if (newAxis.dot(currentAxis) < 0) {
+    newAngle = -newAngle
+    newAxis = newAxis.multiplyScalar(-1.0)
+  }
+
+  // Shift rotation angle close to previous one to extend domain of rotation angles beyond [0, pi]
+  // - this simplifies interpolation and prevents abruptly changing signs of the rotation angles
+  let angleDifference = newAngle - currentAngle
+  angleDifference -=
+    2.0 * Math.PI * Math.floor((angleDifference + Math.PI) / (2.0 * Math.PI))
+
+  newAngle = currentAngle + angleDifference
+
+  return [...newAxis.multiplyScalar(newAngle)] as Vector3Simple
 }
