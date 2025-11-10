@@ -16,6 +16,8 @@ import { MotionStreamConnection } from "./MotionStreamConnection"
 
 export type Vector3Simple = [number, number, number]
 
+const API_ERROR_CONNECTION_BLOCKED = `Movement request rejected. Another client is currently executing a 'Jogging' motion!`
+
 export type JoggerConnectionOptions = {
   // The mode of the jogger connection - see type description of JoggerMode for details
   mode?: JoggerMode
@@ -66,6 +68,7 @@ export class JoggerConnection {
   // coordinateSystem?: string
   orientation: JoggerOrientation
   onError?: (err: unknown) => void
+  onBlocked?: () => void
 
   /**
    * Initialize the jogging connection using jogging endpoint or trajectory endpoint depending on the selected mode.
@@ -248,12 +251,16 @@ export class JoggerConnection {
           return
         }
 
-        if (
-          (data && "error" in data) ||
-          data?.result?.kind === "MOTION_ERROR"
-        ) {
+        if (data?.result?.kind === "MOTION_ERROR") {
           clearTimeout(connectionFailedTimeout)
-          if (this.onError) {
+          if (
+            this.onBlocked &&
+            data?.result?.message.includes(API_ERROR_CONNECTION_BLOCKED)
+          ) {
+            this.joggingSocket?.dispose()
+            this.onBlocked()
+            return
+          } else if (this.onError) {
             this.onError(ev.data)
           } else {
             reject(new Error(ev.data))
@@ -370,7 +377,7 @@ export class JoggerConnection {
   async runIncrementalCartesianMotion({
     currentTcpPose,
     currentJoints,
-    coordSystemId,
+    // coordSystemId,
     velocityInRelevantUnits,
     axis,
     direction,
@@ -623,6 +630,14 @@ export class JoggerConnection {
         throw new Error(
           `Failed to execute trajectory: Received invalid message ${ev.data}`,
         )
+      }
+
+      if (
+        this.onBlocked &&
+        data.result.message?.includes(API_ERROR_CONNECTION_BLOCKED)
+      ) {
+        this.onBlocked()
+        return
       }
 
       if (data.result.kind === "INITIALIZE_RECEIVED") {

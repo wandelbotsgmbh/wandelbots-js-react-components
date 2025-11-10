@@ -59,6 +59,9 @@ export class JoggingStore {
   /** Locks to prevent UI interactions during certain operations */
   locks = new Set<string>()
 
+  /** Block jogging UI interactions when connection is taken by another jogger */
+  blocked: boolean = false
+
   /**
    * Id of selected coordinate system from among those defined on the API side
    */
@@ -183,13 +186,21 @@ export class JoggingStore {
     this.selectedCoordSystemId = coordSystems[0]?.coordinate_system || "world"
     this.selectedTcpId = tcps[0]?.id || ""
 
+    // Make all properties observable and actions auto-bound
     makeAutoObservable(this, {}, { autoBind: true })
+
+    // Register blocked watching
+    this.jogger.onBlocked = () => {
+      this.block()
+    }
 
     // Load user settings from local storage if available
     this.loadFromLocalStorage()
 
     // Automatically save user settings to local storage when save changes
     this.disposers.push(autorun(() => this.saveToLocalStorage()))
+
+    // Assign joggingStore to window
     ;(window as any).joggingStore = this
   }
 
@@ -436,6 +447,17 @@ export class JoggingStore {
 
   unlock(id: string) {
     this.locks.delete(id)
+  }
+
+  block() {
+    this.blocked = true
+  }
+
+  unblock() {
+    this.blocked = false
+    if (this.jogger.mode === "jogging") {
+      this.jogger.initializeJoggingWebsocket()
+    }
   }
 
   /** Lock the UI until the given async callback resolves */
