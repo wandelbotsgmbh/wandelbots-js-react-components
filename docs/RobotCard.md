@@ -87,20 +87,20 @@ The component is designed to work well in CSS Grid layouts for multiple robot mo
 
 ## Props
 
-| Prop                   | Type                                    | Default  | Description                                            |
-| ---------------------- | --------------------------------------- | -------- | ------------------------------------------------------ |
-| `robotName`            | `string`                                | -        | Name of the robot displayed at the top                 |
-| `programState`         | `ProgramState`                          | -        | Current program execution state                        |
-| `safetyState`          | `RobotControllerStateSafetyStateEnum`   | -        | Current safety state of the robot controller           |
-| `operationMode`        | `RobotControllerStateOperationModeEnum` | -        | Current operation mode of the robot controller         |
-| `runtime`              | `string`                                | -        | Runtime text to display                                |
-| `driveToHomeEnabled`   | `boolean`                               | `false`  | Whether the "Drive to Home" button should be enabled   |
-| `onDriveToHomePress`   | `() => void`                            | -        | Callback fired when "Drive to Home" button is pressed  |
-| `onDriveToHomeRelease` | `() => void`                            | -        | Callback fired when "Drive to Home" button is released |
-| `connectedMotionGroup` | `ConnectedMotionGroup`                  | -        | Connected motion group from Nova.js                    |
-| `className`            | `string`                                | -        | Additional CSS class name                              |
-| `width`                | `number \| string`                      | `"100%"` | Width for the card                                     |
-| `height`               | `number \| string`                      | `578`    | Height for the card                                    |
+| Prop                   | Type                   | Default  | Description                                            |
+| ---------------------- | ---------------------- | -------- | ------------------------------------------------------ |
+| `robotName`            | `string`               | -        | Name of the robot displayed at the top                 |
+| `programState`         | `ProgramState`         | -        | Current program execution state                        |
+| `safetyState`          | `SafetyStateType`      | -        | Current safety state of the robot controller           |
+| `operationMode`        | `OperationMode`        | -        | Current operation mode of the robot controller         |
+| `runtime`              | `string`               | -        | Runtime text to display                                |
+| `driveToHomeEnabled`   | `boolean`              | `false`  | Whether the "Drive to Home" button should be enabled   |
+| `onDriveToHomePress`   | `() => void`           | -        | Callback fired when "Drive to Home" button is pressed  |
+| `onDriveToHomeRelease` | `() => void`           | -        | Callback fired when "Drive to Home" button is released |
+| `connectedMotionGroup` | `ConnectedMotionGroup` | -        | Connected motion group from Nova.js                    |
+| `className`            | `string`               | -        | Additional CSS class name                              |
+| `width`                | `number \| string`     | `"100%"` | Width for the card                                     |
+| `height`               | `number \| string`     | `578`    | Height for the card                                    |
 
 ## Drive to Home Functionality
 

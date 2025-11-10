@@ -1,11 +1,7 @@
 import { Box, Stack } from "@mui/material"
 import type { Meta, StoryObj } from "@storybook/react-vite"
-import type {
-  ConnectedMotionGroup,
-  DHParameter,
-  RobotControllerStateOperationModeEnum,
-  RobotControllerStateSafetyStateEnum,
-} from "@wandelbots/nova-js/v1"
+import type { ConnectedMotionGroup, DHParameter } from "@wandelbots/nova-js/v1"
+import type { OperationMode, SafetyStateType } from "@wandelbots/nova-js/v2"
 import { ProgramState } from "../src/components/ProgramControl"
 import { RobotCard } from "../src/components/RobotCard"
 import { getDefaultHomeConfig } from "../src/components/robots/manufacturerHomePositions"
@@ -205,10 +201,8 @@ export const Basic: Story = {
         <RobotCardWithMockConnectedMotionGroup
           robotName={args.robotName}
           programState={args.programState}
-          safetyState={args.safetyState as RobotControllerStateSafetyStateEnum}
-          operationMode={
-            args.operationMode as RobotControllerStateOperationModeEnum
-          }
+          safetyState={args.safetyState as SafetyStateType}
+          operationMode={args.operationMode as OperationMode}
           driveToHomeEnabled={args.driveToHomeEnabled}
           modelFromController={args.modelFromController}
           dhParameters={dhParameters}
@@ -305,12 +299,8 @@ export const MultipleRobots: Story = {
             <RobotCardWithMockConnectedMotionGroup
               robotName={robot.name}
               programState={robot.programState}
-              safetyState={
-                robot.safetyState as RobotControllerStateSafetyStateEnum
-              }
-              operationMode={
-                robot.operationMode as RobotControllerStateOperationModeEnum
-              }
+              safetyState={robot.safetyState as SafetyStateType}
+              operationMode={robot.operationMode as OperationMode}
               driveToHomeEnabled={robot.programState === ProgramState.IDLE}
               modelFromController={robot.modelFromController}
               dhParameters={robot.dhParameters}
@@ -354,10 +344,8 @@ export const CompactSize: Story = {
         <RobotCardWithMockConnectedMotionGroup
           robotName={args.robotName}
           programState={args.programState}
-          safetyState={args.safetyState as RobotControllerStateSafetyStateEnum}
-          operationMode={
-            args.operationMode as RobotControllerStateOperationModeEnum
-          }
+          safetyState={args.safetyState as SafetyStateType}
+          operationMode={args.operationMode as OperationMode}
           driveToHomeEnabled={args.driveToHomeEnabled}
           modelFromController={args.modelFromController}
           dhParameters={dhParameters}
@@ -416,12 +404,8 @@ export const LandscapeLayout: Story = {
             <RobotCardWithMockConnectedMotionGroup
               robotName="UR5e Landscape"
               programState={ProgramState.RUNNING}
-              safetyState={
-                "SAFETY_STATE_NORMAL" as RobotControllerStateSafetyStateEnum
-              }
-              operationMode={
-                "OPERATION_MODE_AUTO" as RobotControllerStateOperationModeEnum
-              }
+              safetyState={"SAFETY_STATE_NORMAL" as SafetyStateType}
+              operationMode={"OPERATION_MODE_AUTO" as OperationMode}
               driveToHomeEnabled={args.driveToHomeEnabled}
               modelFromController="UniversalRobots_UR5e"
               dhParameters={dhParameters}
@@ -456,12 +440,8 @@ export const LandscapeLayout: Story = {
             <RobotCardWithMockConnectedMotionGroup
               robotName="UR5e Portrait"
               programState={ProgramState.IDLE}
-              safetyState={
-                "SAFETY_STATE_NORMAL" as RobotControllerStateSafetyStateEnum
-              }
-              operationMode={
-                "OPERATION_MODE_AUTO" as RobotControllerStateOperationModeEnum
-              }
+              safetyState={"SAFETY_STATE_NORMAL" as SafetyStateType}
+              operationMode={"OPERATION_MODE_AUTO" as OperationMode}
               driveToHomeEnabled={args.driveToHomeEnabled}
               modelFromController="UniversalRobots_UR5e"
               dhParameters={dhParameters}
@@ -570,12 +550,8 @@ export const ResizableTest: Story = {
           <RobotCardWithMockConnectedMotionGroup
             robotName={args.robotName}
             programState={args.programState}
-            safetyState={
-              args.safetyState as RobotControllerStateSafetyStateEnum
-            }
-            operationMode={
-              args.operationMode as RobotControllerStateOperationModeEnum
-            }
+            safetyState={args.safetyState as SafetyStateType}
+            operationMode={args.operationMode as OperationMode}
             driveToHomeEnabled={args.driveToHomeEnabled}
             modelFromController={args.modelFromController}
             dhParameters={dhParameters}
