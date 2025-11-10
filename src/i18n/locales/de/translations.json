@@ -6,7 +6,7 @@
   "General.mm.variable": "{{amount}} mm",
   "Jogging.Blocked.ti": "Verbindung blockiert",
   "Jogging.Blocked.lb": "Ein anderer Client kontrolliert das Jogging.",
-  "Jogging.Blocked.Reenable.bt": "Wiederherstellen",
+  "Jogging.Blocked.Reenable.bt": "Neu verbinden",
   "Jogging.Cartesian.MotionType.lb": "Bewegungstyp",
   "Jogging.Cartesian.Translation.bt": "Translation",
   "Jogging.Cartesian.Rotation.bt": "Rotation",
