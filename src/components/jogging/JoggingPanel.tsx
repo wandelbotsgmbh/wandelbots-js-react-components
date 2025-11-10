@@ -10,6 +10,7 @@ import { useTranslation } from "react-i18next"
 import { externalizeComponent } from "../../externalizeComponent"
 import { JoggerConnection } from "../../lib/JoggerConnection"
 import { LoadingCover } from "../LoadingCover"
+import { JoggingBlocked } from "./JoggingBlocked"
 import { JoggingCartesianTab } from "./JoggingCartesianTab"
 import { JoggingJointTab } from "./JoggingJointTab"
 import { JoggingStore } from "./JoggingStore"
@@ -182,7 +183,6 @@ const JoggingPanelInner = observer(
             )
           })}
         </Tabs>
-
         {/* Current tab content */}
         <Stack
           flexGrow={1}
@@ -191,6 +191,8 @@ const JoggingPanelInner = observer(
         >
           {renderTabContent()}
         </Stack>
+        {/* Overlay when jogging connection is blocked */}
+        {store.blocked && <JoggingBlocked store={store} />}
       </Stack>
     )
   },
