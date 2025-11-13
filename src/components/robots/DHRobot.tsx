@@ -1,5 +1,5 @@
 import { Line } from "@react-three/drei"
-import type { DHParameter } from "@wandelbots/nova-api/v1"
+import type { DHParameter } from "@wandelbots/nova-js/v2"
 import React, { useRef } from "react"
 import type * as THREE from "three"
 import { Matrix4, Quaternion, Vector3 } from "three"
@@ -113,8 +113,7 @@ export function DHRobot({
           {dhParameters!.map((param, index) => {
             const { a, b } = getLinePoints(
               param,
-              rapidlyChangingMotionState.state.joint_position.joints[index] ??
-                0,
+              rapidlyChangingMotionState.joint_position[index] ?? 0,
             )
             const jointName = `dhrobot_J0${index}`
             return (

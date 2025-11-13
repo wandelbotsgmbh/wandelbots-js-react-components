@@ -5,7 +5,7 @@ This file provides practical examples of how to use the React components with no
 ## Basic Setup
 
 ```typescript
-import { NovaClient } from "@wandelbots/nova-js/v1"
+import { NovaClient } from "@wandelbots/nova-js/v2"
 import {
   JoggingPanel,
   Robot,
@@ -47,15 +47,14 @@ function MyRobotApp() {
 
 ```typescript
 import { Canvas } from '@react-three/fiber'
-import { ConnectedMotionGroup } from '@wandelbots/nova-js/v1'
+import { ConnectedMotionGroup } from "@wandelbots/wandelbots-js-react-components/lib/ConnectedMotionGroup"
 
 function Robot3D({ motionGroupId }: { motionGroupId: string }) {
   const [connectedMotionGroup, setConnectedMotionGroup] = useState<ConnectedMotionGroup>()
 
   useEffect(() => {
     async function setup() {
-      const motionGroup = await nova.getMotionGroup(motionGroupId)
-      const connected = nova.connectMotionGroup(motionGroup)
+      const connected = ConnectedMotionGroup.connect(nova, motionGroupId)
       setConnectedMotionGroup(connected)
     }
     setup()

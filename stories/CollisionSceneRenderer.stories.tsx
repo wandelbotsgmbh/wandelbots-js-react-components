@@ -1,6 +1,6 @@
 import { useTheme } from "@mui/material"
 import type { Meta, StoryObj } from "@storybook/react"
-import type { CollisionScene } from "@wandelbots/nova-api/v1"
+import type { CollisionScene } from "@wandelbots/nova-js/v1"
 import * as THREE from "three"
 import CollisionSceneRenderer from "../src/components/3d-viewport/collider/CollisionSceneRenderer"
 import { Setup } from "../src/Setup"

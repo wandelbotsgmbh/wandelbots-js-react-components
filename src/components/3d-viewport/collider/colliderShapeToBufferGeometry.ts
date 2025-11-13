@@ -1,4 +1,4 @@
-import type { ColliderShape } from "@wandelbots/nova-api/v1"
+import type { ColliderShape } from "@wandelbots/nova-js/v1"
 import * as THREE from "three"
 import { ConvexGeometry } from "three-stdlib"
 

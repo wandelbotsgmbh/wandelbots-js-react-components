@@ -1,7 +1,4 @@
-import type {
-  DHParameter,
-  MotionGroupStateResponse,
-} from "@wandelbots/nova-api/v1"
+import type { DHParameter, MotionGroupState } from "@wandelbots/nova-api/v2"
 import { describe, expect, it, vi } from "vitest"
 import RobotAnimator from "./RobotAnimator"
 
@@ -26,12 +23,8 @@ describe("RobotAnimator", () => {
 
   it("should handle props with different numbers of joints", () => {
     // Test that the component accepts different numbers of DH parameters
-    const mockMotionState4Joints: MotionGroupStateResponse = {
-      state: {
-        joint_position: {
-          joints: [0.1, 0.2, 0.3, 0.4],
-        },
-      },
+    const mockMotionState4Joints: MotionGroupState = {
+      joint_position: [0.1, 0.2, 0.3, 0.4],
     } as any
 
     const mockDHParameters4Joints: DHParameter[] = [
@@ -41,12 +34,8 @@ describe("RobotAnimator", () => {
       { theta: 0, reverse_rotation_direction: false },
     ]
 
-    const mockMotionState7Joints: MotionGroupStateResponse = {
-      state: {
-        joint_position: {
-          joints: [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7],
-        },
-      },
+    const mockMotionState7Joints: MotionGroupState = {
+      joint_position: [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7],
     } as any
 
     const mockDHParameters7Joints: DHParameter[] = Array(7).fill({
@@ -63,9 +52,7 @@ describe("RobotAnimator", () => {
       }
       // Verify props are correctly typed
       expect(props4.dhParameters).toHaveLength(4)
-      expect(
-        props4.rapidlyChangingMotionState.state.joint_position.joints,
-      ).toHaveLength(4)
+      expect(props4.rapidlyChangingMotionState.joint_position).toHaveLength(4)
     }).not.toThrow()
 
     expect(() => {
@@ -75,9 +62,7 @@ describe("RobotAnimator", () => {
         children: null,
       }
       expect(props7.dhParameters).toHaveLength(7)
-      expect(
-        props7.rapidlyChangingMotionState.state.joint_position.joints,
-      ).toHaveLength(7)
+      expect(props7.rapidlyChangingMotionState.joint_position).toHaveLength(7)
     }).not.toThrow()
   })
 

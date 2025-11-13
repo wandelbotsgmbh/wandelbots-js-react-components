@@ -55,7 +55,7 @@ The `RobotSetupReadinessState` enum provides the following values:
 This component is designed to work with robot setup states from the Wandelbots Nova platform. You can derive the setup state from various robot controller states and connection status:
 
 ```tsx
-import { NovaClient } from "@wandelbots/nova-js/v1"
+import { NovaClient } from "@wandelbots/nova-js/v2"
 
 function determineSetupState(
   isConnected: boolean,

@@ -1,7 +1,7 @@
 import type { ThreeElements } from "@react-three/fiber"
 
-import type { ConnectedMotionGroup } from "@wandelbots/nova-js/v1"
 import type { Group } from "three"
+import type { ConnectedMotionGroup } from "../../lib/ConnectedMotionGroup"
 import { defaultGetModel } from "./robotModelLogic"
 import { SupportedRobot } from "./SupportedRobot"
 

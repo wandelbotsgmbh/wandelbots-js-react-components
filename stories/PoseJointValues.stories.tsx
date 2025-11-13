@@ -1,9 +1,8 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
-import type { Joints } from "@wandelbots/nova-api/v1"
 import { PoseJointValues } from "../src"
 
 type StoryArgs = {
-  joints: Joints
+  joints: Array<number>
   showCopyButton: boolean
 }
 
@@ -22,9 +21,7 @@ const meta: Meta<StoryArgs> = {
     },
   },
   args: {
-    joints: {
-      joints: [0.1234, -1.5678, 2.3456, -0.789, 1.2345, -2.6789],
-    },
+    joints: [0.1234, -1.5678, 2.3456, -0.789, 1.2345, -2.6789],
     showCopyButton: false,
   },
 

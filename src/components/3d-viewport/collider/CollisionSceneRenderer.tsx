@@ -1,4 +1,4 @@
-import type { CollisionScene } from "@wandelbots/nova-api/v1"
+import type { CollisionScene } from "@wandelbots/nova-js/v1"
 import ColliderCollection, {
   type MeshChildrenProvider,
 } from "./ColliderCollection"

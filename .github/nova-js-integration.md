@@ -9,7 +9,7 @@ This document explains how React components integrate with the `@wandelbots/nova
 The main client for communicating with Wandelbots Nova instances.
 
 ```typescript
-import { NovaClient } from "@wandelbots/nova-js/v1"
+import { NovaClient } from "@wandelbots/nova-js/v2"
 
 const nova = new NovaClient({
   instanceUrl: "https://your-nova-instance.com",
@@ -26,7 +26,7 @@ Motion groups represent controllable robot units.
 const motionGroup = await nova.getMotionGroup("0@ur5e")
 
 // Create a connected motion group for real-time state
-const connectedMotionGroup = nova.connectMotionGroup(motionGroup)
+const connectedMotionGroup = ConnectedMotionGroup.connect(nova, "0@ur5e")
 ```
 
 ### Programs and Execution

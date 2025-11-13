@@ -70,7 +70,7 @@
     "@types/react": "^19.1.8",
     "@types/three": "^0.174.0",
     "@vitejs/plugin-react": "^4.3.4",
-    "@wandelbots/nova-js": "^2.1.0",
+    "@wandelbots/nova-js": "3.3.1",
     "add": "^2.0.6",
     "eslint-plugin-storybook": "^10.0.1",
     "glob": "^11.0.1",
