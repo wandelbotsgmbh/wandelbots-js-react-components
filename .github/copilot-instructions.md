@@ -97,7 +97,7 @@ General-purpose UI components:
 ```typescript
 import { observer } from "mobx-react-lite"
 import { externalizeComponent } from "../../externalizeComponent"
-import type { NovaClient } from "@wandelbots/nova-js/v1"
+import type { NovaClient } from "@wandelbots/nova-js/v2"
 
 export type MyComponentProps = {
   nova: NovaClient | string
@@ -149,9 +149,11 @@ stories/                 # Storybook stories
 
 ### Working with Motion Groups
 ```typescript
+import { ConnectedMotionGroup } from "@wandelbots/wandelbots-js-react-components/lib/ConnectedMotionGroup"
+
 // Get motion group from nova client
 const motionGroup = await nova.getMotionGroup(motionGroupId)
-const connectedMotionGroup = nova.connectMotionGroup(motionGroup)
+const connectedMotionGroup = ConnectedMotionGroup.connect(nova, motionGroupId)
 
 // Use in 3D robot components
 <RobotComponent connectedMotionGroup={connectedMotionGroup} />

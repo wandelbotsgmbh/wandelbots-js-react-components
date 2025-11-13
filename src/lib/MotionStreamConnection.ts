@@ -6,50 +6,14 @@ import type {
   RobotControllerState,
 } from "@wandelbots/nova-js/v2"
 import { makeAutoObservable, runInAction } from "mobx"
-import { Vector3 } from "three"
 import type { Vector3Simple } from "./JoggerConnection"
-import { jointValuesEqual, tcpMotionEqual } from "./motionStateUpdate"
+import {
+  jointValuesEqual,
+  tcpMotionEqual,
+  unwrapRotationVector,
+} from "./motionStateUpdate"
 
 const MOTION_DELTA_THRESHOLD = 0.0001
-
-function unwrapRotationVector(
-  newRotationVectorApi: Vector3Simple,
-  currentRotationVectorApi: Vector3Simple,
-): Vector3Simple {
-  const currentRotationVector = new Vector3(
-    currentRotationVectorApi[0],
-    currentRotationVectorApi[1],
-    currentRotationVectorApi[2],
-  )
-
-  const newRotationVector = new Vector3(
-    newRotationVectorApi[0],
-    newRotationVectorApi[1],
-    newRotationVectorApi[2],
-  )
-
-  const currentAngle = currentRotationVector.length()
-  const currentAxis = currentRotationVector.normalize()
-
-  let newAngle = newRotationVector.length()
-  let newAxis = newRotationVector.normalize()
-
-  // Align rotation axes
-  if (newAxis.dot(currentAxis) < 0) {
-    newAngle = -newAngle
-    newAxis = newAxis.multiplyScalar(-1.0)
-  }
-
-  // Shift rotation angle close to previous one to extend domain of rotation angles beyond [0, pi]
-  // - this simplifies interpolation and prevents abruptly changing signs of the rotation angles
-  let angleDifference = newAngle - currentAngle
-  angleDifference -=
-    2.0 * Math.PI * Math.floor((angleDifference + Math.PI) / (2.0 * Math.PI))
-
-  newAngle = currentAngle + angleDifference
-
-  return [...newAxis.multiplyScalar(newAngle)] as Vector3Simple
-}
 
 /**
  * Store representing the current state of a connected motion group.
@@ -142,7 +106,8 @@ export class MotionStreamConnection {
         )
       ) {
         runInAction(() => {
-          this.rapidlyChangingMotionState = latestMotionState
+          this.rapidlyChangingMotionState.joint_position =
+            latestMotionState.joint_position
         })
       }
 

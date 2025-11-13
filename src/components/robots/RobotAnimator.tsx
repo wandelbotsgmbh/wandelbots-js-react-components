@@ -1,8 +1,5 @@
 import { useFrame, useThree } from "@react-three/fiber"
-import type {
-  DHParameter,
-  MotionGroupStateResponse,
-} from "@wandelbots/nova-js/v1"
+import type { DHParameter, MotionGroupState } from "@wandelbots/nova-js/v2"
 import React, { useEffect, useRef } from "react"
 import type { Group, Object3D } from "three"
 import { useAutorun } from "../utils/hooks"
@@ -10,7 +7,7 @@ import { ValueInterpolator } from "../utils/interpolation"
 import { collectJoints } from "./robotModelLogic"
 
 type RobotAnimatorProps = {
-  rapidlyChangingMotionState: MotionGroupStateResponse
+  rapidlyChangingMotionState: MotionGroupState
   dhParameters: DHParameter[]
   onRotationChanged?: (joints: Object3D[], jointValues: number[]) => void
   children: React.ReactNode
@@ -29,10 +26,9 @@ export default function RobotAnimator({
 
   // Initialize interpolator
   useEffect(() => {
-    const initialJointValues =
-      rapidlyChangingMotionState.state.joint_position.joints.filter(
-        (item) => item !== undefined,
-      )
+    const initialJointValues = rapidlyChangingMotionState.joint_position.filter(
+      (item) => item !== undefined,
+    )
 
     interpolatorRef.current = new ValueInterpolator(initialJointValues, {
       tension: 120, // Controls spring stiffness - higher values create faster, more responsive motion
@@ -91,10 +87,9 @@ export default function RobotAnimator({
   }
 
   useAutorun(() => {
-    const newJointValues =
-      rapidlyChangingMotionState.state.joint_position.joints.filter(
-        (item) => item !== undefined,
-      )
+    const newJointValues = rapidlyChangingMotionState.joint_position.filter(
+      (item) => item !== undefined,
+    )
 
     requestAnimationFrame(() => updateJoints(newJointValues))
   })
