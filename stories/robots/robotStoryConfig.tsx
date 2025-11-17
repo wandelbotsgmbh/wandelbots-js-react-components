@@ -1,7 +1,7 @@
 // sharedStoryConfig.tsx
 import type { Meta, StoryObj } from "@storybook/react-vite"
+import type { DHParameter } from "@wandelbots/nova-js/v2"
 import { expect, fn, waitFor } from "storybook/test"
-import type { DHParameter } from "@wandelbots/nova-js/v1"
 import { SupportedRobot } from "../../src"
 import { SupportedRobotScene } from "./SupportedRobotScene"
 

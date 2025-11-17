@@ -1,14 +1,16 @@
 import MoveIcon from "@mui/icons-material/OpenWith"
 import ShareIcon from "@mui/icons-material/Share"
 import { Stack, Tab, Tabs, type SxProps } from "@mui/material"
-import { NovaClient } from "@wandelbots/nova-js/v1"
+import { NovaClient } from "@wandelbots/nova-js/v2"
 import { isString } from "lodash-es"
 import { runInAction } from "mobx"
 import { observer, useLocalObservable } from "mobx-react-lite"
 import { useEffect } from "react"
 import { useTranslation } from "react-i18next"
 import { externalizeComponent } from "../../externalizeComponent"
+import { JoggerConnection } from "../../lib/JoggerConnection"
 import { LoadingCover } from "../LoadingCover"
+import { JoggingBlocked } from "./JoggingBlocked"
 import { JoggingCartesianTab } from "./JoggingCartesianTab"
 import { JoggingJointTab } from "./JoggingJointTab"
 import { JoggingStore } from "./JoggingStore"
@@ -58,7 +60,7 @@ export const JoggingPanel = externalizeComponent(
       try {
         let joggingStore = props.store
         if (!joggingStore) {
-          const jogger = await nova.connectJogger(props.motionGroupId)
+          const jogger = await JoggerConnection.open(nova, props.motionGroupId)
           joggingStore = await JoggingStore.loadFor(jogger)
         }
         runInAction(() => {
@@ -181,7 +183,6 @@ const JoggingPanelInner = observer(
             )
           })}
         </Tabs>
-
         {/* Current tab content */}
         <Stack
           flexGrow={1}
@@ -190,6 +191,8 @@ const JoggingPanelInner = observer(
         >
           {renderTabContent()}
         </Stack>
+        {/* Overlay when jogging connection is blocked */}
+        {store.blocked && <JoggingBlocked store={store} />}
       </Stack>
     )
   },

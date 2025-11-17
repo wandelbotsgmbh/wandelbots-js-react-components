@@ -1,6 +1,10 @@
 import { AxiosError } from "axios"
 import { tryStringifyJson } from "./converters"
 
+// Please note: These helper functions also exist in nova.js
+// (with slightly different formatting), and will be unified
+// at some point in the future.
+
 export function delay(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms))
 }

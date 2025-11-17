@@ -1,8 +1,5 @@
 import { Divider, Stack, type PopoverOrigin } from "@mui/material"
-import type {
-  RobotControllerStateOperationModeEnum,
-  RobotControllerStateSafetyStateEnum,
-} from "@wandelbots/nova-js/v1"
+import type { OperationMode, SafetyStateType } from "@wandelbots/nova-js/v2"
 import { observer } from "mobx-react-lite"
 import { externalizeComponent } from "../../externalizeComponent"
 import { ControllerTypeIndicator } from "./ControllerTypeIndicator"
@@ -12,8 +9,8 @@ import { SafetyStateIndicator } from "./SafetyStateIndicator"
 export interface SafetyBarProps {
   isVirtual: boolean
   motionGroupId: string
-  operationMode: RobotControllerStateOperationModeEnum
-  safetyState: RobotControllerStateSafetyStateEnum
+  operationMode: OperationMode
+  safetyState: SafetyStateType
   anchorOrigin?: PopoverOrigin
   transformOrigin?: PopoverOrigin
   compact?: boolean

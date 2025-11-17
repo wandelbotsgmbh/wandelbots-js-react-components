@@ -13,20 +13,50 @@ const JoggingPanelWrapper = (props: JoggingPanelProps) => {
 
   return (
     <Stack
-      direction="row"
-      gap={2}
+      direction="column"
+      gap={4}
       sx={{
         maxWidth: "min-content",
       }}
     >
-      <JoggingPanel
-        {...props}
-        sx={{
-          width: "320px",
-          backgroundColor: theme.palette.backgroundPaperElevation?.[5],
-        }}
-      />
-      <ChildrenDemoJoggingPanel props={props} />
+      <Stack gap={2}>
+        <Typography
+          variant="h6"
+          component="h3"
+          color={theme.palette.text.primary}
+        >
+          Default Jogging Panel
+        </Typography>
+        <JoggingPanel
+          {...props}
+          sx={{
+            width: "320px",
+            backgroundColor: theme.palette.backgroundPaperElevation?.[5],
+          }}
+        />
+      </Stack>
+
+      <Stack gap={2}>
+        <Typography
+          variant="h6"
+          component="h3"
+          color={theme.palette.text.primary}
+        >
+          Jogging Panel with Custom Controls
+        </Typography>
+        <ChildrenDemoJoggingPanel props={props} />
+      </Stack>
+
+      <Stack gap={2}>
+        <Typography
+          variant="h6"
+          component="h3"
+          color={theme.palette.text.primary}
+        >
+          Jogging Panel Blocked by Another Connection
+        </Typography>
+        <BlockedJoggingPanel props={props} />
+      </Stack>
     </Stack>
   )
 }
@@ -85,6 +115,32 @@ const ChildrenDemoJoggingPanel = observer(
           </Stack>
         )}
       </JoggingPanel>
+    )
+  },
+)
+
+const BlockedJoggingPanel = observer(
+  ({ props }: { props: JoggingPanelProps }) => {
+    const theme = useTheme()
+
+    const state = useLocalObservable(() => ({
+      joggingStore: null as JoggingStore | null,
+    }))
+
+    return (
+      <JoggingPanel
+        {...props}
+        onSetup={(store) =>
+          runInAction(() => {
+            state.joggingStore = store
+            state.joggingStore.blocked = true
+          })
+        }
+        sx={{
+          width: "320px",
+          backgroundColor: theme.palette.backgroundPaperElevation?.[5],
+        }}
+      />
     )
   },
 )

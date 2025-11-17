@@ -1,14 +1,18 @@
 import { tryParseJson } from "@wandelbots/nova-js"
 import type {
   CoordinateSystem,
-  JoggerConnection,
-  MotionGroupSpecification,
+  MotionGroupDescription,
   RobotTcp,
-} from "@wandelbots/nova-js/v1"
+} from "@wandelbots/nova-js/v2"
 import { countBy } from "lodash-es"
 import keyBy from "lodash-es/keyBy"
 import uniqueId from "lodash-es/uniqueId"
 import { autorun, makeAutoObservable, type IReactionDisposer } from "mobx"
+import type {
+  JoggerConnection,
+  JoggerOrientation,
+  Vector3Simple,
+} from "../../lib/JoggerConnection"
 
 const discreteIncrementOptions = [
   { id: "0.1", mm: 0.1, degrees: 0.05 },
@@ -54,6 +58,9 @@ export class JoggingStore {
 
   /** Locks to prevent UI interactions during certain operations */
   locks = new Set<string>()
+
+  /** Block jogging UI interactions when connection is taken by another jogger */
+  blocked: boolean = false
 
   /**
    * Id of selected coordinate system from among those defined on the API side
@@ -105,7 +112,7 @@ export class JoggingStore {
   maxRotationVelocityDegPerSec: number = 60
 
   /** Whether to show the coordinate system select dropdown in the UI */
-  showCoordSystemSelect: boolean = true
+  showCoordSystemSelect: boolean = false
 
   /** Whether to show the TCP select dropdown in the UI */
   showTcpSelect: boolean = true
@@ -138,34 +145,34 @@ export class JoggingStore {
     const { nova } = jogger
 
     // Find out what TCPs this motion group has (we need it for jogging)
-    const [motionGroupSpec, { coordinatesystems }, { tcps }] =
-      await Promise.all([
-        nova.api.motionGroupInfos.getMotionGroupSpecification(
-          jogger.motionGroupId,
-        ),
+    const [coordinatesystems, description] = await Promise.all([
+      // Fetch coord systems so user can select between them
+      nova.api.controller.listCoordinateSystems(
+        jogger.motionStream.controllerId,
+        "ROTATION_VECTOR",
+      ),
 
-        // Fetch coord systems so user can select between them
-        nova.api.coordinateSystems.listCoordinateSystems("ROTATION_VECTOR"),
+      // Same for TCPs and other info from description
+      nova.api.motionGroup.getMotionGroupDescription(
+        jogger.motionStream.controllerId,
+        jogger.motionGroupId,
+      ),
+    ])
 
-        // Same for TCPs
-        nova.api.motionGroupInfos.listTcps(
-          jogger.motionGroupId,
-          "ROTATION_VECTOR",
-        ),
-      ])
+    const tcps = Object.entries(description.tcps || {}).map(([id, tcp]) => ({
+      id,
+      readable_name: tcp.name,
+      position: tcp.pose.position as Vector3Simple,
+      orientation: tcp.pose.orientation as Vector3Simple,
+    }))
 
-    return new JoggingStore(
-      jogger,
-      motionGroupSpec,
-      coordinatesystems || [],
-      tcps || [],
-    )
+    return new JoggingStore(jogger, coordinatesystems || [], description, tcps)
   }
 
   constructor(
     readonly jogger: JoggerConnection,
-    readonly motionGroupSpec: MotionGroupSpecification,
     readonly coordSystems: CoordinateSystem[],
+    readonly motionGroupDescription: MotionGroupDescription,
     readonly tcps: RobotTcp[],
   ) {
     // TODO workaround for default coord system on backend having a canonical id
@@ -179,13 +186,21 @@ export class JoggingStore {
     this.selectedCoordSystemId = coordSystems[0]?.coordinate_system || "world"
     this.selectedTcpId = tcps[0]?.id || ""
 
+    // Make all properties observable and actions auto-bound
     makeAutoObservable(this, {}, { autoBind: true })
+
+    // Register blocked watching
+    this.jogger.onBlocked = () => {
+      this.block()
+    }
 
     // Load user settings from local storage if available
     this.loadFromLocalStorage()
 
     // Automatically save user settings to local storage when save changes
     this.disposers.push(autorun(() => this.saveToLocalStorage()))
+
+    // Assign joggingStore to window
     ;(window as any).joggingStore = this
   }
 
@@ -201,30 +216,31 @@ export class JoggingStore {
   }
 
   async deactivate() {
-    const websocket = this.jogger.activeWebsocket
-
-    this.jogger.setJoggingMode("increment")
-
-    if (websocket) {
-      await websocket.closed()
+    if (this.jogger.mode === "jogging") {
+      return this.jogger.stop()
     }
   }
 
   /** Activate the jogger with current settings */
   async activate() {
     if (this.currentTab.id === "cartesian") {
-      const cartesianJoggingOpts = {
-        tcpId: this.selectedTcpId,
-        coordSystemId: this.activeCoordSystemId,
+      if (
+        this.jogger.tcp !== this.selectedTcpId ||
+        this.jogger.orientation !== this.selectedOrientation
+      ) {
+        this.jogger.setOptions({
+          tcp: this.selectedTcpId,
+          orientation: this.selectedOrientation as JoggerOrientation,
+        })
       }
 
       if (this.activeDiscreteIncrement) {
-        this.jogger.setJoggingMode("increment", cartesianJoggingOpts)
+        this.jogger.setJoggingMode("trajectory")
       } else {
-        this.jogger.setJoggingMode("cartesian", cartesianJoggingOpts)
+        this.jogger.setJoggingMode("jogging")
       }
     } else {
-      this.jogger.setJoggingMode("joint")
+      this.jogger.setJoggingMode("jogging")
     }
 
     return this.jogger
@@ -431,6 +447,17 @@ export class JoggingStore {
 
   unlock(id: string) {
     this.locks.delete(id)
+  }
+
+  block() {
+    this.blocked = true
+  }
+
+  unblock() {
+    this.blocked = false
+    if (this.jogger.mode === "jogging") {
+      this.jogger.initializeJoggingWebsocket()
+    }
   }
 
   /** Lock the UI until the given async callback resolves */

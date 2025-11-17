@@ -1,13 +1,12 @@
 import { Button, Stack } from "@mui/material"
-import { poseToWandelscriptString } from "@wandelbots/nova-js"
-import type { TcpPose } from "@wandelbots/nova-js/v1"
+import { poseToWandelscriptString, type Pose } from "@wandelbots/nova-js/v2"
 import { observer } from "mobx-react-lite"
 import { useState } from "react"
 import { externalizeComponent } from "../../externalizeComponent"
 import { CopyableText } from "../CopyableText"
 
 export type PoseCartesianValuesProps = {
-  tcpPose: TcpPose
+  tcpPose: Pose
   showCopyButton?: boolean
 }
 
@@ -44,7 +43,7 @@ export const PoseCartesianValues = externalizeComponent(
             onClick={handleCopy}
             sx={{ flexShrink: 0 }}
           >
-            { copyMessage ? copyMessage : "Copy"}
+            {copyMessage ? copyMessage : "Copy"}
           </Button>
         )}
       </Stack>

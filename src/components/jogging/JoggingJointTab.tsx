@@ -16,7 +16,7 @@ export const JoggingJointTab = observer(
     }) {
       await store.activate()
 
-      await store.jogger.startJointRotation({
+      await store.jogger.rotateJoints({
         joint: opts.joint,
         direction: opts.direction,
         velocityRadsPerSec: store.rotationVelocityRadsPerSec,
@@ -42,7 +42,8 @@ export const JoggingJointTab = observer(
           <Stack alignItems="center" gap="24px">
             {store.jogger.motionStream.joints.map((joint) => {
               const jointLimits =
-                store.motionGroupSpec.mechanical_joint_limits?.[joint.index]
+                store.motionGroupDescription.operation_limits.auto_limits
+                  ?.joints?.[joint.index]?.position
               const lowerLimitDegs =
                 jointLimits?.lower_limit !== undefined
                   ? radiansToDegrees(jointLimits.lower_limit)
@@ -80,7 +81,7 @@ export const JoggingJointTab = observer(
                     getValueDegs={() => {
                       const value =
                         store.jogger.motionStream.rapidlyChangingMotionState
-                          .state.joint_position.joints[joint.index]
+                          .joint_position[joint.index]
                       return value !== undefined
                         ? radiansToDegrees(value)
                         : undefined

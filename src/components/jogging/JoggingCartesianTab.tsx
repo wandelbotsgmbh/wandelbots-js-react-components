@@ -6,13 +6,18 @@ import {
   useTheme,
   type Theme,
 } from "@mui/material"
-import { degreesToRadians, radiansToDegrees } from "@wandelbots/nova-js"
+import {
+  degreesToRadians,
+  radiansToDegrees,
+  XYZ_TO_VECTOR,
+} from "@wandelbots/nova-js"
 import { observer } from "mobx-react-lite"
 import { useTranslation } from "react-i18next"
 import XAxisIcon from "../../icons/axis-x.svg"
 import YAxisIcon from "../../icons/axis-y.svg"
 import ZAxisIcon from "../../icons/axis-z.svg"
 import RotationIcon from "../../icons/rotation.svg"
+import type { Vector3Simple } from "../../lib/JoggerConnection"
 import { useReaction } from "../utils/hooks"
 import { JoggingCartesianAxisControl } from "./JoggingCartesianAxisControl"
 import { JoggingJointLimitDetector } from "./JoggingJointLimitDetector"
@@ -56,7 +61,7 @@ export const JoggingCartesianTab = observer(
       () => {
         store.jogger.motionStream.motionStateSocket.changeUrl(
           store.jogger.nova.makeWebsocketURL(
-            `/motion-groups/${store.jogger.motionGroupId}/state-stream?tcp=${store.selectedTcpId}&response_coordinate_system=${store.selectedCoordSystemId}`,
+            `/controllers/${store.jogger.motionStream.controllerId}/motion-groups/${store.jogger.motionGroupId}/state-stream?tcp=${store.selectedTcpId}`,
           ),
         )
       },
@@ -70,8 +75,8 @@ export const JoggingCartesianTab = observer(
       const jogger = await store.activate()
 
       const tcpPose = jogger.motionStream.rapidlyChangingMotionState.tcp_pose
-      const jointPosition =
-        jogger.motionStream.rapidlyChangingMotionState.state.joint_position
+      const jointPosition = jogger.motionStream.rapidlyChangingMotionState
+        .joint_position as Vector3Simple
       if (!tcpPose) return
 
       await store.withMotionLock(async () => {
@@ -117,13 +122,13 @@ export const JoggingCartesianTab = observer(
       }
 
       if (opts.motionType === "translate") {
-        await store.jogger.startTCPTranslation({
+        await store.jogger.translateTCP({
           axis: opts.axis,
           direction: opts.direction,
           velocityMmPerSec: store.translationVelocityMmPerSec,
         })
       } else {
-        await store.jogger.startTCPRotation({
+        await store.jogger.rotateTCP({
           axis: opts.axis,
           direction: opts.direction,
           velocityRadsPerSec: store.rotationVelocityRadsPerSec,
@@ -189,10 +194,7 @@ export const JoggingCartesianTab = observer(
     return (
       <Stack flexGrow={1} gap={2} sx={{ padding: "18px 24px" }}>
         <Stack gap={2}>
-          {/* Jogging options */}
           <JoggingOptions store={store} />
-
-          {/* Velocity slider */}
           <JoggingVelocitySlider store={store} />
           <Divider />
         </Stack>
@@ -257,7 +259,7 @@ export const JoggingCartesianTab = observer(
                   getDisplayedValue={() =>
                     formatMM(
                       store.jogger.motionStream.rapidlyChangingMotionState
-                        .tcp_pose?.position[axis.id] || 0,
+                        .tcp_pose?.position?.[XYZ_TO_VECTOR[axis.id]] || 0,
                     )
                   }
                   startJogging={(direction: "-" | "+") =>
@@ -301,7 +303,7 @@ export const JoggingCartesianTab = observer(
                   getDisplayedValue={() =>
                     formatDegrees(
                       store.jogger.motionStream.rapidlyChangingMotionState
-                        .tcp_pose?.orientation?.[axis.id] || 0,
+                        .tcp_pose?.orientation?.[XYZ_TO_VECTOR[axis.id]] || 0,
                     )
                   }
                   startJogging={(direction: "-" | "+") =>

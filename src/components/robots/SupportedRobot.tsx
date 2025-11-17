@@ -1,8 +1,5 @@
 import type { ThreeElements } from "@react-three/fiber"
-import type {
-  DHParameter,
-  MotionGroupStateResponse,
-} from "@wandelbots/nova-api/v1"
+import type { DHParameter, MotionGroupState } from "@wandelbots/nova-js/v2"
 import { Suspense, useCallback, useEffect, useState } from "react"
 import { DHRobot } from "./DHRobot"
 
@@ -16,12 +13,12 @@ import { applyGhostStyle, removeGhostStyle } from "./ghostStyle"
 import { defaultGetModel } from "./robotModelLogic"
 
 export type DHRobotProps = {
-  rapidlyChangingMotionState: MotionGroupStateResponse
+  rapidlyChangingMotionState: MotionGroupState
   dhParameters: Array<DHParameter>
 } & ThreeElements["group"]
 
 export type SupportedRobotProps = {
-  rapidlyChangingMotionState: MotionGroupStateResponse
+  rapidlyChangingMotionState: MotionGroupState
   modelFromController: string
   dhParameters: DHParameter[]
   flangeRef?: React.Ref<THREE.Group>

@@ -19,10 +19,10 @@ The `RobotCard` component is a responsive card that displays a 3D robot with sta
 
 ```tsx
 import { RobotCard } from "@wandelbots/wandelbots-js-react-components"
-import { useConnectedMotionGroup } from "@wandelbots/nova-js"
+import { ConnectedMotionGroup } from "@wandelbots/wandelbots-js-react-components/lib/ConnectedMotionGroup"
 
 function RobotDashboard() {
-  const connectedMotionGroup = useConnectedMotionGroup("0@ur5e")
+  const connectedMotionGroup = ConnectedMotionGroup.connect(nova, "0@ur5e")
 
   const handleDriveToHomePress = () => {
     console.log("Starting robot movement to home position")
@@ -87,20 +87,20 @@ The component is designed to work well in CSS Grid layouts for multiple robot mo
 
 ## Props
 
-| Prop                   | Type                                    | Default  | Description                                            |
-| ---------------------- | --------------------------------------- | -------- | ------------------------------------------------------ |
-| `robotName`            | `string`                                | -        | Name of the robot displayed at the top                 |
-| `programState`         | `ProgramState`                          | -        | Current program execution state                        |
-| `safetyState`          | `RobotControllerStateSafetyStateEnum`   | -        | Current safety state of the robot controller           |
-| `operationMode`        | `RobotControllerStateOperationModeEnum` | -        | Current operation mode of the robot controller         |
-| `runtime`              | `string`                                | -        | Runtime text to display                                |
-| `driveToHomeEnabled`   | `boolean`                               | `false`  | Whether the "Drive to Home" button should be enabled   |
-| `onDriveToHomePress`   | `() => void`                            | -        | Callback fired when "Drive to Home" button is pressed  |
-| `onDriveToHomeRelease` | `() => void`                            | -        | Callback fired when "Drive to Home" button is released |
-| `connectedMotionGroup` | `ConnectedMotionGroup`                  | -        | Connected motion group from Nova.js                    |
-| `className`            | `string`                                | -        | Additional CSS class name                              |
-| `width`                | `number \| string`                      | `"100%"` | Width for the card                                     |
-| `height`               | `number \| string`                      | `578`    | Height for the card                                    |
+| Prop                   | Type                   | Default  | Description                                            |
+| ---------------------- | ---------------------- | -------- | ------------------------------------------------------ |
+| `robotName`            | `string`               | -        | Name of the robot displayed at the top                 |
+| `programState`         | `ProgramState`         | -        | Current program execution state                        |
+| `safetyState`          | `SafetyStateType`      | -        | Current safety state of the robot controller           |
+| `operationMode`        | `OperationMode`        | -        | Current operation mode of the robot controller         |
+| `runtime`              | `string`               | -        | Runtime text to display                                |
+| `driveToHomeEnabled`   | `boolean`              | `false`  | Whether the "Drive to Home" button should be enabled   |
+| `onDriveToHomePress`   | `() => void`           | -        | Callback fired when "Drive to Home" button is pressed  |
+| `onDriveToHomeRelease` | `() => void`           | -        | Callback fired when "Drive to Home" button is released |
+| `connectedMotionGroup` | `ConnectedMotionGroup` | -        | Connected motion group from Nova.js                    |
+| `className`            | `string`               | -        | Additional CSS class name                              |
+| `width`                | `number \| string`     | `"100%"` | Width for the card                                     |
+| `height`               | `number \| string`     | `578`    | Height for the card                                    |
 
 ## Drive to Home Functionality
 
@@ -138,29 +138,6 @@ Add these to your translation files:
 {
   "RobotCard.Runtime.lb": "Runtime",
   "RobotCard.DriveToHome.bt": "Drive to Home"
-}
-```
-
-## Integration with Nova.js
-
-The component works with Nova.js ConnectedMotionGroup:
-
-```tsx
-import { useConnectedMotionGroup } from "@wandelbots/nova-js"
-
-function ConnectedRobotCard({ motionGroupId }) {
-  const connectedMotionGroup = useConnectedMotionGroup(motionGroupId)
-
-  if (!connectedMotionGroup) {
-    return <div>Loading robot...</div>
-  }
-
-  return (
-    <RobotCard
-      connectedMotionGroup={connectedMotionGroup}
-      // ... other props
-    />
-  )
 }
 ```
 

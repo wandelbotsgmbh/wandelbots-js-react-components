@@ -1,8 +1,5 @@
 import { Chip, Typography, useTheme } from "@mui/material"
-import type {
-  RobotControllerStateOperationModeEnum,
-  RobotControllerStateSafetyStateEnum,
-} from "@wandelbots/nova-js/v1"
+import type { OperationMode, SafetyStateType } from "@wandelbots/nova-js/v2"
 import { observer } from "mobx-react-lite"
 import { useTranslation } from "react-i18next"
 import { externalizeComponent } from "../externalizeComponent"
@@ -12,9 +9,9 @@ export interface ProgramStateIndicatorProps {
   /** The current state of the program */
   programState: ProgramState
   /** The current safety state of the robot controller */
-  safetyState: RobotControllerStateSafetyStateEnum
+  safetyState: SafetyStateType
   /** The current operation mode of the robot controller */
-  operationMode: RobotControllerStateOperationModeEnum
+  operationMode: OperationMode
   /** Additional CSS class name */
   className?: string
 }

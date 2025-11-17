@@ -1,16 +1,13 @@
 import { Box, Button, Card, Divider, Typography, useTheme } from "@mui/material"
 import { Bounds } from "@react-three/drei"
 import { Canvas } from "@react-three/fiber"
-import type {
-  ConnectedMotionGroup,
-  RobotControllerStateOperationModeEnum,
-  RobotControllerStateSafetyStateEnum,
-} from "@wandelbots/nova-js/v1"
+import type { OperationMode, SafetyStateType } from "@wandelbots/nova-js/v2"
 import { observer } from "mobx-react-lite"
 import { useCallback, useEffect, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import type { Group } from "three"
 import { externalizeComponent } from "../externalizeComponent"
+import type { ConnectedMotionGroup } from "../lib/ConnectedMotionGroup"
 import { PresetEnvironment } from "./3d-viewport/PresetEnvironment"
 import type { ProgramState } from "./ProgramControl"
 import { ProgramStateIndicator } from "./ProgramStateIndicator"
@@ -22,9 +19,9 @@ export interface RobotCardProps {
   /** Current program state */
   programState: ProgramState
   /** Current safety state of the robot controller */
-  safetyState: RobotControllerStateSafetyStateEnum
+  safetyState: SafetyStateType
   /** Current operation mode of the robot controller */
-  operationMode: RobotControllerStateOperationModeEnum
+  operationMode: OperationMode
   /** Whether the "Drive to Home" button should be enabled */
   driveToHomeEnabled?: boolean
   /** Callback fired when "Drive to Home" button is pressed */

@@ -1,4 +1,4 @@
-import { Manufacturer } from "@wandelbots/nova-api/v1"
+import { Manufacturer } from "@wandelbots/nova-js/v2"
 
 /**
  * Default home configs for different robot manufacturers.

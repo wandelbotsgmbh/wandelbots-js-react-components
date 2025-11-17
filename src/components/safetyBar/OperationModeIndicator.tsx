@@ -1,5 +1,5 @@
 import { useTheme, type PopoverOrigin } from "@mui/material"
-import type { RobotControllerStateOperationModeEnum } from "@wandelbots/nova-js/v1"
+import type { OperationMode } from "@wandelbots/nova-js/v2"
 import { observer } from "mobx-react-lite"
 import { Trans, useTranslation } from "react-i18next"
 import OperationModeAutomaticIcon from "./icons/operation-mode-automatic.svg"
@@ -8,7 +8,7 @@ import OperationModeManualIcon from "./icons/operation-mode-manual.svg"
 import { IndicatorWithExplanation } from "./IndicatorWithExplanation"
 
 interface OperationModeIndicatorProps {
-  operationMode: RobotControllerStateOperationModeEnum
+  operationMode: OperationMode
   anchorOrigin?: PopoverOrigin
   transformOrigin?: PopoverOrigin
   compact: boolean
