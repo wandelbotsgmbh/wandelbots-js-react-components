@@ -1,0 +1,48 @@
+{
+    "dof": 6,
+    "inverseSolver": "KukaSphericalWrist",
+    "dhParameters": [
+        {
+            "a": "500.0",
+            "d": "800.0",
+            "alpha": "-1.5707963267948966",
+            "theta": "0.0",
+            "reverseRotationDirection": "1"
+        },
+        {
+            "a": "1550.0",
+            "d": "0.0",
+            "alpha": "0.0",
+            "theta": "0.0",
+            "reverseRotationDirection": "0"
+        },
+        {
+            "a": "150.0",
+            "d": "0.0",
+            "alpha": "1.5707963267948966",
+            "theta": "-1.5707963267948966",
+            "reverseRotationDirection": "0"
+        },
+        {
+            "a": "0.0",
+            "d": "-1693.5",
+            "alpha": "-1.5707963267948966",
+            "theta": "0.0",
+            "reverseRotationDirection": "0"
+        },
+        {
+            "a": "0.0",
+            "d": "0.0",
+            "alpha": "1.5707963267948966",
+            "theta": "0.0",
+            "reverseRotationDirection": "0"
+        },
+        {
+            "a": "0.0",
+            "d": "-240.0",
+            "alpha": "3.141592653589793",
+            "theta": "3.141592653589793",
+            "reverseRotationDirection": "0"
+        }
+    ]
+}
