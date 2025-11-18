@@ -6,6 +6,7 @@ on:
   push:
     branches:
       - main
+      - v2
   pull_request:
     types: [opened, synchronize, reopened]
 
@@ -81,7 +82,7 @@ jobs:
     needs: [build, no-draco-models]
     env:
       HUSKY: 0
-    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+    if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/v2') }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
