@@ -22,6 +22,8 @@ const nova = new NovaClient({
 Motion groups represent controllable robot units.
 
 ```typescript
+import { ConnectedMotionGroup } from "@wandelbots/wandelbots-js-react-components"
+
 // Get motion group information
 const motionGroup = await nova.getMotionGroup("0@ur5e")
 

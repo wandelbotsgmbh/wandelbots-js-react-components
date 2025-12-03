@@ -19,7 +19,7 @@ The `RobotCard` component is a responsive card that displays a 3D robot with sta
 
 ```tsx
 import { RobotCard } from "@wandelbots/wandelbots-js-react-components"
-import { ConnectedMotionGroup } from "@wandelbots/wandelbots-js-react-components/lib/ConnectedMotionGroup"
+import { ConnectedMotionGroup } from "@wandelbots/wandelbots-js-react-components"
 
 function RobotDashboard() {
   const connectedMotionGroup = ConnectedMotionGroup.connect(nova, "0@ur5e")

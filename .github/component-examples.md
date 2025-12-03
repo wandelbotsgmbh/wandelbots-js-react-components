@@ -47,7 +47,7 @@ function MyRobotApp() {
 
 ```typescript
 import { Canvas } from '@react-three/fiber'
-import { ConnectedMotionGroup } from "@wandelbots/wandelbots-js-react-components/lib/ConnectedMotionGroup"
+import { ConnectedMotionGroup } from "@wandelbots/wandelbots-js-react-components"
 
 function Robot3D({ motionGroupId }: { motionGroupId: string }) {
   const [connectedMotionGroup, setConnectedMotionGroup] = useState<ConnectedMotionGroup>()

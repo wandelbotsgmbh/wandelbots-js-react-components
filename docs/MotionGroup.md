@@ -3,7 +3,8 @@
 The library provides an easy to use way to access properties of a motion group.
 
 ```ts
-import { NovaClient, ConnectedMotionGroup } from "@wandelbots/nova-js/v2"
+import { NovaClient } from "@wandelbots/nova-js/v2"
+import { ConnectedMotionGroup } from "@wandelbots/wandelbots-js-react-components"
 
 const nova = new NovaClient({ instanceUrl: "nova-instance-url" })
 const activeRobot = await ConnectedMotionGroup.connect(nova, "motion-group-id")

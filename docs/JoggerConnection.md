@@ -3,7 +3,8 @@
 Jogging in a robotics context generally refers to the manual movement of the robot via direct human input. The Wandelbots platform provides websocket-based jogging methods which can be used to build similar jogging interfaces to those found on teach pendants.
 
 ```ts
-import { NovaClient, JoggerConnection } from "@wandelbots/nova-js/v2"
+import { NovaClient } from "@wandelbots/nova-js/v2"
+import { JoggerConnection } from "@wandelbots/wandelbots-js-react-components"
 
 const nova = new NovaClient({ instanceUrl: "nova-instance-url" })
 const jogger = await JoggerConnection.open(nova, `some-motion-group-id`) // or to set options
