@@ -149,7 +149,7 @@ stories/                 # Storybook stories
 
 ### Working with Motion Groups
 ```typescript
-import { ConnectedMotionGroup } from "@wandelbots/wandelbots-js-react-components/lib/ConnectedMotionGroup"
+import { ConnectedMotionGroup } from "@wandelbots/wandelbots-js-react-components"
 
 // Get motion group from nova client
 const motionGroup = await nova.getMotionGroup(motionGroupId)
