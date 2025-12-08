@@ -1,0 +1,47 @@
+{
+  "dhParameters": [
+    {
+      "alpha": "-1.5707963267948966",
+      "theta": "0.0",
+      "a": "0.0",
+      "d": "338.0",
+      "reverseRotationDirection": "0"
+    },
+    {
+      "alpha": "0.0",
+      "theta": "-1.5707963267948966",
+      "a": "707.0",
+      "d": "0.0",
+      "reverseRotationDirection": "0"
+    },
+    {
+      "alpha": "-1.5707963267948966",
+      "theta": "0.0",
+      "a": "110.0",
+      "d": "0.0",
+      "reverseRotationDirection": "0"
+    },
+    {
+      "alpha": "1.5707963267948966",
+      "theta": "0.0",
+      "a": "0.0",
+      "d": "534.0",
+      "reverseRotationDirection": "0"
+    },
+    {
+      "alpha": "-1.5707963267948966",
+      "theta": "0.0",
+      "a": "80.0",
+      "d": "0.0",
+      "reverseRotationDirection": "0"
+    },
+    {
+      "alpha": "0.0",
+      "theta": "-3.141592653589793",
+      "a": "0.0",
+      "d": "101.0",
+      "reverseRotationDirection": "0"
+    }
+  ],
+  "inverse_solver": "AbbOffsetWrist"
+}
