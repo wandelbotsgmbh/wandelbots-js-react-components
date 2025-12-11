@@ -152,9 +152,8 @@ stories/                 # Storybook stories
 import { NovaClient } from "@wandelbots/nova-js/v2"
 import { ConnectedMotionGroup } from "@wandelbots/wandelbots-js-react-components/core"
 
-// Get motion group from nova client
-const motionGroup = await nova.getMotionGroup(motionGroupId)
-const connectedMotionGroup = ConnectedMotionGroup.connect(nova, motionGroupId)
+const nova = new NovaClient({ instanceUrl: "https://your-nova-instance.com" })
+const connectedMotionGroup = await ConnectedMotionGroup.connect(nova, "0@myour-motion-group-id");
 
 // Use in 3D robot components
 <RobotComponent connectedMotionGroup={connectedMotionGroup} />
@@ -162,7 +161,7 @@ const connectedMotionGroup = ConnectedMotionGroup.connect(nova, motionGroupId)
 
 ### Theming Integration
 ```typescript
-import { createNovaMuiTheme } from '@wandelbots/wandelbots-js-react-components'
+import { createNovaMuiTheme } from '@wandelbots/wandelbots-js-react-components/core'
 
 const theme = createNovaMuiTheme('dark') // or 'light'
 ```
