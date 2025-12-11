@@ -10,7 +10,12 @@ import * as RobotStories from '../stories/robots/Robot.stories';
 This `Robot` component adds the robot to the 3D viewport. Use it together with the `ConnectedMotionGroup` from this library:
 
 ```tsx
-import { ConnectedMotionGroup } from "@wandelbots/wandelbots-js-react-components/lib/ConnectedMotionGroup"
+import { NovaClient } from "@wandelbots/nova-js/v2"
+import { ConnectedMotionGroup } from "@wandelbots/wandelbots-js-react-components/core"
+import { Robot } from "@wandelbots/wandelbots-js-react-components/3d"
+
+const nova = new NovaClient({ instanceUrl: "https://your-nova-instance.com" })
+const connectedMotionGroup = await ConnectedMotionGroup.connect(nova, "0@myour-motion-group-id");
 
 <Robot connectedMotionGroup={connectedMotionGroup} />
 ```
