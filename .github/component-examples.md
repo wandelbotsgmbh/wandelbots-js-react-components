@@ -61,7 +61,7 @@ function Robot3D({ motionGroupId }: { motionGroupId: string }) {
   useEffect(() => {
     async function setup() {
       const nova = new NovaClient({ instanceUrl: "https://your-nova-instance.com" })
-      const connected = await ConnectedMotionGroup.connect(nova, "0@myour-motion-group-id");
+      const connected = await ConnectedMotionGroup.connect(nova, "0@your-motion-group-id");
       setConnectedMotionGroup(connected)
     }
     setup()

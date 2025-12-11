@@ -14,7 +14,7 @@ npm install @wandelbots/wandelbots-js-react-components react react-dom @mui/mate
 
 ## Modular Imports + Peer Dependencies
 
-Some modules require additional peer dependencies, such as Three.js for 3D rendering. If you don't need 3D rendering in your application, import from `/core` to avoid these dependencies:
+Please note that some modules require extra dependencies, like three.js. If you don't need 3d rendering in your application, make sure you always import from `@wandelbots/wandelbots-js-react-components/core`.
 
 ```typescript
 import {
@@ -25,36 +25,30 @@ import {
 } from "@wandelbots/wandelbots-js-react-components/core"
 ```
 
-For 3D-enabled components, use `/3d`:
+For 3D-enabled components, use `@wandelbots/wandelbots-js-react-components/3d`:
 
 ```typescript
 import { Robot, RobotCard } from "@wandelbots/wandelbots-js-react-components/3d"
 ```
 
-For the code editor, use `/wandelscript`:
-
-```typescript
-import { WandelscriptEditor } from "@wandelbots/wandelbots-js-react-components/wandelscript"
-```
-
-You can also import everything from the main entry point, but you'll need to install all optional peer dependencies:
+You can also import from top-level `@wandelbots/wandelbots-js-react-components`, but then you'll need to provide all optional dependencies:
 
 ```bash
 npm install @wandelbots/wandelbots-js-react-components \
-  react react-dom \
-  @mui/material @emotion/react @emotion/styled \
-  three @react-three/fiber @react-three/drei three-stdlib \
-  @monaco-editor/react shiki
+ react react-dom \
+ @mui/material @mui/icons-material @emotion/react @emotion/styled \
+ three @react-three/fiber @react-three/drei three-stdlib \
+ @monaco-editor/react shiki @shikijs/monaco
 ```
 
 **Available Entry Points:**
 
-| Entry Point         | Components                                                                                                                | Required Peer Dependencies                                                    |
-| ------------------- | ------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
-| **Main** (`.`)      | All components                                                                                                            | React 18+, MUI v6/v7, @emotion/react, @emotion/styled, + all below            |
-| **`/core`**         | Base components (AppHeader, ProgramControl, SafetyBar, VelocitySlider, JoggingPanel, DataGrid, Timer, themes, i18n, etc.) | React 18+, MUI v6/v7, @emotion/react, @emotion/styled                         |
-| **`/3d`**           | 3D visualization (Robot, RobotCard, CollisionSceneRenderer, SafetyZonesRenderer, TrajectoryRenderer)                      | All from `/core` + three, @react-three/fiber, @react-three/drei, three-stdlib |
-| **`/wandelscript`** | Code editor (WandelscriptEditor)                                                                                          | All from `/core` + @monaco-editor/react, shiki, @shikijs/monaco               |
+| Entry Point         | Components                                                                                                                | Required Peer Dependencies                                                             |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| **Main** (`.`)      | All components                                                                                                            | React 18+, MUI v6/v7, @emotion/react, @emotion/styled, @mui/icons-material + all below |
+| **`/core`**         | Base components (AppHeader, ProgramControl, SafetyBar, VelocitySlider, JoggingPanel, DataGrid, Timer, themes, i18n, etc.) | React 18+, MUI v6/v7, @emotion/react, @emotion/styled, @mui/icons-material             |
+| **`/3d`**           | 3D visualization (Robot, RobotCard, CollisionSceneRenderer, SafetyZonesRenderer, TrajectoryRenderer)                      | All from `/core` + three, @react-three/fiber, @react-three/drei, three-stdlib          |
+| **`/wandelscript`** | Code editor (WandelscriptEditor)                                                                                          | All from `/core` + @monaco-editor/react                                                |
 
 ## Getting Started
 
@@ -252,8 +246,6 @@ Components integrate with the Wandelbots Nova ecosystem:
 **For `/wandelscript` (code editor):**
 
 - @monaco-editor/react
-- shiki
-- @shikijs/monaco
 
 ## Development
 

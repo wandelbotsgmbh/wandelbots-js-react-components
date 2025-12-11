@@ -153,7 +153,7 @@ import { NovaClient } from "@wandelbots/nova-js/v2"
 import { ConnectedMotionGroup } from "@wandelbots/wandelbots-js-react-components/core"
 
 const nova = new NovaClient({ instanceUrl: "https://your-nova-instance.com" })
-const connectedMotionGroup = await ConnectedMotionGroup.connect(nova, "0@myour-motion-group-id");
+const connectedMotionGroup = await ConnectedMotionGroup.connect(nova, "0@your-motion-group-id");
 
 // Use in 3D robot components
 <RobotComponent connectedMotionGroup={connectedMotionGroup} />
