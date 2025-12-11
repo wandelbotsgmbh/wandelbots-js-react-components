@@ -1,4 +1,7 @@
-import { AutoReconnectingWebsocket, tryParseJson } from "@wandelbots/nova-js"
+import {
+  type AutoReconnectingWebsocket,
+  tryParseJson,
+} from "@wandelbots/nova-js"
 import type {
   MotionGroupDescription,
   MotionGroupState,

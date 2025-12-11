@@ -1,5 +1,5 @@
 import {
-  AutoReconnectingWebsocket,
+  type AutoReconnectingWebsocket,
   tryParseJson,
   XYZ_TO_VECTOR,
 } from "@wandelbots/nova-js"
