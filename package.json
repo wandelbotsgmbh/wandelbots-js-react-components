@@ -13,8 +13,24 @@
   "main": "./dist/index.cjs",
   "exports": {
     ".": {
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.es.js",
+      "require": "./dist/index.cjs.js"
+    },
+    "./core": {
+      "types": "./dist/core.d.ts",
+      "import": "./dist/core.es.js",
+      "require": "./dist/core.cjs.js"
+    },
+    "./3d": {
+      "types": "./dist/3d.d.ts",
+      "import": "./dist/3d.es.js",
+      "require": "./dist/3d.cjs.js"
+    },
+    "./wandelscript": {
+      "types": "./dist/wandelscript.d.ts",
+      "import": "./dist/wandelscript.es.js",
+      "require": "./dist/wandelscript.cjs.js"
     }
   },
   "types": "./dist/index.d.ts",
@@ -110,17 +126,29 @@
   "peerDependencies": {
     "@emotion/react": "^11.11.1",
     "@emotion/styled": "^11.11.0",
+    "@monaco-editor/react": "^4.7.0",
     "@mui/icons-material": "^6 || ^7",
     "@mui/material": "^6 || ^7",
     "@react-three/drei": "^9.122.0 || ^10",
     "@react-three/fiber": "^8 || ^9",
+    "@shikijs/monaco": "^3.1.0",
     "react": "^18.0.0 || ^19.0.0",
     "react-dom": "^18.0.0 || ^19.0.0",
+    "shiki": "^3.1.0",
     "three": ">=0.174",
     "three-stdlib": ">=2"
   },
   "peerDependenciesMeta": {
     "react-dom": {
+      "optional": true
+    },
+    "@monaco-editor/react": {
+      "optional": true
+    },
+    "@shikijs/monaco": {
+      "optional": true
+    },
+    "shiki": {
       "optional": true
     },
     "@react-three/drei": {
@@ -137,17 +165,14 @@
     }
   },
   "dependencies": {
-    "@monaco-editor/react": "^4.7.0",
     "@mui/x-charts": "^8.9.0",
     "@mui/x-data-grid": "^8.10.1",
-    "@shikijs/monaco": "^3.1.0",
     "i18next-browser-languagedetector": "^8.0.4",
     "lodash-es": "^4.17.21",
     "mobx": "^6.13.6",
     "mobx-react-lite": "^4.1.0",
     "react-error-boundary": "^6.0.0",
-    "react-i18next": "^15.5.2",
-    "shiki": "^3.1.0"
+    "react-i18next": "^15.5.2"
   },
   "overrides": {
     "storybook": "$storybook"
