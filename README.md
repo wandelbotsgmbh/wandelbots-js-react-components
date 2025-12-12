@@ -12,11 +12,49 @@ Built with TypeScript, Material-UI, and React Three Fiber. Provides robot contro
 npm install @wandelbots/wandelbots-js-react-components
 ```
 
-## Getting Started
+## Modular Imports + Peer Dependencies
 
-For setup instructions, integration examples, and basic usage patterns, visit the **[Getting Started Guide](https://wandelbotsgmbh.github.io/wandelbots-js-react-components/?path=/docs/gettingstarted--docs)** in our Storybook documentation.
+Please note that some modules require extra dependencies, like three.js. If you don't need 3D rendering in your application, make sure you always import from `@wandelbots/wandelbots-js-react-components/core`.
 
-## Documentation
+```typescript
+import {
+  SafetyBar,
+  JoggingPanel,
+  DataGrid,
+  Timer,
+} from "@wandelbots/wandelbots-js-react-components/core"
+```
+
+For 3D-enabled components, use `@wandelbots/wandelbots-js-react-components/3d`:
+
+```typescript
+import { Robot, RobotCard } from "@wandelbots/wandelbots-js-react-components/3d"
+```
+
+You can also import from top-level `@wandelbots/wandelbots-js-react-components`, but then you'll need to provide all optional dependencies:
+
+```bash
+npm install @wandelbots/wandelbots-js-react-components \
+ react react-dom \
+ @mui/material @mui/icons-material @emotion/react @emotion/styled \
+ three @react-three/fiber @react-three/drei three-stdlib \
+ @monaco-editor/react shiki @shikijs/monaco
+```
+
+**Available Entry Points:**
+
+| Entry Point         | Components                                                                                                                | Required Peer Dependencies                                                             |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| **Main** (`.`)      | All components                                                                                                            | React 18+, MUI v6/v7, @emotion/react, @emotion/styled, @mui/icons-material + all below |
+| **`/core`**         | Base components (AppHeader, ProgramControl, SafetyBar, VelocitySlider, JoggingPanel, DataGrid, Timer, themes, i18n, etc.) | React 18+, MUI v6/v7, @emotion/react, @emotion/styled, @mui/icons-material             |
+| **`/3d`**           | 3D visualization (Robot, RobotCard, CollisionSceneRenderer, SafetyZonesRenderer, TrajectoryRenderer)                      | All from `/core` + three, @react-three/fiber, @react-three/drei, three-stdlib          |
+| **`/wandelscript`** | Code editor (WandelscriptEditor)                                                                                          | All from `/core` + @monaco-editor/react                                                |
+
+## 2.x to 3.x Migration Guide
+
+See [Migration Guide](https://wandelbotsgmbh.github.io/wandelbots-js-react-components/?path=/docs/migration-guide--docs) for assistance.
+
+## Interactive Documentation
 
 See the [Storybook](https://wandelbotsgmbh.github.io/wandelbots-js-react-components) for interactive examples and API documentation.
 
