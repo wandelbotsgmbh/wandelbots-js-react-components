@@ -1,0 +1,138 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Migration Guide"/>
+
+# Migration Guide
+
+This guide helps you migrate to the latest version of the Wandelbots React Components library.
+
+## Breaking Changes from 2.x (API v1) to 3.x (API v2)
+
+### ConnectedMotionGroup
+
+- **Import from this library, not from nova-js**: `ConnectedMotionGroup` must now be imported from `@wandelbots/wandelbots-js-react-components/core` instead of `@wandelbots/nova-js`
+- **Initialization**: Use the static `connect` method with a NovaClient instance and motion group ID
+
+```tsx
+// ❌ Old (don't use)
+import { ConnectedMotionGroup } from "@wandelbots/nova-js"
+
+// ✅ New (correct)
+import { NovaClient } from "@wandelbots/nova-js/v2"
+import { ConnectedMotionGroup } from "@wandelbots/wandelbots-js-react-components/core"
+
+const nova = new NovaClient({ instanceUrl: "https://your-nova-instance.com" })
+const connectedMotionGroup = await ConnectedMotionGroup.connect(nova, "0@your-motion-group-id")
+```
+
+### Nova.js V2 API
+
+- **Most components use V2**: All components now use the Nova.js V2 API (`@wandelbots/nova-js/v2`)
+- **Exceptions**: The following components still use the V1 API:
+  - `TrajectoryRenderer`
+  - `SafetyZonesRenderer`
+  - `CollisionSceneRenderer`
+
+```tsx
+// ✅ For most components, use V2
+import { NovaClient } from "@wandelbots/nova-js/v2"
+
+// ✅ For trajectory/safety/collision components, continue using V1 if needed
+import { NovaClient } from "@wandelbots/nova-js/v1"
+```
+
+### Component Props
+
+- **NovaClient or string**: Many components now accept either a `NovaClient` instance or a URL string for the `nova` prop
+- **connectedMotionGroup prop**: Components that work with robots now expect a `ConnectedMotionGroup` instance
+
+```tsx
+// ✅ Option 1: Pass NovaClient instance
+<JoggingPanel nova={nova} motionGroupId="0@ur5e" />
+
+// ✅ Option 2: Pass URL string
+<JoggingPanel nova="https://your-nova-instance.com" motionGroupId="0@ur5e" />
+
+// ✅ Where applicable, pass ConnectedMotionGroup
+<RobotCard connectedMotionGroup={connectedMotionGroup} />
+```
+
+## Migration Steps
+
+### Update Imports
+
+Replace all imports of `ConnectedMotionGroup` from `@wandelbots/nova-js` to this library:
+
+```tsx
+// Before
+import { ConnectedMotionGroup } from "@wandelbots/nova-js"
+
+// After
+import { ConnectedMotionGroup } from "@wandelbots/wandelbots-js-react-components/core"
+```
+
+### Update NovaClient Usage
+
+Switch to the V2 API for NovaClient:
+
+```tsx
+// Before
+import { NovaClient } from "@wandelbots/nova-js"
+
+// After
+import { NovaClient } from "@wandelbots/nova-js/v2"
+```
+
+### Update ConnectedMotionGroup Initialization
+
+Use the new `connect` method:
+
+```tsx
+// Before
+const connectedMotionGroup = new ConnectedMotionGroup(nova, motionGroupId)
+
+// After
+const connectedMotionGroup = await ConnectedMotionGroup.connect(nova, motionGroupId)
+```
+
+### Update Component Usage
+
+Ensure components receive the correct props:
+
+```tsx
+// Robot rendering components
+import { NovaClient } from "@wandelbots/nova-js/v2"
+import { ConnectedMotionGroup } from "@wandelbots/wandelbots-js-react-components/core"
+import { RobotCard, Robot } from "@wandelbots/wandelbots-js-react-components/3d"
+
+const nova = new NovaClient({ instanceUrl: "https://your-instance.com" })
+const connectedMotionGroup = await ConnectedMotionGroup.connect(nova, "0@ur5e")
+
+// Use with 3D components
+<RobotCard connectedMotionGroup={connectedMotionGroup} />
+<Robot connectedMotionGroup={connectedMotionGroup} />
+
+// Jogging components
+<JoggingPanel nova={nova} motionGroupId="0@ur5e" />
+```
+
+### Special Cases for V1 Components
+
+If you're using trajectory, safety zones, or collision scene renderers, they still use the V1 API:
+
+```tsx
+// These components still use V1
+import { NovaClient } from "@wandelbots/nova-js"
+import { TrajectoryRenderer, SafetyZonesRenderer, CollisionSceneRenderer } from "@wandelbots/wandelbots-js-react-components/3d"
+```
+
+## Common Issues
+
+### "Module not found" errors
+
+- Ensure you're importing from the correct sub-paths: `/core`, `/3d`, or `/wandelscript`
+- Check that peer dependencies are installed: `@wandelbots/nova-js`, `@mui/material`, `react`, `react-dom`
+
+### Components not receiving motion state updates
+
+- Verify that your `ConnectedMotionGroup` is properly connected before passing it to components

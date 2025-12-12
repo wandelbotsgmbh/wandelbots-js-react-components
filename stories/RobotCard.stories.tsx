@@ -72,7 +72,7 @@ function RobotCardWithMockConnectedMotionGroup(
 }
 
 const meta: Meta = {
-  title: "Components/RobotCard",
+  title: "Components/RobotCard/Stories",
   tags: ["!dev"],
   parameters: {
     layout: "centered",

@@ -12,7 +12,7 @@ import { sharedStoryConfig } from "./robotStoryConfig"
 export default {
   ...sharedStoryConfig,
   tags: ["!dev"],
-  title: "3D View/Robot",
+  title: "3D View/Robot/Robot",
 }
 
 function SupportedRobotScene(

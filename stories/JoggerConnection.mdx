@@ -1,3 +1,29 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Jogging/JoggerConnection"/>
+
+# Access to Motion Groups and Jogging
+
+## Connect to a motion group
+
+The library provides an easy to use way to access properties of a motion group.
+
+```ts
+import { NovaClient } from "@wandelbots/nova-js/v2"
+import { ConnectedMotionGroup } from "@wandelbots/wandelbots-js-react-components/core"
+
+const nova = new NovaClient({ instanceUrl: "nova-instance-url" })
+const activeRobot = await ConnectedMotionGroup.connect(nova, "motion-group-id")
+```
+
+This connected motion group opens a websocket and listens to changes of the current joints and the TCP pose. You can read out those values by using the `rapidlyChangingMotionState` of the object. Along other properties it also provides the current `safetySetup` and `tcps`.
+
+```ts
+const newJoints = activeRobot.rapidlyChangingMotionState.joint_position
+```
+
+**Api V2 change:** Please not that joints are now directly accessible in `rapidlyChangingMotionState.joint_position`, previously there were nested in `.rapidlyChangingMotionState.state.joint_position.joints`.
+
 ## JoggerConnection
 
 Jogging in a robotics context generally refers to the manual movement of the robot via direct human input. The Wandelbots platform provides websocket-based jogging methods which can be used to build similar jogging interfaces to those found on teach pendants.

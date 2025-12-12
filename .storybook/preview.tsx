@@ -22,15 +22,17 @@ const preview: Preview = {
       storySort: {
         order: [
           "Getting Started",
-          "3D View", [
+          "3D View",
+          [
             "Robot",
-            "TrajectoryRenderer", 
+            "TrajectoryRenderer",
             "SafetyZonesRenderer",
             "CollisionSceneRenderer",
           ],
           "Jogging",
           "Safety",
           "Components",
+          ["RobotCard", ["Stories", "Usage Docs"]],
           "Navigation",
           "*", // Everything else
         ],
