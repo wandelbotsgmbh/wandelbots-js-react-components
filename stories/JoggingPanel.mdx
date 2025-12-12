@@ -9,6 +9,11 @@ The `JoggingPanel` is a high-level user interface for manually moving a robot us
 It can be used to quickly create a jogging panel to control a robot.
 
 ```tsx
+import { NovaClient } from "@wandelbots/nova-js/v2"
+import { ConnectedMotionGroup } from "@wandelbots/wandelbots-js-react-components/core"
+
+const connectedMotionGroup = ConnectedMotionGroup.connect(nova, motionGroupId)
+
 <JoggingPanel
   nova={wandelApp.nova}
   motionGroupId={connectedMotionGroup.motionGroupId}

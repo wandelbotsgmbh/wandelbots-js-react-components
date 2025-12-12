@@ -16,7 +16,7 @@ A navigation header component that displays the current application's icon and n
 import {
   AppHeader,
   type AppItem,
-} from "@wandelbots/wandelbots-js-react-components"
+} from "@wandelbots/wandelbots-js-react-components/core"
 import { Home, Settings, Person } from "@mui/icons-material"
 
 const apps: AppItem[] = [

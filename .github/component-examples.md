@@ -8,10 +8,10 @@ This file provides practical examples of how to use the React components with no
 import { NovaClient } from "@wandelbots/nova-js/v2"
 import {
   JoggingPanel,
-  Robot,
   SafetyBar,
   createNovaMuiTheme,
-} from "@wandelbots/wandelbots-js-react-components"
+} from "@wandelbots/wandelbots-js-react-components/core"
+import { Robot } from "@wandelbots/wandelbots-js-react-components/3d"
 
 // Setup Nova client
 const nova = new NovaClient({ instanceUrl: "https://your-nova-instance.com" })
@@ -25,7 +25,11 @@ const theme = createNovaMuiTheme("dark")
 ### Robot Jogging Interface
 
 ```typescript
+import { NovaClient } from "@wandelbots/nova-js/v2"
+
 function MyRobotApp() {
+  const nova = new NovaClient({ instanceUrl: "https://your-nova-instance.com" })
+
   return (
     <JoggingInterface
       nova={nova}
@@ -47,14 +51,17 @@ function MyRobotApp() {
 
 ```typescript
 import { Canvas } from '@react-three/fiber'
-import { ConnectedMotionGroup } from "@wandelbots/wandelbots-js-react-components"
+import { NovaClient } from "@wandelbots/nova-js/v2"
+import { ConnectedMotionGroup } from "@wandelbots/wandelbots-js-react-components/core"
+import { Robot } from "@wandelbots/wandelbots-js-react-components/3d"
 
 function Robot3D({ motionGroupId }: { motionGroupId: string }) {
   const [connectedMotionGroup, setConnectedMotionGroup] = useState<ConnectedMotionGroup>()
 
   useEffect(() => {
     async function setup() {
-      const connected = ConnectedMotionGroup.connect(nova, motionGroupId)
+      const nova = new NovaClient({ instanceUrl: "https://your-nova-instance.com" })
+      const connected = await ConnectedMotionGroup.connect(nova, "0@your-motion-group-id");
       setConnectedMotionGroup(connected)
     }
     setup()
@@ -145,10 +152,12 @@ function VelocityControl() {
 ### Custom Jogging Store
 
 ```typescript
-import { JoggingStore } from '@wandelbots/wandelbots-js-react-components'
+import { NovaClient } from "@wandelbots/nova-js/v2"
+import { JoggingStore } from '@wandelbots/wandelbots-js-react-components/core'
 
 function AdvancedJogging() {
   const store = useMemo(() => new JoggingStore(), [])
+  const nova = new NovaClient({ instanceUrl: "https://your-nova-instance.com" })
 
   useEffect(() => {
     // Custom configuration
@@ -213,7 +222,7 @@ function RobotControlWithErrorHandling() {
 
 ```typescript
 import { ThemeProvider } from '@mui/material/styles'
-import { createNovaMuiTheme } from '@wandelbots/wandelbots-js-react-components'
+import { createNovaMuiTheme } from '@wandelbots/wandelbots-js-react-components/core'
 
 function ThemedApp() {
   const theme = createNovaMuiTheme('dark', {

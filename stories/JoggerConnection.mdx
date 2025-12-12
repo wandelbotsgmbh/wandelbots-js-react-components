@@ -30,7 +30,7 @@ Jogging in a robotics context generally refers to the manual movement of the rob
 
 ```ts
 import { NovaClient } from "@wandelbots/nova-js/v2"
-import { JoggerConnection } from "@wandelbots/wandelbots-js-react-components"
+import { JoggerConnection } from "@wandelbots/wandelbots-js-react-components/core"
 
 const nova = new NovaClient({ instanceUrl: "nova-instance-url" })
 const jogger = await JoggerConnection.open(nova, `some-motion-group-id`) // or to set options

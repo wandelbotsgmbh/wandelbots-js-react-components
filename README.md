@@ -6,13 +6,51 @@ React UI components for building robotics applications on the [Wandelbots Nova p
 
 Built with TypeScript, Material-UI, and React Three Fiber. Provides robot control interfaces, 3D visualizations, and automation components that integrate with the Nova ecosystem.
 
-## Quick Start
+## Install
 
 ```bash
-npm install @wandelbots/wandelbots-js-react-components
+npm install @wandelbots/wandelbots-js-react-components react react-dom @mui/material @emotion/react @emotion/styled
 ```
 
 ## Modular Imports + Peer Dependencies
+
+Please note that some modules require extra dependencies, like three.js. If you don't need 3d rendering in your application, make sure you always import from `@wandelbots/wandelbots-js-react-components/core`.
+
+```typescript
+import {
+  SafetyBar,
+  JoggingPanel,
+  DataGrid,
+  Timer,
+} from "@wandelbots/wandelbots-js-react-components/core"
+```
+
+For 3D-enabled components, use `@wandelbots/wandelbots-js-react-components/3d`:
+
+```typescript
+import { Robot, RobotCard } from "@wandelbots/wandelbots-js-react-components/3d"
+```
+
+You can also import from top-level `@wandelbots/wandelbots-js-react-components`, but then you'll need to provide all optional dependencies:
+
+```bash
+npm install @wandelbots/wandelbots-js-react-components \
+ react react-dom \
+ @mui/material @mui/icons-material @emotion/react @emotion/styled \
+ three @react-three/fiber @react-three/drei three-stdlib \
+ @monaco-editor/react shiki @shikijs/monaco
+```
+
+**Available Entry Points:**
+
+| Entry Point         | Components                                                                                                                | Required Peer Dependencies                                                             |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| **Main** (`.`)      | All components                                                                                                            | React 18+, MUI v6/v7, @emotion/react, @emotion/styled, @mui/icons-material + all below |
+| **`/core`**         | Base components (AppHeader, ProgramControl, SafetyBar, VelocitySlider, JoggingPanel, DataGrid, Timer, themes, i18n, etc.) | React 18+, MUI v6/v7, @emotion/react, @emotion/styled, @mui/icons-material             |
+| **`/3d`**           | 3D visualization (Robot, RobotCard, CollisionSceneRenderer, SafetyZonesRenderer, TrajectoryRenderer)                      | All from `/core` + three, @react-three/fiber, @react-three/drei, three-stdlib          |
+| **`/wandelscript`** | Code editor (WandelscriptEditor)                                                                                          | All from `/core` + @monaco-editor/react                                                |
+
+## Getting Started
 
 Please note that some modules require extra dependencies, like three.js. If you don't need 3D rendering in your application, make sure you always import from `@wandelbots/wandelbots-js-react-components/core`.
 
@@ -190,15 +228,24 @@ Components integrate with the Wandelbots Nova ecosystem:
 
 ### Prerequisites
 
+**Required for all entry points:**
+
 - React 18+ or 19+
 - Material-UI v6 or v7
 - @emotion/react and @emotion/styled
 
-### Optional Dependencies (for 3D components)
+### Additional Peer Dependencies
 
-- @react-three/fiber, @react-three/drei, three, three-stdlib
+**For `/3d` (3D visualization components):**
 
-See the [Getting Started Guide](https://wandelbotsgmbh.github.io/wandelbots-js-react-components/?path=/docs/gettingstarted--docs) for complete setup instructions and integration examples.
+- three
+- @react-three/fiber
+- @react-three/drei
+- three-stdlib
+
+**For `/wandelscript` (code editor):**
+
+- @monaco-editor/react
 
 ## Development
 

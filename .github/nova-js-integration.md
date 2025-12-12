@@ -22,7 +22,7 @@ const nova = new NovaClient({
 Motion groups represent controllable robot units.
 
 ```typescript
-import { ConnectedMotionGroup } from "@wandelbots/wandelbots-js-react-components"
+import { ConnectedMotionGroup } from "@wandelbots/wandelbots-js-react-components/core"
 
 // Get motion group information
 const motionGroup = await nova.getMotionGroup("0@ur5e")
@@ -72,10 +72,15 @@ const nova = isString(props.nova)
 Components that control or visualize robots use ConnectedMotionGroup:
 
 ```typescript
+import { NovaClient } from "@wandelbots/nova-js/v2"
+import { ConnectedMotionGroup } from "@wandelbots/wandelbots-js-react-components/core"
+
 // JoggingPanel internally:
 const motionGroup = await nova.getMotionGroup(motionGroupId)
-const connectedMotionGroup = nova.connectMotionGroup(motionGroup)
-
+const connectedMotionGroup = await ConnectedMotionGroup.connect(
+  nova,
+  "0@myour-motion-group-id",
+)
 // Real-time pose updates
 connectedMotionGroup.onPoseChanged((pose) => {
   // Update UI with current robot position
