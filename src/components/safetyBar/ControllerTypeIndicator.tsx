@@ -1,5 +1,6 @@
 import { useTheme, type PopoverOrigin } from "@mui/material"
 import { observer } from "mobx-react-lite"
+import { useId } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import ControllerTypePhysicalIcon from "./icons/controller-type-physical.svg"
 import ControllerTypeVirtualIcon from "./icons/controller-type-virtual.svg"
@@ -22,12 +23,13 @@ export const ControllerTypeIndicator = observer(
     compact,
   }: ControllerTypeIndicatorProps) => {
     const theme = useTheme()
+    const componentId = useId()
     const { t } = useTranslation()
 
     if (isVirtual) {
       return (
         <IndicatorWithExplanation
-          id="motion-group-virtual"
+          id={`motion-group-virtual-${componentId}`}
           icon={ControllerTypeVirtualIcon}
           color={theme.palette.tertiary.main}
           name={t("SafetyBar.ControllerType.Virtual.lb")}
@@ -52,7 +54,7 @@ export const ControllerTypeIndicator = observer(
 
     return (
       <IndicatorWithExplanation
-        id="motion-group-physical"
+        id={`motion-group-physical-${componentId}`}
         icon={ControllerTypePhysicalIcon}
         color={theme.palette.primary.main}
         name={t("SafetyBar.ControllerType.Physical.lb")}

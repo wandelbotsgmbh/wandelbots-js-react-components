@@ -37,7 +37,6 @@ export const JoggingJointTab = observer(
           justifyContent="center"
           alignItems="stretch"
           sx={{ flexGrow: "1" }}
-          id="JointControls"
         >
           <Stack alignItems="center" gap="24px">
             {store.jogger.motionStream.joints.map((joint) => {

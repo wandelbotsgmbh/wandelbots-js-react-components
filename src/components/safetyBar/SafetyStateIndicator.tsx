@@ -1,6 +1,7 @@
 import { useTheme, type PopoverOrigin } from "@mui/material"
 import type { SafetyStateType } from "@wandelbots/nova-js/v2"
 import { observer } from "mobx-react-lite"
+import { useId } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { assertUnreachable } from "../utils/errorHandling"
 import SafetyStateErrorIcon from "./icons/safety-state-error.svg"
@@ -26,13 +27,14 @@ export const SafetyStateIndicator = observer(
   }: SafetyStateIndicatorProps) => {
     const { t } = useTranslation()
     const theme = useTheme()
+    const componentId = useId()
 
     switch (safetyState) {
       // Normal state, robot can move
       case "SAFETY_STATE_NORMAL":
         return (
           <IndicatorWithExplanation
-            id="safety-state-normal"
+            id={`safety-state-normal-${componentId}`}
             title={t("SafetyBar.SafetyState.ti")}
             name={t("SafetyBar.SafetyState.Normal.lb")}
             label={compact ? null : t("SafetyBar.SafetyState.Normal.lb")}
@@ -54,7 +56,7 @@ export const SafetyStateIndicator = observer(
       case "SAFETY_STATE_ROBOT_EMERGENCY_STOP":
         return (
           <IndicatorWithExplanation
-            id="safety-state-estop"
+            id={`safety-state-estop-${componentId}`}
             title={t("SafetyBar.SafetyState.ti")}
             name={t("SafetyBar.SafetyState.Estop.lb")}
             label={compact ? null : t("SafetyBar.SafetyState.Estop.lb")}
@@ -81,7 +83,7 @@ export const SafetyStateIndicator = observer(
       case "SAFETY_STATE_STOP":
         return (
           <IndicatorWithExplanation
-            id="safety-state-stop"
+            id={`safety-state-stop-${componentId}`}
             icon={SafetyStateStopIcon}
             title={t("SafetyBar.SafetyState.ti")}
             name={t("SafetyBar.SafetyState.Stop.lb")}
@@ -108,7 +110,7 @@ export const SafetyStateIndicator = observer(
       case "SAFETY_STATE_VIOLATION":
         return (
           <IndicatorWithExplanation
-            id="safety-state-manual-action-required"
+            id={`safety-state-manual-action-required-${componentId}`}
             icon={SafetyStateManualActionRequiredIcon}
             color={theme.palette.warning.main}
             title={t("SafetyBar.SafetyState.ti")}
@@ -135,7 +137,7 @@ export const SafetyStateIndicator = observer(
       case "SAFETY_STATE_FAULT":
         return (
           <IndicatorWithExplanation
-            id="safety-state-error"
+            id={`safety-state-error-${componentId}`}
             icon={SafetyStateErrorIcon}
             color={theme.palette.error.main}
             title={t("SafetyBar.SafetyState.ti")}
