@@ -1,6 +1,7 @@
 import { useTheme, type PopoverOrigin } from "@mui/material"
 import type { OperationMode } from "@wandelbots/nova-js/v2"
 import { observer } from "mobx-react-lite"
+import { useId } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import OperationModeAutomaticIcon from "./icons/operation-mode-automatic.svg"
 import OperationModeErrorIcon from "./icons/operation-mode-error.svg"
@@ -23,12 +24,13 @@ export const OperationModeIndicator = observer(
   }: OperationModeIndicatorProps) => {
     const { t } = useTranslation()
     const theme = useTheme()
+    const componentId = useId()
 
     switch (operationMode) {
       case "OPERATION_MODE_AUTO":
         return (
           <IndicatorWithExplanation
-            id="operation-mode-auto"
+            id={`operation-mode-auto-${componentId}`}
             icon={OperationModeAutomaticIcon}
             title={t("SafetyBar.OperationMode.ti")}
             name={t("SafetyBar.OperationMode.Automatic.ti")}
@@ -49,7 +51,7 @@ export const OperationModeIndicator = observer(
       case "OPERATION_MODE_MANUAL_T2": {
         return (
           <IndicatorWithExplanation
-            id="operation-mode-manual"
+            id={`operation-mode-manual-${componentId}`}
             icon={OperationModeManualIcon}
             color={theme.palette.warning.main}
             title={t("SafetyBar.OperationMode.ti")}
@@ -71,7 +73,7 @@ export const OperationModeIndicator = observer(
       default:
         return (
           <IndicatorWithExplanation
-            id="operation-mode-error"
+            id={`operation-mode-error-${componentId}`}
             icon={OperationModeErrorIcon}
             color={theme.palette.warning.main}
             title={t("SafetyBar.OperationMode.ti")}

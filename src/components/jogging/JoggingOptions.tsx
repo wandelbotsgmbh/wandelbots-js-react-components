@@ -1,5 +1,6 @@
 import { Box, MenuItem } from "@mui/material"
 import { observer } from "mobx-react-lite"
+import { useId } from "react"
 import { useTranslation } from "react-i18next"
 import AdornedSelect from "../experimental/utils/AdornedSelect"
 import {
@@ -11,6 +12,7 @@ import {
 
 export const JoggingOptions = observer(({ store }: { store: JoggingStore }) => {
   const { t } = useTranslation()
+  const componentId = useId()
   const joggingOptions: React.ReactElement[] = []
 
   function translateOrientation(orientation: OrientationId): string {
@@ -28,7 +30,7 @@ export const JoggingOptions = observer(({ store }: { store: JoggingStore }) => {
     joggingOptions.push(
       <AdornedSelect
         key="coord"
-        labelId="jogging-coord-select"
+        labelId={`jogging-coord-select-${componentId}`}
         labelValue={t("Jogging.CoordinateSystem.hlb")}
         value={store.selectedCoordSystemId}
         size="small"
@@ -54,7 +56,7 @@ export const JoggingOptions = observer(({ store }: { store: JoggingStore }) => {
     joggingOptions.push(
       <AdornedSelect
         key="tcp"
-        labelId="jogging-tcp-select"
+        labelId={`jogging-tcp-select-${componentId}`}
         labelValue="TCP"
         value={store.selectedTcpId}
         size="small"
@@ -78,8 +80,7 @@ export const JoggingOptions = observer(({ store }: { store: JoggingStore }) => {
       <AdornedSelect
         key="orientation"
         labelValue={t("Jogging.Cartesian.Orientation.lb")}
-        id="orientation-select"
-        labelId="orientation-select"
+        labelId={`orientation-select-${componentId}`}
         value={store.selectedOrientation}
         onChange={(event) =>
           store.setSelectedOrientation(event.target.value as OrientationId)
@@ -100,7 +101,7 @@ export const JoggingOptions = observer(({ store }: { store: JoggingStore }) => {
       <AdornedSelect
         key="increment"
         labelValue={t("Jogging.Increment.hlb")}
-        labelId="jogging-increment-select"
+        labelId={`jogging-increment-select-${componentId}`}
         size="small"
         variant="filled"
         value={store.activeDiscreteIncrement?.id || "continuous"}
