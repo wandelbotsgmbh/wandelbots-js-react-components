@@ -1,3 +1,4 @@
+import { ThemeProvider, useTheme } from "@mui/material/styles"
 import { type FC } from "react"
 import { I18nextProvider } from "react-i18next"
 import { i18n } from "./i18n/config"
@@ -22,5 +23,20 @@ export function externalizeComponent<T extends React.JSX.ElementType>(
 const NovaComponentsProvider: FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  return <I18nextProvider i18n={i18n}>{children}</I18nextProvider>
+  // Preserve the existing MUI theme from parent context if it exists
+  let theme
+  try {
+    theme = useTheme()
+  } catch {
+    // No theme context exists, which is fine - MUI will use defaults
+  }
+
+  const content = <I18nextProvider i18n={i18n}>{children}</I18nextProvider>
+
+  // If a theme exists in parent context, pass it through to maintain theme inheritance
+  return theme ? (
+    <ThemeProvider theme={theme}>{content}</ThemeProvider>
+  ) : (
+    content
+  )
 }

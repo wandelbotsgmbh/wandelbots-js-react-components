@@ -13,11 +13,14 @@ This `Robot` component adds the robot to the 3D viewport. Use it together with t
 import { NovaClient } from "@wandelbots/nova-js/v2"
 import { ConnectedMotionGroup } from "@wandelbots/wandelbots-js-react-components/core"
 import { Robot } from "@wandelbots/wandelbots-js-react-components/3d"
+import { Canvas } from "@react-three/fiber"
 
 const nova = new NovaClient({ instanceUrl: "https://your-nova-instance.com" })
 const connectedMotionGroup = await ConnectedMotionGroup.connect(nova, "0@your-motion-group-id");
 
-<Robot connectedMotionGroup={connectedMotionGroup} />
+<Canvas>
+  <Robot connectedMotionGroup={connectedMotionGroup} />
+</Canvas>
 ```
 
 The robot model are loaded from the [jsdelivr CDN](https://cdn.jsdelivr.net/gh/wandelbotsgmbh/wandelbots-js-react-components/public/models/).
