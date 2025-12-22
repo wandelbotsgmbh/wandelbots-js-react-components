@@ -24,7 +24,7 @@ jobs:
     outputs:
       json_branches: ${{ steps.generate-matrix.outputs.json_branches }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
       - name: Generate Matrix
@@ -56,7 +56,7 @@ jobs:
         branch: ${{ fromJSON(needs.build_matrix.outputs.json_branches) }}
     continue-on-error: true
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           ref: ${{ matrix.branch }}
       - uses: actions/setup-node@v4
@@ -84,7 +84,7 @@ jobs:
       - build_matrix
       - build
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
       - name: Setup Pages
