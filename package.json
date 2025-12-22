@@ -71,7 +71,7 @@
     "@mui/material": "^7.1.1",
     "@react-three/drei": "^10.2.0",
     "@react-three/fiber": "^9.1.2",
-    "@rollup/plugin-commonjs": "^28.0.2",
+    "@rollup/plugin-commonjs": "^29.0.0",
     "@rollup/plugin-json": "^6.1.0",
     "@rollup/plugin-node-resolve": "^16.0.0",
     "@rollup/plugin-terser": "^0.4.4",
