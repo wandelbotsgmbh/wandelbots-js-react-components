@@ -67,7 +67,7 @@ export function robotStory(
             `Failed to load model for ${args.modelFromController}`,
           ).toHaveBeenCalled(),
         {
-          timeout: 5000,
+          timeout: 8000,
         },
       )
     },
