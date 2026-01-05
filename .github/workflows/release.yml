@@ -26,11 +26,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: "lts/*"
       - name: Install dependencies
@@ -50,9 +50,9 @@ jobs:
     needs: build
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: "lts/*"
       - name: Install gltf-transform
@@ -85,7 +85,7 @@ jobs:
     if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/v2') }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
       - name: Download build artifacts
@@ -106,7 +106,7 @@ jobs:
           zip ../no-draco-models.zip *.glb
           cd ..
       - name: Install Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: 24
       - name: Release
@@ -124,7 +124,7 @@ jobs:
     if: ${{ github.event_name == 'pull_request' && github.actor != 'dependabot[bot]' }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Download build artifacts
         uses: actions/download-artifact@v4
         with:
@@ -155,7 +155,7 @@ jobs:
           # Update the package.json with the new version
           jq --arg version "$FINAL_VERSION" '.version = $version' package.json > package.tmp.json && mv package.tmp.json package.json
       - name: Install Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: 24
       - name: Publish snapshot to npm

@@ -24,7 +24,7 @@ jobs:
     outputs:
       json_branches: ${{ steps.generate-matrix.outputs.json_branches }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
       - name: Generate Matrix
@@ -56,10 +56,10 @@ jobs:
         branch: ${{ fromJSON(needs.build_matrix.outputs.json_branches) }}
     continue-on-error: true
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           ref: ${{ matrix.branch }}
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: "lts/*"
       - name: Install dependencies
@@ -84,7 +84,7 @@ jobs:
       - build_matrix
       - build
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
       - name: Setup Pages
@@ -107,7 +107,7 @@ jobs:
         run: |
           rsync -a public/main/ public/
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v4
         with:
           path: ./public/
       - name: Deploy to GitHub Pages
