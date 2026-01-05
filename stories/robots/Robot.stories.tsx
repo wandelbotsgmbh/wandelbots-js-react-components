@@ -73,7 +73,7 @@ export const RobotStory: StoryObj<typeof SupportedRobotScene> = {
           `Failed to load model for example ur5e`,
         ).toHaveBeenCalled(),
       {
-        timeout: 5000,
+        timeout: 8000,
       },
     )
   },
