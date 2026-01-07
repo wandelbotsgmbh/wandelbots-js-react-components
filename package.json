@@ -50,7 +50,8 @@
     "ci:test:runner": "wait-on tcp:127.0.0.1:9009 && test-storybook --url http://127.0.0.1:9009 --index-json --browsers chromium",
     "build": "rimraf dist && vite build && tsc --declaration --emitDeclarationOnly",
     "build-storybook": "storybook build",
-    "prepare": "husky || true"
+    "prepare": "husky || true",
+    "td": "tsx scripts/test-deploy.ts"
   },
   "repository": {
     "type": "git",
@@ -123,6 +124,7 @@
     "three": "^0.182.0",
     "three-stdlib": "^2.35.14",
     "ts-dedent": "^2.2.0",
+    "tsx": "^4.21.0",
     "typescript": "^5.8.2",
     "unplugin": "^1.15.0",
     "vite": "^6.2.0",

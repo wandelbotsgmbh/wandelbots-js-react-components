@@ -9,3 +9,5 @@ storybook-static
 
 # Local Netlify folder
 .netlify
+
+.env.local
