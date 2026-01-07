@@ -5,7 +5,7 @@ import { MotionGroupModelsApi } from "@wandelbots/nova-api/v2"
  * Creates a nova-api based model getter that fetches GLB models
  * from the Motion Group Models API
  */
-export function createNovaApiModelGetter(baseURL: string = "http://172.31.12.142/api/v2/") {
+export function createNovaApiModelGetter(baseURL: string) {
   const configuration: Configuration = {
     basePath: baseURL.replace(/\/$/, ''), // Remove trailing slash
     isJsonMime: (mime: string) => mime === "application/json"
@@ -17,8 +17,40 @@ export function createNovaApiModelGetter(baseURL: string = "http://172.31.12.142
     try {
       console.log(`Attempting to load GLB model for ${modelFromController} from Nova API v2...`)
 
-      // Configure axios to handle binary data properly
-      const response = await api.getMotionGroupGlbModel(modelFromController, {
+      // First, get the list of available models
+      console.log('Fetching list of available motion group models...')
+      const modelsResponse = await api.getMotionGroupModels()
+      const availableModels = modelsResponse.data
+      console.log('Available models:', availableModels)
+
+      // Find the matching model or use the provided model name directly
+      let modelToUse = modelFromController
+      if (availableModels && availableModels.length > 0) {
+        // Try to find exact match first
+        const exactMatch = availableModels.find(model => model === modelFromController)
+        if (exactMatch) {
+          modelToUse = exactMatch
+        } else {
+          // Try to find partial match (case insensitive)
+          const partialMatch = availableModels.find(model => 
+            model.toLowerCase().includes(modelFromController.toLowerCase()) ||
+            modelFromController.toLowerCase().includes(model.toLowerCase())
+          )
+          if (partialMatch) {
+            modelToUse = partialMatch
+            console.log(`Using partial match: ${partialMatch} for requested ${modelFromController}`)
+          } else {
+            // Use first available model as fallback
+            modelToUse = availableModels[0]
+            console.log(`No match found, using first available model: ${modelToUse}`)
+          }
+        }
+      }
+
+      console.log(`Loading GLB model: ${modelToUse}`)
+
+      // Now get the GLB model for the selected model
+      const response = await api.getMotionGroupGlbModel(modelToUse, {
         responseType: 'blob'
       })
       console.log('Nova API response:', response)
@@ -97,7 +129,7 @@ export function defaultGetModel(modelFromController: string): string {
 /**
  * Enhanced model getter that tries nova-api first, falls back to CDN
  */
-export function createHybridModelGetter(baseURL: string = "http://172.31.12.142/api/v2/") {
+export function createHybridModelGetter(baseURL: string) {
   const novaApiGetter = createNovaApiModelGetter(baseURL)
 
   return async (modelFromController: string): Promise<string> => {
