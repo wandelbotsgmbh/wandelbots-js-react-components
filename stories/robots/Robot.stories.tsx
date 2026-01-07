@@ -3,7 +3,6 @@ import type { StoryObj } from "@storybook/react-vite"
 import { NovaClient } from "@wandelbots/nova-js/v2"
 import { useEffect, useState } from "react"
 import { expect, fn, waitFor } from "storybook/test"
-import type { SupportedRobot } from "../../src"
 import { PresetEnvironment, Robot } from "../../src"
 import { ConnectedMotionGroup } from "../../src/lib/ConnectedMotionGroup"
 import { OrbitControlsAround } from "./OrbitControlsAround"
@@ -15,13 +14,13 @@ export default {
   title: "3D View/Robot/Robot",
 }
 
-function SupportedRobotScene(
-  props: React.ComponentProps<typeof SupportedRobot>,
+function RobotScene(
+  props: React.ComponentProps<typeof Robot>,
 ) {
   const [connectedMotionGroup, setConnectedMotionGroup] =
     useState<ConnectedMotionGroup>()
 
-  const nova = new NovaClient({ instanceUrl: "https://mock.example.com" })
+  const nova = new NovaClient({ instanceUrl: "http://172.31.12.142/" })
 
   useEffect(() => {
     async function fetchConnectedMotionGroup() {
@@ -61,7 +60,7 @@ function SupportedRobotScene(
   )
 }
 
-export const RobotStory: StoryObj<typeof SupportedRobotScene> = {
+export const RobotStory: StoryObj<typeof RobotScene> = {
   args: {
     postModelRender: fn(),
   },
@@ -78,6 +77,6 @@ export const RobotStory: StoryObj<typeof SupportedRobotScene> = {
     )
   },
 
-  render: (args) => <SupportedRobotScene {...args} />,
+  render: (args) => <RobotScene {...args} />,
   name: "Robot",
 }

@@ -390,14 +390,14 @@ export class JoggerConnection {
     axis: "x" | "y" | "z"
     direction: "-" | "+"
     motion:
-      | {
-          type: "rotate"
-          distanceRads: number
-        }
-      | {
-          type: "translate"
-          distanceMm: number
-        }
+    | {
+      type: "rotate"
+      distanceRads: number
+    }
+    | {
+      type: "translate"
+      distanceMm: number
+    }
   }) {
     const commands: MotionCommand[] = []
 
@@ -559,8 +559,8 @@ export class JoggerConnection {
         } else {
           throw new Error(
             result?.add_trajectory_error?.message ||
-              result?.message ||
-              "Failed to execute trajectory, unknown error",
+            result?.message ||
+            "Failed to execute trajectory, unknown error",
           )
         }
       }

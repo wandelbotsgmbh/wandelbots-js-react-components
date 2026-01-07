@@ -31,7 +31,7 @@ export class MotionStreamConnection {
     const controller =
       await nova.api.controller.getCurrentRobotControllerState(controllerId)
     const motionGroup = controller?.motion_groups.find(
-      (mg) => mg.motion_group === motionGroupId,
+      (mg: MotionGroupState) => mg.motion_group === motionGroupId,
     )
     if (!controller || !motionGroup) {
       throw new Error(
