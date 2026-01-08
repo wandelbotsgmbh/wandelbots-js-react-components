@@ -20,7 +20,7 @@ function RobotScene(
   const [connectedMotionGroup, setConnectedMotionGroup] =
     useState<ConnectedMotionGroup>()
 
-  const nova = new NovaClient({ instanceUrl: "http://172.31.12.142/" })
+  const nova = new NovaClient({ instanceUrl: import.meta.env.WANDELAPI_BASE_URL || "https://mock.example.com" })
 
   useEffect(() => {
     async function fetchConnectedMotionGroup() {

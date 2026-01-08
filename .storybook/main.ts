@@ -1,11 +1,15 @@
 import type { StorybookConfig } from "@storybook/react-vite"
 import { readFileSync } from "node:fs"
+import { config as dotenvConfig } from "dotenv"
 import { loadCsf } from "storybook/internal/csf-tools"
 import type { Indexer } from "storybook/internal/types"
 import {
   generateRobotStories,
   robotStoryGenerationVitePlugin,
 } from "./robotStoryGeneration.ts"
+
+// Load environment variables from .env.local
+dotenvConfig({ path: '.env.local' })
 
 const config: StorybookConfig = {
   stories: [
@@ -51,6 +55,13 @@ const config: StorybookConfig = {
     const { plugins = [] } = config
     plugins.push(robotStoryGenerationVitePlugin())
     config.plugins = plugins
+    
+    // Make WANDELAPI_BASE_URL available in the browser
+    config.define = {
+      ...config.define,
+      'import.meta.env.WANDELAPI_BASE_URL': JSON.stringify(process.env.WANDELAPI_BASE_URL || ''),
+    }
+    
     return config
   },
 
