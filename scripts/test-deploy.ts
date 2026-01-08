@@ -1,16 +1,32 @@
-import { makeErrorMessage } from "./errorHandling"
-import { config } from "dotenv"
+import { Cell, RobotController, VirtualControllerTypes } from "@wandelbots/nova-js/v1"
 import axios, { isAxiosError } from "axios"
+import { config } from "dotenv"
 import fs from "fs/promises"
 import { omit } from "lodash-es"
 import { username } from "username"
-import { patchLocalEnv, waitForNovaInstanceStartup } from "./util"
+import { makeErrorMessage } from "./errorHandling"
+import { patchLocalEnv, waitForCellStartup, waitForNovaInstanceStartup } from "./util"
 config()
 
 /**
  * Set up a k8s.wabo.run instance and add our testing cell with virtual robots
  * Used for both development and e2e testing
  */
+
+const defaultControllers: RobotController[] = [
+  // One from each manufacturer. Adding every type of virtual robot would
+  // be great for testing but the backend would break from the load
+  {
+    name: "mock-ur5e",
+    configuration: {
+      kind: "VirtualController",
+      manufacturer: "universalrobots",
+      type: VirtualControllerTypes.UniversalrobotsUr5e,
+      position: "[1.17, -1.57, 1.36, 1.03, 1.29, 1.28, 0]",
+    },
+  }
+]
+
 async function testDeploy(
   opts: {
     instanceLifetimeMins?: number
@@ -55,7 +71,7 @@ async function testDeploy(
   if (!extendedInstance) {
     console.log("Reserving new k8s.wabo.run instance")
 
-    const instanceComment = `robot-pad:${process.env.GITLAB_CI ? `ci:${process.env.CI_COMMIT_REF_NAME}` : `dev:${await username()}`}`
+    const instanceComment = `js-react-components:${process.env.GITLAB_CI ? `ci:${process.env.CI_COMMIT_REF_NAME}` : `dev:${await username()}`}`
 
     const { data: instance } = await axios.get(
       `https://k8s.wabo.run/instance`,
@@ -92,6 +108,20 @@ async function testDeploy(
   // Wait for the API to come up
   await waitForNovaInstanceStartup(instanceUrl)
 
+  await axios.put(
+    // Note this must be the internal cells API in order for the CI setup additional
+    // config to override the foundation services
+    `${instanceUrl}/api/v1/internal/cells/cell?completionTimeout=360`,
+    {
+      name: cell,
+      controllers: defaultControllers,
+    } as Cell,
+  )
+
+  await waitForCellStartup(instanceUrl, cell, {
+    timeout: 1000,
+  })
+
   // Delete existing cell if it exists
   // if (extendedInstance) {
   //   const { data: cells } = (await axios.get(
@@ -112,6 +142,7 @@ async function testDeploy(
   //     }
   //   }
   // }
+
 
   console.log(`test deployment completed in ${Date.now() - startTime}ms`)
 }
