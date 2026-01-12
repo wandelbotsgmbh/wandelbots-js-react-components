@@ -1,0 +1,47 @@
+{
+    "dh_parameters": [
+        {
+            "alpha": -1.5707963267948966,
+            "theta": 0.0,
+            "a": 320.0,
+            "d": 670.0,
+            "reverse_rotation_direction": false
+        },
+        {
+            "alpha": 0.0,
+            "theta": -1.5707963267948966,
+            "a": 1120.0,
+            "d": 0.0,
+            "reverse_rotation_direction": false
+        },
+        {
+            "alpha": -1.5707963267948966,
+            "theta": 0.0,
+            "a": 200.0,
+            "d": 0.0,
+            "reverse_rotation_direction": false
+        },
+        {
+            "alpha": 1.5707963267948966,
+            "theta": 0.0,
+            "a": 0.0,
+            "d": 1142.5,
+            "reverse_rotation_direction": false
+        },
+        {
+            "alpha": -1.5707963267948966,
+            "theta": 0.0,
+            "a": 0.0,
+            "d": 0.0,
+            "reverse_rotation_direction": false
+        },
+        {
+            "alpha": 0.0,
+            "theta": -3.141592653589793,
+            "a": 0.0,
+            "d": 346.0,
+            "reverse_rotation_direction": false
+        }
+    ],
+    "inverse_solver": "AbbSphericalWrist"
+}
