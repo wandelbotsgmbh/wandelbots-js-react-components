@@ -56,10 +56,12 @@ const config: StorybookConfig = {
     plugins.push(robotStoryGenerationVitePlugin())
     config.plugins = plugins
     
-    // Make WANDELAPI_BASE_URL available in the browser
+    // Make environment variables available in the browser
     config.define = {
       ...config.define,
       'import.meta.env.WANDELAPI_BASE_URL': JSON.stringify(process.env.WANDELAPI_BASE_URL || ''),
+      'import.meta.env.VITE_NOVA_INSTANCE_URL': JSON.stringify(process.env.VITE_NOVA_INSTANCE_URL || ''),
+      'import.meta.env.CELL_ID': JSON.stringify(process.env.CELL_ID || 'cell'),
     }
     
     return config

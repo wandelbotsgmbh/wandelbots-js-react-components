@@ -2,12 +2,29 @@ import type { Object3D } from "three"
 import type { GLTF } from "three-stdlib"
 import { version } from "../../../package.json"
 
-export function defaultGetModel(modelFromController: string): string {
+export async function defaultGetModel(modelFromController: string): Promise<string> {
   let useVersion = version
   if (version.startsWith("0.")) {
     useVersion = ""
   }
-  return `https://cdn.jsdelivr.net/gh/wandelbotsgmbh/wandelbots-js-react-components${useVersion ? `@${useVersion}` : ""}/public/models/${modelFromController}.glb`
+  
+  const url = `https://cdn.jsdelivr.net/gh/wandelbotsgmbh/wandelbots-js-react-components${useVersion ? `@${useVersion}` : ""}/public/models/${modelFromController}.glb`
+  
+  try {
+    const response = await fetch(url)
+    if (!response.ok) {
+      throw new Error(`Failed to fetch model: ${response.status}`)
+    }
+    const blob = await response.blob()
+    const file = new File([blob], `${modelFromController}.glb`, { type: 'model/gltf-binary' })
+    return URL.createObjectURL(file)
+  } catch (error) {
+    console.error("Failed to fetch model from CDN:", error)
+    // Return empty file as fallback
+    const mockBlob = new Blob([], { type: 'model/gltf-binary' })
+    const mockFile = new File([mockBlob], `${modelFromController}.glb`, { type: 'model/gltf-binary' })
+    return URL.createObjectURL(mockFile)
+  }
 }
 
 /**
