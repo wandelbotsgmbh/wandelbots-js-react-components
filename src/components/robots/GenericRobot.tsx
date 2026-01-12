@@ -1,12 +1,12 @@
 import { useGLTF } from "@react-three/drei"
 import type { ThreeElements } from "@react-three/fiber"
-import React, { useCallback } from "react"
+import React, { useCallback, useEffect, useState } from "react"
 import type { Group, Mesh } from "three"
 import { type Object3D } from "three"
 import { isFlange, parseRobotModel } from "./robotModelLogic"
 
 export type RobotModelProps = {
-  modelURL: string
+  modelURL: string | Promise<string>
   /**
    * Called after a robot model has been loaded and
    * rendered into the threejs scene
@@ -19,16 +19,19 @@ function isMesh(node: Object3D): node is Mesh {
   return node.type === "Mesh"
 }
 
-export function GenericRobot({
-  modelURL,
-  flangeRef,
-  postModelRender,
-  ...props
-}: RobotModelProps) {
-  const { gltf } = parseRobotModel(
-    useGLTF(modelURL),
-    modelURL.split("/").pop() || modelURL,
-  )
+// Separate component that only renders when we have a valid URL
+function LoadedRobotModel({ 
+  url, 
+  flangeRef, 
+  postModelRender, 
+  ...props 
+}: { 
+  url: string
+  flangeRef?: React.Ref<Group>
+  postModelRender?: () => void
+} & ThreeElements["group"]) {
+  const gltfResult = useGLTF(url)
+  const { gltf } = parseRobotModel(gltfResult, 'robot.glb')
 
   const groupRef: React.RefCallback<Group> = useCallback(
     (group) => {
@@ -36,7 +39,7 @@ export function GenericRobot({
         postModelRender()
       }
     },
-    [modelURL],
+    [postModelRender],
   )
 
   function renderNode(node: Object3D): React.ReactNode {
@@ -70,5 +73,45 @@ export function GenericRobot({
     <group {...props} dispose={null} ref={groupRef}>
       {renderNode(gltf.scene)}
     </group>
+  )
+}
+
+export function GenericRobot({
+  modelURL,
+  flangeRef,
+  postModelRender,
+  ...props
+}: RobotModelProps) {
+  const [resolvedURL, setResolvedURL] = useState<string | null>(null)
+  
+  useEffect(() => {
+    const resolveURL = async () => {
+      try {
+        if (typeof modelURL === 'string') {
+          setResolvedURL(modelURL)
+        } else {
+          const url = await modelURL
+          setResolvedURL(url)
+        }
+      } catch (error) {
+        console.error('Failed to resolve model URL:', error)
+      }
+    }
+    
+    resolveURL()
+  }, [modelURL])
+
+  // Don't render until we have a resolved URL
+  if (!resolvedURL) {
+    return null // Loading state
+  }
+  
+  return (
+    <LoadedRobotModel 
+      url={resolvedURL}
+      flangeRef={flangeRef}
+      postModelRender={postModelRender}
+      {...props}
+    />
   )
 }
