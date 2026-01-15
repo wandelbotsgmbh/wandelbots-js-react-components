@@ -175,7 +175,7 @@
   "dependencies": {
     "@mui/x-charts": "^8.9.0",
     "@mui/x-data-grid": "^8.10.1",
-    "@wandelbots/nova-api": "file:..\\nova-js\\nova-api-25.11.0-alpha.1876.tgz",
+    "@wandelbots/nova-api": "26.1.0-dev.62",
     "@wandelbots/nova-js": "file:..\\nova-js\\wandelbots-nova-js-0.0.0-semantically-released.tgz",
     "axios": "^1.13.2",
     "dotenv": "^17.2.3",
