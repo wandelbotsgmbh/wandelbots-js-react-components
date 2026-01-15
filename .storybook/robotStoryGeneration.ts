@@ -31,7 +31,6 @@ export const generateRobotStories = async () => {
     if (baseUrl) {
       const nova = new NovaClient({ instanceUrl: baseUrl })
       modelNames = await nova.api.motionGroupModels.getMotionGroupModels()
-      console.log(`Retrieved ${modelNames.length} models from Nova API`)
     } else {
       console.warn("WANDELAPI_BASE_URL not configured, no robot models will be available")
     }
@@ -54,7 +53,6 @@ export const generateRobotStories = async () => {
       ${varName}.storyName = "${modelName}"
     `)
   }
-  console.log(`Generated stories for ${modelCsfAdditions.length} robot models`)
   return importStanza + "\n\n" + modelCsfAdditions.join("\n\n")
 }
 

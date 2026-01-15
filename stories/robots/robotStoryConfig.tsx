@@ -28,9 +28,9 @@ export async function getDHParams(
   const [manufacturer, ...rest] = modelFromController.split("_")
   const modelWithoutManufacturer = rest.join("_")
 
-  const jsonConfig = (await import(
-    `./robotConfig/jsonV2/${manufacturer}/${modelWithoutManufacturer}.json`
-  )) as RobotJsonConfig
+  const nova = new NovaClient({
+    instanceUrl: import.meta.env.WANDELAPI_BASE_URL || "https://mock.example.com",
+  })
 
   // The new format for the robotConfigs (dh_parameters with number/boolean types) is the target format.
   // The old format (dhParameters with string types) is supported for backward compatibility only.
@@ -160,22 +160,25 @@ export const sharedStoryConfig = {
         
         const nova = new NovaClient({ instanceUrl })
         
+        // Configure axios to handle binary responses for GLB files
+        const apiInstance = nova.api.motionGroupModels as any
+        if (apiInstance.axios?.interceptors) {
+          apiInstance.axios.interceptors.request.use((config: any) => {
+            if (config.url?.includes('/glb')) {
+              config.responseType = 'blob'
+            }
+            return config
+          })
+        }
+        
         try {
-          // Make direct fetch call to the Nova API
-          const apiPath = `/api/v2/motion-group-models/${modelFromController}/glb`
-          const fullUrl = instanceUrl + apiPath
+          const file = await nova.api.motionGroupModels.getMotionGroupGlbModel(modelFromController)
           
-          const response = await fetch(fullUrl)
-          if (!response.ok) {
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`)
-          }
-          
-          const blob = await response.blob()
-          const file = new File([blob], `${modelFromController}.glb`, { type: 'model/gltf-binary' })
-          return URL.createObjectURL(file)
+          // Create object URL from the file and return it
+          const url = URL.createObjectURL(file)
+          return url
         } catch (error) {
           console.error("Failed to fetch model:", error)
-          return createMockGlbFile(modelFromController)
         }
       })()
       
