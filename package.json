@@ -88,13 +88,13 @@
     "@types/react": "^19.1.8",
     "@types/three": "^0.182.0",
     "@vitejs/plugin-react": "^4.3.4",
-    "@wandelbots/nova-js": "^3.4.0",
+    "@wandelbots/nova-js": "^3.4.1",
     "add": "^2.0.6",
     "eslint-plugin-storybook": "^10.1.10",
     "glob": "^13.0.0",
     "http-server": "^14.1.1",
     "husky": "^9.1.7",
-    "i18next": "^25.2.1",
+    "i18next": "^25.7.4",
     "jest-simple-dot-reporter": "^1.0.5",
     "jest-summary-reporter": "^0.0.2",
     "jsdom": "^27.4.0",
@@ -175,7 +175,7 @@
     "mobx": "^6.13.6",
     "mobx-react-lite": "^4.1.0",
     "react-error-boundary": "^6.0.3",
-    "react-i18next": "^15.5.2"
+    "react-i18next": "^16.5.2"
   },
   "overrides": {
     "storybook": "$storybook"
