@@ -94,7 +94,7 @@
     "glob": "^13.0.0",
     "http-server": "^14.1.1",
     "husky": "^9.1.7",
-    "i18next": "^25.2.1",
+    "i18next": "^25.7.4",
     "jest-simple-dot-reporter": "^1.0.5",
     "jest-summary-reporter": "^0.0.2",
     "jsdom": "^27.4.0",
