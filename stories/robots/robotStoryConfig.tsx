@@ -32,7 +32,11 @@ export async function getDHParams(
     `./robotConfig/jsonV2/${manufacturer}/${modelWithoutManufacturer}.json`
   )) as RobotJsonConfig
 
-  // Support both old format (dhParameters with strings) and new format (dh_parameters with numbers/booleans)
+  // The new format for the robotConfigs (dh_parameters with number/boolean types) is the target format.
+  // The old format (dhParameters with string types) is supported for backward compatibility only.
+  // Once all robot config files are migrated to the new format, the old format support and
+  // the RobotJsonConfig.dhParameters field can be removed.
+  
   const dhParams = jsonConfig.dhParameters || jsonConfig.dh_parameters
 
   if (!dhParams) {
