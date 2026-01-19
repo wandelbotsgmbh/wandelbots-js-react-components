@@ -1,30 +1,47 @@
+import { NovaClient } from "@wandelbots/nova-js/v2"
 import type { Object3D } from "three"
 import type { GLTF } from "three-stdlib"
-import { version } from "../../../package.json"
+
+const modelCache = new Map<string, Promise<string>>()
 
 export async function defaultGetModel(modelFromController: string): Promise<string> {
-  let useVersion = version
-  if (version.startsWith("0.")) {
-    useVersion = ""
+  // Check cache first
+  if (modelCache.has(modelFromController)) {
+    return modelCache.get(modelFromController)!
   }
   
-  const url = `https://cdn.jsdelivr.net/gh/wandelbotsgmbh/wandelbots-js-react-components${useVersion ? `@${useVersion}` : ""}/public/models/${modelFromController}.glb`
-  
-  try {
-    const response = await fetch(url)
-    if (!response.ok) {
-      throw new Error(`Failed to fetch model: ${response.status}`)
+  // Create the promise and cache it immediately to prevent duplicate calls
+  const modelPromise = (async () => {
+    const instanceUrl = import.meta.env.WANDELAPI_BASE_URL || import.meta.env.VITE_NOVA_INSTANCE_URL
+    
+    const nova = new NovaClient({ instanceUrl })
+    
+    // Configure axios to handle binary responses for GLB files
+    const apiInstance = nova.api.motionGroupModels as any
+    if (apiInstance.axios?.interceptors) {
+      apiInstance.axios.interceptors.request.use((config: any) => {
+        if (config.url?.includes('/glb')) {
+          config.responseType = 'blob'
+        }
+        return config
+      })
     }
-    const blob = await response.blob()
-    const file = new File([blob], `${modelFromController}.glb`, { type: 'model/gltf-binary' })
-    return URL.createObjectURL(file)
-  } catch (error) {
-    console.error("Failed to fetch model from CDN:", error)
-    // Return empty file as fallback
-    const mockBlob = new Blob([], { type: 'model/gltf-binary' })
-    const mockFile = new File([mockBlob], `${modelFromController}.glb`, { type: 'model/gltf-binary' })
-    return URL.createObjectURL(mockFile)
-  }
+    
+    try {
+      const file = await nova.api.motionGroupModels.getMotionGroupGlbModel(modelFromController)
+      
+      // Create object URL from the file and return it
+      const url = URL.createObjectURL(file)
+      return url
+    } catch (error) {
+      console.error("Failed to fetch model:", error)
+      throw error
+    }
+  })()
+  
+  // Cache the promise
+  modelCache.set(modelFromController, modelPromise)
+  return modelPromise
 }
 
 /**
