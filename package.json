@@ -115,7 +115,7 @@
     "semantic-release": "^25.0.2",
     "shiki": "^3.1.0",
     "storybook": "^10.1.11",
-    "storybook-preset-inline-svg": "^1.0.1",
+    "storybook-preset-inline-svg": "^2.0.0",
     "three": "^0.182.0",
     "three-stdlib": "^2.35.14",
     "ts-dedent": "^2.2.0",
