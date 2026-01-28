@@ -20,7 +20,8 @@ const connectedMotionGroup = await ConnectedMotionGroup.connect(nova, "0@your-mo
 <Robot connectedMotionGroup={connectedMotionGroup} />
 ```
 
-The robot model are loaded from the [jsdelivr CDN](https://cdn.jsdelivr.net/gh/wandelbotsgmbh/wandelbots-js-react-components/public/models/).
+The robot model are loaded from your connected Nova instance.
+
 
 In case you want to use the application offline, you can download the models and host them locally. You can override the URL resolver of the `Robot` component by passing a `getModel` function like:
 
