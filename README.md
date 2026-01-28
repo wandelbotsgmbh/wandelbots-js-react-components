@@ -224,6 +224,24 @@ npm install
 npm run dev  # Start Storybook development server
 ```
 
+## Robot Model Testing
+
+View Robot Models in web view:
+
+```bash
+git clone https://github.com/wandelbotsgmbh/wandelbots-js-react-components.git
+cd wandelbots-js-react-components
+npm install
+npm run td # can be substituted by writing a nova instance ip into a file named .env.local
+npm run dev  # Start Storybook development server
+```
+
+.env.local file:
+```
+WANDELAPI_BASE_URL=http://<instance-ip>
+CELL_ID=cell
+```
+
 ### Local Testing
 
 Build and test the package locally:
