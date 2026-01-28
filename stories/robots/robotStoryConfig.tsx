@@ -22,6 +22,9 @@ type RobotJsonConfig = {
   }[]
 }
 
+// Provided by robot config loader at runtime; declared here for TS correctness in stories.
+declare const jsonConfig: RobotJsonConfig
+
 export async function getDHParams(
   modelFromController: string,
 ): Promise<DHParameter[]> {
@@ -43,7 +46,7 @@ export async function getDHParams(
     throw new Error(`No DH parameters found in ${modelFromController}.json`)
   }
 
-  return dhParams.map((json) => {
+  return dhParams.map((json: any) => {
     // Handle both string and number formats
     const a = typeof json.a === "string" ? parseFloat(json.a) : json.a
     const d = typeof json.d === "string" ? parseFloat(json.d) : json.d
@@ -173,12 +176,14 @@ export const sharedStoryConfig = {
         
         try {
           const file = await nova.api.motionGroupModels.getMotionGroupGlbModel(modelFromController)
-          
+
           // Create object URL from the file and return it
           const url = URL.createObjectURL(file)
           return url
         } catch (error) {
           console.error("Failed to fetch model:", error)
+          // Fall back to a mock GLB to ensure we always return a string URL
+          return createMockGlbFile(modelFromController)
         }
       })()
       

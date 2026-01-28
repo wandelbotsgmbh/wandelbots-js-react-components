@@ -15,7 +15,7 @@ export default {
 }
 
 function RobotScene(
-  props: React.ComponentProps<typeof Robot>,
+  props: Omit<React.ComponentProps<typeof Robot>, "connectedMotionGroup">,
 ) {
   const [connectedMotionGroup, setConnectedMotionGroup] =
     useState<ConnectedMotionGroup>()
@@ -52,8 +52,8 @@ function RobotScene(
       <Canvas shadows>
         <PresetEnvironment />
 
-        <OrbitControlsAround>
-          <Robot connectedMotionGroup={connectedMotionGroup} {...props} />
+          <OrbitControlsAround>
+          <Robot {...props} connectedMotionGroup={connectedMotionGroup} />
         </OrbitControlsAround>
       </Canvas>
     </div>
