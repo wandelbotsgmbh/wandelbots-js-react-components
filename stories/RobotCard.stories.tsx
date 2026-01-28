@@ -60,9 +60,20 @@ function RobotCardWithMockConnectedMotionGroup(
         ((robotProps) => (
           <Robot
             {...robotProps}
-            getModel={(modelFromController: string) => {
+            getModel={async (modelFromController: string) => {
               // Fetch from storybook rather than CDN to ensure version alignment
-              return `./models/${modelFromController}.glb`
+              const url = `./models/${modelFromController}.glb`
+              try {
+                const response = await fetch(url)
+                const blob = await response.blob()
+                const file = new File([blob], `${modelFromController}.glb`, { type: 'model/gltf-binary' })
+                return URL.createObjectURL(file)
+              } catch (error) {
+                // Fallback to empty file
+                const mockBlob = new Blob([], { type: 'model/gltf-binary' })
+                const mockFile = new File([mockBlob], `${modelFromController}.glb`, { type: 'model/gltf-binary' })
+                return URL.createObjectURL(mockFile)
+              }
             }}
           />
         ))

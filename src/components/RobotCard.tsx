@@ -52,7 +52,7 @@ export interface RobotCardProps {
     flangeRef?: React.Ref<Group>
     postModelRender?: () => void
     transparentColor?: string
-    getModel?: (modelFromController: string) => string
+    getModel?: (modelFromController: string) => Promise<string>
   }>
   /** Custom component to render in the content area (optional) */
   customContentComponent?: React.ComponentType<Record<string, unknown>>

@@ -8,4 +8,4 @@ export default {
 
 // This file is autopopulated at storybook build time by the
 // indexer and builder defined in .storybook/main.ts
-// It gets a story for every .glb file in the public/models directory
+// It gets a story for every model returned by the Nova API getMotionGroupModels() method
