@@ -31,7 +31,14 @@ function LoadedRobotModel({
   postModelRender?: () => void
 } & ThreeElements["group"]) {
   const gltfResult = useGLTF(url)
-  const { gltf } = parseRobotModel(gltfResult, 'robot.glb')
+  let gltf
+  try {
+    const parsed = parseRobotModel(gltfResult, 'robot.glb')
+    gltf = parsed.gltf
+  } catch (err) {
+    console.warn('parseRobotModel failed:', err)
+    gltf = gltfResult
+  }
 
   const groupRef: React.RefCallback<Group> = useCallback(
     (group) => {
@@ -43,29 +50,41 @@ function LoadedRobotModel({
   )
 
   function renderNode(node: Object3D): React.ReactNode {
-    if (isMesh(node)) {
-      return (
-        <mesh
-          name={node.name}
-          key={node.uuid}
-          geometry={node.geometry}
-          material={node.material}
-          position={node.position}
-          rotation={node.rotation}
-        />
-      )
-    } else {
-      return (
-        <group
-          name={node.name}
-          key={node.uuid}
-          position={node.position}
-          rotation={node.rotation}
-          ref={isFlange(node) ? flangeRef : undefined}
-        >
-          {node.children.map(renderNode)}
-        </group>
-      )
+    try {
+      if (isMesh(node)) {
+        // Defensive: only render mesh if geometry exists
+        if ((node as Mesh).geometry) {
+          return (
+            <mesh
+              name={node.name}
+              key={node.uuid}
+              geometry={(node as Mesh).geometry}
+              material={(node as Mesh).material}
+              position={node.position}
+              rotation={node.rotation}
+            />
+          )
+        }
+        // Fallback to empty group if geometry is missing
+        return (
+          <group name={node.name} key={node.uuid} position={node.position} rotation={node.rotation} />
+        )
+      } else {
+        return (
+          <group
+            name={node.name}
+            key={node.uuid}
+            position={node.position}
+            rotation={node.rotation}
+            ref={isFlange(node) ? flangeRef : undefined}
+          >
+            {node.children.map(renderNode)}
+          </group>
+        )
+      }
+    } catch (e) {
+      console.warn('Error rendering node', node.name, e)
+      return null
     }
   }
 

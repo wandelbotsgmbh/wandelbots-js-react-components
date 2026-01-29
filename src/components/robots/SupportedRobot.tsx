@@ -67,7 +67,7 @@ export const SupportedRobot = externalizeComponent(
         fallback={dhrobot}
         onError={(err) => {
           // Missing model; show the fallback for now
-          console.error(err)
+          console.warn(err)
         }}
       >
         <Suspense fallback={dhrobot}>

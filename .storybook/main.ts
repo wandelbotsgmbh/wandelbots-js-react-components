@@ -1,6 +1,6 @@
 import type { StorybookConfig } from "@storybook/react-vite"
-import { readFileSync } from "node:fs"
 import { config as dotenvConfig } from "dotenv"
+import { readFileSync } from "node:fs"
 import { loadCsf } from "storybook/internal/csf-tools"
 import type { Indexer } from "storybook/internal/types"
 import {
@@ -28,7 +28,6 @@ const config: StorybookConfig = {
     name: "@storybook/react-vite",
     options: {},
   },
-  staticDirs: ["../public"],
   // TS config from mui integration guide https://storybook.js.org/recipes/@mui/material
   typescript: {
     reactDocgen: "react-docgen-typescript",
@@ -62,6 +61,7 @@ const config: StorybookConfig = {
       'import.meta.env.WANDELAPI_BASE_URL': JSON.stringify(process.env.WANDELAPI_BASE_URL || ''),
       'import.meta.env.VITE_NOVA_INSTANCE_URL': JSON.stringify(process.env.VITE_NOVA_INSTANCE_URL || ''),
       'import.meta.env.CELL_ID': JSON.stringify(process.env.CELL_ID || 'cell'),
+      'import.meta.env.VITE_SKIP_ROBOT_MODEL': JSON.stringify(process.env.VITE_SKIP_ROBOT_MODEL || ''),
     }
     
     return config

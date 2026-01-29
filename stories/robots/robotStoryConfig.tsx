@@ -82,63 +82,92 @@ const modelCache = new Map<string, Promise<string>>()
 // Helper function to create a minimal valid GLB file for mocking
 function createMockGlbFile(modelFromController: string): string {
   // Create a minimal valid GLB file (GLTF binary format)
-  const glbHeader = new Uint8Array([
-    0x67, 0x6C, 0x54, 0x46, // magic: "glTF"
-    0x02, 0x00, 0x00, 0x00, // version: 2
-    0x6C, 0x00, 0x00, 0x00, // length: 108 bytes
-  ])
-  
-  const jsonChunk = JSON.stringify({
+  const jsonObj = {
     asset: { version: "2.0" },
     scene: 0,
     scenes: [{ nodes: [0] }],
-    nodes: [{ mesh: 0 }],
-    meshes: [{
-      primitives: [{
-        attributes: { POSITION: 0 },
-        mode: 4
-      }]
-    }],
-    accessors: [{
-      bufferView: 0,
-      componentType: 5126,
-      count: 1,
-      type: "VEC3",
-      min: [0, 0, 0],
-      max: [0, 0, 0]
-    }],
+    // Ensure a flange-named node exists so parsing logic can find the flange
+    nodes: [{ mesh: 0, name: `${modelFromController}_FLG` }],
+    meshes: [
+      {
+        primitives: [
+          {
+            attributes: { POSITION: 0 },
+            mode: 4,
+          },
+        ],
+      },
+    ],
+    accessors: [
+      {
+        bufferView: 0,
+        componentType: 5126,
+        count: 1,
+        type: "VEC3",
+        min: [0, 0, 0],
+        max: [0, 0, 0],
+      },
+    ],
     bufferViews: [{ buffer: 0, byteOffset: 0, byteLength: 12 }],
-    buffers: [{ byteLength: 12 }]
-  })
-  
-  const jsonPadding = 4 - (jsonChunk.length % 4)
-  const paddedJsonChunk = jsonChunk + ' '.repeat(jsonPadding)
-  const jsonChunkHeader = new Uint8Array([
-    paddedJsonChunk.length, 0x00, 0x00, 0x00, // chunk length
-    0x4A, 0x53, 0x4F, 0x4E // chunk type: "JSON"
-  ])
-  
+    buffers: [{ byteLength: 12 }],
+  }
+
+  const jsonText = JSON.stringify(jsonObj)
+  const jsonBytes = new TextEncoder().encode(jsonText)
+  const jsonPadding = (4 - (jsonBytes.length % 4)) % 4
+  const paddedJsonLength = jsonBytes.length + jsonPadding
+
   const binaryData = new Float32Array([0, 0, 0]) // single vertex at origin
-  const binaryChunkHeader = new Uint8Array([
-    12, 0x00, 0x00, 0x00, // chunk length: 12 bytes
-    0x42, 0x49, 0x4E, 0x00 // chunk type: "BIN\0"
-  ])
-  
-  const totalLength = 12 + 8 + paddedJsonChunk.length + 8 + 12
-  glbHeader.set(new Uint32Array([totalLength]), 8)
-  
-  const glbBuffer = new ArrayBuffer(totalLength)
-  const view = new Uint8Array(glbBuffer)
+  const binaryBytes = new Uint8Array(binaryData.buffer)
+  const binaryLength = binaryBytes.length
+
+  const headerLength = 12
+  const jsonChunkHeaderLength = 8
+  const binChunkHeaderLength = 8
+  const totalLength = headerLength + jsonChunkHeaderLength + paddedJsonLength + binChunkHeaderLength + binaryLength
+
+  const buffer = new ArrayBuffer(totalLength)
+  const dv = new DataView(buffer)
+  const u8 = new Uint8Array(buffer)
   let offset = 0
-  
-  view.set(glbHeader, offset); offset += 12
-  view.set(jsonChunkHeader, offset); offset += 8
-  view.set(new TextEncoder().encode(paddedJsonChunk), offset); offset += paddedJsonChunk.length
-  view.set(binaryChunkHeader, offset); offset += 8
-  view.set(new Uint8Array(binaryData.buffer), offset)
-  
-  const mockBlob = new Blob([glbBuffer], { type: 'model/gltf-binary' })
-  const mockFile = new File([mockBlob], `${modelFromController}.glb`, { type: 'model/gltf-binary' })
+
+  // magic 'glTF'
+  u8.set([0x67, 0x6C, 0x54, 0x46], offset)
+  offset += 4
+
+  // version 2 little-endian
+  dv.setUint32(offset, 2, true)
+  offset += 4
+
+  // total length little-endian
+  dv.setUint32(offset, totalLength, true)
+  offset += 4
+
+  // JSON chunk header: length and type
+  dv.setUint32(offset, paddedJsonLength, true)
+  offset += 4
+  u8.set([0x4A, 0x53, 0x4F, 0x4E], offset) // 'JSON'
+  offset += 4
+
+  // JSON payload + padding
+  u8.set(jsonBytes, offset)
+  offset += jsonBytes.length
+  if (jsonPadding > 0) {
+    u8.set(new Uint8Array(jsonPadding).fill(0x20), offset) // spaces
+    offset += jsonPadding
+  }
+
+  // BIN chunk header
+  dv.setUint32(offset, binaryLength, true)
+  offset += 4
+  u8.set([0x42, 0x49, 0x4E, 0x00], offset) // 'BIN\0'
+  offset += 4
+
+  // binary payload
+  u8.set(binaryBytes, offset)
+
+  const mockBlob = new Blob([buffer], { type: "model/gltf-binary" })
+  const mockFile = new File([mockBlob], `${modelFromController}.glb`, { type: "model/gltf-binary" })
   return URL.createObjectURL(mockFile)
 }
 
@@ -159,6 +188,7 @@ export const sharedStoryConfig = {
         // Always use mock for Storybook since .env.local isn't available
         if (!instanceUrl || instanceUrl === "undefined" || typeof instanceUrl !== "string") {
           return createMockGlbFile(modelFromController)
+          // console.warn(`Falling back to mock GLB for ${modelFromController}`)
         }
         
         const nova = new NovaClient({ instanceUrl })
@@ -184,6 +214,7 @@ export const sharedStoryConfig = {
           console.error("Failed to fetch model:", error)
           // Fall back to a mock GLB to ensure we always return a string URL
           return createMockGlbFile(modelFromController)
+          // console.warn(`Falling back to mock GLB for ${modelFromController}`)
         }
       })()
       
