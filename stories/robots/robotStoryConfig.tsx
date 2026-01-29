@@ -40,10 +40,28 @@ export async function getDHParams(
   // Once all robot config files are migrated to the new format, the old format support and
   // the RobotJsonConfig.dhParameters field can be removed.
   
-  const dhParams = jsonConfig.dhParameters || jsonConfig.dh_parameters
+  // Prefer runtime-provided `jsonConfig` when available (production/test setups).
+  // Fall back to local JSON files shipped with the stories for Storybook test runner.
+  let dhParams: any = undefined
+
+  if (typeof jsonConfig !== "undefined") {
+    dhParams = (jsonConfig as any).dhParameters || (jsonConfig as any).dh_parameters
+  }
 
   if (!dhParams) {
-    throw new Error(`No DH parameters found in ${modelFromController}.json`)
+    // Attempt to load a local config file from the stories/robots/robotConfig folder.
+    // `modelWithoutManufacturer` is intended to match filenames (e.g. "UR5e.json").
+    try {
+      // Dynamic import will be handled by Vite/Storybook; this keeps tests deterministic.
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore -- dynamic import of JSON
+      const cfg = await import(`./robotConfig/${modelWithoutManufacturer}.json`)
+      const loaded = cfg?.default ?? cfg
+      dhParams = loaded.dhParameters || loaded.dh_parameters
+    } catch (err) {
+      // If nothing found, throw a helpful error so test output is clear.
+      throw new Error(`No DH parameters found for ${modelFromController} - attempted jsonConfig and local robotConfig/${modelWithoutManufacturer}.json`)
+    }
   }
 
   return dhParams.map((json: any) => {
