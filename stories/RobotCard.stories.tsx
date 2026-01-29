@@ -152,11 +152,7 @@ const meta: Meta = {
         "UniversalRobots_UR3e",
         "UniversalRobots_UR5e",
         "UniversalRobots_UR10e",
-        "UniversalRobots_UR16e",
         "KUKA_KR6_R700_2",
-        "KUKA_KR10_R1100_2",
-        "ABB_1200_07_7",
-        "FANUC_CRX10iA",
       ],
       description: "Robot model to display",
     },
@@ -247,10 +243,6 @@ export const MultipleRobots: Story = {
           model: "KUKA_KR6_R700_2",
           dhParameters: await getDHParams("KUKA_KR6_R700_2"),
         },
-        {
-          model: "FANUC_CRX10iA",
-          dhParameters: await getDHParams("FANUC_CRX10iA"),
-        },
       ]),
     }),
   ],
@@ -279,14 +271,6 @@ export const MultipleRobots: Story = {
         programState: ProgramState.IDLE,
         safetyState: "SAFETY_STATE_STOP" as const,
         operationMode: "OPERATION_MODE_MANUAL" as const,
-      },
-      {
-        name: "FANUC Station D",
-        modelFromController: robotConfigs[3].model,
-        dhParameters: robotConfigs[3].dhParameters,
-        programState: ProgramState.STOPPING,
-        safetyState: "SAFETY_STATE_DEVICE_EMERGENCY_STOP" as const,
-        operationMode: "OPERATION_MODE_MANUAL_T1" as const,
       },
     ]
 
