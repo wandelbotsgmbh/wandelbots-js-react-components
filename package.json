@@ -77,7 +77,7 @@
     "@rollup/plugin-terser": "^0.4.4",
     "@rollup/plugin-typescript": "^12.1.2",
     "@shikijs/monaco": "^3.1.0",
-    "@storybook/addon-docs": "^10.1.7",
+    "@storybook/addon-docs": "^10.2.3",
     "@storybook/react-vite": "^10.1.10",
     "@storybook/test-runner": "^0.24.1",
     "@svgr/rollup": "^8.1.0",
