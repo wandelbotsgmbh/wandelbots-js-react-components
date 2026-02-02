@@ -232,8 +232,15 @@ View Robot Models in web view:
 git clone https://github.com/wandelbotsgmbh/wandelbots-js-react-components.git
 cd wandelbots-js-react-components
 npm install
-npm run td # can be substituted by writing a nova instance ip into a file named .env.local
+npm run td <instanceProviderURL> # instanceProviderURL can be provided via an instanceProviderConfig.json file. The entire command can be substituted by writing a nova instance ip into a file named .env.local
 npm run dev  # Start Storybook development server
+```
+
+instanceProviderConfig.json file:
+```
+{
+  "url": "yourURL"
+}
 ```
 
 .env.local file:

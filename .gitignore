@@ -13,3 +13,4 @@ storybook-static
 #test-deploy
 .env.local
 kubeconfig.yml
+instanceProviderConfig.json

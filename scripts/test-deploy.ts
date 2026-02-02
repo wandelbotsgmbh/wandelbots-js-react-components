@@ -9,7 +9,7 @@ import { patchLocalEnv, waitForCellStartup, waitForNovaInstanceStartup } from ".
 config()
 
 /**
- * Set up a k8s.wabo.run instance and add our testing cell with virtual robots
+ * Set up a instance and add our testing cell with virtual robots
  * Used for both development and e2e testing
  */
 
@@ -27,13 +27,14 @@ const defaultControllers: RobotController[] = [
   }
 ]
 
-async function testDeploy(
+export async function testDeploy(
   opts: {
     instanceLifetimeMins?: number
     existingInstanceIp?: string
     cell?: string
     additionalCellConfig?: Record<string, any>
     https?: boolean
+    instanceProvider?: string
   } = {},
 ) {
   const startTime = Date.now()
@@ -42,6 +43,7 @@ async function testDeploy(
   const existingInstanceIp = opts.existingInstanceIp
   const instanceLifetimeMins = opts.instanceLifetimeMins ?? 10
   const cell = opts.cell ?? "cell"
+  const instanceProvider = opts.instanceProvider
   let extendedInstance = false
   let instanceUrl = ""
 
@@ -52,7 +54,7 @@ async function testDeploy(
 
     try {
       await axios.put(
-        `https://k8s.wabo.run/instance?instance_ip=${existingInstanceIp}&duration=720`,
+        `https://${instanceProvider}/instance?instance_ip=${existingInstanceIp}&duration=720`,
       )
 
       console.log(`Extended existing instance for ${instanceLifetimeMins} mins`)
@@ -69,12 +71,12 @@ async function testDeploy(
 
   // If extending one wasn't possible, ask for a new instance
   if (!extendedInstance) {
-    console.log("Reserving new k8s.wabo.run instance")
+    console.log(`Reserving new ${instanceProvider} instance`)
 
     const instanceComment = `js-react-components:${process.env.GITLAB_CI ? `ci:${process.env.CI_COMMIT_REF_NAME}` : `dev:${await username()}`}`
 
     const { data: instance } = await axios.get(
-      `https://k8s.wabo.run/instance`,
+      `https://${instanceProvider}/instance`,
       {
         params: {
           duration: instanceLifetimeMins,
@@ -147,7 +149,7 @@ async function testDeploy(
   console.log(`test deployment completed in ${Date.now() - startTime}ms`)
 }
 
-async function main() {
+export async function main() {
   try {
     await testDeploy({
       instanceLifetimeMins: process.env.INSTANCE_LIFETIME_MINS
@@ -158,6 +160,7 @@ async function main() {
       existingInstanceIp: process.env.GITLAB_CI
         ? undefined
         : process.env.API_GATEWAY_BASE,
+      instanceProvider: process.env.INSTANCE_PROVIDER_URL || process.env.INSTANCE_PROVIDER,
     });
   } catch (err) {
     console.error(makeErrorMessage(err));
@@ -165,4 +168,7 @@ async function main() {
   }
 }
 
-main()
+import { fileURLToPath } from 'url'
+if (fileURLToPath(import.meta.url) === process.argv[1]) {
+  void main()
+}
