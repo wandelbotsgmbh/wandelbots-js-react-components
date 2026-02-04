@@ -36,8 +36,7 @@ function LoadedRobotModel({
     const parsed = parseRobotModel(gltfResult, 'robot.glb')
     gltf = parsed.gltf
   } catch (err) {
-    console.warn('parseRobotModel failed:', err)
-    gltf = gltfResult
+    throw err;
   }
 
   const groupRef: React.RefCallback<Group> = useCallback(
