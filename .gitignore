@@ -9,3 +9,8 @@ storybook-static
 
 # Local Netlify folder
 .netlify
+
+#test-deploy
+.env.local
+kubeconfig.yml
+instanceProviderConfig.json

@@ -1,13 +1,82 @@
+import { NovaClient } from "@wandelbots/nova-js/v2"
 import type { Object3D } from "three"
 import type { GLTF } from "three-stdlib"
-import { version } from "../../../package.json"
 
-export function defaultGetModel(modelFromController: string): string {
-  let useVersion = version
-  if (version.startsWith("0.")) {
-    useVersion = ""
+const modelCache = new Map<string, Promise<string>>()
+
+/**
+ * Revoke a cached model's object URL to prevent memory leaks.
+ * Call this when a component unmounts or no longer needs the model.
+ */
+export async function revokeModelUrl(modelFromController: string): Promise<void> {
+  const urlPromise = modelCache.get(modelFromController)
+  if (!urlPromise) return
+
+  try {
+    const url = await urlPromise
+    URL.revokeObjectURL(url)
+  } catch (e) {
+    // Ignore errors - URL may already be revoked
   }
-  return `https://cdn.jsdelivr.net/gh/wandelbotsgmbh/wandelbots-js-react-components${useVersion ? `@${useVersion}` : ""}/public/models/${modelFromController}.glb`
+  modelCache.delete(modelFromController)
+}
+
+/**
+ * Revoke all cached model object URLs and clear the cache.
+ * Useful for cleanup on app teardown.
+ */
+export async function revokeAllModelUrls(): Promise<void> {
+  const entries = Array.from(modelCache.entries())
+  await Promise.allSettled(
+    entries.map(async ([key, urlPromise]) => {
+      try {
+        const url = await urlPromise
+        URL.revokeObjectURL(url)
+      } catch (e) {
+        // Ignore errors
+      }
+    })
+  )
+  modelCache.clear()
+}
+
+export async function defaultGetModel(modelFromController: string): Promise<string> {
+  // Check cache first
+  if (modelCache.has(modelFromController)) {
+    return modelCache.get(modelFromController)!
+  }
+  
+  // Create the promise and cache it immediately to prevent duplicate calls
+  const modelPromise = (async () => {
+    const instanceUrl = import.meta.env.WANDELAPI_BASE_URL    
+    const nova = new NovaClient({ instanceUrl })
+    
+    // Configure axios to handle binary responses for GLB files
+    const apiInstance = nova.api.motionGroupModels as any
+    if (apiInstance.axios?.interceptors) {
+      apiInstance.axios.interceptors.request.use((config: any) => {
+        if (config.url?.includes('/glb')) {
+          config.responseType = 'blob'
+        }
+        return config
+      })
+    }
+    
+    try {
+      const file = await nova.api.motionGroupModels.getMotionGroupGlbModel(modelFromController)
+      
+      // Create object URL from the file and return it
+      const url = URL.createObjectURL(file)
+      return url
+    } catch (error) {
+      console.error("Failed to fetch model:", error)
+      throw error
+    }
+  })()
+  
+  // Cache the promise
+  modelCache.set(modelFromController, modelPromise)
+  return modelPromise
 }
 
 /**

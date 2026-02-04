@@ -7,7 +7,7 @@ import { SupportedRobot } from "./SupportedRobot"
 
 export type RobotProps = {
   connectedMotionGroup: ConnectedMotionGroup
-  getModel?: (modelFromController: string) => string
+  getModel?: (modelFromController: string) => Promise<string>
   flangeRef?: React.Ref<Group>
   transparentColor?: string
   postModelRender?: () => void
@@ -51,3 +51,5 @@ export function Robot({
     />
   )
 }
+
+export { defaultGetModel }

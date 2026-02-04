@@ -1,11 +1,19 @@
 import type { StorybookConfig } from "@storybook/react-vite"
-import { readFileSync } from "node:fs"
+import { config as dotenvConfig } from "dotenv"
+import { existsSync, readFileSync } from "node:fs"
 import { loadCsf } from "storybook/internal/csf-tools"
 import type { Indexer } from "storybook/internal/types"
 import {
   generateRobotStories,
   robotStoryGenerationVitePlugin,
 } from "./robotStoryGeneration.ts"
+
+// Load environment variables from .env.local if present (optional)
+if (existsSync('.env.local')) {
+  dotenvConfig({ path: '.env.local' })
+} else {
+  console.warn('.env.local not found — proceeding without it')
+}
 
 const config: StorybookConfig = {
   stories: [
@@ -19,12 +27,14 @@ const config: StorybookConfig = {
         ]
       : []),
   ],
+  staticDirs: [
+    { from: '../stories/robots/robotConfig', to: '/stories/robots/robotConfig' }
+  ],
   addons: ["storybook-preset-inline-svg", "@storybook/addon-docs"],
   framework: {
     name: "@storybook/react-vite",
     options: {},
   },
-  staticDirs: ["../public"],
   // TS config from mui integration guide https://storybook.js.org/recipes/@mui/material
   typescript: {
     reactDocgen: "react-docgen-typescript",
@@ -51,6 +61,15 @@ const config: StorybookConfig = {
     const { plugins = [] } = config
     plugins.push(robotStoryGenerationVitePlugin())
     config.plugins = plugins
+    
+    // Make environment variables available in the browser
+    config.define = {
+      ...config.define,
+      'import.meta.env.WANDELAPI_BASE_URL': JSON.stringify(process.env.WANDELAPI_BASE_URL || ''),
+      'import.meta.env.CELL_ID': JSON.stringify(process.env.CELL_ID || 'cell'),
+    }
+    console.log("Final Vite config for Storybook:", config)
+    
     return config
   },
 

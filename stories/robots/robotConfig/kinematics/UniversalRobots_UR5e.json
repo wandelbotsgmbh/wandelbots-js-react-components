@@ -1,0 +1,47 @@
+{
+    "dh_parameters": [
+        {
+            "alpha": 1.5707963267948966,
+            "theta": 0.0,
+            "a": 0.0,
+            "d": 162.25,
+            "reverse_rotation_direction": false
+        },
+        {
+            "alpha": 0.0,
+            "theta": 0.0,
+            "a": -425.0,
+            "d": 0.0,
+            "reverse_rotation_direction": false
+        },
+        {
+            "alpha": 0.0,
+            "theta": 0.0,
+            "a": -392.2,
+            "d": 0.0,
+            "reverse_rotation_direction": false
+        },
+        {
+            "alpha": 1.5707963267948966,
+            "theta": 0.0,
+            "a": 0.0,
+            "d": 133.3,
+            "reverse_rotation_direction": false
+        },
+        {
+            "alpha": -1.5707963267948966,
+            "theta": 0.0,
+            "a": 0.0,
+            "d": 99.7,
+            "reverse_rotation_direction": false
+        },
+        {
+            "alpha": 0.0,
+            "theta": 0.0,
+            "a": 0.0,
+            "d": 99.6,
+            "reverse_rotation_direction": false
+        }
+    ],
+    "inverse_solver": "Universalrobots"
+}

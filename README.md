@@ -58,6 +58,27 @@ npm install @wandelbots/wandelbots-js-react-components \
 | **`/3d`**           | 3D visualization (Robot, RobotCard, CollisionSceneRenderer, SafetyZonesRenderer, TrajectoryRenderer)                      | All from `/core` + three, @react-three/fiber, @react-three/drei, three-stdlib          |
 | **`/wandelscript`** | Code editor (WandelscriptEditor)                                                                                          | All from `/core` + @monaco-editor/react, shiki, @shikijs/monaco                        |
 
+## 4.x Core Changes
+
+Robot data is now fetched from a running nova instance. This eliminates the need of shipping every react application with the robot data attached.
+
+It is still possible to fetch robot data from local files. (See https://wandelbotsgmbh.github.io/wandelbots-js-react-components/?path=/docs/3d-view-robot-robot--docs)
+
+The `wandelbots-js-react-components` library can be used both with and without a Nova connection. For details on connecting to a Nova instance, see the [Robot Model Testing](#robot-model-testing) section below.
+
+The list of available robots will now be automatically updated along with the nova version. There is no more need to update nova apps whenether there is a new supported robot the app wants to feature.
+
+Robot dh-parameters are now using a new format.
+```
+interface DHParameter {
+  'alpha': number;
+  'theta': number;
+  'a': number;
+  'd': number;
+  'reverse_rotation_direction': boolean;
+}
+```
+
 ## 2.x to 3.x Migration Guide
 
 See [Migration Guide](https://wandelbotsgmbh.github.io/wandelbots-js-react-components/?path=/docs/migration-guide--docs) for assistance.
@@ -222,6 +243,31 @@ git clone https://github.com/wandelbotsgmbh/wandelbots-js-react-components.git
 cd wandelbots-js-react-components
 npm install
 npm run dev  # Start Storybook development server
+```
+
+## Robot Model Testing
+
+View Robot Models in web view:
+
+```bash
+git clone https://github.com/wandelbotsgmbh/wandelbots-js-react-components.git
+cd wandelbots-js-react-components
+npm install
+npm run td <instanceProviderURL> # instanceProviderURL can be provided via an instanceProviderConfig.json file. The entire command can be substituted by writing a nova instance ip into a file named .env.local
+npm run dev  # Start Storybook development server
+```
+
+instanceProviderConfig.json file:
+```
+{
+  "url": "yourURL"
+}
+```
+
+.env.local file:
+```
+WANDELAPI_BASE_URL=http://<instance-ip>
+CELL_ID=cell
 ```
 
 ### Local Testing

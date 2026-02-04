@@ -1,10 +1,7 @@
-import { createUnplugin } from "unplugin"
-
-import { glob } from "glob"
-import fs from "node:fs/promises"
-import path from "node:path"
-import { fileURLToPath } from "node:url"
+import { NovaClient } from "@wandelbots/nova-js/v2"
+import { readFile } from "node:fs/promises"
 import { dedent } from "ts-dedent"
+import { createUnplugin } from "unplugin"
 
 export const ROBOT_STORIES_REGEX = /SupportedModels.stories.tsx$/
 
@@ -18,20 +15,34 @@ const HIDDEN_ROBOTS = [
   "KUKA_DKP500_2",
 ]
 
-/** Generates lines of CSF code defining stories for each robot model .glb file */
+/** Generates lines of CSF code defining stories for each robot model from Nova API */
 export const generateRobotStories = async () => {
-  const __dirname = path.dirname(fileURLToPath(import.meta.url))
-  const modelsDir = path.resolve(__dirname, "../public/models")
-  const modelFiles = await glob(path.join(modelsDir, "*.glb"))
-
   const importStanza = dedent`
     import { robotStory } from "./robotStoryConfig.tsx"
   `
 
+  let modelNames: string[] = []
+  
+  try {
+    // Use Nova API to get available motion group models
+    const baseUrl = process.env.WANDELAPI_BASE_URL
+    const cellId = process.env.CELL_ID
+    
+    if (baseUrl) {
+      const nova = new NovaClient({ instanceUrl: baseUrl })
+      modelNames = await nova.api.motionGroupModels.getMotionGroupModels()
+    } else {
+      console.warn("WANDELAPI_BASE_URL not configured, no robot models will be available")
+    }
+  } catch (error) {
+    console.warn("Failed to fetch motion group models from Nova API:", error)
+    // Fallback to empty array - no robot stories will be generated
+    modelNames = []
+  }
+
   const modelCsfAdditions: string[] = []
 
-  for (const modelFile of modelFiles) {
-    const modelName = modelFile.split("/").pop()!.split(".")[0]!
+  for (const modelName of modelNames) {
     if (HIDDEN_ROBOTS.includes(modelName)) continue
 
     // Standardize filename to valid JS variable name
@@ -42,7 +53,6 @@ export const generateRobotStories = async () => {
       ${varName}.storyName = "${modelName}"
     `)
   }
-
   return importStanza + "\n\n" + modelCsfAdditions.join("\n\n")
 }
 
@@ -54,7 +64,7 @@ export const unplugin = createUnplugin((options) => {
       return ROBOT_STORIES_REGEX.test(id)
     },
     async load(fileName) {
-      const src = await fs.readFile(fileName, "utf-8")
+      const src = await readFile(fileName, "utf-8")
       return src + "\n" + (await generateRobotStories())
     },
   }

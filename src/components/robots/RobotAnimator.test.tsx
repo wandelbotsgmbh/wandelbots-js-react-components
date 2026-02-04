@@ -1,4 +1,4 @@
-import type { DHParameter, MotionGroupState } from "@wandelbots/nova-api/v2"
+import type { DHParameter, MotionGroupState } from "@wandelbots/nova-js/v2"
 import { describe, expect, it, vi } from "vitest"
 import RobotAnimator from "./RobotAnimator"
 
