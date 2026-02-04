@@ -1,6 +1,6 @@
 import type { StorybookConfig } from "@storybook/react-vite"
 import { config as dotenvConfig } from "dotenv"
-import { readFileSync } from "node:fs"
+import { existsSync, readFileSync } from "node:fs"
 import { loadCsf } from "storybook/internal/csf-tools"
 import type { Indexer } from "storybook/internal/types"
 import {
@@ -8,8 +8,12 @@ import {
   robotStoryGenerationVitePlugin,
 } from "./robotStoryGeneration.ts"
 
-// Load environment variables from .env.local
-dotenvConfig({ path: '.env.local' })
+// Load environment variables from .env.local if present (optional)
+if (existsSync('.env.local')) {
+  dotenvConfig({ path: '.env.local' })
+} else {
+  console.warn('.env.local not found — proceeding without it')
+}
 
 const config: StorybookConfig = {
   stories: [

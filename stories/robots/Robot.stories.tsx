@@ -4,6 +4,7 @@ import { NovaClient } from "@wandelbots/nova-js/v2"
 import { useEffect, useState } from "react"
 import { expect, fn, waitFor } from "storybook/test"
 import { PresetEnvironment, Robot } from "../../src"
+import { revokeAllModelUrls } from "../../src/components/robots/robotModelLogic"
 import { ConnectedMotionGroup } from "../../src/lib/ConnectedMotionGroup"
 import { OrbitControlsAround } from "./OrbitControlsAround"
 import { sharedStoryConfig } from "./robotStoryConfig"
@@ -32,6 +33,11 @@ function RobotScene(
     }
 
     fetchConnectedMotionGroup()
+    
+    // Cleanup: revoke model URLs when component unmounts
+    return () => {
+      revokeAllModelUrls()
+    }
   }, [])
 
   if (!connectedMotionGroup) {

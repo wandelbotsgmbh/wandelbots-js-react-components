@@ -1,7 +1,7 @@
-import { createUnplugin } from "unplugin"
-
 import { NovaClient } from "@wandelbots/nova-js/v2"
+import { readFile } from "node:fs/promises"
 import { dedent } from "ts-dedent"
+import { createUnplugin } from "unplugin"
 
 export const ROBOT_STORIES_REGEX = /SupportedModels.stories.tsx$/
 
@@ -26,7 +26,7 @@ export const generateRobotStories = async () => {
   try {
     // Use Nova API to get available motion group models
     const baseUrl = process.env.WANDELAPI_BASE_URL
-    const cellId = process.env.CELL_ID || "cell"
+    const cellId = process.env.CELL_ID
     
     if (baseUrl) {
       const nova = new NovaClient({ instanceUrl: baseUrl })
@@ -64,8 +64,7 @@ export const unplugin = createUnplugin((options) => {
       return ROBOT_STORIES_REGEX.test(id)
     },
     async load(fileName) {
-      const fs = await import("node:fs/promises")
-      const src = await fs.readFile(fileName, "utf-8")
+      const src = await readFile(fileName, "utf-8")
       return src + "\n" + (await generateRobotStories())
     },
   }

@@ -1,29 +1,10 @@
 // sharedStoryConfig.tsx
 import type { Meta, StoryObj } from "@storybook/react-vite"
 import { NovaClient, type DHParameter } from "@wandelbots/nova-js/v2"
+import { useEffect } from "react"
 import { expect, fn, waitFor } from "storybook/test"
 import { SupportedRobot } from "../../src"
 import { SupportedRobotScene } from "./SupportedRobotScene"
-
-type RobotJsonConfig = {
-  dhParameters?: {
-    a: string
-    d: string
-    alpha: string
-    theta: string
-    reverseRotationDirection: string
-  }[]
-  dh_parameters?: {
-    a: number | string
-    d: number | string
-    alpha: number | string
-    theta: number | string
-    reverse_rotation_direction: boolean | string
-  }[]
-}
-
-// Provided by robot config loader at runtime; declared here for TS correctness in stories.
-declare const jsonConfig: RobotJsonConfig
 
 export async function getDHParams(
   modelFromController: string,
@@ -34,30 +15,23 @@ export async function getDHParams(
     instanceUrl: import.meta.env.WANDELAPI_BASE_URL || "https://mock.example.com",
   })
 
-    // Attempt to fetch DH parameters from the Nova API first. Prefer the new
-    // format (`dh_parameters`) but support the legacy `dhParameters` shape.
+    // Attempt to fetch DH parameters from the Nova API first
     try {
       const apiResult: any = await nova.api.motionGroupModels.getMotionGroupKinematicModel(modelFromController)
       const dhParamsJson = apiResult.dh_parameters
       if (dhParamsJson && Array.isArray(dhParamsJson)) {
         return dhParamsJson.map((json: any) => {
-          // Handle both string and number formats
-          const a = json.a
-          const d = json.d
-          const alpha = json.alpha
-          const theta = json.theta
-          const reverse_rotation_direction = json.reverse_rotation_direction
           return {
-            a,
-            d,
-            alpha,
-            theta,
-            reverse_rotation_direction,
+            a: json.a,
+            d: json.d,
+            alpha: json.alpha,
+            theta: json.theta,
+            reverse_rotation_direction: json.reverse_rotation_direction,
           } as DHParameter
         })
       }
     } catch (err) {
-      // Ignore API errors and fall back to runtime/local configs below
+      // Ignore API errors and fall back to return an empty array as fallback
       return []
     }
     // If no return has occurred, return an empty array as fallback
@@ -70,6 +44,22 @@ export function nextAnimationFrame(): Promise<void> {
 
 // Cache for model object URLs to avoid repeated API calls and File->URL conversions
 const modelCache = new Map<string, Promise<string>>()
+
+/**
+ * Revoke all cached model URLs to prevent memory leaks.
+ * Called when navigating between stories.
+ */
+function revokeAllCachedModels() {
+  modelCache.forEach(async (urlPromise) => {
+    try {
+      const url = await urlPromise
+      URL.revokeObjectURL(url)
+    } catch (e) {
+      // Ignore errors
+    }
+  })
+  modelCache.clear()
+}
 
 // Helper function to create a minimal valid GLB file for mocking
 function createMockGlbFile(modelFromController: string): string {
@@ -175,7 +165,7 @@ export const sharedStoryConfig = {
       
       // Create the promise and cache it immediately to prevent duplicate calls
       const modelPromise = (async () => {
-        const instanceUrl = import.meta.env.WANDELAPI_BASE_URL || import.meta.env.VITE_NOVA_INSTANCE_URL
+        const instanceUrl = import.meta.env.WANDELAPI_BASE_URL
         
         // Always use mock for Storybook since .env.local isn't available
         if (!instanceUrl || instanceUrl === "undefined" || typeof instanceUrl !== "string") {
@@ -237,9 +227,18 @@ export function robotStory(
         },
       )
     },
-    render: (args, { loaded: { dhParameters } }) => (
-      <SupportedRobotScene {...args} dhParameters={dhParameters} />
-    ),
+    render: (args, { loaded: { dhParameters } }) => {
+      // Cleanup function that runs when the story unmounts
+      // eslint-disable-next-line react-hooks/rules-of-hooks
+      useEffect(() => {
+        return () => {
+          // Revoke all cached models when leaving this story
+          revokeAllCachedModels()
+        }
+      }, [])
+      
+      return <SupportedRobotScene {...args} dhParameters={dhParameters} />
+    },
     name: modelFromController,
     loaders: [
       async () => ({
