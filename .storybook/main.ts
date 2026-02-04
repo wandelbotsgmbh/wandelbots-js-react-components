@@ -59,10 +59,9 @@ const config: StorybookConfig = {
     config.define = {
       ...config.define,
       'import.meta.env.WANDELAPI_BASE_URL': JSON.stringify(process.env.WANDELAPI_BASE_URL || ''),
-      'import.meta.env.VITE_NOVA_INSTANCE_URL': JSON.stringify(process.env.VITE_NOVA_INSTANCE_URL || ''),
       'import.meta.env.CELL_ID': JSON.stringify(process.env.CELL_ID || 'cell'),
-      'import.meta.env.VITE_SKIP_ROBOT_MODEL': JSON.stringify(process.env.VITE_SKIP_ROBOT_MODEL || ''),
     }
+    console.log("Final Vite config for Storybook:", config)
     
     return config
   },

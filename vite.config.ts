@@ -6,6 +6,9 @@ import pkg from "./package.json"
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  define: {
+    'import.meta.env.WANDELAPI_BASE_URL': JSON.stringify(process.env.WANDELAPI_BASE_URL || ''),
+  },
   build: {
     copyPublicDir: false,
     lib: {

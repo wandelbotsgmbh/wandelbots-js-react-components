@@ -51,3 +51,5 @@ export function Robot({
     />
   )
 }
+
+export { defaultGetModel }

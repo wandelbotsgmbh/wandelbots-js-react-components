@@ -8,7 +8,7 @@ import type {
 import { ProgramState } from "../src/components/ProgramControl"
 import { RobotCard } from "../src/components/RobotCard"
 import { getDefaultHomeConfig } from "../src/components/robots/manufacturerHomePositions"
-import { Robot } from "../src/components/robots/Robot"
+import { defaultGetModel, Robot } from "../src/components/robots/Robot"
 import type { ConnectedMotionGroup } from "../src/lib/ConnectedMotionGroup"
 import { rapidlyChangingMotionState } from "./robots/motionState"
 import { getDHParams } from "./robots/robotStoryConfig"
@@ -62,12 +62,8 @@ function RobotCardWithMockConnectedMotionGroup(
             {...robotProps}
             getModel={async (modelFromController: string) => {
               // Fetch from storybook rather than CDN to ensure version alignment
-              const url = `./models/${modelFromController}.glb`
               try {
-                const response = await fetch(url)
-                const blob = await response.blob()
-                const file = new File([blob], `${modelFromController}.glb`, { type: 'model/gltf-binary' })
-                return URL.createObjectURL(file)
+                return await defaultGetModel(modelFromController)
               } catch (error) {
                 // Fallback to empty file
                 const mockBlob = new Blob([], { type: 'model/gltf-binary' })

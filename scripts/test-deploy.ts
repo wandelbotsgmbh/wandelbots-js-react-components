@@ -41,7 +41,7 @@ export async function testDeploy(
 
   // Reserve or extend instance
   const existingInstanceIp = opts.existingInstanceIp
-  const instanceLifetimeMins = opts.instanceLifetimeMins ?? 10
+  const instanceLifetimeMins = opts.instanceLifetimeMins ?? 720
   const cell = opts.cell ?? "cell"
   const instanceProvider = opts.instanceProvider
   let extendedInstance = false

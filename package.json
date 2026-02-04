@@ -176,7 +176,6 @@
   "dependencies": {
     "@mui/x-charts": "8.24.0",
     "@mui/x-data-grid": "8.24.0",
-    "@wandelbots/nova-api": "26.1.0-rc.2",
     "@wandelbots/nova-js": "3.5.0",
     "axios": "^1.13.2",
     "dotenv": "^17.2.3",

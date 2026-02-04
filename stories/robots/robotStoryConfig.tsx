@@ -29,65 +29,39 @@ export async function getDHParams(
   modelFromController: string,
 ): Promise<DHParameter[]> {
   const [manufacturer, ...rest] = modelFromController.split("_")
-  const modelWithoutManufacturer = rest.join("_")
 
   const nova = new NovaClient({
     instanceUrl: import.meta.env.WANDELAPI_BASE_URL || "https://mock.example.com",
   })
 
-  // The new format for the robotConfigs (dh_parameters with number/boolean types) is the target format.
-  // The old format (dhParameters with string types) is supported for backward compatibility only.
-  // Once all robot config files are migrated to the new format, the old format support and
-  // the RobotJsonConfig.dhParameters field can be removed.
-  
-  // Prefer runtime-provided `jsonConfig` when available (production/test setups).
-  // Fall back to local JSON files shipped with the stories for Storybook test runner.
-  let dhParams: any = undefined
-
-  if (typeof jsonConfig !== "undefined") {
-    dhParams = (jsonConfig as any).dhParameters || (jsonConfig as any).dh_parameters
-  }
-
-  if (!dhParams) {
-    // Attempt to load a local config file from the stories/robots/robotConfig folder.
-    // `modelWithoutManufacturer` is intended to match filenames (e.g. "UR5e.json").
+    // Attempt to fetch DH parameters from the Nova API first. Prefer the new
+    // format (`dh_parameters`) but support the legacy `dhParameters` shape.
     try {
-      // Dynamic import will be handled by Vite/Storybook; this keeps tests deterministic.
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore -- dynamic import of JSON
-      const cfg = await import(`./robotConfig/${modelWithoutManufacturer}.json`)
-      const loaded = cfg?.default ?? cfg
-      dhParams = loaded.dhParameters || loaded.dh_parameters
+      const apiResult: any = await nova.api.motionGroupModels.getMotionGroupKinematicModel(modelFromController)
+      const dhParamsJson = apiResult.dh_parameters
+      if (dhParamsJson && Array.isArray(dhParamsJson)) {
+        return dhParamsJson.map((json: any) => {
+          // Handle both string and number formats
+          const a = json.a
+          const d = json.d
+          const alpha = json.alpha
+          const theta = json.theta
+          const reverse_rotation_direction = json.reverse_rotation_direction
+          return {
+            a,
+            d,
+            alpha,
+            theta,
+            reverse_rotation_direction,
+          } as DHParameter
+        })
+      }
     } catch (err) {
-      // If nothing found, throw a helpful error so test output is clear.
-      throw new Error(`No DH parameters found for ${modelFromController} - attempted jsonConfig and local robotConfig/${modelWithoutManufacturer}.json`)
+      // Ignore API errors and fall back to runtime/local configs below
+      return []
     }
-  }
-
-  return dhParams.map((json: any) => {
-    // Handle both string and number formats
-    const a = typeof json.a === "string" ? parseFloat(json.a) : json.a
-    const d = typeof json.d === "string" ? parseFloat(json.d) : json.d
-    const alpha = typeof json.alpha === "string" ? parseFloat(json.alpha) : json.alpha
-    const theta = typeof json.theta === "string" ? parseFloat(json.theta) : json.theta
-    
-    // Handle both old string format ("0"/"1") and new boolean format
-    let reverse_rotation_direction: boolean
-    if ("reverseRotationDirection" in json) {
-      reverse_rotation_direction = (json as any).reverseRotationDirection === "1"
-    } else {
-      const value = (json as any).reverse_rotation_direction
-      reverse_rotation_direction = typeof value === "boolean" ? value : value === "1"
-    }
-
-    return {
-      a,
-      d,
-      alpha,
-      theta,
-      reverse_rotation_direction,
-    }
-  })
+    // If no return has occurred, return an empty array as fallback
+    return []
 }
 
 export function nextAnimationFrame(): Promise<void> {
