@@ -9,13 +9,12 @@ import { SupportedRobotScene } from "./SupportedRobotScene"
 export async function getDHParams(
   modelFromController: string,
 ): Promise<DHParameter[]> {
-  const [manufacturer, ...rest] = modelFromController.split("_")
-
-  const nova = new NovaClient({
-    instanceUrl: import.meta.env.WANDELAPI_BASE_URL || "https://mock.example.com",
-  })
-
-    // Attempt to fetch DH parameters from the Nova API first
+  const instanceUrl = import.meta.env.WANDELAPI_BASE_URL
+  
+  // If we have an instance URL, try to fetch from API
+  if (instanceUrl && instanceUrl !== "undefined" && typeof instanceUrl === "string") {
+    const nova = new NovaClient({ instanceUrl })
+    
     try {
       const apiResult: any = await nova.api.motionGroupModels.getMotionGroupKinematicModel(modelFromController)
       const dhParamsJson = apiResult.dh_parameters
@@ -31,11 +30,30 @@ export async function getDHParams(
         })
       }
     } catch (err) {
-      // Ignore API errors and fall back to return an empty array as fallback
-      return []
+      console.warn(`Failed to fetch DH params from API for ${modelFromController}, falling back to local config`)
     }
-    // If no return has occurred, return an empty array as fallback
-    return []
+  }
+  
+  // Fall back to loading from local robotConfig folder
+  try {
+    const response = await fetch(`/stories/robots/robotConfig/kinematics/${modelFromController}.json`)
+    if (response.ok) {
+      const data = await response.json()
+      if (data.dh_parameters && Array.isArray(data.dh_parameters)) {
+        return data.dh_parameters.map((json: any) => ({
+          a: json.a,
+          d: json.d,
+          alpha: json.alpha,
+          theta: json.theta,
+          reverse_rotation_direction: json.reverse_rotation_direction,
+        } as DHParameter))
+      }
+    }
+  } catch (err) {
+    console.warn(`No local config found for ${modelFromController}`)
+  }
+  
+  return []
 }
 
 export function nextAnimationFrame(): Promise<void> {
@@ -153,57 +171,70 @@ function createMockGlbFile(modelFromController: string): string {
   return URL.createObjectURL(mockFile)
 }
 
+/**
+ * Get model with fallback to local files and mock.
+ * Reusable across all stories.
+ */
+export async function getModel(modelFromController: string): Promise<string> {
+  // Check cache first
+  if (modelCache.has(modelFromController)) {
+    return modelCache.get(modelFromController)!
+  }
+  
+  // Create the promise and cache it immediately to prevent duplicate calls
+  const modelPromise = (async () => {
+    const instanceUrl = import.meta.env.WANDELAPI_BASE_URL
+    
+    // If we have an instance URL, try to fetch from API
+    if (instanceUrl && instanceUrl !== "undefined" && typeof instanceUrl === "string") {
+      const nova = new NovaClient({ instanceUrl })
+      
+      // Configure axios to handle binary responses for GLB files
+      const apiInstance = nova.api.motionGroupModels as any
+      if (apiInstance.axios?.interceptors) {
+        apiInstance.axios.interceptors.request.use((config: any) => {
+          if (config.url?.includes('/glb')) {
+            config.responseType = 'blob'
+          }
+          return config
+        })
+      }
+      
+      try {
+        const file = await nova.api.motionGroupModels.getMotionGroupGlbModel(modelFromController)
+        const url = URL.createObjectURL(file)
+        return url
+      } catch (error) {
+        console.warn(`Failed to fetch model from API for ${modelFromController}, falling back to local file`)
+      }
+    }
+    
+    // Try to load from local robotConfig folder
+    try {
+      const response = await fetch(`/stories/robots/robotConfig/model/${modelFromController}.glb`)
+      if (response.ok) {
+        const blob = await response.blob()
+        const url = URL.createObjectURL(blob)
+        return url
+      }
+    } catch (error) {
+      console.warn(`No local GLB file found for ${modelFromController}, falling back to mock`)
+    }
+    
+    // Final fallback: create mock GLB
+    return createMockGlbFile(modelFromController)
+  })()
+  
+  // Cache the promise
+  modelCache.set(modelFromController, modelPromise)
+  return modelPromise
+}
+
 export const sharedStoryConfig = {
   tags: ["!dev"],
   component: SupportedRobot,
   args: {
-    getModel: async (modelFromController: string) => {
-      // Check cache first
-      if (modelCache.has(modelFromController)) {
-        return modelCache.get(modelFromController)!
-      }
-      
-      // Create the promise and cache it immediately to prevent duplicate calls
-      const modelPromise = (async () => {
-        const instanceUrl = import.meta.env.WANDELAPI_BASE_URL
-        
-        // Always use mock for Storybook since .env.local isn't available
-        if (!instanceUrl || instanceUrl === "undefined" || typeof instanceUrl !== "string") {
-          return createMockGlbFile(modelFromController)
-          // console.warn(`Falling back to mock GLB for ${modelFromController}`)
-        }
-        
-        const nova = new NovaClient({ instanceUrl })
-        
-        // Configure axios to handle binary responses for GLB files
-        const apiInstance = nova.api.motionGroupModels as any
-        if (apiInstance.axios?.interceptors) {
-          apiInstance.axios.interceptors.request.use((config: any) => {
-            if (config.url?.includes('/glb')) {
-              config.responseType = 'blob'
-            }
-            return config
-          })
-        }
-        
-        try {
-          const file = await nova.api.motionGroupModels.getMotionGroupGlbModel(modelFromController)
-
-          // Create object URL from the file and return it
-          const url = URL.createObjectURL(file)
-          return url
-        } catch (error) {
-          console.error("Failed to fetch model:", error)
-          // Fall back to a mock GLB to ensure we always return a string URL
-          return createMockGlbFile(modelFromController)
-          // console.warn(`Falling back to mock GLB for ${modelFromController}`)
-        }
-      })()
-      
-      // Cache the promise
-      modelCache.set(modelFromController, modelPromise)
-      return modelPromise
-    },
+    getModel,
   },
 } satisfies Meta<typeof SupportedRobot>
 

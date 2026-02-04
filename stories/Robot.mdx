@@ -22,6 +22,12 @@ const connectedMotionGroup = await ConnectedMotionGroup.connect(nova, "0@your-mo
 
 The robot model are loaded from your connected Nova instance.
 
+```tsx
+const file = await nova.api.motionGroupModels.getMotionGroupGlbModel(modelFromController)
+const url = URL.createObjectURL(file)
+return url
+```
+
 
 In case you want to use the application offline, you can download the models and host them locally. You can override the URL resolver of the `Robot` component by passing a `getModel` function like:
 

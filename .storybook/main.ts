@@ -27,6 +27,9 @@ const config: StorybookConfig = {
         ]
       : []),
   ],
+  staticDirs: [
+    { from: '../stories/robots/robotConfig', to: '/stories/robots/robotConfig' }
+  ],
   addons: ["storybook-preset-inline-svg", "@storybook/addon-docs"],
   framework: {
     name: "@storybook/react-vite",

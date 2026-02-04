@@ -1,0 +1,47 @@
+{
+    "dh_parameters": [
+        {
+            "alpha": -1.5707963267948966,
+            "theta": 0.0,
+            "a": 25.0,
+            "d": 400.0,
+            "reverse_rotation_direction": true
+        },
+        {
+            "alpha": 0.0,
+            "theta": 0.0,
+            "a": 335.0,
+            "d": 0.0,
+            "reverse_rotation_direction": false
+        },
+        {
+            "alpha": 1.5707963267948966,
+            "theta": -1.5707963267948966,
+            "a": 25.0,
+            "d": 0.0,
+            "reverse_rotation_direction": false
+        },
+        {
+            "alpha": -1.5707963267948966,
+            "theta": 0.0,
+            "a": 0.0,
+            "d": -365.0,
+            "reverse_rotation_direction": false
+        },
+        {
+            "alpha": 1.5707963267948966,
+            "theta": 0.0,
+            "a": 0.0,
+            "d": 0.0,
+            "reverse_rotation_direction": false
+        },
+        {
+            "alpha": 3.141592653589793,
+            "theta": 3.141592653589793,
+            "a": 0.0,
+            "d": -90.0,
+            "reverse_rotation_direction": false
+        }
+    ],
+    "inverse_solver": "KukaSphericalWrist"
+}

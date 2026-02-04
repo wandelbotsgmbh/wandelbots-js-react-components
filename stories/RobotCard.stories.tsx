@@ -8,10 +8,10 @@ import type {
 import { ProgramState } from "../src/components/ProgramControl"
 import { RobotCard } from "../src/components/RobotCard"
 import { getDefaultHomeConfig } from "../src/components/robots/manufacturerHomePositions"
-import { defaultGetModel, Robot } from "../src/components/robots/Robot"
+import { Robot } from "../src/components/robots/Robot"
 import type { ConnectedMotionGroup } from "../src/lib/ConnectedMotionGroup"
 import { rapidlyChangingMotionState } from "./robots/motionState"
-import { getDHParams } from "./robots/robotStoryConfig"
+import { getDHParams, getModel } from "./robots/robotStoryConfig"
 
 // Example custom content component for demonstration
 const ExampleCustomContent = () => (
@@ -60,17 +60,7 @@ function RobotCardWithMockConnectedMotionGroup(
         ((robotProps) => (
           <Robot
             {...robotProps}
-            getModel={async (modelFromController: string) => {
-              // Fetch from storybook rather than CDN to ensure version alignment
-              try {
-                return await defaultGetModel(modelFromController)
-              } catch (error) {
-                // Fallback to empty file
-                const mockBlob = new Blob([], { type: 'model/gltf-binary' })
-                const mockFile = new File([mockBlob], `${modelFromController}.glb`, { type: 'model/gltf-binary' })
-                return URL.createObjectURL(mockFile)
-              }
-            }}
+            getModel={getModel}
           />
         ))
       }
