@@ -60,7 +60,7 @@ jobs:
       - name: Process GLB files
         run: |
           mkdir -p no-draco-models
-          for file in public/models/*.glb; do
+          for file in stories/robots/robotConfig/model/*.glb; do
             if [ -f "$file" ]; then
               filename=$(basename "$file")
               echo "Processing $filename..."

@@ -36,7 +36,7 @@ export async function getDHParams(
   
   // Fall back to loading from local robotConfig folder
   try {
-    const response = await fetch(`/stories/robots/robotConfig/kinematics/${modelFromController}.json`)
+    const response = await fetch(`${import.meta.env.BASE_URL}stories/robots/robotConfig/kinematics/${modelFromController}.json`)
     if (response.ok) {
       const data = await response.json()
       if (data.dh_parameters && Array.isArray(data.dh_parameters)) {
@@ -211,7 +211,7 @@ export async function getModel(modelFromController: string): Promise<string> {
     
     // Try to load from local robotConfig folder
     try {
-      const response = await fetch(`/stories/robots/robotConfig/model/${modelFromController}.glb`)
+      const response = await fetch(`${import.meta.env.BASE_URL}stories/robots/robotConfig/model/${modelFromController}.glb`)
       if (response.ok) {
         const blob = await response.blob()
         const url = URL.createObjectURL(blob)
