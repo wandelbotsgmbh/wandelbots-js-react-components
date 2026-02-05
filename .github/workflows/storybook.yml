@@ -34,7 +34,7 @@ jobs:
             git branch -r |
             cut -c 3- |
             sed 's/origin\///g' |
-            grep -E '^(main$|v3$|feat/|feature/|fix/|bugfix/)' |
+            grep -E '^(main$|v(2|3)$|feat/|feature/|fix/|bugfix/)' |
             sort -u
           )
 
