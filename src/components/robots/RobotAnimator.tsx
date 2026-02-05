@@ -90,10 +90,6 @@ export default function RobotAnimator({
     interpolatorRef.current?.setTarget(newJointValues)
   }, [rapidlyChangingMotionState])
 
-  /**
-   * Initialize a mobx autorun watcher on component mount, and
-   * clean it up when the component unmounts.
-   */
   useAutorun(() => {
     requestAnimationFrame(() => {
       updateJoints()
@@ -101,11 +97,14 @@ export default function RobotAnimator({
   })
 
   /**
-   * Fire an update joints call on every motion state change
+   * Fire an update joints call on every motion state change.
+   * requestAnimationFrame used to avoid blocking main thread
    */
   useEffect(() => {
-    updateJoints()
-  }, [rapidlyChangingMotionState])
+    requestAnimationFrame(() => {
+      updateJoints()
+    })
+  }, [rapidlyChangingMotionState, updateJoints])
 
   return <group ref={setGroupRef}>{children}</group>
 }
