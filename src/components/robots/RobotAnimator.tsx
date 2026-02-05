@@ -90,12 +90,6 @@ export default function RobotAnimator({
     interpolatorRef.current?.setTarget(newJointValues)
   }, [rapidlyChangingMotionState])
 
-  useAutorun(() => {
-    requestAnimationFrame(() => {
-      updateJoints()
-    })
-  })
-
   /**
    * Fire an update joints call on every motion state change.
    * requestAnimationFrame used to avoid blocking main thread
