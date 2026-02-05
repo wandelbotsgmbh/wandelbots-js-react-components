@@ -1,6 +1,6 @@
 import { useFrame, useThree } from "@react-three/fiber"
 import type { DHParameter, MotionGroupState } from "@wandelbots/nova-js/v2"
-import React, { useEffect, useRef } from "react"
+import React, { useEffect, useRef, useCallback } from "react"
 import type { Group, Object3D } from "three"
 import { useAutorun } from "../utils/hooks"
 import { ValueInterpolator } from "../utils/interpolation"
@@ -64,11 +64,6 @@ export default function RobotAnimator({
     invalidate()
   }
 
-  function updateJoints(newJointValues: number[]) {
-    jointValues.current = newJointValues
-    interpolatorRef.current?.setTarget(newJointValues)
-  }
-
   function setRotation() {
     const updatedJointValues = interpolatorRef.current?.getCurrentValues() || []
 
@@ -86,13 +81,31 @@ export default function RobotAnimator({
     }
   }
 
-  useAutorun(() => {
+  const updateJoints = useCallback(() => {
     const newJointValues = rapidlyChangingMotionState.joint_position.filter(
       (item) => item !== undefined,
     )
 
-    requestAnimationFrame(() => updateJoints(newJointValues))
+    jointValues.current = newJointValues
+    interpolatorRef.current?.setTarget(newJointValues)
+  }, [rapidlyChangingMotionState])
+
+  /**
+   * Initialize a mobx autorun watcher on component mount, and
+   * clean it up when the component unmounts.
+   */
+  useAutorun(() => {
+    requestAnimationFrame(() => {
+      updateJoints()
+    })
   })
+
+  /**
+   * Fire an update joints call on every motion state change
+   */
+  useEffect(() => {
+    updateJoints()
+  }, [rapidlyChangingMotionState])
 
   return <group ref={setGroupRef}>{children}</group>
 }
