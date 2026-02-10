@@ -3,9 +3,8 @@ import type {
   DHParameter,
   MotionGroupStateResponse,
 } from "@wandelbots/nova-api/v1"
-import React, { useEffect, useRef } from "react"
+import React, { useCallback, useEffect, useRef } from "react"
 import type { Group, Object3D } from "three"
-import { useAutorun } from "../utils/hooks"
 import { ValueInterpolator } from "../utils/interpolation"
 import { collectJoints } from "./robotModelLogic"
 
@@ -68,11 +67,6 @@ export default function RobotAnimator({
     invalidate()
   }
 
-  function updateJoints(newJointValues: number[]) {
-    jointValues.current = newJointValues
-    interpolatorRef.current?.setTarget(newJointValues)
-  }
-
   function setRotation() {
     const updatedJointValues = interpolatorRef.current?.getCurrentValues() || []
 
@@ -90,14 +84,24 @@ export default function RobotAnimator({
     }
   }
 
-  useAutorun(() => {
-    const newJointValues =
-      rapidlyChangingMotionState.state.joint_position.joints.filter(
-        (item) => item !== undefined,
-      )
+  const updateJoints = useCallback(() => {
+    const newJointValues = rapidlyChangingMotionState.state.joint_position.joints.filter(
+      (item) => item !== undefined,
+    )
 
-    requestAnimationFrame(() => updateJoints(newJointValues))
-  })
+    jointValues.current = newJointValues
+    interpolatorRef.current?.setTarget(newJointValues)
+  }, [rapidlyChangingMotionState])
+
+  /**
+   * Fire an update joints call on every motion state change.
+   * requestAnimationFrame used to avoid blocking main thread
+   */
+  useEffect(() => {
+    requestAnimationFrame(() => {
+      updateJoints()
+    })
+  }, [rapidlyChangingMotionState, updateJoints])
 
   return <group ref={setGroupRef}>{children}</group>
 }
