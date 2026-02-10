@@ -3,7 +3,7 @@ import type {
   DHParameter,
   MotionGroupStateResponse,
 } from "@wandelbots/nova-api/v1"
-import React, { useEffect, useRef } from "react"
+import React, { useCallback, useEffect, useRef } from "react"
 import type { Group, Object3D } from "three"
 import { useAutorun } from "../utils/hooks"
 import { ValueInterpolator } from "../utils/interpolation"
@@ -68,11 +68,6 @@ export default function RobotAnimator({
     invalidate()
   }
 
-  function updateJoints(newJointValues: number[]) {
-    jointValues.current = newJointValues
-    interpolatorRef.current?.setTarget(newJointValues)
-  }
-
   function setRotation() {
     const updatedJointValues = interpolatorRef.current?.getCurrentValues() || []
 
@@ -90,13 +85,33 @@ export default function RobotAnimator({
     }
   }
 
-  useAutorun(() => {
+  const updateJoints = useCallback(() => {
     const newJointValues =
       rapidlyChangingMotionState.state.joint_position.joints.filter(
         (item) => item !== undefined,
       )
 
-    requestAnimationFrame(() => updateJoints(newJointValues))
+    requestAnimationFrame(() => {
+      jointValues.current = newJointValues
+      interpolatorRef.current?.setTarget(newJointValues)
+    })
+  }, [rapidlyChangingMotionState])
+
+  /**
+   * Fire an update joints call on every motion state change.
+   * requestAnimationFrame used to avoid blocking main thread
+   */
+  useEffect(() => {
+    updateJoints()
+  }, [rapidlyChangingMotionState, updateJoints])
+
+  /**
+   * As some consumer applications (eg. storybook) deliver
+   * mobx observable for rapidlyChangingMotionState, we need to
+   * register the watcher to get the newest value updates
+   */
+  useAutorun(() => {
+    updateJoints()
   })
 
   return <group ref={setGroupRef}>{children}</group>
