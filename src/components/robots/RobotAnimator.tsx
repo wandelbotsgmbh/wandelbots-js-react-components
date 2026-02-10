@@ -5,7 +5,6 @@ import type { Group, Object3D } from "three"
 import { useAutorun } from "../utils/hooks"
 import { ValueInterpolator } from "../utils/interpolation"
 import { collectJoints } from "./robotModelLogic"
-import { useAutorun } from "../utils/hooks"
 
 type RobotAnimatorProps = {
   rapidlyChangingMotionState: MotionGroupState
