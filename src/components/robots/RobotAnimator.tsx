@@ -5,6 +5,7 @@ import type { Group, Object3D } from "three"
 import { useAutorun } from "../utils/hooks"
 import { ValueInterpolator } from "../utils/interpolation"
 import { collectJoints } from "./robotModelLogic"
+import { useAutorun } from "../utils/hooks"
 
 type RobotAnimatorProps = {
   rapidlyChangingMotionState: MotionGroupState
@@ -86,8 +87,10 @@ export default function RobotAnimator({
       (item) => item !== undefined,
     )
 
-    jointValues.current = newJointValues
-    interpolatorRef.current?.setTarget(newJointValues)
+    requestAnimationFrame(() => {
+      jointValues.current = newJointValues
+      interpolatorRef.current?.setTarget(newJointValues)
+    })
   }, [rapidlyChangingMotionState])
 
   /**
@@ -95,10 +98,17 @@ export default function RobotAnimator({
    * requestAnimationFrame used to avoid blocking main thread
    */
   useEffect(() => {
-    requestAnimationFrame(() => {
-      updateJoints()
-    })
+    updateJoints()
   }, [rapidlyChangingMotionState, updateJoints])
+
+  /**
+   * As some consumer applications (eg. storybook) deliver
+   * mobx observable for rapidlyChangingMotionState, we need to
+   * register the watcher to get the newest value updates
+   */
+  useAutorun(() => {
+    updateJoints()
+  })
 
   return <group ref={setGroupRef}>{children}</group>
 }
