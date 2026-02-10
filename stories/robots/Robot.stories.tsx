@@ -21,11 +21,11 @@ function SupportedRobotScene(
   const [connectedMotionGroup, setConnectedMotionGroup] =
     useState<ConnectedMotionGroup>()
 
-  const nova = new NovaClient({ instanceUrl: "http://172.31.12.78/" })
+  const nova = new NovaClient({ instanceUrl: "https://mock.example.com" })
 
   useEffect(() => {
     async function fetchConnectedMotionGroup() {
-      const motionGroup = await nova.connectMotionGroup("0@ur5e")
+      const motionGroup = await nova.connectMotionGroup("0@mock-ur5e")
       setConnectedMotionGroup(motionGroup)
     }
 
