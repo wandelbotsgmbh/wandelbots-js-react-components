@@ -5,7 +5,7 @@ import { version } from "../../../package.json"
 export function defaultGetModel(modelFromController: string): string {
   let useVersion = version
   if (version.startsWith("0.")) {
-    useVersion = ""
+    useVersion = "v3"
   }
   return `https://cdn.jsdelivr.net/gh/wandelbotsgmbh/wandelbots-js-react-components${useVersion ? `@${useVersion}` : ""}/public/models/${modelFromController}.glb`
 }
