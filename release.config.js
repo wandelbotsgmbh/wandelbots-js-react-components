@@ -7,6 +7,12 @@ export default {
   plugins: [
     "@semantic-release/commit-analyzer",
     "@semantic-release/release-notes-generator",
+    [
+      "@semantic-release/exec",
+      {
+        prepareCmd: "npm run build",
+      },
+    ],
     "@semantic-release/npm",
 
     [
