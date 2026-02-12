@@ -92,6 +92,7 @@
     "@vitejs/plugin-react": "^4.7.0",
     "@wandelbots/nova-js": "^3.5.0",
     "add": "^2.0.6",
+    "axios": "^1.13.5",
     "eslint-plugin-storybook": "^10.2.8",
     "glob": "^13.0.2",
     "http-server": "^14.1.1",

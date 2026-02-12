@@ -14,9 +14,6 @@ importers:
       '@mui/x-data-grid':
         specifier: ^8.27.0
         version: 8.27.0(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.4))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.4))(@types/react@19.2.14)(react@19.2.4))(@mui/material@7.3.7(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.4))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.4))(@types/react@19.2.14)(react@19.2.4))(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(@mui/system@7.3.7(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.4))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.14)(react@19.2.4))(@types/react@19.2.14)(react@19.2.4))(@types/react@19.2.14)(react@19.2.4))(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
-      axios:
-        specifier: ^1
-        version: 1.13.5
       i18next-browser-languagedetector:
         specifier: ^8.2.0
         version: 8.2.0
@@ -117,6 +114,9 @@ importers:
       add:
         specifier: ^2.0.6
         version: 2.0.6
+      axios:
+        specifier: ^1.13.5
+        version: 1.13.5
       eslint-plugin-storybook:
         specifier: ^10.2.8
         version: 10.2.8(eslint@8.57.1)(storybook@10.2.8(@testing-library/dom@10.4.1)(prettier@3.8.1)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(typescript@5.9.3)
