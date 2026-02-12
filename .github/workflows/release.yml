@@ -38,7 +38,7 @@ jobs:
         with:
           node-version: "lts/*"
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install
       - name: Verify the integrity of provenance attestations and registry signatures for installed dependencies
         run: pnpm audit signatures
       - name: Build
@@ -117,7 +117,7 @@ jobs:
         with:
           node-version: 24
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install
       - name: Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -171,7 +171,7 @@ jobs:
         with:
           node-version: 24
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install
       - name: Publish snapshot to npm
         run: |
           # Publish the snapshot version

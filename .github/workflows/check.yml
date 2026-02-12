@@ -18,7 +18,7 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version: "lts/*"
-      - run: pnpm install --frozen-lockfile
+      - run: pnpm install
       - run: pnpm run tsc
 
   test:
@@ -31,7 +31,7 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version: "lts/*"
-      - run: pnpm install --frozen-lockfile
+      - run: pnpm install
       - run: pnpm exec playwright install --with-deps chromium
       - run: pnpm run ci:test
 
@@ -45,5 +45,5 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version: "lts/*"
-      - run: pnpm install --frozen-lockfile
+      - run: pnpm install
       - run: pnpm run build
