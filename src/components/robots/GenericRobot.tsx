@@ -36,7 +36,7 @@ export function GenericRobot({
         postModelRender()
       }
     },
-    [modelURL],
+    [modelURL, postModelRender],
   )
 
   function renderNode(node: Object3D): React.ReactNode {
