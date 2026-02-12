@@ -37,7 +37,6 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: "lts/*"
-          cache: "pnpm"
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
       - name: Verify the integrity of provenance attestations and registry signatures for installed dependencies
@@ -117,7 +116,6 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: 24
-          cache: "pnpm"
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
       - name: Release
@@ -172,7 +170,6 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: 24
-          cache: "pnpm"
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
       - name: Publish snapshot to npm
