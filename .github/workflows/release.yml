@@ -31,8 +31,6 @@ jobs:
         with:
           fetch-depth: 0
       - uses: pnpm/action-setup@v4
-        with:
-          version: 10
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
@@ -111,8 +109,6 @@ jobs:
           zip ../no-draco-models.zip *.glb
           cd ..
       - uses: pnpm/action-setup@v4
-        with:
-          version: 10
       - name: Install Node.js
         uses: actions/setup-node@v6
         with:
@@ -166,8 +162,6 @@ jobs:
           # Update the package.json with the new version
           jq --arg version "$FINAL_VERSION" '.version = $version' package.json > package.tmp.json && mv package.tmp.json package.json
       - uses: pnpm/action-setup@v4
-        with:
-          version: 10
       - name: Install Node.js
         uses: actions/setup-node@v6
         with:
