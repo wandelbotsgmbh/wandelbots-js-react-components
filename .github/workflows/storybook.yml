@@ -60,6 +60,8 @@ jobs:
         with:
           ref: ${{ matrix.branch }}
       - uses: pnpm/action-setup@v4
+        with:
+          version: 10
       - uses: actions/setup-node@v6
         with:
           node-version: "lts/*"
