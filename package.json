@@ -3,6 +3,7 @@
   "version": "0.0.0-semantically-released",
   "description": "React UI toolkit for building applications on top of the Wandelbots platform",
   "type": "module",
+  "packageManager": "pnpm@10.15.0",
   "sideEffects": false,
   "files": [
     "dist",
