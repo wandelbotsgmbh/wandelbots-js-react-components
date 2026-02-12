@@ -4,7 +4,7 @@ import { NovaClient } from "@wandelbots/nova-js/v2"
 import { useEffect, useState } from "react"
 import { expect, fn, waitFor } from "storybook/test"
 import type { SupportedRobot } from "../../src"
-import { PresetEnvironment, Robot } from "../../src"
+import { defaultGetModel, PresetEnvironment, Robot } from "../../src"
 import { ConnectedMotionGroup } from "../../src/lib/ConnectedMotionGroup"
 import { OrbitControlsAround } from "./OrbitControlsAround"
 import { sharedStoryConfig } from "./robotStoryConfig"
@@ -54,7 +54,13 @@ function SupportedRobotScene(
         <PresetEnvironment />
 
         <OrbitControlsAround>
-          <Robot connectedMotionGroup={connectedMotionGroup} {...props} />
+          <Robot
+            connectedMotionGroup={connectedMotionGroup}
+            getModel={() => {
+              return defaultGetModel(props.modelFromController)
+            }}
+            {...props}
+          />
         </OrbitControlsAround>
       </Canvas>
     </div>
