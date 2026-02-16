@@ -1,0 +1,99 @@
+import type { ThreeElements } from "@react-three/fiber"
+import type { DHParameter, MotionGroupState } from "@wandelbots/nova-js/v2"
+import { Suspense, useCallback, useEffect, useState } from "react"
+import { ErrorBoundary } from "react-error-boundary"
+import type * as THREE from "three"
+import { externalizeComponent } from "../../externalizeComponent"
+import ConsoleFilter from "../ConsoleFilter"
+import { DHLinearAxis } from "./DHLinearAxis"
+import { GenericRobot } from "./GenericRobot"
+import LinearAxisAnimator from "./LinearAxisAnimator"
+import { applyGhostStyle, removeGhostStyle } from "./ghostStyle"
+import { defaultGetModel } from "./robotModelLogic"
+
+export type DHLinearAxisProps = {
+  rapidlyChangingMotionState: MotionGroupState
+  dhParameters: Array<DHParameter>
+} & ThreeElements["group"]
+
+export type SupportedLinearAxisProps = {
+  rapidlyChangingMotionState: MotionGroupState
+  modelFromController: string
+  dhParameters: DHParameter[]
+  flangeRef?: React.Ref<THREE.Group>
+  getModel?: (modelFromController: string) => Promise<string> | undefined
+  postModelRender?: () => void
+  transparentColor?: string
+} & ThreeElements["group"]
+
+export const SupportedLinearAxis = externalizeComponent(
+  ({
+    rapidlyChangingMotionState,
+    modelFromController,
+    dhParameters,
+    getModel = defaultGetModel,
+    flangeRef,
+    postModelRender,
+    transparentColor,
+    ...props
+  }: SupportedLinearAxisProps) => {
+    const [robotGroup, setRobotGroup] = useState<THREE.Group | null>(null)
+
+    const setRobotRef = useCallback((instance: THREE.Group | null) => {
+      setRobotGroup(instance)
+    }, [])
+
+    useEffect(() => {
+      if (!robotGroup) return
+
+      if (transparentColor) {
+        applyGhostStyle(robotGroup, transparentColor)
+      } else {
+        removeGhostStyle(robotGroup)
+      }
+    }, [robotGroup, transparentColor])
+
+    const dhLinearAxis = (
+      <DHLinearAxis
+        rapidlyChangingMotionState={rapidlyChangingMotionState}
+        dhParameters={dhParameters}
+        {...props}
+      />
+    )
+
+    return (
+      <ErrorBoundary
+        fallback={dhLinearAxis}
+        onError={(err) => {
+          // Missing model; show the fallback for now
+          console.warn(err)
+        }}
+      >
+        <Suspense fallback={dhLinearAxis}>
+          <group ref={setRobotRef}>
+            <LinearAxisAnimator
+              rapidlyChangingMotionState={rapidlyChangingMotionState}
+              dhParameters={dhParameters}
+            >
+              <GenericRobot
+                modelURL={(() => {
+                  const result = getModel(modelFromController)
+                  if (!result) {
+                    const mockBlob = new Blob([], { type: 'model/gltf-binary' })
+                    const mockFile = new File([mockBlob], `${modelFromController}.glb`, { type: 'model/gltf-binary' })
+                    return Promise.resolve(URL.createObjectURL(mockFile))
+                  }
+                  return result
+                })()}
+                postModelRender={postModelRender}
+                flangeRef={flangeRef}
+                {...props}
+              />
+            </LinearAxisAnimator>
+          </group>
+        </Suspense>
+        <ConsoleFilter />
+      </ErrorBoundary>
+    )
+  },
+)

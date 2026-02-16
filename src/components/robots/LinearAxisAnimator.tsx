@@ -1,0 +1,116 @@
+import { useFrame, useThree } from "@react-three/fiber"
+import type { DHParameter, MotionGroupState } from "@wandelbots/nova-js/v2"
+import React, { useCallback, useEffect, useRef } from "react"
+import type { Group, Object3D } from "three"
+import { useAutorun } from "../utils/hooks"
+import { ValueInterpolator } from "../utils/interpolation"
+import { collectJoints } from "./robotModelLogic"
+
+type LinearAxisAnimatorProps = {
+  rapidlyChangingMotionState: MotionGroupState
+  dhParameters: DHParameter[]
+  onTranslationChanged?: (joints: Object3D[], jointValues: number[]) => void
+  children: React.ReactNode
+}
+
+export default function LinearAxisAnimator({
+  rapidlyChangingMotionState,
+  dhParameters,
+  onTranslationChanged,
+  children,
+}: LinearAxisAnimatorProps) {
+  const jointValues = useRef<number[]>([])
+  const jointObjects = useRef<Object3D[]>([])
+  const interpolatorRef = useRef<ValueInterpolator | null>(null)
+  const { invalidate } = useThree()
+
+  // Initialize interpolator
+  useEffect(() => {
+    const initialJointValues = rapidlyChangingMotionState.joint_position.filter(
+      (item) => item !== undefined,
+    )
+
+    interpolatorRef.current = new ValueInterpolator(initialJointValues, {
+      tension: 120, // Controls spring stiffness - higher values create faster, more responsive motion
+      friction: 20, // Controls damping - higher values reduce oscillation and create smoother settling
+      threshold: 0.001,
+    })
+
+    return () => {
+      interpolatorRef.current?.destroy()
+    }
+  }, [])
+
+  // Animation loop that runs at the display's refresh rate
+  useFrame((state, delta) => {
+    if (interpolatorRef.current) {
+      const isComplete = interpolatorRef.current.update(delta)
+      setTranslation()
+
+      // Trigger a re-render only if the animation is still running
+      if (!isComplete) {
+        invalidate()
+      }
+    }
+  })
+
+  function setGroupRef(group: Group | null) {
+    if (!group) return
+
+    jointObjects.current = collectJoints(group)
+
+    // Set initial position
+    setTranslation()
+    invalidate()
+  }
+
+  function setTranslation() {
+    const updatedJointValues = interpolatorRef.current?.getCurrentValues() || []
+
+    if (onTranslationChanged) {
+      onTranslationChanged(jointObjects.current, updatedJointValues)
+    } else {
+      // For linear axes, we apply translation instead of rotation
+      for (const [index, object] of jointObjects.current.entries()) {
+        const dhParam = dhParameters[index]
+        const translationOffset = dhParam.d || 0
+        const translationSign = dhParam.reverse_rotation_direction ? -1 : 1
+
+        // Apply linear translation along Y axis (or whichever axis is appropriate)
+        // Convert from millimeters to meters
+        object.position.y =
+          (translationSign * (updatedJointValues[index] || 0) + translationOffset) / 1000
+      }
+    }
+  }
+
+  const updateJoints = useCallback(() => {
+    const newJointValues = rapidlyChangingMotionState.joint_position.filter(
+      (item) => item !== undefined,
+    )
+
+    requestAnimationFrame(() => {
+      jointValues.current = newJointValues
+      interpolatorRef.current?.setTarget(newJointValues)
+    })
+  }, [rapidlyChangingMotionState])
+
+  /**
+   * Fire an update joints call on every motion state change.
+   * requestAnimationFrame used to avoid blocking main thread
+   */
+  useEffect(() => {
+    updateJoints()
+  }, [rapidlyChangingMotionState, updateJoints])
+
+  /**
+   * As some consumer applications (eg. storybook) deliver
+   * mobx observable for rapidlyChangingMotionState, we need to
+   * register the watcher to get the newest value updates
+   */
+  useAutorun(() => {
+    updateJoints()
+  })
+
+  return <group ref={setGroupRef}>{children}</group>
+}
