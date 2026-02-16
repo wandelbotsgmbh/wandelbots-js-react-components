@@ -1,21 +1,32 @@
 import { Canvas } from "@react-three/fiber"
 import type { StoryObj } from "@storybook/react-vite"
-import { useCallback, useEffect } from "react"
+import { NovaClient } from "@wandelbots/nova-js/v2"
+import { useCallback, useEffect, useState } from "react"
 import { expect, fn, waitFor } from "storybook/test"
 import { Mesh, MeshBasicMaterial, SphereGeometry, type Group } from "three"
-import { PresetEnvironment, SupportedLinearAxis } from "../../src"
-import { rapidlyChangingMotionState } from "./motionState"
+import { PresetEnvironment } from "../../src"
+import { LinearAxis } from "../../src/components/robots/LinearAxis"
+import { revokeAllModelUrls } from "../../src/components/robots/robotModelLogic"
+import { ConnectedMotionGroup } from "../../src/lib/ConnectedMotionGroup"
 import { OrbitControlsAround } from "./OrbitControlsAround"
-import { getDHParams, getModel } from "./robotStoryConfig"
+import { getDHParams, sharedStoryConfig } from "./robotStoryConfig"
 
 export default {
+  ...sharedStoryConfig,
   tags: ["!dev"],
   title: "3D View/Robot/LinearAxis",
 }
 
 function LinearAxisScene(
-  props: React.ComponentProps<typeof SupportedLinearAxis>,
+  props: Omit<React.ComponentProps<typeof LinearAxis>, "connectedMotionGroup">,
 ) {
+  const [connectedMotionGroup, setConnectedMotionGroup] =
+    useState<ConnectedMotionGroup>()
+
+  const nova = new NovaClient({
+    instanceUrl: import.meta.env.WANDELAPI_BASE_URL || "https://mock.example.com",
+  })
+
   const flangeRef: React.RefCallback<Group> = useCallback((node) => {
     if (!node) return
 
@@ -25,6 +36,26 @@ function LinearAxisScene(
     const sphere = new Mesh(geometry, material)
     node.add(sphere)
   }, [])
+
+  useEffect(() => {
+    async function fetchConnectedMotionGroup() {
+      const motionGroup = await ConnectedMotionGroup.connect(nova, "1@rob-linear-axis")
+      setConnectedMotionGroup(motionGroup)
+    }
+
+    fetchConnectedMotionGroup()
+
+    // Cleanup: revoke model URLs when component unmounts
+    return () => {
+      revokeAllModelUrls()
+    }
+  }, [])
+
+
+
+  if (!connectedMotionGroup) {
+    return null
+  }
 
   return (
     <div
@@ -41,10 +72,10 @@ function LinearAxisScene(
         <PresetEnvironment />
 
         <OrbitControlsAround>
-          <SupportedLinearAxis
+          <LinearAxis
             {...props}
             flangeRef={flangeRef}
-            rapidlyChangingMotionState={rapidlyChangingMotionState}
+            connectedMotionGroup={connectedMotionGroup}
           />
         </OrbitControlsAround>
       </Canvas>
@@ -54,8 +85,6 @@ function LinearAxisScene(
 
 export const LinearAxisStory: StoryObj<typeof LinearAxisScene> = {
   args: {
-    modelFromController: "ABB_IRT710",
-    getModel,
     postModelRender: fn(),
   },
   play: async ({ args }) => {

@@ -73,13 +73,12 @@ export default function LinearAxisAnimator({
       // For linear axes, we apply translation instead of rotation
       for (const [index, object] of jointObjects.current.entries()) {
         const dhParam = dhParameters[index]
-        const translationOffset = dhParam.d || 0
         const translationSign = dhParam.reverse_rotation_direction ? -1 : 1
 
-        // Apply linear translation along Y axis (or whichever axis is appropriate)
+        // Apply linear translation along Y axis
         // Convert from millimeters to meters
         object.position.y =
-          (translationSign * (updatedJointValues[index] || 0) + translationOffset) / 1000
+          (translationSign * (updatedJointValues[index] || 0)) / 1000
       }
     }
   }
