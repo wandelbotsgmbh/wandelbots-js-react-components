@@ -1,6 +1,6 @@
 import { Canvas } from "@react-three/fiber"
 import type { StoryObj } from "@storybook/react-vite"
-import { NovaClient } from "@wandelbots/nova-js/v2"
+import { type DHParameter, NovaClient } from "@wandelbots/nova-js/v2"
 import { useCallback, useEffect, useState } from "react"
 import { expect, fn, waitFor } from "storybook/test"
 import { Mesh, MeshBasicMaterial, SphereGeometry, type Group } from "three"
@@ -9,7 +9,7 @@ import { LinearAxis } from "../../src/components/robots/LinearAxis"
 import { revokeAllModelUrls } from "../../src/components/robots/robotModelLogic"
 import { ConnectedMotionGroup } from "../../src/lib/ConnectedMotionGroup"
 import { OrbitControlsAround } from "./OrbitControlsAround"
-import { getDHParams, sharedStoryConfig } from "./robotStoryConfig"
+import { getDHParams, getModel, sharedStoryConfig } from "./robotStoryConfig"
 
 export default {
   ...sharedStoryConfig,
@@ -18,7 +18,7 @@ export default {
 }
 
 function LinearAxisScene(
-  props: Omit<React.ComponentProps<typeof LinearAxis>, "connectedMotionGroup">,
+  props: Omit<React.ComponentProps<typeof LinearAxis> & { dhParameters: DHParameter[], modelFromController: string}, "connectedMotionGroup">,
 ) {
   const [connectedMotionGroup, setConnectedMotionGroup] =
     useState<ConnectedMotionGroup>()
@@ -99,7 +99,7 @@ export const LinearAxisStory: StoryObj<typeof LinearAxisScene> = {
       },
     )
   },
-  render: (args, { loaded: { dhParameters } }) => {
+  render: (args, { loaded: { dhParameters, getModel } }) => {
     // Cleanup function that runs when the story unmounts
     // eslint-disable-next-line react-hooks/rules-of-hooks
     useEffect(() => {
@@ -108,12 +108,13 @@ export const LinearAxisStory: StoryObj<typeof LinearAxisScene> = {
       }
     }, [])
     
-    return <LinearAxisScene {...args} dhParameters={dhParameters} />
+    return <LinearAxisScene {...args} dhParameters={dhParameters} getModel={() => getModel} />
   },
   name: "ABB IRT710 Linear Axis",
   loaders: [
     async () => ({
       dhParameters: await getDHParams("ABB_IRT710"),
+      getModel: getModel("ABB_IRT710")
     }),
   ],
 }
