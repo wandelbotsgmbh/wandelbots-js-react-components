@@ -1,6 +1,6 @@
 import { Canvas } from "@react-three/fiber"
 import type { StoryObj } from "@storybook/react-vite"
-import { NovaClient } from "@wandelbots/nova-js/v2"
+import { type DHParameter, NovaClient } from "@wandelbots/nova-js/v2"
 import { useCallback, useEffect, useState } from "react"
 import { expect, fn, waitFor } from "storybook/test"
 import { Mesh, MeshBasicMaterial, SphereGeometry, type Group } from "three"
@@ -18,7 +18,10 @@ export default {
 }
 
 function LinearAxisScene(
-  props: Omit<React.ComponentProps<typeof LinearAxis>, "connectedMotionGroup">,
+  props: Omit<React.ComponentProps<typeof LinearAxis> & {
+    dhParameters: DHParameter[],
+    modelFromController: string
+  }, "connectedMotionGroup">,
 ) {
   const [connectedMotionGroup, setConnectedMotionGroup] =
     useState<ConnectedMotionGroup>()
@@ -50,7 +53,6 @@ function LinearAxisScene(
       revokeAllModelUrls()
     }
   }, [])
-
 
 
   if (!connectedMotionGroup) {
@@ -107,7 +109,7 @@ export const LinearAxisStory: StoryObj<typeof LinearAxisScene> = {
         // Optional cleanup if needed
       }
     }, [])
-    
+
     return <LinearAxisScene {...args} dhParameters={dhParameters} />
   },
   name: "ABB IRT710 Linear Axis",
