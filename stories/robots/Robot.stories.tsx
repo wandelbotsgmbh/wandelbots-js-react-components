@@ -17,7 +17,7 @@ export default {
 }
 
 function RobotScene(
-  props: Omit<React.ComponentProps<typeof MotionGroupVisualizer>, "connectedMotionGroup">,
+  props: React.ComponentProps<typeof MotionGroupVisualizer>,
 ) {
   const [connectedMotionGroup, setConnectedMotionGroup] =
     useState<ConnectedMotionGroup>()
