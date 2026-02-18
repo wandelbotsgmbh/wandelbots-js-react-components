@@ -5,7 +5,6 @@ import { useCallback, useEffect, useState } from "react"
 import { expect, fn, waitFor } from "storybook/test"
 import { Mesh, MeshBasicMaterial, SphereGeometry, type Group } from "three"
 import { PresetEnvironment } from "../../src"
-import { LinearAxis } from "../../src/components/robots/LinearAxis"
 import { revokeAllModelUrls } from "../../src/components/robots/robotModelLogic"
 import { ConnectedMotionGroup } from "../../src/lib/ConnectedMotionGroup"
 import { OrbitControlsAround } from "./OrbitControlsAround"
@@ -19,7 +18,7 @@ export default {
 }
 
 function LinearAxisScene(
-  props: Omit<React.ComponentProps<typeof LinearAxis> & {
+  props: Omit<React.ComponentProps<typeof MotionGroupVisualizer> & {
     dhParameters: DHParameter[],
     modelFromController: string
   }, "connectedMotionGroup">,
@@ -89,6 +88,7 @@ function LinearAxisScene(
 export const LinearAxisStory: StoryObj<typeof LinearAxisScene> = {
   args: {
     postModelRender: fn(),
+    inverseSolver: null
   },
   play: async ({ args }) => {
     await waitFor(

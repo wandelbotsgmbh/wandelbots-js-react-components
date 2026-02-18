@@ -3,7 +3,7 @@ import type { StoryObj } from "@storybook/react-vite"
 import { NovaClient } from "@wandelbots/nova-js/v2"
 import { useEffect, useState } from "react"
 import { expect, fn, waitFor } from "storybook/test"
-import { PresetEnvironment, Robot } from "../../src"
+import { PresetEnvironment } from "../../src"
 import { revokeAllModelUrls } from "../../src/components/robots/robotModelLogic"
 import { ConnectedMotionGroup } from "../../src/lib/ConnectedMotionGroup"
 import { OrbitControlsAround } from "./OrbitControlsAround"
@@ -17,7 +17,7 @@ export default {
 }
 
 function RobotScene(
-  props: Omit<React.ComponentProps<typeof Robot>, "connectedMotionGroup">,
+  props: Omit<React.ComponentProps<typeof MotionGroupVisualizer>, "connectedMotionGroup">,
 ) {
   const [connectedMotionGroup, setConnectedMotionGroup] =
     useState<ConnectedMotionGroup>()
@@ -75,6 +75,7 @@ function RobotScene(
 export const RobotStory: StoryObj<typeof RobotScene> = {
   args: {
     postModelRender: fn(),
+    inverseSolver: "Universalrobots"
   },
   play: async ({ args }) => {
     await waitFor(
