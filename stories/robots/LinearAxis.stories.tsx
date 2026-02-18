@@ -87,12 +87,11 @@ function LinearAxisScene(
 
 export const LinearAxisStory: StoryObj<typeof LinearAxisScene> = {
   args: {
-    postModelRender: fn(),
-    inverseSolver: "ABB_IRT710"
+    postModelRender: fn()
   },
   play: async ({ args }) => {
     /**
-     * First render for defined inverseSolver would be SupportedLinearAxis, which does
+     * First render for undefined inverseSolver would be a null, which does not
      * fire the postModelRender callback
      */
     await waitFor(
@@ -100,7 +99,7 @@ export const LinearAxisStory: StoryObj<typeof LinearAxisScene> = {
         expect(
           args.postModelRender,
           `Failed to load model for rob-linear-axis`,
-        ).toHaveBeenCalled(),
+        ).not.toHaveBeenCalled(),
       {
         timeout: 8000,
       },
