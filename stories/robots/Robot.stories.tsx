@@ -8,6 +8,7 @@ import { revokeAllModelUrls } from "../../src/components/robots/robotModelLogic"
 import { ConnectedMotionGroup } from "../../src/lib/ConnectedMotionGroup"
 import { OrbitControlsAround } from "./OrbitControlsAround"
 import { sharedStoryConfig } from "./robotStoryConfig"
+import { MotionGroupVisualizer } from "../../src/components/robots/MotionGroupVisualizer"
 
 export default {
   ...sharedStoryConfig,
@@ -27,13 +28,13 @@ function RobotScene(
     async function fetchConnectedMotionGroup() {
       const motionGroup = await ConnectedMotionGroup.connect(
         nova,
-        "0@mock-ur5e",
+        "0@ur5e",
       )
       setConnectedMotionGroup(motionGroup)
     }
 
     fetchConnectedMotionGroup()
-    
+
     // Cleanup: revoke model URLs when component unmounts
     return () => {
       revokeAllModelUrls()
@@ -58,8 +59,13 @@ function RobotScene(
       <Canvas shadows>
         <PresetEnvironment />
 
-          <OrbitControlsAround>
-          <Robot {...props} connectedMotionGroup={connectedMotionGroup} />
+        <OrbitControlsAround>
+          <MotionGroupVisualizer
+            modelFromController={"UniversalRobots_UR5e"}
+            rapidlyChangingMotionState={connectedMotionGroup.rapidlyChangingMotionState}
+            dhParameters={connectedMotionGroup.dhParameters ?? []}
+            {...props}
+          />
         </OrbitControlsAround>
       </Canvas>
     </div>
