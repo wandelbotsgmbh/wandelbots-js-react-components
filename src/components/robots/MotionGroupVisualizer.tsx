@@ -42,10 +42,10 @@ export const MotionGroupVisualizer: React.FC<MotionGroupVisualizerProps> = exter
   useEffect(() => {
     if (inverseSolverProp !== undefined) {
       setInverseSolver(inverseSolverProp)
-    } else if (modelFromController) {
+    } else if (modelFromController && instanceUrl) {
       fetchKinematicModel()
     }
-  }, [inverseSolverProp, modelFromController, fetchKinematicModel])
+  }, [inverseSolverProp, modelFromController, fetchKinematicModel, instanceUrl])
 
   /**
    * The turntable models return inverseSolver = null - however these models

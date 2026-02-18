@@ -77,7 +77,7 @@ function LinearAxisScene(
         <OrbitControlsAround>
           <MotionGroupVisualizer
             {...props}
-            modelFromController={connectedMotionGroup.modelFromController}
+            modelFromController={connectedMotionGroup.modelFromController ?? "ABB_IRT710"}
             rapidlyChangingMotionState={connectedMotionGroup.rapidlyChangingMotionState}
           />
         </OrbitControlsAround>
@@ -95,7 +95,7 @@ export const LinearAxisStory: StoryObj<typeof LinearAxisScene> = {
       () =>
         expect(
           args.postModelRender,
-          `Failed to load model for ${args.modelFromController}`,
+          `Failed to load model for rob-linear-axis`,
         ).toHaveBeenCalled(),
       {
         timeout: 8000,
@@ -103,14 +103,6 @@ export const LinearAxisStory: StoryObj<typeof LinearAxisScene> = {
     )
   },
   render: (args, { loaded: { dhParameters } }) => {
-    // Cleanup function that runs when the story unmounts
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    useEffect(() => {
-      return () => {
-        // Optional cleanup if needed
-      }
-    }, [])
-
     return <LinearAxisScene {...args} dhParameters={dhParameters} />
   },
   name: "ABB IRT710 Linear Axis",

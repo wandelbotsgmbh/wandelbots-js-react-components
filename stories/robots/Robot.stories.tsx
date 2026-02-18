@@ -28,7 +28,7 @@ function RobotScene(
     async function fetchConnectedMotionGroup() {
       const motionGroup = await ConnectedMotionGroup.connect(
         nova,
-        "0@ur5e",
+        "0@mock-ur5e",
       )
       setConnectedMotionGroup(motionGroup)
     }
@@ -62,7 +62,7 @@ function RobotScene(
         <OrbitControlsAround>
           <MotionGroupVisualizer
             {...props}
-            modelFromController={connectedMotionGroup.modelFromController}
+            modelFromController={connectedMotionGroup.modelFromController ?? "UniversalRobots_UR5e"}
             rapidlyChangingMotionState={connectedMotionGroup.rapidlyChangingMotionState}
             dhParameters={connectedMotionGroup.dhParameters ?? []}
           />
