@@ -75,10 +75,9 @@ export default function LinearAxisAnimator({
         const dhParam = dhParameters[index]
         const translationSign = dhParam.reverse_rotation_direction ? -1 : 1
 
-        // Apply linear translation along X axis
+        // Apply linear translation along Y axis
         // Convert from millimeters to meters
-        // ToDo: change back to y axis when we want to display the proper orientation
-        object.position.x =
+        object.position.y =
           (translationSign * (updatedJointValues[index] || 0)) / 1000
       }
     }
