@@ -10,6 +10,7 @@ import { revokeAllModelUrls } from "../../src/components/robots/robotModelLogic"
 import { ConnectedMotionGroup } from "../../src/lib/ConnectedMotionGroup"
 import { OrbitControlsAround } from "./OrbitControlsAround"
 import { getDHParams, sharedStoryConfig } from "./robotStoryConfig"
+import { MotionGroupVisualizer } from "../../src/components/robots/MotionGroupVisualizer"
 
 export default {
   ...sharedStoryConfig,
@@ -74,10 +75,10 @@ function LinearAxisScene(
         <PresetEnvironment />
 
         <OrbitControlsAround>
-          <LinearAxis
+          <MotionGroupVisualizer
             {...props}
-            flangeRef={flangeRef}
-            connectedMotionGroup={connectedMotionGroup}
+            modelFromController={connectedMotionGroup.modelFromController}
+            rapidlyChangingMotionState={connectedMotionGroup.rapidlyChangingMotionState}
           />
         </OrbitControlsAround>
       </Canvas>

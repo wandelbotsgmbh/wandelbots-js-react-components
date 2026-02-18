@@ -61,10 +61,10 @@ function RobotScene(
 
         <OrbitControlsAround>
           <MotionGroupVisualizer
-            modelFromController={"UniversalRobots_UR5e"}
+            {...props}
+            modelFromController={connectedMotionGroup.modelFromController}
             rapidlyChangingMotionState={connectedMotionGroup.rapidlyChangingMotionState}
             dhParameters={connectedMotionGroup.dhParameters ?? []}
-            {...props}
           />
         </OrbitControlsAround>
       </Canvas>
