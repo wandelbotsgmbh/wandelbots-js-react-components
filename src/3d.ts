@@ -5,6 +5,7 @@ export * from "./components/3d-viewport/SafetyZonesRenderer"
 export * from "./components/3d-viewport/TrajectoryRenderer"
 export * from "./components/RobotCard"
 export * from "./components/robots/AxisConfig"
+export * from "./components/robots/LinearAxis"
 export {
   extractManufacturer,
   getDefaultHomeConfig, MANUFACTURER_HOME_CONFIGS
