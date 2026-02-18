@@ -22,7 +22,8 @@ function RobotScene(
   const [connectedMotionGroup, setConnectedMotionGroup] =
     useState<ConnectedMotionGroup>()
 
-  const nova = new NovaClient({ instanceUrl: import.meta.env.WANDELAPI_BASE_URL || "https://mock.example.com" })
+  const instanceUrl = import.meta.env.WANDELAPI_BASE_URL || "https://mock.example.com"
+  const nova = new NovaClient({ instanceUrl })
 
   useEffect(() => {
     async function fetchConnectedMotionGroup() {
@@ -62,7 +63,8 @@ function RobotScene(
         <OrbitControlsAround>
           <MotionGroupVisualizer
             {...props}
-            modelFromController={connectedMotionGroup.modelFromController ?? "UniversalRobots_UR5e"}
+            instanceUrl={instanceUrl}
+            modelFromController={connectedMotionGroup.modelFromController}
             rapidlyChangingMotionState={connectedMotionGroup.rapidlyChangingMotionState}
             dhParameters={connectedMotionGroup.dhParameters ?? []}
           />

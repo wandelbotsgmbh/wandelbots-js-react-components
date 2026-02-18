@@ -7,15 +7,14 @@ import { SupportedRobot, type SupportedRobotProps } from "./SupportedRobot"
 import { SupportedLinearAxis, type SupportedLinearAxisProps } from "./SupportedLinearAxis"
 
 export type MotionGroupVisualizerProps = {
+  instanceUrl: string
   inverseSolver?: string | null
 } & (SupportedRobotProps | SupportedLinearAxisProps)
 
 export const MotionGroupVisualizer: React.FC<MotionGroupVisualizerProps> = externalizeComponent((props: MotionGroupVisualizerProps) => {
-  const { inverseSolver: inverseSolverProp, modelFromController, ...rest } = props
+  const { instanceUrl, inverseSolver: inverseSolverProp, modelFromController, ...rest } = props
 
   const [inverseSolver, setInverseSolver] = useState<string | null | undefined>(inverseSolverProp)
-
-  const instanceUrl = import.meta.env.WANDELAPI_BASE_URL
 
   /**
    * Fetches the kinematic model from the API and saved the inverse_solver property, which defined
@@ -23,6 +22,9 @@ export const MotionGroupVisualizer: React.FC<MotionGroupVisualizerProps> = exter
    */
   const fetchKinematicModel = useCallback(async () => {
     const nova = new NovaClient({ instanceUrl })
+    
+    console.log('NOVA CLIENT', instanceUrl, nova)
+
     try {
       const kinematicModel: KinematicModel = await nova.api.motionGroupModels.getMotionGroupKinematicModel(
         modelFromController,
@@ -40,7 +42,9 @@ export const MotionGroupVisualizer: React.FC<MotionGroupVisualizerProps> = exter
    * Undefined - carry out a request to fetch the inverseSolver value
    */
   useEffect(() => {
-    if (inverseSolverProp === undefined && modelFromController && instanceUrl) {
+    const shouldKinematicBeFetched = inverseSolverProp === undefined && !!modelFromController && !!instanceUrl
+
+    if (shouldKinematicBeFetched) {
       fetchKinematicModel()
     }
   }, [inverseSolverProp, modelFromController, fetchKinematicModel, instanceUrl])

@@ -14,4 +14,5 @@ export * from "./components/robots/Robot"
 export { defaultGetModel } from "./components/robots/robotModelLogic"
 export * from "./components/robots/SupportedLinearAxis"
 export * from "./components/robots/SupportedRobot"
+export * from "./components/robots/MotionGroupVisualizer"
 
