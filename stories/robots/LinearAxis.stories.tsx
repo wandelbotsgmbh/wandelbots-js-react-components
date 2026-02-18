@@ -88,9 +88,13 @@ function LinearAxisScene(
 export const LinearAxisStory: StoryObj<typeof LinearAxisScene> = {
   args: {
     postModelRender: fn(),
-    inverseSolver: null
+    inverseSolver: "ABB_IRT710"
   },
   play: async ({ args }) => {
+    /**
+     * First render for defined inverseSolver would be SupportedLinearAxis, which does
+     * fire the postModelRender callback
+     */
     await waitFor(
       () =>
         expect(

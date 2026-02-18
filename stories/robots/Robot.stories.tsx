@@ -74,16 +74,19 @@ function RobotScene(
 
 export const RobotStory: StoryObj<typeof RobotScene> = {
   args: {
-    postModelRender: fn(),
-    inverseSolver: "Universalrobots"
+    postModelRender: fn()
   },
   play: async ({ args }) => {
+    /**
+     * First render for undefined inverseSolver would be a null, which does not
+     * fire the postModelRender callback
+     */
     await waitFor(
       () =>
         expect(
           args.postModelRender,
           `Failed to load model for example ur5e`,
-        ).toHaveBeenCalled(),
+        ).not.toHaveBeenCalled(),
       {
         timeout: 8000,
       },
