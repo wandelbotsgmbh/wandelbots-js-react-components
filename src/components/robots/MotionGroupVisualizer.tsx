@@ -40,9 +40,7 @@ export const MotionGroupVisualizer: React.FC<MotionGroupVisualizerProps> = exter
    * Undefined - carry out a request to fetch the inverseSolver value
    */
   useEffect(() => {
-    if (inverseSolverProp !== undefined) {
-      setInverseSolver(inverseSolverProp)
-    } else if (modelFromController && instanceUrl) {
+    if (inverseSolverProp === undefined && modelFromController && instanceUrl) {
       fetchKinematicModel()
     }
   }, [inverseSolverProp, modelFromController, fetchKinematicModel, instanceUrl])
