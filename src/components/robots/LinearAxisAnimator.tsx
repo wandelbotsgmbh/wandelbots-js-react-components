@@ -77,6 +77,7 @@ export default function LinearAxisAnimator({
 
         // Apply linear translation along X axis
         // Convert from millimeters to meters
+        // ToDo: change back to y axis when we want to display the proper orientation
         object.position.x =
           (translationSign * (updatedJointValues[index] || 0)) / 1000
       }
