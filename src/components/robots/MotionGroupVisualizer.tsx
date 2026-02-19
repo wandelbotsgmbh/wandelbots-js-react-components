@@ -12,9 +12,17 @@ export type MotionGroupVisualizerProps = {
 } & (SupportedRobotProps | SupportedLinearAxisProps)
 
 export const MotionGroupVisualizer: React.FC<MotionGroupVisualizerProps> = externalizeComponent((props: MotionGroupVisualizerProps) => {
-  const { instanceUrl, inverseSolver: inverseSolverProp, modelFromController, ...rest } = props
+  const {
+    instanceUrl,
+    inverseSolver: inverseSolverProp,
+    modelFromController,
+    ...rest
+  } = props
 
-  const [inverseSolver, setInverseSolver] = useState<string | null | undefined>(inverseSolverProp)
+  const [inverseSolver, setInverseSolver] = useState<string | null | undefined>(
+    inverseSolverProp,
+  )
+  const [, forceThreeRerender] = useState<boolean>(false)
 
   /**
    * Fetches the kinematic model from the API and saved the inverse_solver property, which defined
@@ -24,13 +32,27 @@ export const MotionGroupVisualizer: React.FC<MotionGroupVisualizerProps> = exter
     const nova = new NovaClient({ instanceUrl })
 
     try {
-      const kinematicModel: KinematicModel = await nova.api.motionGroupModels.getMotionGroupKinematicModel(
-        modelFromController,
-      )
+      const kinematicModel: KinematicModel =
+        await nova.api.motionGroupModels.getMotionGroupKinematicModel(
+          modelFromController,
+        )
 
       setInverseSolver(kinematicModel.inverse_solver)
     } catch (err) {
-      console.warn(`Failed to fetch kinematic model from API for ${modelFromController}, falling back to local config`)
+      console.warn(
+        `Failed to fetch kinematic model from API for ${modelFromController}, falling back to local config`,
+      )
+    } finally {
+      /**
+       * The following is a workaround to force a rerender of the Three.js scene, due
+       * to a race condition (if the component gets re-initialized, the robot
+       * is rendered with the initial joint position). The forceThreeRerender tells
+       * the Three.JS to re-render with the right joint position
+       *
+       * TODO remove the three rerender function and get rid of the
+       *  stale state condition
+       */
+      setTimeout(() => forceThreeRerender(true), 0)
     }
   }, [modelFromController, instanceUrl])
 
@@ -40,7 +62,8 @@ export const MotionGroupVisualizer: React.FC<MotionGroupVisualizerProps> = exter
    * Undefined - carry out a request to fetch the inverseSolver value
    */
   useEffect(() => {
-    const shouldKinematicBeFetched = inverseSolverProp === undefined && !!modelFromController && !!instanceUrl
+    const shouldKinematicBeFetched =
+      inverseSolverProp === undefined && !!modelFromController && !!instanceUrl
 
     if (shouldKinematicBeFetched) {
       fetchKinematicModel()
@@ -51,12 +74,18 @@ export const MotionGroupVisualizer: React.FC<MotionGroupVisualizerProps> = exter
    * The turntable models return inverseSolver = null - however these models
    * should be rendered with SupportedRobot instead of SupportedLinearAxis
    *
+   * TODO
    * In the future - this hard coded check would be replaced with a new "type" property
    * from dh parameters
    */
   const isTurnTable = useMemo(() => {
-    return ["KUKA_DKP250", "KUKA_DKP500_2", "YASKAWA_TURN1", "YASKAWA_TURN2", "YASKAWA_TURN3"]
-      .includes(modelFromController)
+    return [
+      "KUKA_DKP250",
+      "KUKA_DKP500_2",
+      "YASKAWA_TURN1",
+      "YASKAWA_TURN2",
+      "YASKAWA_TURN3",
+    ].includes(modelFromController)
   }, [modelFromController])
 
   if (inverseSolver || isTurnTable) {

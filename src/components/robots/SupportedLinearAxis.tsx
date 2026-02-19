@@ -74,7 +74,6 @@ export const SupportedLinearAxis = externalizeComponent(
         <Suspense fallback={dhLinearAxis}>
           <group ref={setRobotRef}>
             <LinearAxisAnimator
-              key={modelFromController}
               rapidlyChangingMotionState={rapidlyChangingMotionState}
               dhParameters={dhParameters}
             >
