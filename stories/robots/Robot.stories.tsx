@@ -3,12 +3,10 @@ import type { StoryObj } from "@storybook/react-vite"
 import { NovaClient } from "@wandelbots/nova-js/v2"
 import { useEffect, useState } from "react"
 import { expect, fn, waitFor } from "storybook/test"
-import { PresetEnvironment } from "../../src"
+import { PresetEnvironment, ConnectedMotionGroup, MotionGroupVisualizer } from "../../src"
 import { revokeAllModelUrls } from "../../src/components/robots/robotModelLogic"
-import { ConnectedMotionGroup } from "../../src/lib/ConnectedMotionGroup"
 import { OrbitControlsAround } from "./OrbitControlsAround"
 import { sharedStoryConfig } from "./robotStoryConfig"
-import { MotionGroupVisualizer } from "../../src/components/robots/MotionGroupVisualizer"
 
 export default {
   ...sharedStoryConfig,

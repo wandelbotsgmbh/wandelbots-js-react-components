@@ -55,7 +55,7 @@ export const MotionGroupVisualizer: React.FC<MotionGroupVisualizerProps> = exter
    * from dh parameters
    */
   const isTurnTable = useMemo(() => {
-    return ["KUKA_DK250", "KUKA_DK500", "YASKAWA_TURN1", "YASKAWA_TURN2", "YASKAWA_TURN3"]
+    return ["KUKA_DKP250", "KUKA_DKP500_2", "YASKAWA_TURN1", "YASKAWA_TURN2", "YASKAWA_TURN3"]
       .includes(modelFromController)
   }, [modelFromController])
 
