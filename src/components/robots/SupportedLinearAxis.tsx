@@ -21,6 +21,7 @@ export type SupportedLinearAxisProps = {
   modelFromController: string
   dhParameters: DHParameter[]
   flangeRef?: React.Ref<THREE.Group>
+  instanceUrl?: string
   getModel?: (modelFromController: string, instanceUrl?: string) => Promise<string> | undefined
   postModelRender?: () => void
   transparentColor?: string
@@ -35,6 +36,7 @@ export const SupportedLinearAxis = externalizeComponent(
     flangeRef,
     postModelRender,
     transparentColor,
+    instanceUrl,
     ...props
   }: SupportedLinearAxisProps) => {
     const [robotGroup, setRobotGroup] = useState<THREE.Group | null>(null)
@@ -77,7 +79,7 @@ export const SupportedLinearAxis = externalizeComponent(
             >
               <GenericRobot
                 modelURL={(() => {
-                  const result = getModel(modelFromController)
+                  const result = getModel(modelFromController, instanceUrl)
                   if (!result) {
                     const mockBlob = new Blob([], { type: 'model/gltf-binary' })
                     const mockFile = new File([mockBlob], `${modelFromController}.glb`, { type: 'model/gltf-binary' })

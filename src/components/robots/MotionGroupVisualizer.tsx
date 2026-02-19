@@ -62,6 +62,7 @@ export const MotionGroupVisualizer: React.FC<MotionGroupVisualizerProps> = exter
   if (inverseSolver || isTurnTable) {
     return (
       <SupportedRobot
+        instanceUrl={instanceUrl}
         modelFromController={modelFromController}
         {...rest}
       />
@@ -71,6 +72,7 @@ export const MotionGroupVisualizer: React.FC<MotionGroupVisualizerProps> = exter
   if (inverseSolver === null) {
     return (
       <SupportedLinearAxis
+        instanceUrl={instanceUrl}
         modelFromController={modelFromController}
         {...rest}
       />
