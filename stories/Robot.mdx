@@ -4,20 +4,26 @@ import * as RobotStories from '../stories/robots/Robot.stories';
 
 <Meta title="3D View/Robot/Robot"/>
  
-# Robot
+# MotionGroupVisualizer
 
 
-This `Robot` component adds the robot to the 3D viewport. Use it together with the `ConnectedMotionGroup` from this library:
+This `MotionGroupVisualizer` component adds the robot to the 3D viewport. Use it together with the `ConnectedMotionGroup` from this library:
 
 ```tsx
 import { NovaClient } from "@wandelbots/nova-js/v2"
 import { ConnectedMotionGroup } from "@wandelbots/wandelbots-js-react-components/core"
-import { Robot } from "@wandelbots/wandelbots-js-react-components/3d"
+import { MotionGroupVisualizer } from "@wandelbots/wandelbots-js-react-components/3d"
 
-const nova = new NovaClient({ instanceUrl: "https://your-nova-instance.com" })
+const instanceUrl = "https://your-nova-instance.com"
+const nova = new NovaClient({ instanceUrl })
 const connectedMotionGroup = await ConnectedMotionGroup.connect(nova, "0@your-motion-group-id");
 
-<Robot connectedMotionGroup={connectedMotionGroup} />
+<MotionGroupVisualizer
+  instanceUrl={instanceUrl}
+  modelFromController={connectedMotionGroup.modelFromController}
+  rapidlyChangingMotionState={connectedMotionGroup.rapidlyChangingMotionState}
+  dhParameters={connectedMotionGroup.dhParameters ?? []}
+/>
 ```
 
 The robot model are loaded from your connected Nova instance.
@@ -29,12 +35,15 @@ return url
 ```
 
 
-In case you want to use the application offline, you can download the models and host them locally. You can override the URL resolver of the `Robot` component by passing a `getModel` function like:
+In case you want to use the application offline, you can download the models and host them locally. You can override the URL resolver of the `MotionGroupVisualizer` component by passing a `getModel` function like:
 
 ```tsx
-<Robot
+<MotionGroupVisualizer
+  instanceUrl={instanceUrl}
+  modelFromController={connectedMotionGroup.modelFromController}
+  rapidlyChangingMotionState={connectedMotionGroup.rapidlyChangingMotionState}
+  dhParameters={connectedMotionGroup.dhParameters ?? []}
   getModel={() => `public/${connectedMotionGroup.modelFromController}.glb`}
-  connectedMotionGroup={connectedMotionGroup}
 />
 ```
 
