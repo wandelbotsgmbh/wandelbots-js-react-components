@@ -93,7 +93,7 @@
     "@types/react": "^19.1.8",
     "@types/three": "^0.182.0",
     "@vitejs/plugin-react": "^4.3.4",
-    "@wandelbots/nova-js": "3.5.1-pr.fix-kinematic-model-mock.226.1c4dde2",
+    "@wandelbots/nova-js": "^3.5.1",
     "add": "^2.0.6",
     "eslint-plugin-storybook": "^10.1.10",
     "glob": "^13.0.0",
