@@ -29,12 +29,19 @@ function RobotScene(
     async function fetchConnectedMotionGroup() {
       const motionGroup = await ConnectedMotionGroup.connect(
         nova,
-        "0@mock-ur5e",
+        "0@ur5e",
       )
       setConnectedMotionGroup(motionGroup)
+
+      console.log('RESULT', motionGroup)
+      console.log('NOVA CLIENT in story', nova)
+      const testResult = await nova.api.motionGroupModels.getMotionGroupKinematicModel(motionGroup.modelFromController)
+
+      console.log('TEST RESULT', testResult)
     }
 
     fetchConnectedMotionGroup()
+
 
     // Cleanup: revoke model URLs when component unmounts
     return () => {
