@@ -75,6 +75,7 @@ export const SupportedRobot = externalizeComponent(
         <Suspense fallback={dhrobot}>
           <group ref={setRobotRef}>
             <RobotAnimator
+              key={modelFromController}
               rapidlyChangingMotionState={rapidlyChangingMotionState}
               dhParameters={dhParameters}
             >
