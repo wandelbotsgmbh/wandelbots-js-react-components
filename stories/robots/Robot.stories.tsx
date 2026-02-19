@@ -32,12 +32,6 @@ function RobotScene(
         "0@mock-ur5e",
       )
       setConnectedMotionGroup(motionGroup)
-
-      console.log('RESULT', motionGroup)
-      console.log('NOVA CLIENT in story', nova)
-      const testResult = await nova.api.motionGroupModels.getMotionGroupKinematicModel(motionGroup.modelFromController)
-
-      console.log('TEST RESULT', testResult)
     }
 
     fetchConnectedMotionGroup()

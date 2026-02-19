@@ -21,7 +21,7 @@ export type SupportedLinearAxisProps = {
   modelFromController: string
   dhParameters: DHParameter[]
   flangeRef?: React.Ref<THREE.Group>
-  getModel?: (modelFromController: string) => Promise<string> | undefined
+  getModel?: (modelFromController: string, instanceUrl?: string) => Promise<string> | undefined
   postModelRender?: () => void
   transparentColor?: string
 } & ThreeElements["group"]

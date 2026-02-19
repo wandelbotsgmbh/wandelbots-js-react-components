@@ -22,8 +22,6 @@ export const MotionGroupVisualizer: React.FC<MotionGroupVisualizerProps> = exter
    */
   const fetchKinematicModel = useCallback(async () => {
     const nova = new NovaClient({ instanceUrl })
-    
-    console.log('NOVA CLIENT', instanceUrl, nova)
 
     try {
       const kinematicModel: KinematicModel = await nova.api.motionGroupModels.getMotionGroupKinematicModel(
@@ -63,13 +61,19 @@ export const MotionGroupVisualizer: React.FC<MotionGroupVisualizerProps> = exter
 
   if (inverseSolver || isTurnTable) {
     return (
-      <SupportedRobot modelFromController={modelFromController} {...rest} />
+      <SupportedRobot
+        modelFromController={modelFromController}
+        {...rest}
+      />
     )
   }
 
   if (inverseSolver === null) {
     return (
-      <SupportedLinearAxis modelFromController={modelFromController} {...rest} />
+      <SupportedLinearAxis
+        modelFromController={modelFromController}
+        {...rest}
+      />
     )
   }
 
