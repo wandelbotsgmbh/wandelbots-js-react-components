@@ -22,7 +22,8 @@ export type SupportedRobotProps = {
   modelFromController: string
   dhParameters: DHParameter[]
   flangeRef?: React.Ref<THREE.Group>
-  getModel?: (modelFromController: string) => Promise<string> | undefined
+  instanceUrl?: string
+  getModel?: (modelFromController: string, instanceUrl?: string) => Promise<string> | undefined
   postModelRender?: () => void
   transparentColor?: string
 } & ThreeElements["group"]
@@ -36,6 +37,7 @@ export const SupportedRobot = externalizeComponent(
     flangeRef,
     postModelRender,
     transparentColor,
+    instanceUrl,
     ...props
   }: SupportedRobotProps) => {
     const [robotGroup, setRobotGroup] = useState<THREE.Group | null>(null)
@@ -78,7 +80,7 @@ export const SupportedRobot = externalizeComponent(
             >
               <GenericRobot
                 modelURL={(() => {
-                  const result = getModel(modelFromController)
+                  const result = getModel(modelFromController, instanceUrl)
                   if (!result) {
                     const mockBlob = new Blob([], { type: 'model/gltf-binary' })
                     const mockFile = new File([mockBlob], `${modelFromController}.glb`, { type: 'model/gltf-binary' })

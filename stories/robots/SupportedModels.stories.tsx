@@ -3,7 +3,7 @@ import { sharedStoryConfig } from "./robotStoryConfig"
 export default {
   ...sharedStoryConfig,
   tags: ["!autodocs"],
-  title: "3D View/Robot/Supported Models",
+  title: "3D View/Model Visualization/Supported Models",
 }
 
 // This file is autopopulated at storybook build time by the

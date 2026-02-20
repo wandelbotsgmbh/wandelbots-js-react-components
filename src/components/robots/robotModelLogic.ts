@@ -40,7 +40,7 @@ export async function revokeAllModelUrls(): Promise<void> {
   modelCache.clear()
 }
 
-export async function defaultGetModel(modelFromController: string): Promise<string> {
+export async function defaultGetModel(modelFromController: string, instanceUrlProp?: string): Promise<string> {
   // Check cache first
   if (modelCache.has(modelFromController)) {
     return modelCache.get(modelFromController)!
@@ -48,7 +48,7 @@ export async function defaultGetModel(modelFromController: string): Promise<stri
   
   // Create the promise and cache it immediately to prevent duplicate calls
   const modelPromise = (async () => {
-    const instanceUrl = import.meta.env.WANDELAPI_BASE_URL    
+    const instanceUrl = instanceUrlProp || import.meta.env.WANDELAPI_BASE_URL
     const nova = new NovaClient({ instanceUrl })
     
     // Configure axios to handle binary responses for GLB files

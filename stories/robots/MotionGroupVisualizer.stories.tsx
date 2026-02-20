@@ -3,25 +3,25 @@ import type { StoryObj } from "@storybook/react-vite"
 import { NovaClient } from "@wandelbots/nova-js/v2"
 import { useEffect, useState } from "react"
 import { expect, fn, waitFor } from "storybook/test"
-import { PresetEnvironment, Robot } from "../../src"
+import { PresetEnvironment, ConnectedMotionGroup, MotionGroupVisualizer } from "../../src"
 import { revokeAllModelUrls } from "../../src/components/robots/robotModelLogic"
-import { ConnectedMotionGroup } from "../../src/lib/ConnectedMotionGroup"
 import { OrbitControlsAround } from "./OrbitControlsAround"
 import { sharedStoryConfig } from "./robotStoryConfig"
 
 export default {
   ...sharedStoryConfig,
   tags: ["!dev"],
-  title: "3D View/Model Visualization/Robot",
+  title: "3D View/Model Visualization/MotionGroupVisualizer",
 }
 
-function RobotScene(
-  props: Omit<React.ComponentProps<typeof Robot>, "connectedMotionGroup">,
+function MotionGroupVisualizerScene(
+  props: React.ComponentProps<typeof MotionGroupVisualizer>,
 ) {
   const [connectedMotionGroup, setConnectedMotionGroup] =
     useState<ConnectedMotionGroup>()
 
-  const nova = new NovaClient({ instanceUrl: import.meta.env.WANDELAPI_BASE_URL || "https://mock.example.com" })
+  const instanceUrl = import.meta.env.WANDELAPI_BASE_URL || "https://mock.example.com"
+  const nova = new NovaClient({ instanceUrl })
 
   useEffect(() => {
     async function fetchConnectedMotionGroup() {
@@ -33,6 +33,7 @@ function RobotScene(
     }
 
     fetchConnectedMotionGroup()
+
 
     // Cleanup: revoke model URLs when component unmounts
     return () => {
@@ -59,30 +60,40 @@ function RobotScene(
         <PresetEnvironment />
 
         <OrbitControlsAround>
-          <Robot {...props} connectedMotionGroup={connectedMotionGroup} />
+          <MotionGroupVisualizer
+            {...props}
+            instanceUrl={instanceUrl}
+            modelFromController={connectedMotionGroup.modelFromController}
+            rapidlyChangingMotionState={connectedMotionGroup.rapidlyChangingMotionState}
+            dhParameters={connectedMotionGroup.dhParameters ?? []}
+          />
         </OrbitControlsAround>
       </Canvas>
     </div>
   )
 }
 
-export const RobotStory: StoryObj<typeof RobotScene> = {
+export const MotionGroupVisualizerStory: StoryObj<typeof MotionGroupVisualizerScene> = {
   args: {
-    postModelRender: fn(),
+    postModelRender: fn()
   },
   play: async ({ args }) => {
+    /**
+     * First render for undefined inverseSolver would be a null, which does not
+     * fire the postModelRender callback
+     */
     await waitFor(
       () =>
         expect(
           args.postModelRender,
           `Failed to load model for example ur5e`,
-        ).toHaveBeenCalled(),
+        ).not.toHaveBeenCalled(),
       {
         timeout: 8000,
       },
     )
   },
 
-  render: (args) => <RobotScene {...args} />,
-  name: "Robot",
+  render: (args) => <MotionGroupVisualizerScene {...args} />,
+  name: "MotionGroupVisualizer",
 }

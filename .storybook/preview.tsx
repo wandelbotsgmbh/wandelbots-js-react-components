@@ -24,7 +24,7 @@ const preview: Preview = {
           "Getting Started",
           "3D View",
           [
-            "Robot",
+            "Model Visualization",
             "TrajectoryRenderer",
             "SafetyZonesRenderer",
             "CollisionSceneRenderer",

@@ -1,0 +1,56 @@
+import { Canvas, Meta, Source } from '@storybook/addon-docs/blocks';
+import * as MotionGroupVisualizerStories from '../stories/robots/MotionGroupVisualizer.stories';
+
+
+<Meta title="3D View/Model Visualization/MotionGroupVisualizer"/>
+
+# MotionGroupVisualizer
+
+This `MotionGroupVisualizer` component adds the robot or linear axis to the 3D viewport. It can be used on top of a robot or linear axis if we want to include the internal differentiation of what should be rendered.
+
+The differentiation is dependent on the `inverseSolver` variable, which can also be passed as a prop:
+- `inverseSolver` set: `SupportedRobot` component is returned.
+- `inverseSolver` null: `SupportedLinearAxis` component is returned.
+- `inverseSolver` undefined: internal kinematics request to find out what the `inverseSolver` state is.
+
+Use it together with the `ConnectedMotionGroup` from this library:
+
+```tsx
+import { NovaClient } from "@wandelbots/nova-js/v2"
+import { ConnectedMotionGroup } from "@wandelbots/wandelbots-js-react-components/core"
+import { MotionGroupVisualizer } from "@wandelbots/wandelbots-js-react-components/3d"
+
+const instanceUrl = "https://your-nova-instance.com"
+const nova = new NovaClient({ instanceUrl })
+const connectedMotionGroup = await ConnectedMotionGroup.connect(nova, "0@your-motion-group-id");
+
+<MotionGroupVisualizer
+  instanceUrl={instanceUrl}
+  modelFromController={connectedMotionGroup.modelFromController}
+  rapidlyChangingMotionState={connectedMotionGroup.rapidlyChangingMotionState}
+  dhParameters={connectedMotionGroup.dhParameters ?? []}
+/>
+```
+
+The model files are loaded from your connected Nova instance.
+
+```tsx
+const file = await nova.api.motionGroupModels.getMotionGroupGlbModel(modelFromController)
+const url = URL.createObjectURL(file)
+return url
+```
+
+
+In case you want to use the application offline, you can download the models and host them locally. You can override the URL resolver of the `MotionGroupVisualizer` component by passing a `getModel` function like:
+
+```tsx
+<MotionGroupVisualizer
+  instanceUrl={instanceUrl}
+  modelFromController={connectedMotionGroup.modelFromController}
+  rapidlyChangingMotionState={connectedMotionGroup.rapidlyChangingMotionState}
+  dhParameters={connectedMotionGroup.dhParameters ?? []}
+  getModel={() => `public/${connectedMotionGroup.modelFromController}.glb`}
+/>
+```
+
+<Canvas of={MotionGroupVisualizerStories.MotionGroupVisualizerStory} />
