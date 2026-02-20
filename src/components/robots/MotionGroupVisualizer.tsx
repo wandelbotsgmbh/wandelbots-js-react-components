@@ -51,6 +51,7 @@ export const MotionGroupVisualizer: React.FC<MotionGroupVisualizerProps> = exter
        *
        * TODO remove the three rerender function and get rid of the
        *  stale state condition
+       *  https://wandelbots.atlassian.net/browse/RB-3134
        */
       setTimeout(() => forceThreeRerender(true), 0)
     }
