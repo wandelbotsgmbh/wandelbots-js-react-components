@@ -9,7 +9,7 @@ import { useTranslation } from "react-i18next"
 import { externalizeComponent } from "../../externalizeComponent"
 import { useAnimationFrame } from "../utils/hooks"
 
-type JoggingJointRotationControlProps = {
+type JoggingJointValueControlProps = {
   startJogging: (direction: "-" | "+") => void
   stopJogging: () => void
   lowerLimitDegs?: number
@@ -20,7 +20,7 @@ type JoggingJointRotationControlProps = {
 } & React.ComponentProps<typeof Stack>
 
 /** A input widget to control an individual joint */
-export const JoggingJointRotationControl = externalizeComponent(
+export const JoggingJointValueControl = externalizeComponent(
   observer(
     ({
       startJogging,
@@ -30,7 +30,7 @@ export const JoggingJointRotationControl = externalizeComponent(
       getValueDegs,
       disabled,
       ...rest
-    }: JoggingJointRotationControlProps) => {
+    }: JoggingJointValueControlProps) => {
       const { t } = useTranslation()
       const [currentValue, setCurrentValue] = useState<number | undefined>()
       const theme = useTheme()

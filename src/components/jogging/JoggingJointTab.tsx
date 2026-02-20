@@ -3,7 +3,7 @@ import { radiansToDegrees } from "@wandelbots/nova-js"
 import { observer } from "mobx-react-lite"
 import type { ReactNode } from "react"
 import { JoggingJointLimitDetector } from "./JoggingJointLimitDetector"
-import { JoggingJointRotationControl } from "./JoggingJointRotationControl"
+import { JoggingJointValueControl } from "./JoggingJointValueControl"
 import type { JoggingStore } from "./JoggingStore"
 import { JoggingVelocitySlider } from "./JoggingVelocitySlider"
 
@@ -73,7 +73,7 @@ export const JoggingJointTab = observer(
                     </Typography>
                   )}
 
-                  <JoggingJointRotationControl
+                  <JoggingJointValueControl
                     disabled={store.isLocked}
                     lowerLimitDegs={lowerLimitDegs}
                     upperLimitDegs={upperLimitDegs}

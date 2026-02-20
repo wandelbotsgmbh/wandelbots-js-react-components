@@ -1,12 +1,12 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
-import { JoggingJointRotationControl } from "../src"
 import { useRef } from "react"
+import { JoggingJointValueControl } from "../src"
 import { useAnimationFrame } from "../src/components/utils/hooks"
 
-const meta: Meta<typeof JoggingJointRotationControl> = {
-  title: "Jogging/JoggingJointRotationControl",
+const meta: Meta<typeof JoggingJointValueControl> = {
+  title: "Jogging/JoggingJointValueControl",
   tags: ["!dev"],
-  component: JoggingJointRotationControl,
+  component: JoggingJointValueControl,
 
   args: {
     lowerLimitDegs: -360,
@@ -38,7 +38,7 @@ const meta: Meta<typeof JoggingJointRotationControl> = {
     })
 
     return (
-      <JoggingJointRotationControl
+      <JoggingJointValueControl
         {...args}
         startJogging={(direction) => (joggingDirRef.current = direction)}
         stopJogging={() => (joggingDirRef.current = null)}
@@ -49,4 +49,4 @@ const meta: Meta<typeof JoggingJointRotationControl> = {
 }
 export default meta
 
-export const Default: StoryObj<typeof JoggingJointRotationControl> = {}
+export const Default: StoryObj<typeof JoggingJointValueControl> = {}
