@@ -418,7 +418,7 @@ export class JoggingStore {
 
 
   /*
-  * ToDo replace Hardcoded Models with an api requst that delivers the type (will become part of DH-Parameters)
+  * ToDo replace Hardcoded Models with an api request that delivers the type (will become part of DH-Parameters)
   *  Ticket already created
   * */
   get jointCategory(): JointCategory {
