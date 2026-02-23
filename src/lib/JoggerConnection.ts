@@ -292,7 +292,7 @@ export class JoggerConnection {
     direction: "+" | "-"
     /** Speed of the rotation, unit is currently unused, but i wanted it there to raise awareness that not everything here is rad/s*/
     velocityValue: number
-    velocityUnit:  "mm/s" | "rad/s"
+    velocityUnit: "mm/s" | "rad/s"
 
   }) {
     if (!this.joggingSocket || this.mode !== "jogging") {
