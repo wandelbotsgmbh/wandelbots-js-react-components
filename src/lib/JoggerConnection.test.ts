@@ -77,7 +77,8 @@ test("jog a robot somewhat", async () => {
   await jogger.rotateJoints({
     joint: 0,
     direction: "+",
-    velocityRadsPerSec: 0.1,
+    velocityValue: 0.1,
+    velocityUnit: "rad/s",
   })
 
   await delay(500)
@@ -94,7 +95,8 @@ test("jog a robot somewhat", async () => {
   await jogger.rotateJoints({
     joint: 0,
     direction: "-",
-    velocityRadsPerSec: 0.1,
+    velocityValue: 0.1,
+    velocityUnit: "rad/s",
   })
   await delay(500)
   await jogger.stop()

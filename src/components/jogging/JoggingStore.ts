@@ -40,8 +40,16 @@ export type IncrementJogInProgress = {
   axis: JoggingAxis
 }
 
+export enum JointCategory {
+  REVOLUTE = "REVOLUTE",
+  PRISMATIC = "PRISMATIC",
+}
+
+type TabType = "cartesian" | "joint" | "debug";
+
+
 export class JoggingStore {
-  selectedTabId: "cartesian" | "joint" | "debug" = "cartesian"
+  selectedTabId: TabType = "cartesian";
 
   /**
    * State of the jogging panel. Starts as "inactive"
@@ -298,17 +306,19 @@ export class JoggingStore {
   }
 
   get tabs() {
-    return [
-      {
+    const tempTabs : {id: TabType, label: string}[] = [{
+      id: "joint",
+      label: "Joints",
+    }] ;
+    if(this.isTcpCartesianMoveable){
+      tempTabs.unshift({
         id: "cartesian",
-        label: "cartesian",
-      },
-      {
-        id: "joint",
-        label: "joint",
-      },
-    ] as const
+        label: "Cartesian",
+      })}
+
+    return tempTabs;
   }
+
 
   get incrementOptions() {
     return incrementOptions
@@ -395,13 +405,33 @@ export class JoggingStore {
    */
   get currentMotionType() {
     if (
-      this.selectedTabId === "cartesian" &&
-      this.selectedCartesianMotionType === "translate"
+      (
+        this.selectedTabId === "cartesian" &&
+        this.selectedCartesianMotionType === "translate"
+      ) || this.jointCategory === JointCategory.PRISMATIC
     ) {
       return "translate"
     } else {
       return "rotate"
     }
+  }
+
+
+  /*
+  * ToDo replace Hardcoded Models with an api requst that delivers the type (will become part of DH-Parameters)
+  *  Ticket already created
+  * */
+  get jointCategory(): JointCategory {
+    return this.motionGroupDescription.motion_group_model === "ABB_IRT710"
+      ? JointCategory.PRISMATIC
+      : JointCategory.REVOLUTE
+  }
+
+  get isTcpCartesianMoveable(): boolean{
+    if(this.motionGroupDescription.motion_group_model === "ABB_IRT710"){
+      return false;
+    }
+    return true;
   }
 
   onTabChange(_event: React.SyntheticEvent, newValue: number) {

@@ -1,10 +1,9 @@
 import { Divider, Stack, Typography, useTheme } from "@mui/material"
-import { radiansToDegrees } from "@wandelbots/nova-js"
 import { observer } from "mobx-react-lite"
 import type { ReactNode } from "react"
 import { JoggingJointLimitDetector } from "./JoggingJointLimitDetector"
 import { JoggingJointValueControl } from "./JoggingJointValueControl"
-import type { JoggingStore } from "./JoggingStore"
+import { type JoggingStore, JointCategory } from "./JoggingStore"
 import { JoggingVelocitySlider } from "./JoggingVelocitySlider"
 
 export const JoggingJointTab = observer(
@@ -12,14 +11,22 @@ export const JoggingJointTab = observer(
     const theme = useTheme()
     async function startJointJogging(opts: {
       joint: number
-      direction: "-" | "+"
+      direction: "-" | "+",
     }) {
       await store.activate()
 
       await store.jogger.rotateJoints({
         joint: opts.joint,
         direction: opts.direction,
-        velocityRadsPerSec: store.rotationVelocityRadsPerSec,
+        velocityUnit:
+          store.jointCategory === JointCategory.PRISMATIC
+            ? "mm/s"
+            : "rad/s",
+        velocityValue:
+          store.jointCategory === JointCategory.PRISMATIC
+            ? store.translationVelocityMmPerSec
+            : store.rotationVelocityRadsPerSec,
+
       })
     }
 
@@ -43,14 +50,6 @@ export const JoggingJointTab = observer(
               const jointLimits =
                 store.motionGroupDescription.operation_limits.auto_limits
                   ?.joints?.[joint.index]?.position
-              const lowerLimitDegs =
-                jointLimits?.lower_limit !== undefined
-                  ? radiansToDegrees(jointLimits.lower_limit)
-                  : undefined
-              const upperLimitDegs =
-                jointLimits?.upper_limit !== undefined
-                  ? radiansToDegrees(jointLimits.upper_limit)
-                  : undefined
 
               return (
                 <Stack
@@ -75,14 +74,15 @@ export const JoggingJointTab = observer(
 
                   <JoggingJointValueControl
                     disabled={store.isLocked}
-                    lowerLimitDegs={lowerLimitDegs}
-                    upperLimitDegs={upperLimitDegs}
-                    getValueDegs={() => {
+                    lowerLimit={jointLimits?.lower_limit}
+                    upperLimit={jointLimits?.upper_limit}
+                    useDegree={store.currentMotionType === "rotate"}
+                    getValue={() => {
                       const value =
                         store.jogger.motionStream.rapidlyChangingMotionState
                           .joint_position[joint.index]
                       return value !== undefined
-                        ? radiansToDegrees(value)
+                        ? value
                         : undefined
                     }}
                     startJogging={(direction: "-" | "+") =>
