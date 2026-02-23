@@ -31,7 +31,7 @@ const JoggingPanelWrapper = observer((props: JoggingPanelProps) => {
           component="h3"
           color={theme.palette.text.primary}
         >
-          Default Jogging Panel
+          Jogging Panel Joint Rotation
         </Typography>
         <JoggingPanel
           {...props}
@@ -49,7 +49,7 @@ const JoggingPanelWrapper = observer((props: JoggingPanelProps) => {
           component="h3"
           color={theme.palette.text.primary}
         >
-          Translation Jogging Panel
+          Jogging Panel Joint Translation
         </Typography>
         <JoggingPanel
           {...props}
