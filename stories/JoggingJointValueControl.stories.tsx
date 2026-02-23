@@ -1,16 +1,16 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
-import { JoggingJointRotationControl } from "../src"
 import { useRef } from "react"
+import { JoggingJointValueControl } from "../src"
 import { useAnimationFrame } from "../src/components/utils/hooks"
 
-const meta: Meta<typeof JoggingJointRotationControl> = {
-  title: "Jogging/JoggingJointRotationControl",
+const meta: Meta<typeof JoggingJointValueControl> = {
+  title: "Jogging/JoggingJointValueControl",
   tags: ["!dev"],
-  component: JoggingJointRotationControl,
+  component: JoggingJointValueControl,
 
   args: {
-    lowerLimitDegs: -360,
-    upperLimitDegs: 360,
+    lowerLimit: -360,
+    upperLimit: 360,
     disabled: false,
   },
   render: function Component(args) {
@@ -20,33 +20,33 @@ const meta: Meta<typeof JoggingJointRotationControl> = {
     useAnimationFrame(() => {
       if (joggingDirRef.current === "+") {
         joggingValueRef.current += 1
-        if (args.upperLimitDegs != null) {
+        if (args.upperLimit != null) {
           joggingValueRef.current = Math.min(
             joggingValueRef.current,
-            args.upperLimitDegs,
+            args.upperLimit,
           )
         }
       } else if (joggingDirRef.current === "-") {
         joggingValueRef.current -= 1
-        if (args.lowerLimitDegs != null) {
+        if (args.lowerLimit != null) {
           joggingValueRef.current = Math.max(
             joggingValueRef.current,
-            args.lowerLimitDegs,
+            args.lowerLimit,
           )
         }
       }
     })
 
     return (
-      <JoggingJointRotationControl
+      <JoggingJointValueControl
         {...args}
         startJogging={(direction) => (joggingDirRef.current = direction)}
         stopJogging={() => (joggingDirRef.current = null)}
-        getValueDegs={() => joggingValueRef.current}
+        getValue={() => joggingValueRef.current}
       />
     )
   },
 }
 export default meta
 
-export const Default: StoryObj<typeof JoggingJointRotationControl> = {}
+export const Default: StoryObj<typeof JoggingJointValueControl> = {}

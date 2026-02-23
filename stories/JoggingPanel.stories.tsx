@@ -7,9 +7,15 @@ import {
   type JoggingPanelProps,
   type JoggingStore,
 } from "../src/index"
+import type { MotionGroupDescription } from "@wandelbots/nova-js/v2"
 
-const JoggingPanelWrapper = (props: JoggingPanelProps) => {
+
+const JoggingPanelWrapper = observer((props: JoggingPanelProps) => {
   const theme = useTheme()
+
+  const state = useLocalObservable(() => ({
+    translationStore: null as JoggingStore | null,
+  }))
 
   return (
     <Stack
@@ -25,7 +31,7 @@ const JoggingPanelWrapper = (props: JoggingPanelProps) => {
           component="h3"
           color={theme.palette.text.primary}
         >
-          Default Jogging Panel
+          Jogging Panel Joint Rotation
         </Typography>
         <JoggingPanel
           {...props}
@@ -35,6 +41,28 @@ const JoggingPanelWrapper = (props: JoggingPanelProps) => {
           }}
         />
       </Stack>
+
+
+      <Stack gap={2}>
+        <Typography
+          variant="h6"
+          component="h3"
+          color={theme.palette.text.primary}
+        >
+          Jogging Panel Joint Translation
+        </Typography>
+        <JoggingPanel
+          {...props}
+          sx={{
+            width: "320px",
+            backgroundColor: theme.palette.backgroundPaperElevation?.[5],
+          }}
+          onSetup={(store) => {
+            store.motionGroupDescription.motion_group_model = "ABB_IRT710"
+          }}
+        />
+      </Stack>
+
 
       <Stack gap={2}>
         <Typography
@@ -59,7 +87,7 @@ const JoggingPanelWrapper = (props: JoggingPanelProps) => {
       </Stack>
     </Stack>
   )
-}
+})
 
 const meta: Meta<typeof JoggingPanel> = {
   title: "Jogging/JoggingPanel",

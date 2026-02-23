@@ -153,7 +153,7 @@ const JoggingPanelInner = observer(
         >
           {store.tabs.map((tab) => {
             const label =
-              tab.label === "cartesian"
+              tab.label === "Cartesian"
                 ? t("Jogging.Cartesian.bt")
                 : t("Jogging.Joints.bt")
 

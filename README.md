@@ -98,7 +98,7 @@ Manual robot control interfaces.
 **Individual Jogging Controls**
 
 - **[JoggingCartesianAxisControl](https://wandelbotsgmbh.github.io/wandelbots-js-react-components/?path=/docs/jogging-joggingcartesianaxiscontrol--docs)** - Single-axis cartesian movement
-- **[JoggingJointRotationControl](https://wandelbotsgmbh.github.io/wandelbots-js-react-components/?path=/docs/jogging-joggingjointrotationcontrol--docs)** - Individual joint controls
+- **[JoggingJointValueControl](https://wandelbotsgmbh.github.io/wandelbots-js-react-components/?path=/docs/jogging-JoggingJointValueControl--docs)** - Individual joint controls
 - **[VelocitySlider](https://wandelbotsgmbh.github.io/wandelbots-js-react-components/?path=/docs/jogging-velocityslider--docs)** - Speed adjustment interface
 
 ### Program Execution

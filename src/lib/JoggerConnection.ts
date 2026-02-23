@@ -282,14 +282,18 @@ export class JoggerConnection {
   async rotateJoints({
     joint,
     direction,
-    velocityRadsPerSec,
+    velocityValue,
+    velocityUnit
+
   }: {
     /** Index of the joint to rotate */
     joint: number
     /** Direction of rotation ("+" or "-") */
     direction: "+" | "-"
-    /** Speed of the rotation in radians per second */
-    velocityRadsPerSec: number
+    /** Speed of the rotation, unit is currently unused, but i wanted it there to raise awareness that not everything here is rad/s*/
+    velocityValue: number
+    velocityUnit: "mm/s" | "rad/s"
+
   }) {
     if (!this.joggingSocket || this.mode !== "jogging") {
       throw new Error(
@@ -300,7 +304,7 @@ export class JoggerConnection {
     const velocity = new Array(this.numJoints).fill(0)
 
     velocity[joint] =
-      direction === "-" ? -velocityRadsPerSec : velocityRadsPerSec
+      direction === "-" ? - velocityValue : velocityValue
 
     this.joggingSocket.sendJson({
       message_type: "JointVelocityRequest",

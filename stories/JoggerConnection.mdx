@@ -77,7 +77,8 @@ This example starts joint 0 of the robot rotating in a positive direction at 1 r
 await jogger.rotateJoints({
   joint: 0,
   direction: "+",
-  velocityRadsPerSec: 1,
+  velocityValue: 0.1,
+  velocityUnit: "rad/s",
 })
 ```
 

@@ -1,5 +1,6 @@
 import ChevronLeft from "@mui/icons-material/ChevronLeft"
 import ChevronRight from "@mui/icons-material/ChevronRight"
+import { radiansToDegrees } from "@wandelbots/nova-js"
 import { IconButton, Slider, Typography, useTheme } from "@mui/material"
 import Stack from "@mui/material/Stack"
 import throttle from "lodash-es/throttle"
@@ -9,28 +10,29 @@ import { useTranslation } from "react-i18next"
 import { externalizeComponent } from "../../externalizeComponent"
 import { useAnimationFrame } from "../utils/hooks"
 
-type JoggingJointRotationControlProps = {
+type JoggingJointValueControlProps = {
   startJogging: (direction: "-" | "+") => void
   stopJogging: () => void
-  lowerLimitDegs?: number
-  upperLimitDegs?: number
-  getValueDegs: () => number | undefined
-
+  lowerLimit?: number
+  upperLimit?: number
+  useDegree: boolean
+  getValue: () => number | undefined
   disabled?: boolean
 } & React.ComponentProps<typeof Stack>
 
 /** A input widget to control an individual joint */
-export const JoggingJointRotationControl = externalizeComponent(
+export const JoggingJointValueControl = externalizeComponent(
   observer(
     ({
-      startJogging,
-      stopJogging,
-      lowerLimitDegs,
-      upperLimitDegs,
-      getValueDegs,
-      disabled,
-      ...rest
-    }: JoggingJointRotationControlProps) => {
+       startJogging,
+       stopJogging,
+       lowerLimit,
+       upperLimit,
+       useDegree,
+       getValue,
+       disabled,
+       ...rest
+     }: JoggingJointValueControlProps) => {
       const { t } = useTranslation()
       const [currentValue, setCurrentValue] = useState<number | undefined>()
       const theme = useTheme()
@@ -55,10 +57,17 @@ export const JoggingJointRotationControl = externalizeComponent(
       }))
 
       const updateValue = throttle(() => {
-        setCurrentValue(getValueDegs())
+        setCurrentValue(useDegree ? convertToDegree(getValue()) : getValue())
       }, 50)
 
       useAnimationFrame(updateValue)
+
+      function convertToDegree(value: number| undefined){
+        if (value == undefined){
+          return undefined;
+        }
+        return radiansToDegrees(value);
+      }
 
       function onPointerDownMinus(ev: React.PointerEvent) {
         // Stop right click from triggering jog
@@ -90,6 +99,20 @@ export const JoggingJointRotationControl = externalizeComponent(
           return output
         }
       }
+      function formatMm(value: number | undefined, precision = 1) {
+        if (value === undefined || isNaN(value)) return ""
+
+        const output = t("General.mm.variable", {
+          amount: value.toFixed(precision),
+        })
+
+        if (value > 0 && precision === 0) {
+          return `+${output}`
+        } else {
+          return output
+        }
+      }
+
 
       return (
         <Stack
@@ -138,8 +161,8 @@ export const JoggingJointRotationControl = externalizeComponent(
               sx={{
                 pointerEvents: "none",
                 color:
-                  theme.componentsExt?.JoggingPanel?.JoggingJoint?.Joint
-                    ?.arrowColor,
+                theme.componentsExt?.JoggingPanel?.JoggingJoint?.Joint
+                  ?.arrowColor,
               }}
             />
           </IconButton>
@@ -171,14 +194,14 @@ export const JoggingJointRotationControl = externalizeComponent(
                   : theme.palette.text.primary,
               }}
             >
-              {formatDegrees(currentValue)}
+              {useDegree ? formatDegrees(currentValue) : formatMm(currentValue)}
             </Typography>
 
             <Slider
               disabled
               aria-label="Joint position"
-              min={lowerLimitDegs}
-              max={upperLimitDegs}
+              min={ useDegree ? convertToDegree(lowerLimit) : lowerLimit}
+              max={ useDegree ? convertToDegree(upperLimit) : upperLimit}
               value={currentValue || 0}
               track={false}
               sx={{
@@ -206,15 +229,15 @@ export const JoggingJointRotationControl = externalizeComponent(
                 },
               }}
               marks={
-                lowerLimitDegs !== undefined &&
-                upperLimitDegs !== undefined && [
+                lowerLimit !== undefined &&
+                upperLimit !== undefined && [
                   {
-                    value: lowerLimitDegs,
-                    label: formatDegrees(lowerLimitDegs, 0),
+                    value: (useDegree ? convertToDegree(lowerLimit) : lowerLimit) as number,
+                    label: useDegree ? formatDegrees(convertToDegree(lowerLimit),0) : formatMm(lowerLimit),
                   },
                   {
-                    value: upperLimitDegs,
-                    label: formatDegrees(upperLimitDegs, 0),
+                    value: (useDegree ? convertToDegree(upperLimit) : upperLimit) as number,
+                    label: useDegree ?  formatDegrees(convertToDegree(upperLimit),0) : formatMm(upperLimit),
                   },
                 ]
               }
@@ -236,8 +259,8 @@ export const JoggingJointRotationControl = externalizeComponent(
               sx={{
                 pointerEvents: "none",
                 color:
-                  theme.componentsExt?.JoggingPanel?.JoggingJoint?.Joint
-                    ?.arrowColor,
+                theme.componentsExt?.JoggingPanel?.JoggingJoint?.Joint
+                  ?.arrowColor,
               }}
             />
           </IconButton>
