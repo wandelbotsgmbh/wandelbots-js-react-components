@@ -280,10 +280,10 @@ export class JoggerConnection {
    * Jogging: Start rotation of a single robot joint at the specified velocity
    */
   async rotateJoints({
-                       joint,
-                       direction,
-                       velocityValue,
-                       velocityUnit
+    joint,
+    direction,
+    velocityValue,
+    velocityUnit
 
   }: {
     /** Index of the joint to rotate */
