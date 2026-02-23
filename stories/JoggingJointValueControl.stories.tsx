@@ -9,8 +9,8 @@ const meta: Meta<typeof JoggingJointValueControl> = {
   component: JoggingJointValueControl,
 
   args: {
-    lowerLimitDegs: -360,
-    upperLimitDegs: 360,
+    lowerLimit: -360,
+    upperLimit: 360,
     disabled: false,
   },
   render: function Component(args) {
@@ -20,18 +20,18 @@ const meta: Meta<typeof JoggingJointValueControl> = {
     useAnimationFrame(() => {
       if (joggingDirRef.current === "+") {
         joggingValueRef.current += 1
-        if (args.upperLimitDegs != null) {
+        if (args.upperLimit != null) {
           joggingValueRef.current = Math.min(
             joggingValueRef.current,
-            args.upperLimitDegs,
+            args.upperLimit,
           )
         }
       } else if (joggingDirRef.current === "-") {
         joggingValueRef.current -= 1
-        if (args.lowerLimitDegs != null) {
+        if (args.lowerLimit != null) {
           joggingValueRef.current = Math.max(
             joggingValueRef.current,
-            args.lowerLimitDegs,
+            args.lowerLimit,
           )
         }
       }
@@ -42,7 +42,7 @@ const meta: Meta<typeof JoggingJointValueControl> = {
         {...args}
         startJogging={(direction) => (joggingDirRef.current = direction)}
         stopJogging={() => (joggingDirRef.current = null)}
-        getValueDegs={() => joggingValueRef.current}
+        getValue={() => joggingValueRef.current}
       />
     )
   },
