@@ -17,23 +17,6 @@ const JoggingPanelWrapper = observer((props: JoggingPanelProps) => {
     translationStore: null as JoggingStore | null,
   }))
 
-  function handleSetupForTranslationAxis(store: JoggingStore) {
-    const translationStore = Object.assign(
-      Object.create(Object.getPrototypeOf(store)) as JoggingStore,
-      store,
-      {
-        motionGroupDescription: {
-          ...store.motionGroupDescription,
-          motion_group_model: "ABB_IRT710",
-        } satisfies MotionGroupDescription,
-      },
-    )
-    runInAction(() => {
-      state.translationStore = translationStore
-    })
-    props.onSetup?.(store)
-  }
-
   return (
     <Stack
       direction="column"
@@ -56,29 +39,30 @@ const JoggingPanelWrapper = observer((props: JoggingPanelProps) => {
             width: "320px",
             backgroundColor: theme.palette.backgroundPaperElevation?.[5],
           }}
-          onSetup={handleSetupForTranslationAxis}
         />
       </Stack>
 
-      {state.translationStore && (
-        <Stack gap={2}>
-          <Typography
-            variant="h6"
-            component="h3"
-            color={theme.palette.text.primary}
-          >
-            Translation Jogging Panel
-          </Typography>
-          <JoggingPanel
-            {...props}
-            store={state.translationStore}
-            sx={{
-              width: "320px",
-              backgroundColor: theme.palette.backgroundPaperElevation?.[5],
-            }}
-          />
-        </Stack>
-      )}
+
+      <Stack gap={2}>
+        <Typography
+          variant="h6"
+          component="h3"
+          color={theme.palette.text.primary}
+        >
+          Translation Jogging Panel
+        </Typography>
+        <JoggingPanel
+          {...props}
+          sx={{
+            width: "320px",
+            backgroundColor: theme.palette.backgroundPaperElevation?.[5],
+          }}
+          onSetup={(store) => {
+            store.motionGroupDescription.motion_group_model = "ABB_IRT710"
+          }}
+        />
+      </Stack>
+
 
       <Stack gap={2}>
         <Typography
