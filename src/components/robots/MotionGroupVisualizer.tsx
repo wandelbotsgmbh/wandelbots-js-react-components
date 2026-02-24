@@ -83,9 +83,9 @@ export const MotionGroupVisualizer: React.FC<MotionGroupVisualizerProps> = exter
     return [
       "KUKA_DKP250",
       "KUKA_DKP500_2",
-      "YASKAWA_TURN1",
-      "YASKAWA_TURN2",
-      "YASKAWA_TURN3",
+      "Yaskawa_TURN1",
+      "Yaskawa_TURN2",
+      "Yaskawa_TURN3",
     ].includes(modelFromController)
   }, [modelFromController])
 
