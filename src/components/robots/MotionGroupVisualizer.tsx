@@ -86,7 +86,7 @@ export const MotionGroupVisualizer: React.FC<MotionGroupVisualizerProps> = exter
       "Yaskawa_TURN1",
       "Yaskawa_TURN2",
       "Yaskawa_TURN3",
-    ].includes(modelFromController)
+    ].some(model => model.toLowerCase() === modelFromController.toLowerCase())
   }, [modelFromController])
 
   if (inverseSolver || isTurnTable) {
