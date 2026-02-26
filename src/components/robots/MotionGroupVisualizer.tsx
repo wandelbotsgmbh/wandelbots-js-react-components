@@ -7,7 +7,7 @@ import { SupportedLinearAxis, type SupportedLinearAxisProps } from "./SupportedL
 
 export type MotionGroupVisualizerProps = {
   instanceUrl: string
-  inverseSolver: string | null
+  inverseSolver?: string | null
 } & (SupportedRobotProps | SupportedLinearAxisProps)
 
 export const MotionGroupVisualizer: React.FC<MotionGroupVisualizerProps> = externalizeComponent((props: MotionGroupVisualizerProps) => {
@@ -37,16 +37,35 @@ export const MotionGroupVisualizer: React.FC<MotionGroupVisualizerProps> = exter
    * should be rendered with SupportedRobot instead of SupportedLinearAxis
    */
   const isTurnTable = useMemo(() => {
-    return !inverseSolver && jointType === "REVOLUTE_JOINT"
+    return inverseSolver === null && jointType === "REVOLUTE_JOINT"
   }, [inverseSolver, jointType])
 
-  if (inverseSolver || isTurnTable) {
+  /**
+   * Linear axis check
+   */
+  const isLinearAxis = useMemo(() => {
+    return inverseSolver === null && jointType === JointTypeEnum.PrismaticJoint
+  }, [inverseSolver, jointType])
+
+  /**
+   * Robot differentiation for readability reasons
+   */
+  const isRobot = useMemo(() => {
+    return !!inverseSolver
+  }, [inverseSolver])
+
+
+  if (isRobot || isTurnTable) {
     return (
       <SupportedRobot dhParameters={dhParameters} {...rest} />
     )
   }
 
-  return (
-    <SupportedLinearAxis dhParameters={dhParameters} {...rest} />
-  )
+  if(isLinearAxis) {
+    return (
+      <SupportedLinearAxis dhParameters={dhParameters} {...rest} />
+    )
+  }
+
+  return <></>
 })
