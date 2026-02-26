@@ -8,10 +8,10 @@ import * as MotionGroupVisualizerStories from '../stories/robots/MotionGroupVisu
 
 This `MotionGroupVisualizer` component adds the robot or linear axis to the 3D viewport. It can be used on top of a robot or linear axis if we want to include the internal differentiation of what should be rendered.
 
-The differentiation is dependent on the `inverseSolver` variable, which can also be passed as a prop:
-- `inverseSolver` set: `SupportedRobot` component is returned.
+The differentiation is dependent on the `inverseSolver` variable, which must be passed as a prop:
+- `inverseSolver` set (e.g. string): `SupportedRobot` component is returned.
 - `inverseSolver` null: `SupportedLinearAxis` component is returned.
-- `inverseSolver` undefined: internal kinematics request to find out what the `inverseSolver` state is.
+- Note: If `inverseSolver` is null but the first joint is a `REVOLUTE_JOINT`, it is treated as a turntable and `SupportedRobot` is returned.
 
 Use it together with the `ConnectedMotionGroup` from this library:
 
@@ -24,11 +24,14 @@ const instanceUrl = "https://your-nova-instance.com"
 const nova = new NovaClient({ instanceUrl })
 const connectedMotionGroup = await ConnectedMotionGroup.connect(nova, "0@your-motion-group-id");
 
+const { inverse_solver } = await nova.api.motionGroupModels.getMotionGroupKinematicModel(connectedMotionGroup.modelFromController)
+
 <MotionGroupVisualizer
   instanceUrl={instanceUrl}
   modelFromController={connectedMotionGroup.modelFromController}
   rapidlyChangingMotionState={connectedMotionGroup.rapidlyChangingMotionState}
   dhParameters={connectedMotionGroup.dhParameters ?? []}
+  inverseSolver={inverse_solver}
 />
 ```
 
@@ -49,6 +52,7 @@ In case you want to use the application offline, you can download the models and
   modelFromController={connectedMotionGroup.modelFromController}
   rapidlyChangingMotionState={connectedMotionGroup.rapidlyChangingMotionState}
   dhParameters={connectedMotionGroup.dhParameters ?? []}
+  inverseSolver={inverse_solver}
   getModel={() => `public/${connectedMotionGroup.modelFromController}.glb`}
 />
 ```
