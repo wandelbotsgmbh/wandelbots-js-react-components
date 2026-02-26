@@ -37,7 +37,7 @@ export const MotionGroupVisualizer: React.FC<MotionGroupVisualizerProps> = exter
    * should be rendered with SupportedRobot instead of SupportedLinearAxis
    */
   const isTurnTable = useMemo(() => {
-    return inverseSolver === null && jointType === "REVOLUTE_JOINT"
+    return inverseSolver === null && jointType === JointTypeEnum.RevoluteJoint
   }, [inverseSolver, jointType])
 
   /**
