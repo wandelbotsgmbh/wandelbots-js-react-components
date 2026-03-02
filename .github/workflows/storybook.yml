@@ -92,7 +92,7 @@ jobs:
       - name: Clean public folder
         run: rm -rf public && mkdir -p public
       - name: Download artifacts
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           path: public/
       - name: Generate overview.html

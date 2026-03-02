@@ -90,12 +90,12 @@ jobs:
         with:
           fetch-depth: 0
       - name: Download build artifacts
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: build-artifacts
           path: dist/
       - name: Download uncompressed models
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: no-draco-models
           path: no-draco-models/
@@ -127,7 +127,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v6
       - name: Download build artifacts
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: build-artifacts
           path: dist/
