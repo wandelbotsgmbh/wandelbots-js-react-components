@@ -8,10 +8,11 @@ import * as MotionGroupVisualizerStories from '../stories/robots/MotionGroupVisu
 
 This `MotionGroupVisualizer` component adds the robot or linear axis to the 3D viewport. It can be used on top of a robot or linear axis if we want to include the internal differentiation of what should be rendered.
 
-The differentiation is dependent on the `inverseSolver` variable, which must be passed as a prop:
+The differentiation is dependent on the `inverseSolver` and `dhParameters` variables, which must be passed as a prop:
+- `dhParameters` have to include the `type` attribute, that determines, which joint type is supported by the deliver model
 - `inverseSolver` set (e.g. string): `SupportedRobot` component is returned.
 - `inverseSolver` null: `SupportedLinearAxis` component is returned.
-- Note: If `inverseSolver` is null but the first joint is a `REVOLUTE_JOINT`, it is treated as a turntable and `SupportedRobot` is returned.
+- Note: If `inverseSolver` is null but the first joint is a `REVOLUTE_JOINT`, it is treated as a turntable and `SupportedRobot` is returned
 
 Use it together with the `ConnectedMotionGroup` from this library:
 
