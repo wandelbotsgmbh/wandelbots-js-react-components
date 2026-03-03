@@ -27,8 +27,8 @@ export const MotionGroupVisualizer: React.FC<MotionGroupVisualizerProps> = exter
    * Sets the joint type according to delivered dh parameter type
    */
   useEffect(() => {
-    if (dhParameters?.length) {
-      setJointType(dhParameters[0]?.type ?? JointTypeEnum.RevoluteJoint)
+    if (dhParameters.length) {
+      setJointType(dhParameters[0].type ?? JointTypeEnum.RevoluteJoint)
     }
   }, [dhParameters])
 
