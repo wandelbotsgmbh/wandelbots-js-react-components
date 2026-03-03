@@ -1,6 +1,6 @@
 import { Canvas } from "@react-three/fiber"
 import type { StoryObj } from "@storybook/react-vite"
-import { NovaClient } from "@wandelbots/nova-js/v2"
+import { NovaClient, type KinematicModel } from "@wandelbots/nova-js/v2"
 import { useEffect, useState } from "react"
 import { expect, fn, waitFor } from "storybook/test"
 import { PresetEnvironment, ConnectedMotionGroup, MotionGroupVisualizer } from "../../src"
@@ -19,6 +19,8 @@ function MotionGroupVisualizerScene(
 ) {
   const [connectedMotionGroup, setConnectedMotionGroup] =
     useState<ConnectedMotionGroup>()
+  const [inverseSolver, setInverseSolver] = useState<string | undefined | null>(undefined)
+
 
   const instanceUrl = import.meta.env.WANDELAPI_BASE_URL || "https://mock.example.com"
   const nova = new NovaClient({ instanceUrl })
@@ -34,14 +36,38 @@ function MotionGroupVisualizerScene(
 
     fetchConnectedMotionGroup()
 
-
     // Cleanup: revoke model URLs when component unmounts
     return () => {
       revokeAllModelUrls()
     }
   }, [])
 
-  if (!connectedMotionGroup) {
+  /**
+   * Gets the kinematic model needed for MotionGroupVisualizer
+   */
+  const fetchKinematicModel = async () => {
+    if(connectedMotionGroup) {
+      try {
+        const { inverse_solver, dh_parameters }: KinematicModel =
+          await nova.api.motionGroupModels.getMotionGroupKinematicModel(connectedMotionGroup?.modelFromController)
+
+        setInverseSolver(inverse_solver)
+      } catch (err) {
+        console.warn(
+          `Failed to fetch kinematic model from API for ${connectedMotionGroup?.modelFromController}, falling back to local config`,
+        )
+      }
+    }
+  }
+
+  /**
+   * If connection is set - fetch the kinematic model information needed for MotionGroupVisualizer
+   */
+  useEffect(() => {
+    fetchKinematicModel()
+  }, [connectedMotionGroup])
+
+  if (!connectedMotionGroup || inverseSolver === undefined) {
     return null
   }
 
@@ -66,6 +92,7 @@ function MotionGroupVisualizerScene(
             modelFromController={connectedMotionGroup.modelFromController}
             rapidlyChangingMotionState={connectedMotionGroup.rapidlyChangingMotionState}
             dhParameters={connectedMotionGroup.dhParameters ?? []}
+            inverseSolver={inverseSolver}
           />
         </OrbitControlsAround>
       </Canvas>
