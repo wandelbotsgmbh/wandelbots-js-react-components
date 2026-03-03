@@ -25,6 +25,10 @@ export const MotionGroupVisualizer: React.FC<MotionGroupVisualizerProps> = exter
 
   /**
    * Sets the joint type according to delivered dh parameter type
+   *
+   * TODO as soon as V2 api migration is done, the setting of the default RevoluteJoint value should be
+   *  deleted, cause the type property is expected to be always delivered. It is not the case in the V1 at the
+   *  moment.
    */
   useEffect(() => {
     if (dhParameters.length) {
