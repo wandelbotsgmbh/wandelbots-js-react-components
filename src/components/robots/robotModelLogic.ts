@@ -1,13 +1,10 @@
 import type { Object3D } from "three"
 import type { GLTF } from "three-stdlib"
-import { version } from "../../../package.json"
 
 export function defaultGetModel(modelFromController: string): string {
-  let useVersion = version
-  if (version.startsWith("0.")) {
-    useVersion = ""
-  }
-  return `https://cdn.jsdelivr.net/gh/wandelbotsgmbh/wandelbots-js-react-components${useVersion ? `@${useVersion}` : ""}/public/models/${modelFromController}.glb`
+  // we are using v2 because its bundles the robot models for the latest v2
+  // its encouraged to use v4 which switches to robotDataProvider for fetching the 3d-robot-models
+  return `https://cdn.jsdelivr.net/gh/wandelbotsgmbh/wandelbots-js-react-components@v2/public/models/${modelFromController}.glb`
 }
 
 /**
