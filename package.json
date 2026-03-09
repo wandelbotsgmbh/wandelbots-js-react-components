@@ -140,14 +140,14 @@
     "@monaco-editor/react": "^4.7.0",
     "@mui/x-charts": "^8.9.0",
     "@mui/x-data-grid": "^8.10.1",
-    "@shikijs/monaco": "^3.1.0",
+    "@shikijs/monaco": "^4.0.2",
     "i18next-browser-languagedetector": "^8.0.4",
     "lodash-es": "^4.17.21",
     "mobx": "^6.13.6",
     "mobx-react-lite": "^4.1.0",
     "react-error-boundary": "^6.0.0",
     "react-i18next": "^16.5.4",
-    "shiki": "^3.1.0"
+    "shiki": "^4.0.2"
   },
   "overrides": {
     "storybook": "$storybook"
