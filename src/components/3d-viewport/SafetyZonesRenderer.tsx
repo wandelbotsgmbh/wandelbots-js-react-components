@@ -54,8 +54,8 @@ export function SafetyZonesRenderer({
    * Warning during runtime stating the deprecation of the V1 safety zones
    */
   useEffect(() => {
-    console.warn("SafetyZonesRenderer: The support of V1 safety zones is deprecated. Please migrate to V2 safety zones.")
-  }, [])
+    Array.isArray(safetyZones) && console.warn("SafetyZonesRenderer: The support of V1 safety zones is deprecated. Please migrate to V2 safety zones.")
+  }, [safetyZones])
 
   /**
    * Helper function to render convex hulls mesh materials
