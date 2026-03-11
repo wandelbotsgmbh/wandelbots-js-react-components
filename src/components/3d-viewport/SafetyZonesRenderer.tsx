@@ -1,10 +1,14 @@
+import { useCallback, useEffect, useMemo } from "react"
 import { type ThreeElements } from "@react-three/fiber"
 import type { Collider, ConvexHull, MotionGroupDescription } from "@wandelbots/nova-js/v2"
+import type { Geometry, SafetySetupSafetyZone } from "@wandelbots/nova-js/v1"
 import * as THREE from "three"
 import { ConvexGeometry } from "three-stdlib"
+import type { Vector3 } from "three"
+
 
 export type SafetyZonesRendererProps = {
-  safetyZones: MotionGroupDescription["safety_zones"]
+  safetyZones: SafetySetupSafetyZone[] | MotionGroupDescription["safety_zones"]
 } & ThreeElements["group"]
 
 interface CoplanarityResult {
@@ -46,59 +50,121 @@ export function SafetyZonesRenderer({
                                       safetyZones,
                                       ...props
                                     }: SafetyZonesRendererProps) {
+
+  /**
+   * Warning during runtime stating the deprecation of the V1 safety zones
+   */
+  useEffect(() => {
+    console.warn("The support of V1 safety zones is deprecated. Please migrate to V2 safety zones.")
+  }, [])
+
+  /**
+   * Helper function to render convex hulls mesh materials
+   * @param vertices Vector3[]
+   * @param id number
+   */
+  const renderMesh = (vertices: Vector3[], id: number) => {
+    // Check if the vertices are on the same plane and only define a plane
+    // Algorithm has troubles with vertices that are on the same plane so we
+    // add a new vertex slightly moved along the normal direction
+    const coplanarityResult = areVerticesCoplanar(vertices)
+
+    if (coplanarityResult.isCoplanar && coplanarityResult.normal) {
+      // Add a new vertex slightly moved along the normal direction
+      const offset = 0.0001 // Adjust the offset as needed
+      const newVertex = new THREE.Vector3().addVectors(
+        vertices[0],
+        coplanarityResult.normal.multiplyScalar(offset),
+      )
+      vertices.push(newVertex)
+    }
+
+    let convexGeometry
+    try {
+      convexGeometry = new ConvexGeometry(vertices)
+    } catch (error) {
+      console.log("Error creating ConvexGeometry:", error)
+      return null
+    }
+
+    return (
+      <mesh key={`${id}}`} geometry={convexGeometry}>
+        <meshStandardMaterial
+          key={id}
+          attach="material"
+          color="#009f4d"
+          opacity={0.2}
+          depthTest={false}
+          depthWrite={false}
+          transparent
+          polygonOffset
+          polygonOffsetFactor={-id}
+        />
+      </mesh>
+    )
+  }
+
+  /**
+   * Helper function to render V2 safety zones
+   */
+  const renderV2SafetyZones = useCallback(() => {
+    return Object.values(safetyZones ?? {}).map((zone: Collider, index: number) => {
+      let hullVertices: number[][] = []
+
+      if (Object.keys(zone.shape).includes("vertices")) {
+        hullVertices = (zone.shape as ConvexHull).vertices
+      }
+
+      const vertices = hullVertices
+        .map((vertex: number[]) => new THREE.Vector3(vertex[0] / 1000, vertex[1] / 1000, vertex[2] / 1000))
+
+      return renderMesh(vertices, index)
+    })
+  }, [safetyZones, renderMesh])
+
+  /**
+   * Helper function to V1 safety zones
+   * @deprecated this render function is to be seen as a temporary measure, as the support
+   * for the V1 safety zones is to be removed in the future
+   */
+  const renderV1SafetyZones = useCallback(() => {
+    if (Array.isArray(safetyZones)) {
+      return (safetyZones as SafetySetupSafetyZone[]).map((zone: SafetySetupSafetyZone, index) => {
+        let geometries: Geometry[] = []
+        if (zone.geometry) {
+          if (zone.geometry.compound) {
+            geometries = zone.geometry.compound.child_geometries
+          } else if (zone.geometry.convex_hull) {
+            geometries = [zone.geometry]
+          }
+        }
+
+        return geometries.map((geometry, i) => {
+          if (!geometry.convex_hull) return null
+
+          const vertices = geometry.convex_hull.vertices.map(
+            (v) => new THREE.Vector3(v.x / 1000, v.y / 1000, v.z / 1000),
+          )
+
+          return renderMesh(vertices, index)
+        })
+      })
+    }
+    return null
+  }, [safetyZones, renderMesh])
+
+  /**
+   * Helper variable to render both api versions of safety zones
+   */
+  const renderedSafetyZones = useMemo(() => {
+    return Array.isArray(safetyZones)
+      ? renderV1SafetyZones()
+      : renderV2SafetyZones()
+  }, [safetyZones, renderV1SafetyZones, renderV2SafetyZones])
+
   return (
     <group {...props}>
-      {
-        Object.values(safetyZones ?? {}).map((zone: Collider, index: number) => {
-          let hullVertices: number[][] = []
-
-          if (Object.keys(zone.shape).includes("vertices")) {
-            hullVertices = (zone.shape as ConvexHull).vertices
-          }
-
-          const vertices = hullVertices
-            .map((vertex: number[]) => new THREE.Vector3(vertex[0] / 1000, vertex[1] / 1000, vertex[2] / 1000))
-
-          // Check if the vertices are on the same plane and only define a plane
-          // Algorithm has troubles with vertices that are on the same plane so we
-          // add a new vertex slightly moved along the normal direction
-          const coplanarityResult = areVerticesCoplanar(vertices)
-
-          if (coplanarityResult.isCoplanar && coplanarityResult.normal) {
-            // Add a new vertex slightly moved along the normal direction
-            const offset = 0.0001 // Adjust the offset as needed
-            const newVertex = new THREE.Vector3().addVectors(
-              vertices[0],
-              coplanarityResult.normal.multiplyScalar(offset),
-            )
-            vertices.push(newVertex)
-          }
-
-          let convexGeometry
-          try {
-            convexGeometry = new ConvexGeometry(vertices)
-          } catch (error) {
-            console.log("Error creating ConvexGeometry:", error)
-            return null
-          }
-
-          return (
-            <mesh key={`${index}}`} geometry={convexGeometry}>
-              <meshStandardMaterial
-                key={index}
-                attach="material"
-                color="#009f4d"
-                opacity={0.2}
-                depthTest={false}
-                depthWrite={false}
-                transparent
-                polygonOffset
-                polygonOffsetFactor={-index}
-              />
-            </mesh>
-          )
-        })
-      }
+      {renderedSafetyZones}
     </group>
   )
 }
