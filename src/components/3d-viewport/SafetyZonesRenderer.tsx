@@ -1,10 +1,10 @@
 import { type ThreeElements } from "@react-three/fiber"
-import type { Geometry, SafetySetupSafetyZone } from "@wandelbots/nova-js/v1"
+import type { Collider, ConvexHull, MotionGroupDescription } from "@wandelbots/nova-js/v2"
 import * as THREE from "three"
 import { ConvexGeometry } from "three-stdlib"
 
 export type SafetyZonesRendererProps = {
-  safetyZones: SafetySetupSafetyZone[]
+  safetyZones: MotionGroupDescription["safety_zones"]
 } & ThreeElements["group"]
 
 interface CoplanarityResult {
@@ -43,27 +43,21 @@ function areVerticesCoplanar(vertices: THREE.Vector3[]): CoplanarityResult {
 }
 
 export function SafetyZonesRenderer({
-  safetyZones,
-  ...props
-}: SafetyZonesRendererProps) {
+                                      safetyZones,
+                                      ...props
+                                    }: SafetyZonesRendererProps) {
   return (
     <group {...props}>
-      {safetyZones.map((zone, index) => {
-        let geometries: Geometry[] = []
-        if (zone.geometry) {
-          if (zone.geometry.compound) {
-            geometries = zone.geometry.compound.child_geometries
-          } else if (zone.geometry.convex_hull) {
-            geometries = [zone.geometry]
+      {
+        Object.values(safetyZones ?? {}).map((zone: Collider, index: number) => {
+          let hullVertices: number[][] = []
+
+          if (Object.keys(zone.shape).includes("vertices")) {
+            hullVertices = (zone.shape as ConvexHull).vertices
           }
-        }
 
-        return geometries.map((geometry, i) => {
-          if (!geometry.convex_hull) return null
-
-          const vertices = geometry.convex_hull.vertices.map(
-            (v) => new THREE.Vector3(v.x / 1000, v.y / 1000, v.z / 1000),
-          )
+          const vertices = hullVertices
+            .map((vertex: number[]) => new THREE.Vector3(vertex[0] / 1000, vertex[1] / 1000, vertex[2] / 1000))
 
           // Check if the vertices are on the same plane and only define a plane
           // Algorithm has troubles with vertices that are on the same plane so we
@@ -87,8 +81,9 @@ export function SafetyZonesRenderer({
             console.log("Error creating ConvexGeometry:", error)
             return null
           }
+
           return (
-            <mesh key={`${index}-${i}`} geometry={convexGeometry}>
+            <mesh key={`${index}}`} geometry={convexGeometry}>
               <meshStandardMaterial
                 key={index}
                 attach="material"
@@ -98,12 +93,12 @@ export function SafetyZonesRenderer({
                 depthWrite={false}
                 transparent
                 polygonOffset
-                polygonOffsetFactor={-i}
+                polygonOffsetFactor={-index}
               />
             </mesh>
           )
         })
-      })}
+      }
     </group>
   )
 }
