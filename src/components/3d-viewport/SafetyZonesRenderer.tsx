@@ -6,7 +6,6 @@ import * as THREE from "three"
 import { ConvexGeometry } from "three-stdlib"
 import type { Vector3 } from "three"
 
-
 export type SafetyZonesRendererProps = {
   safetyZones: SafetySetupSafetyZone[] | MotionGroupDescription["safety_zones"]
 } & ThreeElements["group"]
@@ -55,7 +54,7 @@ export function SafetyZonesRenderer({
    * Warning during runtime stating the deprecation of the V1 safety zones
    */
   useEffect(() => {
-    console.warn("The support of V1 safety zones is deprecated. Please migrate to V2 safety zones.")
+    console.warn("SafetyZonesRenderer: The support of V1 safety zones is deprecated. Please migrate to V2 safety zones.")
   }, [])
 
   /**
