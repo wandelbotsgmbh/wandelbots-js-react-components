@@ -87,9 +87,9 @@ export function SafetyZonesRenderer({
     }
 
     return (
-      <mesh key={`${id}}`} geometry={convexGeometry}>
+      <mesh key={`safety-zone-mesh-${id}`} geometry={convexGeometry}>
         <meshStandardMaterial
-          key={id}
+          key={`safety-zone-material-${id}`}
           attach="material"
           color="#009f4d"
           opacity={0.2}
