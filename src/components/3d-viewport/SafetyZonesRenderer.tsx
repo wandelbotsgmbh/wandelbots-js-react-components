@@ -106,7 +106,7 @@ export function SafetyZonesRenderer({
   /**
    * Helper function to render V2 safety zones
    */
-  const renderV2SafetyZones = useCallback(() => {
+  const renderV2SafetyZones = () => {
     return Object.values(safetyZones ?? {}).map((zone: Collider, index: number) => {
       let hullVertices: number[][] = []
 
@@ -119,14 +119,14 @@ export function SafetyZonesRenderer({
 
       return renderMesh(vertices, index)
     })
-  }, [safetyZones, renderMesh])
+  }
 
   /**
    * Helper function to V1 safety zones
    * @deprecated this render function is to be seen as a temporary measure, as the support
    * for the V1 safety zones is to be removed in the future
    */
-  const renderV1SafetyZones = useCallback(() => {
+  const renderV1SafetyZones = () => {
     if (Array.isArray(safetyZones)) {
       return (safetyZones as SafetySetupSafetyZone[]).map((zone: SafetySetupSafetyZone, index) => {
         let geometries: Geometry[] = []
@@ -150,7 +150,7 @@ export function SafetyZonesRenderer({
       })
     }
     return null
-  }, [safetyZones, renderMesh])
+  }
 
   /**
    * Helper variable to render both api versions of safety zones
