@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo } from "react"
 import { type ThreeElements } from "@react-three/fiber"
-import type { Collider, ConvexHull, MotionGroupDescription } from "@wandelbots/nova-js/v2"
+import type { Collider, ConvexHull, MotionGroupDescription, Pose } from "@wandelbots/nova-js/v2"
 import type { Geometry, SafetySetupSafetyZone } from "@wandelbots/nova-js/v1"
 import * as THREE from "three"
 import { ConvexGeometry } from "three-stdlib"
@@ -61,8 +61,9 @@ export function SafetyZonesRenderer({
    * Helper function to render convex hulls mesh materials
    * @param vertices Vector3[]
    * @param id number
+   * @param pose optional Pose (position in mm, orientation as rotation vector in radians)
    */
-  const renderMesh = (vertices: Vector3[], id: number) => {
+  const renderMesh = (vertices: Vector3[], id: number, pose?: Pose) => {
     // Check if the vertices are on the same plane and only define a plane
     // Algorithm has troubles with vertices that are on the same plane so we
     // add a new vertex slightly moved along the normal direction
@@ -86,8 +87,39 @@ export function SafetyZonesRenderer({
       return null
     }
 
+    // Convert pose position (mm → m) and orientation (rotation vector → quaternion)
+    let meshPosition: [number, number, number] | undefined
+    let meshQuaternion: THREE.Quaternion | undefined
+
+    if (pose) {
+      if (pose.position && pose.position.length === 3) {
+        meshPosition = [
+          pose.position[0] / 1000,
+          pose.position[1] / 1000,
+          pose.position[2] / 1000,
+        ]
+      }
+      if (pose.orientation && pose.orientation.length === 3) {
+        const rotVec = new THREE.Vector3(
+          pose.orientation[0],
+          pose.orientation[1],
+          pose.orientation[2],
+        )
+        const angle = rotVec.length()
+        meshQuaternion = new THREE.Quaternion()
+        if (angle > 0) {
+          meshQuaternion.setFromAxisAngle(rotVec.normalize(), angle)
+        }
+      }
+    }
+
     return (
-      <mesh key={`safety-zone-mesh-${id}`} geometry={convexGeometry}>
+      <mesh
+        key={`safety-zone-mesh-${id}`}
+        geometry={convexGeometry}
+        position={meshPosition}
+        quaternion={meshQuaternion}
+      >
         <meshStandardMaterial
           key={`safety-zone-material-${id}`}
           attach="material"
@@ -117,7 +149,7 @@ export function SafetyZonesRenderer({
       const vertices = hullVertices
         .map((vertex: number[]) => new THREE.Vector3(vertex[0] / 1000, vertex[1] / 1000, vertex[2] / 1000))
 
-      return renderMesh(vertices, index)
+      return renderMesh(vertices, index, zone.pose)
     })
   }
 
