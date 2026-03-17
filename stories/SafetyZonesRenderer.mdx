@@ -7,10 +7,10 @@ import * as SafetyZonesRenderer from './SafetyZonesRenderer.stories';
 
 The `SafetyZonesRenderer` component visualizes the safety zones of the controller.
 
-This component should be used with [nova-js](https://github.com/wandelbotsgmbh/nova-js). Pass the `safetyZones` from the `motion group description` (API v2) to the component.
+This component should be used with [nova-js](https://github.com/wandelbotsgmbh/nova-js). Pass the `safety_zones` from the `motion group description` (API v2) to the component.
 
 ```tsx
-<SafetyZonesRenderer safetyZones={motionGroupDescription.safetyZones || {}} />
+<SafetyZonesRenderer safetyZones={motionGroupDescription.safety_zones || {}} />
 ```
 
 <Story of={SafetyZonesRenderer.SafetyZonesRendererV2} />

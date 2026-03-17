@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo } from "react"
+import { useEffect, useMemo } from "react"
 import { type ThreeElements } from "@react-three/fiber"
 import type { Collider, ConvexHull, MotionGroupDescription } from "@wandelbots/nova-js/v2"
 import type { Geometry, SafetySetupSafetyZone } from "@wandelbots/nova-js/v1"
