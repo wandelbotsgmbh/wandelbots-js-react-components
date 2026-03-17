@@ -145,7 +145,8 @@ export function SafetyZonesRenderer({
             (v) => new THREE.Vector3(v.x / 1000, v.y / 1000, v.z / 1000),
           )
 
-          return renderMesh(vertices, index)
+          // Use a per-geometry identifier derived from both zone index and geometry index
+          return renderMesh(vertices, index * 1000 + i)
         })
       })
     }
