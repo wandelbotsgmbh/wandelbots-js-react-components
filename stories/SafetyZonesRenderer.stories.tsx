@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
 import { Vector3 } from "three"
-import type { MotionGroupDescription } from "@wandelbots/nova-js/v2"
+import type { DHParameter, MotionGroupDescription } from "@wandelbots/nova-js/v2"
 import { SafetyZonesRenderer } from "../src"
 import { Setup } from "../src/Setup"
 import type { SafetySetupSafetyZone } from "@wandelbots/nova-js/v1"
@@ -482,7 +482,7 @@ const safetyZonesV1: SafetySetupSafetyZone[] = [
   },
 ]
 
-const safetyZonesV2: MotionGroupDescription['safety_zones'] = {
+const safetyZonesV2Hull: MotionGroupDescription['safety_zones'] = {
   "1__0_bottom": {
     "shape": {
       "shape_type": "convex_hull",
@@ -837,6 +837,105 @@ const safetyZonesV2: MotionGroupDescription['safety_zones'] = {
   }
 }
 
+const safetyZonesV2Plane: MotionGroupDescription['safety_zones'] = {
+  "0_Plane 1_0": {
+    "shape": {
+      "shape_type": "plane"
+    },
+    "pose": {
+      "position": [
+        300.00001192092896,
+        3.673940383117884e-14,
+        1.8369703518723924e-14
+      ],
+      "orientation": [
+        -1.3788202274137016e-17,
+        1.5707963267948966,
+        1.9236706937217903e-16
+      ]
+    }
+  },
+  "1_Plane 2_0": {
+    "shape": {
+      "shape_type": "plane"
+    },
+    "pose": {
+      "position": [
+        7.347881086862669e-14,
+        -300.00001192092896,
+        -1.8369703518723924e-14
+      ],
+      "orientation": [
+        1.5707963267948968,
+        1.9236706937217903e-16,
+        1.9236706937217898e-16
+      ]
+    }
+  },
+  "3_Plane 4_0": {
+    "shape": {
+      "shape_type": "plane"
+    },
+    "pose": {
+      "position": [
+        2.2496397721564594e-29,
+        -9.184851394388759e-14,
+        750
+      ],
+      "orientation": [
+        1.1368683772161603e-16,
+        1.3922622192096164e-32,
+        2.4492935982947064e-16
+      ]
+    }
+  }
+}
+
+const dhParams: DHParameter[] = [
+  {
+    "alpha": 1.5707963267948966,
+    "theta": 0,
+    "a": 0,
+    "d": 162.25,
+    "reverse_rotation_direction": false
+  },
+  {
+    "alpha": 0,
+    "theta": 0,
+    "a": -425,
+    "d": 0,
+    "reverse_rotation_direction": false
+  },
+  {
+    "alpha": 0,
+    "theta": 0,
+    "a": -392.2,
+    "d": 0,
+    "reverse_rotation_direction": false
+  },
+  {
+    "alpha": 1.5707963267948966,
+    "theta": 0,
+    "a": 0,
+    "d": 133.3,
+    "reverse_rotation_direction": false
+  },
+  {
+    "alpha": -1.5707963267948966,
+    "theta": 0,
+    "a": 0,
+    "d": 99.7,
+    "reverse_rotation_direction": false
+  },
+  {
+    "alpha": 0,
+    "theta": 0,
+    "a": 0,
+    "d": 99.6,
+    "reverse_rotation_direction": false
+  }
+]
+
 function SafetyZonesRendererScene(
   props: React.ComponentProps<typeof SafetyZonesRenderer>,
 ) {
@@ -856,8 +955,17 @@ export const SafetyZonesRendererSt = {
 
 export const SafetyZonesRendererV2 = {
   args: {
-    safetyZones: safetyZonesV2,
+    safetyZones: safetyZonesV2Hull,
   },
   render: (args) => <SafetyZonesRendererScene {...args} />,
   name: "Safety Zones V2",
+} satisfies Story
+
+export const SafetyZonesRendererV2Plane = {
+  args: {
+    safetyZones: safetyZonesV2Plane,
+    dhParameters: dhParams
+  },
+  render: (args) => <SafetyZonesRendererScene {...args} />,
+  name: "Safety Zones V2 Plane",
 } satisfies Story
