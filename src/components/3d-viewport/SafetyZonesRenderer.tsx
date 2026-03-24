@@ -113,7 +113,7 @@ export function SafetyZonesRenderer({
       const reachRadiusM = dhParameters.reduce((sum, p) => {
         return sum + (Math.abs(p.a ?? 0) / 1000) + (Math.abs(p.d ?? 0) / 1000)
       }, 0)
-      return (reachRadiusM * 0.5)
+      return (reachRadiusM * 2)
     }
 
     return 5
