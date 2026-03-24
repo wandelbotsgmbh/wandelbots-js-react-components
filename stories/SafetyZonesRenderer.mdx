@@ -13,6 +13,17 @@ This component should be used with [nova-js](https://github.com/wandelbotsgmbh/n
 <SafetyZonesRenderer safetyZones={motionGroupDescription.safety_zones || {}} />
 ```
 
+### Optional: `dhParameters`
+
+For plane safety zones, the rendered plane size depends on the robot's reach radius. Pass `dhParameters` from the motion group description to correctly scale plane safety zones based on the robot's kinematics. Without this prop, planes fall back to a fixed default size.
+
+```tsx
+<SafetyZonesRenderer
+  safetyZones={motionGroupDescription.safety_zones || {}}
+  dhParameters={motionGroupDescription.dh_parameters}
+/>
+```
+
 <Story of={SafetyZonesRenderer.SafetyZonesRendererV2} />
 
 <Story of={SafetyZonesRenderer.SafetyZonesRendererV2Plane} />

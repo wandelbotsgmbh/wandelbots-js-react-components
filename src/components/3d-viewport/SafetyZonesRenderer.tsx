@@ -109,14 +109,18 @@ export function SafetyZonesRenderer({
    * Plane size is calculated based on the reach radius of the robot
    */
   const planeSize = useMemo(() => {
-    if (dhParameters) {
-      const reachRadiusM = dhParameters.reduce((sum, p) => {
-        return sum + (Math.abs(p.a ?? 0) / 1000) + (Math.abs(p.d ?? 0) / 1000)
-      }, 0)
-      return (reachRadiusM * 2)
+    const defaultPlaneSize = 5
+    if (!dhParameters || dhParameters.length === 0) {
+      return defaultPlaneSize
     }
-
-    return 5
+    const reachRadiusM = dhParameters.reduce((sum, p) => {
+      return sum + (Math.abs(p.a ?? 0) / 1000) + (Math.abs(p.d ?? 0) / 1000)
+    }, 0)
+    const size = reachRadiusM * 2
+    if (!Number.isFinite(size) || size <= 0) {
+      return defaultPlaneSize
+    }
+    return size
   }, [dhParameters])
 
   /**
@@ -131,9 +135,6 @@ export function SafetyZonesRenderer({
    * @param id number
    */
   const renderPlaneMesh = (position: THREE.Vector3, orientationVector: THREE.Vector3, id: number) => {
-
-    const planeGeometry = new THREE.PlaneGeometry(planeSize, planeSize)
-
     // The orientation is provided as a rotation vector (also known as Rodrigues notation or axis-angle representation).
     // 1. The direction of the vector defines the axis of rotation in 3D space.
     // 2. The magnitude (length) of the vector represents the rotation angle in radians.
@@ -147,30 +148,26 @@ export function SafetyZonesRenderer({
     }
 
     return (
-      <group
-        key={`safety-zone-plane-group-${id}`}
+      <mesh
+        key={`safety-zone-plane-${id}`}
+        renderOrder={id}
         position={position}
         quaternion={quaternion}
       >
-        <mesh
-          key={`safety-zone-plane-${id}`}
-          geometry={planeGeometry}
-          renderOrder={id}
-        >
-          <meshStandardMaterial
-            key={`safety-zone-plane-material-${id}`}
-            attach="material"
-            color="#009f4d"
-            opacity={0.2}
-            depthTest={false}
-            depthWrite={false}
-            transparent
-            side={THREE.DoubleSide}
-            polygonOffset
-            polygonOffsetFactor={-id}
-          />
-        </mesh>
-      </group>
+        <planeGeometry args={[planeSize, planeSize]} />
+        <meshStandardMaterial
+          key={`safety-zone-plane-material-${id}`}
+          attach="material"
+          color="#009f4d"
+          opacity={0.2}
+          depthTest={false}
+          depthWrite={false}
+          transparent
+          side={THREE.DoubleSide}
+          polygonOffset
+          polygonOffsetFactor={-id}
+        />
+      </mesh>
     )
   }
 
