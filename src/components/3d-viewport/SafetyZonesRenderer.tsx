@@ -107,14 +107,13 @@ export function SafetyZonesRenderer({
 
   /**
    * Plane size is calculated based on the reach radius of the robot
-   * TODO find out what would be the best way to determine, how big the plane safety zone should be
    */
   const planeSize = useMemo(() => {
     if (dhParameters) {
       const reachRadiusM = dhParameters.reduce((sum, p) => {
         return sum + (Math.abs(p.a ?? 0) / 1000) + (Math.abs(p.d ?? 0) / 1000)
       }, 0)
-      return reachRadiusM
+      return (reachRadiusM * 0.5)
     }
 
     return 5
@@ -131,7 +130,9 @@ export function SafetyZonesRenderer({
    *                                          - Length: The angle of rotation in radians.
    * @param id number
    */
-  const renderPlaneMesh = (position: THREE.Vector3, orientationVector: THREE.Vector3, id: number) => {const planeGeometry = new THREE.PlaneGeometry(planeSize, planeSize)
+  const renderPlaneMesh = (position: THREE.Vector3, orientationVector: THREE.Vector3, id: number) => {
+
+    const planeGeometry = new THREE.PlaneGeometry(planeSize, planeSize)
 
     // The orientation is provided as a rotation vector (also known as Rodrigues notation or axis-angle representation).
     // 1. The direction of the vector defines the axis of rotation in 3D space.
