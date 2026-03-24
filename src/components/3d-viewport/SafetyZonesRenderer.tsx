@@ -122,34 +122,54 @@ export function SafetyZonesRenderer({
 
   /**
    * Helper function to render plane meshes
-   * @param position THREE.Vector3
-   * @param orientation THREE.Euler
+   *
+   * @param position THREE.Vector3 - The transform origin. This is the point on the plane defined in the Nova V2 API.
+   *                                  In this visualization, we center the (theoretically infinite) plane on this point.
+   *                                  This point also acts as the pivot around which the rotation is applied.
+   * @param orientationVector THREE.Vector3 - A rotation vector (Rodrigues notation).
+   *                                          - Direction: The axis around which the plane is rotated.
+   *                                          - Length: The angle of rotation in radians.
    * @param id number
    */
-  const renderPlaneMesh = (position: THREE.Vector3, orientation: THREE.Euler, id: number) => {
-    const planeGeometry = new THREE.PlaneGeometry(planeSize, planeSize)
+  const renderPlaneMesh = (position: THREE.Vector3, orientationVector: THREE.Vector3, id: number) => {const planeGeometry = new THREE.PlaneGeometry(planeSize, planeSize)
+
+    // The orientation is provided as a rotation vector (also known as Rodrigues notation or axis-angle representation).
+    // 1. The direction of the vector defines the axis of rotation in 3D space.
+    // 2. The magnitude (length) of the vector represents the rotation angle in radians.
+    // The rotation is applied to the default THREE.PlaneGeometry (which starts in the XY plane with normal along +Z).
+    const angle = orientationVector.length()
+
+    const quaternion = new THREE.Quaternion()
+    if (angle > 1e-6) {
+      const axis = orientationVector.clone().normalize()
+      quaternion.setFromAxisAngle(axis, angle)
+    }
 
     return (
-      <mesh
-        key={`safety-zone-plane-${id}`}
+      <group
+        key={`safety-zone-plane-group-${id}`}
         position={position}
-        rotation={orientation}
-        geometry={planeGeometry}
-        renderOrder={id}
+        quaternion={quaternion}
       >
-        <meshStandardMaterial
-          key={`safety-zone-plane-material-${id}`}
-          attach="material"
-          color="#009f4d"
-          opacity={0.2}
-          depthTest={false}
-          depthWrite={false}
-          transparent
-          side={THREE.DoubleSide}
-          polygonOffset
-          polygonOffsetFactor={-id}
-        />
-      </mesh>
+        <mesh
+          key={`safety-zone-plane-${id}`}
+          geometry={planeGeometry}
+          renderOrder={id}
+        >
+          <meshStandardMaterial
+            key={`safety-zone-plane-material-${id}`}
+            attach="material"
+            color="#009f4d"
+            opacity={0.2}
+            depthTest={false}
+            depthWrite={false}
+            transparent
+            side={THREE.DoubleSide}
+            polygonOffset
+            polygonOffsetFactor={-id}
+          />
+        </mesh>
+      </group>
     )
   }
 
@@ -168,7 +188,7 @@ export function SafetyZonesRenderer({
         case "plane":
           return zone?.pose?.position && zone?.pose?.orientation && renderPlaneMesh(
             new THREE.Vector3(zone.pose.position[0] / 1000, zone.pose.position[1] / 1000, zone.pose.position[2] / 1000),
-            new THREE.Euler(zone.pose.orientation[0], zone.pose.orientation[1], zone.pose.orientation[2]),
+            new THREE.Vector3(zone.pose.orientation[0], zone.pose.orientation[1], zone.pose.orientation[2]),
             index,
           )
       }
