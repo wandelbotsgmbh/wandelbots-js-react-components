@@ -1,172 +1,167 @@
 import { useEffect, useMemo } from "react"
 import { type ThreeElements } from "@react-three/fiber"
-import { type Collider, type ConvexHull, type DHParameter, type MotionGroupDescription } from "@wandelbots/nova-js/v2"
-import type { Geometry, SafetySetupSafetyZone } from "@wandelbots/nova-js/v1"
 import * as THREE from "three"
-import { ConvexGeometry } from "three-stdlib"
-import type { Vector3 } from "three"
+import { ConvexGeometry, mergeBufferGeometries } from "three-stdlib"
+
+import type { Collider, ConvexHull, DHParameter, MotionGroupDescription, Sphere, Capsule } from "@wandelbots/nova-js/v2"
+import type { Geometry, SafetySetupSafetyZone } from "@wandelbots/nova-js/v1"
+
+import { dhParametersToPlaneSize, orientationToQuaternion, verticesToCoplanarity } from "../utils/converters"
 
 export type SafetyZonesRendererProps = {
   safetyZones: SafetySetupSafetyZone[] | MotionGroupDescription["safety_zones"]
   dhParameters?: DHParameter[]
 } & ThreeElements["group"]
 
-interface CoplanarityResult {
-  isCoplanar: boolean
-  normal?: THREE.Vector3
-}
-
-function areVerticesCoplanar(vertices: THREE.Vector3[]): CoplanarityResult {
-  if (vertices.length < 3) {
-    console.log("Not enough vertices to define a plane")
-    return { isCoplanar: false }
-  }
-
-  // Convert Vector3d to THREE.Vector3
-  const v0 = new THREE.Vector3(vertices[0].x, vertices[0].y, vertices[0].z)
-  const v1 = new THREE.Vector3(vertices[1].x, vertices[1].y, vertices[1].z)
-  const v2 = new THREE.Vector3(vertices[2].x, vertices[2].y, vertices[2].z)
-
-  const vector1 = new THREE.Vector3().subVectors(v1, v0)
-  const vector2 = new THREE.Vector3().subVectors(v2, v0)
-  const normal = new THREE.Vector3().crossVectors(vector1, vector2).normalize()
-
-  // Check if all remaining vertices lie on the same plane
-  for (let i = 3; i < vertices.length; i++) {
-    const vi = new THREE.Vector3(vertices[i].x, vertices[i].y, vertices[i].z)
-    const vector = new THREE.Vector3().subVectors(vi, v0)
-    const dotProduct = normal.dot(vector)
-    if (Math.abs(dotProduct) > 1e-6) {
-      // Allowing a small tolerance
-      console.log("Vertices are not on the same plane")
-      return { isCoplanar: false }
-    }
-  }
-
-  return { isCoplanar: true, normal }
-}
-
 export function SafetyZonesRenderer({
                                       safetyZones,
                                       dhParameters,
                                       ...props
                                     }: SafetyZonesRendererProps) {
+  /**
+   * Common material properties for safety zone meshes
+   */
+  const safetyZoneMaterialProps = {
+    attach: "material" as const,
+    color: "#009f4d",
+    opacity: 0.2,
+    depthTest: false,
+    depthWrite: false,
+    transparent: true,
+    side: THREE.FrontSide,
+    polygonOffset: true,
+  }
 
   /**
    * Warning during runtime stating the deprecation of the V1 safety zones
    */
   useEffect(() => {
-    Array.isArray(safetyZones) && console.warn("SafetyZonesRenderer: The support of V1 safety zones is deprecated. Please migrate to V2 safety zones.")
+    Array.isArray(safetyZones) &&
+    console.warn("SafetyZonesRenderer: The support of V1 safety zones is deprecated. Please migrate to V2 safety zones.")
   }, [safetyZones])
 
   /**
-   * Helper function to render convex hulls mesh materials
-   * @param vertices Vector3[]
+   * Helper function to render plane, sphere, and capsule meshes
    * @param id number
+   * @param zone Collider
    */
-  const renderHullMesh = (vertices: Vector3[], id: number) => {
-    // Check if the vertices are on the same plane and only define a plane
-    // Algorithm has troubles with vertices that are on the same plane so we
-    // add a new vertex slightly moved along the normal direction
-    const coplanarityResult = areVerticesCoplanar(vertices)
-
-    if (coplanarityResult.isCoplanar && coplanarityResult.normal) {
-      // Add a new vertex slightly moved along the normal direction
-      const offset = 0.0001 // Adjust the offset as needed
-      const newVertex = new THREE.Vector3().addVectors(
-        vertices[0],
-        coplanarityResult.normal.multiplyScalar(offset),
-      )
-      vertices.push(newVertex)
-    }
-
-    let convexGeometry
-    try {
-      convexGeometry = new ConvexGeometry(vertices)
-    } catch (error) {
-      console.log("Error creating ConvexGeometry:", error)
+  const renderMesh = (id: number, zone: Collider) => {
+    if (!zone?.pose?.position || !zone?.pose?.orientation) {
       return null
     }
 
-    return (
-      <mesh key={`safety-zone-mesh-${id}`} geometry={convexGeometry}>
-        <meshStandardMaterial
-          key={`safety-zone-material-${id}`}
-          attach="material"
-          color="#009f4d"
-          opacity={0.2}
-          depthTest={false}
-          depthWrite={false}
-          transparent
-          polygonOffset
-          polygonOffsetFactor={-id}
-        />
-      </mesh>
-    )
-  }
+    const position = new THREE.Vector3(zone.pose.position[0] / 1000, zone.pose.position[1] / 1000, zone.pose.position[2] / 1000)
+    const orientation = new THREE.Vector3(zone.pose.orientation[0], zone.pose.orientation[1], zone.pose.orientation[2])
 
-  /**
-   * Plane size is calculated based on the reach radius of the robot
-   */
-  const planeSize = useMemo(() => {
-    const defaultPlaneSize = 5
-    if (!dhParameters || dhParameters.length === 0) {
-      return defaultPlaneSize
-    }
-    const reachRadiusM = dhParameters.reduce((sum, p) => {
-      return sum + (Math.abs(p.a ?? 0) / 1000) + (Math.abs(p.d ?? 0) / 1000)
-    }, 0)
-    const size = reachRadiusM * 2
-    if (!Number.isFinite(size) || size <= 0) {
-      return defaultPlaneSize
-    }
-    return size
-  }, [dhParameters])
+    let geometry: React.ReactElement | undefined
 
-  /**
-   * Helper function to render plane meshes
-   *
-   * @param position THREE.Vector3 - The transform origin. This is the point on the plane defined in the Nova V2 API.
-   *                                  In this visualization, we center the (theoretically infinite) plane on this point.
-   *                                  This point also acts as the pivot around which the rotation is applied.
-   * @param orientationVector THREE.Vector3 - A rotation vector (Rodrigues notation).
-   *                                          - Direction: The axis around which the plane is rotated.
-   *                                          - Length: The angle of rotation in radians.
-   * @param id number
-   */
-  const renderPlaneMesh = (position: THREE.Vector3, orientationVector: THREE.Vector3, id: number) => {
-    // The orientation is provided as a rotation vector (also known as Rodrigues notation or axis-angle representation).
-    // 1. The direction of the vector defines the axis of rotation in 3D space.
-    // 2. The magnitude (length) of the vector represents the rotation angle in radians.
-    // The rotation is applied to the default THREE.PlaneGeometry (which starts in the XY plane with normal along +Z).
-    const angle = orientationVector.length()
+    switch (zone.shape.shape_type) {
+      case "plane":
+        (safetyZoneMaterialProps.side as number) = THREE.DoubleSide
+        const planeSize = dhParametersToPlaneSize(dhParameters ?? [])
+        geometry = <planeGeometry args={[planeSize, planeSize]} />
+        break
 
-    const quaternion = new THREE.Quaternion()
-    if (angle > 1e-6) {
-      const axis = orientationVector.clone().normalize()
-      quaternion.setFromAxisAngle(axis, angle)
+      case "sphere": {
+        const radius = (zone?.shape as Sphere).radius / 1000
+        geometry = <sphereGeometry args={[radius]} />
+        break
+      }
+
+      case "capsule": {
+        const capsuleRadius = (zone?.shape as Capsule).radius / 1000
+        const height = (zone?.shape as Capsule).cylinder_height / 1000
+        geometry = <capsuleGeometry args={[capsuleRadius, height]} />
+        break
+      }
+
+      case "convex_hull": {
+        const vertices = (zone?.shape as ConvexHull).vertices.map(
+          (v) => new THREE.Vector3(v[0] / 1000, v[1] / 1000, v[2] / 1000),
+        )
+        // Check if the vertices are on the same plane
+        const coplanarityResult = verticesToCoplanarity(vertices)
+        if (coplanarityResult.isCoplanar && coplanarityResult.normal) {
+          const offset = 0.0001
+          const newVertex = new THREE.Vector3().addVectors(
+            vertices[0],
+            coplanarityResult.normal.multiplyScalar(offset),
+          )
+          vertices.push(newVertex)
+        }
+        try {
+          geometry = <primitive object={new ConvexGeometry(vertices)} attach="geometry" />
+        } catch (error) {
+          console.log("Error creating ConvexGeometry:", error)
+          return null
+        }
+        break
+      }
+
+      case "rectangular_capsule": {
+        // a lozenge is a complex object consisting of corner
+        // spheres, edge cylinder, and a central box
+        const rcRadius = zone.shape.radius! / 1000
+        const sphereCenterDistanceX = zone.shape.sphere_center_distance_x! / 1000
+        const sphereCenterDistanceY = zone.shape.sphere_center_distance_y! / 1000
+        const halfX = sphereCenterDistanceX / 2
+        const halfY = sphereCenterDistanceY / 2
+
+        const geometries: THREE.BufferGeometry[] = []
+
+        // 4 corner spheres
+        const cornerPositions = [
+          new THREE.Vector3(-halfX, -halfY, 0),
+          new THREE.Vector3(halfX, -halfY, 0),
+          new THREE.Vector3(halfX, halfY, 0),
+          new THREE.Vector3(-halfX, halfY, 0),
+        ]
+        for (const pos of cornerPositions) {
+          const sphereGeom = new THREE.SphereGeometry(rcRadius, 16, 16)
+          sphereGeom.translate(pos.x, pos.y, pos.z)
+          geometries.push(sphereGeom)
+        }
+
+        // 4 edge cylinders
+        const cylXGeom1 = new THREE.CylinderGeometry(rcRadius, rcRadius, sphereCenterDistanceX, 16)
+        cylXGeom1.rotateZ(Math.PI / 2)
+        cylXGeom1.translate(0, -halfY, 0)
+        geometries.push(cylXGeom1)
+
+        const cylXGeom2 = new THREE.CylinderGeometry(rcRadius, rcRadius, sphereCenterDistanceX, 16)
+        cylXGeom2.rotateZ(Math.PI / 2)
+        cylXGeom2.translate(0, halfY, 0)
+        geometries.push(cylXGeom2)
+
+        const cylYGeom1 = new THREE.CylinderGeometry(rcRadius, rcRadius, sphereCenterDistanceY, 16)
+        cylYGeom1.translate(-halfX, 0, 0)
+        geometries.push(cylYGeom1)
+
+        const cylYGeom2 = new THREE.CylinderGeometry(rcRadius, rcRadius, sphereCenterDistanceY, 16)
+        cylYGeom2.translate(halfX, 0, 0)
+        geometries.push(cylYGeom2)
+
+        // Central box
+        const boxGeom = new THREE.BoxGeometry(sphereCenterDistanceX, sphereCenterDistanceY, rcRadius * 2)
+        geometries.push(boxGeom)
+
+        const mergedGeometry = mergeBufferGeometries(geometries)
+        if (mergedGeometry) {
+          geometry = <primitive object={mergedGeometry} attach="geometry" />
+        }
+        break
+      }
     }
 
     return (
       <mesh
-        key={`safety-zone-plane-${id}`}
+        key={`safety-zone-${zone.shape.shape_type}-${id}`}
         renderOrder={id}
         position={position}
-        quaternion={quaternion}
+        quaternion={orientationToQuaternion(orientation)}
       >
-        <planeGeometry args={[planeSize, planeSize]} />
-        <meshStandardMaterial
-          key={`safety-zone-plane-material-${id}`}
-          attach="material"
-          color="#009f4d"
-          opacity={0.2}
-          depthTest={false}
-          depthWrite={false}
-          transparent
-          side={THREE.DoubleSide}
-          polygonOffset
-          polygonOffsetFactor={-id}
-        />
+        {geometry}
+        <meshStandardMaterial {...safetyZoneMaterialProps} polygonOffsetFactor={-id} />
       </mesh>
     )
   }
@@ -176,20 +171,7 @@ export function SafetyZonesRenderer({
    */
   const renderV2SafetyZones = () => {
     return Object.values(safetyZones ?? {}).map((zone: Collider, index: number) => {
-      switch (zone.shape.shape_type) {
-        case "convex_hull":
-          return renderHullMesh(
-            (zone.shape as ConvexHull).vertices
-              .map((vertex: number[]) => new THREE.Vector3(vertex[0] / 1000, vertex[1] / 1000, vertex[2] / 1000)), index,
-          )
-
-        case "plane":
-          return zone?.pose?.position && zone?.pose?.orientation && renderPlaneMesh(
-            new THREE.Vector3(zone.pose.position[0] / 1000, zone.pose.position[1] / 1000, zone.pose.position[2] / 1000),
-            new THREE.Vector3(zone.pose.orientation[0], zone.pose.orientation[1], zone.pose.orientation[2]),
-            index,
-          )
-      }
+      return renderMesh(index, zone)
     })
   }
 
@@ -213,12 +195,20 @@ export function SafetyZonesRenderer({
         return geometries.map((geometry, i) => {
           if (!geometry.convex_hull) return null
 
-          const vertices = geometry.convex_hull.vertices.map(
-            (v) => new THREE.Vector3(v.x / 1000, v.y / 1000, v.z / 1000),
-          )
-
           // Use a per-geometry identifier derived from both zone index and geometry index
-          return renderHullMesh(vertices, index * 1000 + i)
+          const id = index * 1000 + i
+          // Build a compatible zone object for renderMesh
+          const zone: Collider = {
+            pose: {
+              position: [0, 0, 0],
+              orientation: [0, 0, 0],
+            },
+            shape: {
+              shape_type: "convex_hull",
+              vertices: geometry.convex_hull.vertices.map((v) => [v.x, v.y, v.z]),
+            } as ConvexHull,
+          }
+          return renderMesh(id, zone)
         })
       })
     }

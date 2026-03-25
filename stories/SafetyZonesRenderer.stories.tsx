@@ -891,6 +891,309 @@ const safetyZonesV2Plane: MotionGroupDescription['safety_zones'] = {
   }
 }
 
+const safetyZonesV2Sphere: MotionGroupDescription['safety_zones'] = {
+  "5_Camera protection_0": {
+    "shape": {
+      "radius": 350,
+      "shape_type": "sphere"
+    },
+    "pose": {
+      "position": [
+        600,
+        -300,
+        1200
+      ],
+      "orientation": [
+        0,
+        0,
+        0
+      ]
+    }
+  }
+}
+
+const safetyZonesV2Capsule: MotionGroupDescription['safety_zones'] = {
+  "6_Steel column_0": {
+    "shape": {
+      "radius": 200,
+      "cylinder_height": 3000,
+      "shape_type": "capsule"
+    },
+    "pose": {
+      "position": [
+        1200,
+        -700,
+        1500
+      ],
+      "orientation": [
+        0,
+        0,
+        0
+      ]
+    }
+  }
+}
+
+const safetyZonesV2Prism: MotionGroupDescription['safety_zones'] = {
+  "1_workspace boundary_0_bottom": {
+    "shape": {
+      "shape_type": "convex_hull",
+      "vertices": [
+        [
+          1600,
+          -794.35,
+          3000
+        ],
+        [
+          1600,
+          805.65,
+          3000
+        ],
+        [
+          -1100,
+          805.65,
+          3000
+        ],
+        [
+          -1100,
+          -794.35,
+          3000
+        ]
+      ]
+    },
+    "pose": {
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "orientation": [
+        0,
+        0,
+        0
+      ]
+    }
+  },
+  "1_workspace boundary_0_side_0": {
+    "shape": {
+      "shape_type": "convex_hull",
+      "vertices": [
+        [
+          1600,
+          -794.35,
+          3000
+        ],
+        [
+          1600,
+          805.65,
+          3000
+        ],
+        [
+          1600,
+          805.65,
+          -500
+        ],
+        [
+          1600,
+          -794.35,
+          -500
+        ]
+      ]
+    },
+    "pose": {
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "orientation": [
+        0,
+        0,
+        0
+      ]
+    }
+  },
+  "1_workspace boundary_0_side_1": {
+    "shape": {
+      "shape_type": "convex_hull",
+      "vertices": [
+        [
+          1600,
+          805.65,
+          3000
+        ],
+        [
+          -1100,
+          805.65,
+          3000
+        ],
+        [
+          -1100,
+          805.65,
+          -500
+        ],
+        [
+          1600,
+          805.65,
+          -500
+        ]
+      ]
+    },
+    "pose": {
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "orientation": [
+        0,
+        0,
+        0
+      ]
+    }
+  },
+  "1_workspace boundary_0_side_2": {
+    "shape": {
+      "shape_type": "convex_hull",
+      "vertices": [
+        [
+          -1100,
+          805.65,
+          3000
+        ],
+        [
+          -1100,
+          -794.35,
+          3000
+        ],
+        [
+          -1100,
+          -794.35,
+          -500
+        ],
+        [
+          -1100,
+          805.65,
+          -500
+        ]
+      ]
+    },
+    "pose": {
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "orientation": [
+        0,
+        0,
+        0
+      ]
+    }
+  },
+  "1_workspace boundary_0_side_3": {
+    "shape": {
+      "shape_type": "convex_hull",
+      "vertices": [
+        [
+          -1100,
+          -794.35,
+          3000
+        ],
+        [
+          1600,
+          -794.35,
+          3000
+        ],
+        [
+          1600,
+          -794.35,
+          -500
+        ],
+        [
+          -1100,
+          -794.35,
+          -500
+        ]
+      ]
+    },
+    "pose": {
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "orientation": [
+        0,
+        0,
+        0
+      ]
+    }
+  },
+  "1_workspace boundary_0_top": {
+    "shape": {
+      "shape_type": "convex_hull",
+      "vertices": [
+        [
+          1600,
+          -794.35,
+          -500
+        ],
+        [
+          1600,
+          805.65,
+          -500
+        ],
+        [
+          -1100,
+          805.65,
+          -500
+        ],
+        [
+          -1100,
+          -794.35,
+          -500
+        ]
+      ]
+    },
+    "pose": {
+      "position": [
+        0,
+        0,
+        0
+      ],
+      "orientation": [
+        0,
+        0,
+        0
+      ]
+    }
+  }
+}
+
+const safetyZonesV2Lozenge: MotionGroupDescription['safety_zones'] = {
+  "7_Conveyor belt_0": {
+    "shape": {
+      "radius": 50,
+      "sphere_center_distance_x": 2400,
+      "sphere_center_distance_y": 600,
+      "shape_type": "rectangular_capsule"
+    },
+    "pose": {
+      "position": [
+        900,
+        0,
+        850
+      ],
+      "orientation": [
+        0,
+        0,
+        0
+      ]
+    }
+  }
+}
+
 const dhParams: DHParameter[] = [
   {
     "alpha": 1.5707963267948966,
@@ -968,4 +1271,40 @@ export const SafetyZonesRendererV2Plane = {
   },
   render: (args) => <SafetyZonesRendererScene {...args} />,
   name: "Safety Zones V2 Plane",
+} satisfies Story
+
+export const SafetyZonesRendererV2Sphere = {
+  args: {
+    safetyZones: safetyZonesV2Sphere,
+    dhParameters: dhParams
+  },
+  render: (args) => <SafetyZonesRendererScene {...args} />,
+  name: "Safety Zones V2 Sphere",
+} satisfies Story
+
+export const SafetyZonesRendererV2Capsule = {
+  args: {
+    safetyZones: safetyZonesV2Capsule,
+    dhParameters: dhParams
+  },
+  render: (args) => <SafetyZonesRendererScene {...args} />,
+  name: "Safety Zones V2 Capsule",
+} satisfies Story
+
+export const SafetyZonesRendererV2Prism = {
+  args: {
+    safetyZones: safetyZonesV2Prism,
+    dhParameters: dhParams
+  },
+  render: (args) => <SafetyZonesRendererScene {...args} />,
+  name: "Safety Zones V2 Prism",
+} satisfies Story
+
+export const SafetyZonesV2Lozenge = {
+  args: {
+    safetyZones: safetyZonesV2Lozenge,
+    dhParameters: dhParams
+  },
+  render: (args) => <SafetyZonesRendererScene {...args} />,
+  name: "Safety Zones V2 Lozenge",
 } satisfies Story
