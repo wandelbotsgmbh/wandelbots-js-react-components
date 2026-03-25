@@ -30,14 +30,13 @@ const connectedMotionGroup = await ConnectedMotionGroup.connect(nova, "0@your-mo
 - **Most components use V2**: All components now use the Nova.js V2 API (`@wandelbots/nova-js/v2`)
 - **Exceptions**: The following components still use the V1 API:
   - `TrajectoryRenderer`
-  - `SafetyZonesRenderer`
   - `CollisionSceneRenderer`
 
 ```tsx
 // ✅ For most components, use V2
 import { NovaClient } from "@wandelbots/nova-js/v2"
 
-// ✅ For trajectory/safety/collision components, continue using V1 if needed
+// ✅ For trajectory/collision components, continue using V1 if needed
 import { NovaClient } from "@wandelbots/nova-js/v1"
 ```
 
@@ -118,12 +117,12 @@ const connectedMotionGroup = await ConnectedMotionGroup.connect(nova, "0@ur5e")
 
 ### Special Cases for V1 Components
 
-If you're using trajectory, safety zones, or collision scene renderers, they still use the V1 API:
+If you're using trajectory, or collision scene renderers, they still use the V1 API:
 
 ```tsx
 // These components still use V1
 import { NovaClient } from "@wandelbots/nova-js"
-import { TrajectoryRenderer, SafetyZonesRenderer, CollisionSceneRenderer } from "@wandelbots/wandelbots-js-react-components/3d"
+import { TrajectoryRenderer, CollisionSceneRenderer } from "@wandelbots/wandelbots-js-react-components/3d"
 ```
 
 ## Common Issues
