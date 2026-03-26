@@ -71,6 +71,6 @@ export const SafetyZoneRenderer = {
     },
     dhParameters: dhParams
   },
-  render: (args: React.ComponentProps<typeof SafetyZonesRenderer>) => <SafetyZonesRendererScene {...args} />,
+  render: (args) => <SafetyZonesRendererScene {...args} />,
   name: "Safety Zones V2",
-}
+} satisfies Story

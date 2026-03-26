@@ -3,7 +3,15 @@ import { type ThreeElements } from "@react-three/fiber"
 import * as THREE from "three"
 import { ConvexGeometry, RoundedBoxGeometry } from "three-stdlib"
 
-import type { Collider, ConvexHull, DHParameter, MotionGroupDescription, Sphere, Capsule, RectangularCapsule } from "@wandelbots/nova-js/v2"
+import type {
+  Collider,
+  ConvexHull,
+  DHParameter,
+  MotionGroupDescription,
+  Sphere,
+  Capsule,
+  RectangularCapsule,
+} from "@wandelbots/nova-js/v2"
 import type { Geometry, SafetySetupSafetyZone } from "@wandelbots/nova-js/v1"
 
 import { dhParametersToPlaneSize, orientationToQuaternion, verticesToCoplanarity } from "../utils/converters"
@@ -28,9 +36,14 @@ export function SafetyZonesRenderer({
     depthTest: false,
     depthWrite: false,
     transparent: true,
-    side: THREE.FrontSide,
     polygonOffset: true,
   }
+
+  /**
+   * Plane size for the plane safety zones, returns the reach distance
+   * of the robot
+   */
+  const planeSize = dhParametersToPlaneSize(dhParameters ?? [])
 
   /**
    * Warning during runtime stating the deprecation of the V1 safety zones
@@ -53,16 +66,17 @@ export function SafetyZonesRenderer({
     const position = new THREE.Vector3(zone.pose.position[0] / 1000, zone.pose.position[1] / 1000, zone.pose.position[2] / 1000)
     const orientation = new THREE.Vector3(zone.pose.orientation[0], zone.pose.orientation[1], zone.pose.orientation[2])
 
-    let geometry: React.ReactElement | undefined
+    let geometry: React.ReactElement | null
+
+    const materialProps = zone.shape.shape_type === "plane"
+      ? { ...safetyZoneMaterialProps, side: THREE.DoubleSide }
+      : { ...safetyZoneMaterialProps, side: THREE.FrontSide }
 
     switch (zone.shape.shape_type) {
-
       /**
        * Plane shape, uses DH parameters to calculate the size of the plane (reach distance of a robot)
        */
       case "plane":
-        (safetyZoneMaterialProps.side as number) = THREE.DoubleSide
-        const planeSize = dhParametersToPlaneSize(dhParameters ?? [])
         geometry = <planeGeometry args={[planeSize, planeSize]} />
         break
 
@@ -129,6 +143,11 @@ export function SafetyZonesRenderer({
         geometry = <primitive object={new RoundedBoxGeometry(width, height, depth, 2, rcRadius)} attach="geometry" />
         break
       }
+
+      default: {
+        console.warn("Unsupported safety zone shape type:", zone.shape.shape_type)
+        geometry = null
+      }
     }
 
     return (
@@ -139,7 +158,10 @@ export function SafetyZonesRenderer({
         quaternion={orientationToQuaternion(orientation)}
       >
         {geometry}
-        <meshStandardMaterial {...safetyZoneMaterialProps} polygonOffsetFactor={-id} />
+        <meshStandardMaterial
+          {...materialProps}
+          polygonOffsetFactor={-id}
+        />
       </mesh>
     )
   }
