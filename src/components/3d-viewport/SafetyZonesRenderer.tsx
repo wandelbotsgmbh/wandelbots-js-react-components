@@ -1,9 +1,9 @@
 import { useEffect, useMemo } from "react"
 import { type ThreeElements } from "@react-three/fiber"
 import * as THREE from "three"
-import { ConvexGeometry, mergeBufferGeometries } from "three-stdlib"
+import { ConvexGeometry, RoundedBoxGeometry } from "three-stdlib"
 
-import type { Collider, ConvexHull, DHParameter, MotionGroupDescription, Sphere, Capsule } from "@wandelbots/nova-js/v2"
+import type { Collider, ConvexHull, DHParameter, MotionGroupDescription, Sphere, Capsule, RectangularCapsule } from "@wandelbots/nova-js/v2"
 import type { Geometry, SafetySetupSafetyZone } from "@wandelbots/nova-js/v1"
 
 import { dhParametersToPlaneSize, orientationToQuaternion, verticesToCoplanarity } from "../utils/converters"
@@ -56,18 +56,28 @@ export function SafetyZonesRenderer({
     let geometry: React.ReactElement | undefined
 
     switch (zone.shape.shape_type) {
+
+      /**
+       * Plane shape, uses DH parameters to calculate the size of the plane (reach distance of a robot)
+       */
       case "plane":
         (safetyZoneMaterialProps.side as number) = THREE.DoubleSide
         const planeSize = dhParametersToPlaneSize(dhParameters ?? [])
         geometry = <planeGeometry args={[planeSize, planeSize]} />
         break
 
+      /**
+       * Sphere shape
+       */
       case "sphere": {
         const radius = (zone?.shape as Sphere).radius / 1000
         geometry = <sphereGeometry args={[radius]} />
         break
       }
 
+      /**
+       * Capsule shape
+       */
       case "capsule": {
         const capsuleRadius = (zone?.shape as Capsule).radius / 1000
         const height = (zone?.shape as Capsule).cylinder_height / 1000
@@ -75,6 +85,10 @@ export function SafetyZonesRenderer({
         break
       }
 
+      /**
+       * Convex hull, checks at first if the vertices are coplanar - if yes, adds a small offset for
+       * renderer to be able to visualize the convex hull.
+       */
       case "convex_hull": {
         const vertices = (zone?.shape as ConvexHull).vertices.map(
           (v) => new THREE.Vector3(v[0] / 1000, v[1] / 1000, v[2] / 1000),
@@ -98,57 +112,21 @@ export function SafetyZonesRenderer({
         break
       }
 
+      /**
+       * Convex hull around four spheres. Sphere center points in x/y-plane,
+       * offset by either combination "+/- sizeX" or "+/- sizeY".
+       * Alternative description: Rectangle in x/y-plane with a 3D padding (source: nova-api docs)
+       *
+       * Basically a rounded box with a rectangular cross-section.
+       */
       case "rectangular_capsule": {
-        // a lozenge is a complex object consisting of corner
-        // spheres, edge cylinder, and a central box
-        const rcRadius = zone.shape.radius! / 1000
-        const sphereCenterDistanceX = zone.shape.sphere_center_distance_x! / 1000
-        const sphereCenterDistanceY = zone.shape.sphere_center_distance_y! / 1000
-        const halfX = sphereCenterDistanceX / 2
-        const halfY = sphereCenterDistanceY / 2
+        const shape = (zone.shape as RectangularCapsule)
+        const rcRadius = shape.radius / 1000
+        const width = shape.sphere_center_distance_x / 1000
+        const height = shape.sphere_center_distance_y / 1000
+        const depth = rcRadius * 2
 
-        const geometries: THREE.BufferGeometry[] = []
-
-        // 4 corner spheres
-        const cornerPositions = [
-          new THREE.Vector3(-halfX, -halfY, 0),
-          new THREE.Vector3(halfX, -halfY, 0),
-          new THREE.Vector3(halfX, halfY, 0),
-          new THREE.Vector3(-halfX, halfY, 0),
-        ]
-        for (const pos of cornerPositions) {
-          const sphereGeom = new THREE.SphereGeometry(rcRadius, 16, 16)
-          sphereGeom.translate(pos.x, pos.y, pos.z)
-          geometries.push(sphereGeom)
-        }
-
-        // 4 edge cylinders
-        const cylXGeom1 = new THREE.CylinderGeometry(rcRadius, rcRadius, sphereCenterDistanceX, 16)
-        cylXGeom1.rotateZ(Math.PI / 2)
-        cylXGeom1.translate(0, -halfY, 0)
-        geometries.push(cylXGeom1)
-
-        const cylXGeom2 = new THREE.CylinderGeometry(rcRadius, rcRadius, sphereCenterDistanceX, 16)
-        cylXGeom2.rotateZ(Math.PI / 2)
-        cylXGeom2.translate(0, halfY, 0)
-        geometries.push(cylXGeom2)
-
-        const cylYGeom1 = new THREE.CylinderGeometry(rcRadius, rcRadius, sphereCenterDistanceY, 16)
-        cylYGeom1.translate(-halfX, 0, 0)
-        geometries.push(cylYGeom1)
-
-        const cylYGeom2 = new THREE.CylinderGeometry(rcRadius, rcRadius, sphereCenterDistanceY, 16)
-        cylYGeom2.translate(halfX, 0, 0)
-        geometries.push(cylYGeom2)
-
-        // Central box
-        const boxGeom = new THREE.BoxGeometry(sphereCenterDistanceX, sphereCenterDistanceY, rcRadius * 2)
-        geometries.push(boxGeom)
-
-        const mergedGeometry = mergeBufferGeometries(geometries)
-        if (mergedGeometry) {
-          geometry = <primitive object={mergedGeometry} attach="geometry" />
-        }
+        geometry = <primitive object={new RoundedBoxGeometry(width, height, depth, 2, rcRadius)} attach="geometry" />
         break
       }
     }
