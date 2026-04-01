@@ -14,7 +14,7 @@ import type {
 } from "@wandelbots/nova-js/v2"
 import type { Geometry, SafetySetupSafetyZone } from "@wandelbots/nova-js/v1"
 
-import { dhParametersToPlaneSize, orientationToQuaternion, verticesToCoplanarity } from "../utils/converters"
+import { dhParametersToPlaneSize, orientationToQuaternion, quaternionToOrientation, verticesToCoplanarity } from "../utils/converters"
 
 export type SafetyZonesRendererProps = {
   safetyZones: SafetySetupSafetyZone[] | MotionGroupDescription["safety_zones"]
@@ -197,11 +197,24 @@ export function SafetyZonesRenderer({
 
           // Use a per-geometry identifier derived from both zone index and geometry index
           const id = index * 1000 + i
+
+          // Extract position and orientation from init_pose if available
+          const initPose = geometry.init_pose
+          const position: [number, number, number] = initPose?.position
+            ? [initPose.position.x, initPose.position.y, initPose.position.z]
+            : [0, 0, 0]
+          const orientation: [number, number, number] = initPose?.orientation
+            ? (() => {
+                const euler = quaternionToOrientation(initPose.orientation)
+                return [euler.x, euler.y, euler.z]
+              })()
+            : [0, 0, 0]
+
           // Build a compatible zone object for renderMesh
           const zone: Collider = {
             pose: {
-              position: [0, 0, 0],
-              orientation: [0, 0, 0],
+              position,
+              orientation,
             },
             shape: {
               shape_type: "convex_hull",

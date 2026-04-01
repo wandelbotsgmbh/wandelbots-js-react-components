@@ -40,6 +40,12 @@ export function orientationToQuaternion(orientation: THREE.Vector3): THREE.Quate
   return quaternion
 }
 
+export function quaternionToOrientation(quaternion: { x: number; y: number; z: number; w: number }): THREE.Vector3 {
+  const q = new THREE.Quaternion(quaternion.x, quaternion.y, quaternion.z, quaternion.w)
+  const euler = new THREE.Euler().setFromQuaternion(q, 'XYZ')
+  return new THREE.Vector3(euler.x, euler.y, euler.z)
+}
+
 export function dhParametersToPlaneSize(dhParameters: DHParameter[]) {
   const defaultPlaneSize = 5
   if (!dhParameters || dhParameters.length === 0) {
