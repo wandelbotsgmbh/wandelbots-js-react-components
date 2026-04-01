@@ -12,12 +12,11 @@ import type {
   Capsule,
   RectangularCapsule,
 } from "@wandelbots/nova-js/v2"
-import type { Geometry, SafetySetupSafetyZone } from "@wandelbots/nova-js/v1"
 
 import { dhParametersToPlaneSize, orientationToQuaternion, verticesToCoplanarity } from "../utils/converters"
 
 export type SafetyZonesRendererProps = {
-  safetyZones: SafetySetupSafetyZone[] | MotionGroupDescription["safety_zones"]
+  safetyZones: MotionGroupDescription["safety_zones"]
   dhParameters?: DHParameter[]
 } & ThreeElements["group"]
 
@@ -44,14 +43,6 @@ export function SafetyZonesRenderer({
    * of the robot
    */
   const planeSize = dhParametersToPlaneSize(dhParameters ?? [])
-
-  /**
-   * Warning during runtime stating the deprecation of the V1 safety zones
-   */
-  useEffect(() => {
-    Array.isArray(safetyZones) &&
-    console.warn("SafetyZonesRenderer: The support of V1 safety zones is deprecated. Please migrate to V2 safety zones.")
-  }, [safetyZones])
 
   /**
    * Helper function to render plane, sphere, and capsule meshes
@@ -167,62 +158,13 @@ export function SafetyZonesRenderer({
   }
 
   /**
-   * Helper function to render V2 safety zones
+   * Helper variable render safety zones
    */
-  const renderV2SafetyZones = () => {
+  const renderedSafetyZones = useMemo(() => {
     return Object.values(safetyZones ?? {}).map((zone: Collider, index: number) => {
       return renderMesh(index, zone)
     })
-  }
-
-  /**
-   * Helper function to V1 safety zones
-   * @deprecated this render function is to be seen as a temporary measure, as the support
-   * for the V1 safety zones is to be removed in the future
-   */
-  const renderV1SafetyZones = () => {
-    if (Array.isArray(safetyZones)) {
-      return (safetyZones as SafetySetupSafetyZone[]).map((zone: SafetySetupSafetyZone, index) => {
-        let geometries: Geometry[] = []
-        if (zone.geometry) {
-          if (zone.geometry.compound) {
-            geometries = zone.geometry.compound.child_geometries
-          } else if (zone.geometry.convex_hull) {
-            geometries = [zone.geometry]
-          }
-        }
-
-        return geometries.map((geometry, i) => {
-          if (!geometry.convex_hull) return null
-
-          // Use a per-geometry identifier derived from both zone index and geometry index
-          const id = index * 1000 + i
-          // Build a compatible zone object for renderMesh
-          const zone: Collider = {
-            pose: {
-              position: [0, 0, 0],
-              orientation: [0, 0, 0],
-            },
-            shape: {
-              shape_type: "convex_hull",
-              vertices: geometry.convex_hull.vertices.map((v) => [v.x, v.y, v.z]),
-            } as ConvexHull,
-          }
-          return renderMesh(id, zone)
-        })
-      })
-    }
-    return null
-  }
-
-  /**
-   * Helper variable to render both api versions of safety zones
-   */
-  const renderedSafetyZones = useMemo(() => {
-    return Array.isArray(safetyZones)
-      ? renderV1SafetyZones()
-      : renderV2SafetyZones()
-  }, [safetyZones, renderV1SafetyZones, renderV2SafetyZones])
+  }, [safetyZones])
 
   return (
     <group {...props}>

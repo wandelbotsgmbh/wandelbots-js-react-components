@@ -4,13 +4,12 @@ import { SafetyZonesRenderer } from "../src"
 import { Setup } from "../src/Setup"
 import {
   dhParams,
-  safetyZonesV1,
-  safetyZonesV2Capsule,
-  safetyZonesV2Hull,
-  safetyZonesV2Lozenge,
-  safetyZonesV2Plane,
-  safetyZonesV2Prism,
-  safetyZonesV2Sphere,
+  safetyZonesCapsule,
+  safetyZonesHull,
+  safetyZonesLozenge,
+  safetyZonesPlane,
+  safetyZonesPrism,
+  safetyZonesSphere,
 } from "./robots/safetyZones"
 
 const meta: Meta<typeof SafetyZonesRenderer> = {
@@ -50,27 +49,18 @@ function SafetyZonesRendererScene(
     <SafetyZonesRenderer {...props} />
   )
 }
-
-export const SafetyZonesRendererSt = {
-  args: {
-    safetyZones: safetyZonesV1,
-  },
-  render: (args) => <SafetyZonesRendererScene {...args} />,
-  name: "Safety Zones V1",
-} satisfies Story
-
 export const SafetyZoneRenderer = {
   args: {
     safetyZones: {
-      ...safetyZonesV2Plane,
-      ...safetyZonesV2Capsule,
-      ...safetyZonesV2Hull,
-      ...safetyZonesV2Prism,
-      ...safetyZonesV2Lozenge,
-      ...safetyZonesV2Sphere,
+      ...safetyZonesPlane,
+      ...safetyZonesCapsule,
+      ...safetyZonesHull,
+      ...safetyZonesPrism,
+      ...safetyZonesLozenge,
+      ...safetyZonesSphere,
     },
     dhParameters: dhParams
   },
   render: (args) => <SafetyZonesRendererScene {...args} />,
-  name: "Safety Zones V2",
+  name: "Safety Zones",
 } satisfies Story

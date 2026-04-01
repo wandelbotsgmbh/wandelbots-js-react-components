@@ -449,7 +449,7 @@ export const safetyZonesV1: SafetySetupSafetyZone[] = [
   },
 ]
 
-export const safetyZonesV2Hull: MotionGroupDescription['safety_zones'] = {
+export const safetyZonesHull: MotionGroupDescription['safety_zones'] = {
   "3__0": {
     "shape": {
       "shape_type": "convex_hull",
@@ -511,7 +511,7 @@ export const safetyZonesV2Hull: MotionGroupDescription['safety_zones'] = {
   }
 }
 
-export const safetyZonesV2Plane: MotionGroupDescription['safety_zones'] = {
+export const safetyZonesPlane: MotionGroupDescription['safety_zones'] = {
   "1_Plane 2_0": {
     "shape": {
       "shape_type": "plane"
@@ -531,7 +531,7 @@ export const safetyZonesV2Plane: MotionGroupDescription['safety_zones'] = {
   }
 }
 
-export const safetyZonesV2Sphere: MotionGroupDescription['safety_zones'] = {
+export const safetyZonesSphere: MotionGroupDescription['safety_zones'] = {
   "5_Camera protection_0": {
     "shape": {
       "radius": 350,
@@ -552,7 +552,7 @@ export const safetyZonesV2Sphere: MotionGroupDescription['safety_zones'] = {
   }
 }
 
-export const safetyZonesV2Capsule: MotionGroupDescription['safety_zones'] = {
+export const safetyZonesCapsule: MotionGroupDescription['safety_zones'] = {
   "6_Steel column_0": {
     "shape": {
       "radius": 200,
@@ -574,7 +574,7 @@ export const safetyZonesV2Capsule: MotionGroupDescription['safety_zones'] = {
   }
 }
 
-export const safetyZonesV2Prism: MotionGroupDescription['safety_zones'] = {
+export const safetyZonesPrism: MotionGroupDescription['safety_zones'] = {
   "1_workspace boundary_0_bottom": {
     "shape": {
       "shape_type": "convex_hull",
@@ -811,7 +811,7 @@ export const safetyZonesV2Prism: MotionGroupDescription['safety_zones'] = {
   }
 }
 
-export const safetyZonesV2Lozenge: MotionGroupDescription['safety_zones'] = {
+export const safetyZonesLozenge: MotionGroupDescription['safety_zones'] = {
   "7_Conveyor belt_0": {
     "shape": {
       "radius": 50,

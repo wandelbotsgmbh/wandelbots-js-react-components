@@ -3,7 +3,7 @@ import * as SafetyZonesRenderer from './SafetyZonesRenderer.stories';
 
 <Meta of={SafetyZonesRenderer} />
 
-# Safety Zones Renderer (API v2)
+# Safety Zones Renderer
 
 The `SafetyZonesRenderer` component visualizes the safety zones of the controller.
 
@@ -32,15 +32,3 @@ All these safety zone types are supported for rendering:
 - **Lozenge** - `rectangular_capsule`
 
 <Story of={SafetyZonesRenderer.SafetyZoneRenderer} />
-
-# Safety Zones Renderer (API v1)
-
-The `SafetyZonesRenderer` component visualizes the safety zones of the controller.
-
-This component should be used with [nova-js](https://github.com/wandelbotsgmbh/nova-js). Pass the `safetyZones` from the `connectedMotionGroup` (API v1) to the component.
-
-```tsx
-<SafetyZonesRenderer safetyZones={connectedMotionGroup.safetyZones || []} />
-```
-
-<Story of={SafetyZonesRenderer.SafetyZonesRendererSt} />
