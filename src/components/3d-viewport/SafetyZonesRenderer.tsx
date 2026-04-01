@@ -16,41 +16,6 @@ import type { Geometry, SafetySetupSafetyZone } from "@wandelbots/nova-js/v1"
 
 import { dhParametersToPlaneSize, orientationToQuaternion, verticesToCoplanarity } from "../utils/converters"
 
-interface CoplanarityResult {
-  isCoplanar: boolean
-  normal?: THREE.Vector3
-}
-
-/**
- * @deprecated Helper function for V1 safety zones - to be removed with V1 support
- */
-function areVerticesCoplanar(vertices: THREE.Vector3[]): CoplanarityResult {
-  if (vertices.length < 3) {
-    console.log("Not enough vertices to define a plane")
-    return { isCoplanar: false }
-  }
-
-  const v0 = new THREE.Vector3(vertices[0].x, vertices[0].y, vertices[0].z)
-  const v1 = new THREE.Vector3(vertices[1].x, vertices[1].y, vertices[1].z)
-  const v2 = new THREE.Vector3(vertices[2].x, vertices[2].y, vertices[2].z)
-
-  const vector1 = new THREE.Vector3().subVectors(v1, v0)
-  const vector2 = new THREE.Vector3().subVectors(v2, v0)
-  const normal = new THREE.Vector3().crossVectors(vector1, vector2).normalize()
-
-  for (let i = 3; i < vertices.length; i++) {
-    const vi = new THREE.Vector3(vertices[i].x, vertices[i].y, vertices[i].z)
-    const vector = new THREE.Vector3().subVectors(vi, v0)
-    const dotProduct = normal.dot(vector)
-    if (Math.abs(dotProduct) > 1e-6) {
-      console.log("Vertices are not on the same plane")
-      return { isCoplanar: false }
-    }
-  }
-
-  return { isCoplanar: true, normal }
-}
-
 export type SafetyZonesRendererProps = {
   safetyZones: SafetySetupSafetyZone[] | MotionGroupDescription["safety_zones"]
   dhParameters?: DHParameter[]
@@ -237,7 +202,7 @@ export function SafetyZonesRenderer({
           // Check if the vertices are on the same plane and only define a plane
           // Algorithm has troubles with vertices that are on the same plane so we
           // add a new vertex slightly moved along the normal direction
-          const coplanarityResult = areVerticesCoplanar(vertices)
+          const coplanarityResult = verticesToCoplanarity(vertices)
 
           if (coplanarityResult.isCoplanar && coplanarityResult.normal) {
             // Add a new vertex slightly moved along the normal direction
