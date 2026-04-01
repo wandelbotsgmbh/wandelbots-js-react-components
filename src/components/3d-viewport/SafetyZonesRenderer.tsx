@@ -14,7 +14,42 @@ import type {
 } from "@wandelbots/nova-js/v2"
 import type { Geometry, SafetySetupSafetyZone } from "@wandelbots/nova-js/v1"
 
-import { dhParametersToPlaneSize, orientationToQuaternion, quaternionToOrientation, verticesToCoplanarity } from "../utils/converters"
+import { dhParametersToPlaneSize, orientationToQuaternion, verticesToCoplanarity } from "../utils/converters"
+
+interface CoplanarityResult {
+  isCoplanar: boolean
+  normal?: THREE.Vector3
+}
+
+/**
+ * @deprecated Helper function for V1 safety zones - to be removed with V1 support
+ */
+function areVerticesCoplanar(vertices: THREE.Vector3[]): CoplanarityResult {
+  if (vertices.length < 3) {
+    console.log("Not enough vertices to define a plane")
+    return { isCoplanar: false }
+  }
+
+  const v0 = new THREE.Vector3(vertices[0].x, vertices[0].y, vertices[0].z)
+  const v1 = new THREE.Vector3(vertices[1].x, vertices[1].y, vertices[1].z)
+  const v2 = new THREE.Vector3(vertices[2].x, vertices[2].y, vertices[2].z)
+
+  const vector1 = new THREE.Vector3().subVectors(v1, v0)
+  const vector2 = new THREE.Vector3().subVectors(v2, v0)
+  const normal = new THREE.Vector3().crossVectors(vector1, vector2).normalize()
+
+  for (let i = 3; i < vertices.length; i++) {
+    const vi = new THREE.Vector3(vertices[i].x, vertices[i].y, vertices[i].z)
+    const vector = new THREE.Vector3().subVectors(vi, v0)
+    const dotProduct = normal.dot(vector)
+    if (Math.abs(dotProduct) > 1e-6) {
+      console.log("Vertices are not on the same plane")
+      return { isCoplanar: false }
+    }
+  }
+
+  return { isCoplanar: true, normal }
+}
 
 export type SafetyZonesRendererProps = {
   safetyZones: SafetySetupSafetyZone[] | MotionGroupDescription["safety_zones"]
@@ -195,33 +230,47 @@ export function SafetyZonesRenderer({
         return geometries.map((geometry, i) => {
           if (!geometry.convex_hull) return null
 
-          // Use a per-geometry identifier derived from both zone index and geometry index
-          const id = index * 1000 + i
+          const vertices = geometry.convex_hull.vertices.map(
+            (v) => new THREE.Vector3(v.x / 1000, v.y / 1000, v.z / 1000),
+          )
 
-          // Extract position and orientation from init_pose if available
-          const initPose = geometry.init_pose
-          const position: [number, number, number] = initPose?.position
-            ? [initPose.position.x, initPose.position.y, initPose.position.z]
-            : [0, 0, 0]
-          const orientation: [number, number, number] = initPose?.orientation
-            ? (() => {
-                const euler = quaternionToOrientation(initPose.orientation)
-                return [euler.x, euler.y, euler.z]
-              })()
-            : [0, 0, 0]
+          // Check if the vertices are on the same plane and only define a plane
+          // Algorithm has troubles with vertices that are on the same plane so we
+          // add a new vertex slightly moved along the normal direction
+          const coplanarityResult = areVerticesCoplanar(vertices)
 
-          // Build a compatible zone object for renderMesh
-          const zone: Collider = {
-            pose: {
-              position,
-              orientation,
-            },
-            shape: {
-              shape_type: "convex_hull",
-              vertices: geometry.convex_hull.vertices.map((v) => [v.x, v.y, v.z]),
-            } as ConvexHull,
+          if (coplanarityResult.isCoplanar && coplanarityResult.normal) {
+            // Add a new vertex slightly moved along the normal direction
+            const offset = 0.0001
+            const newVertex = new THREE.Vector3().addVectors(
+              vertices[0],
+              coplanarityResult.normal.multiplyScalar(offset),
+            )
+            vertices.push(newVertex)
           }
-          return renderMesh(id, zone)
+
+          let convexGeometry
+          try {
+            convexGeometry = new ConvexGeometry(vertices)
+          } catch (error) {
+            console.log("Error creating ConvexGeometry:", error)
+            return null
+          }
+          return (
+            <mesh key={`${index}-${i}`} geometry={convexGeometry}>
+              <meshStandardMaterial
+                key={index}
+                attach="material"
+                color="#009f4d"
+                opacity={0.2}
+                depthTest={false}
+                depthWrite={false}
+                transparent
+                polygonOffset
+                polygonOffsetFactor={-i}
+              />
+            </mesh>
+          )
         })
       })
     }
