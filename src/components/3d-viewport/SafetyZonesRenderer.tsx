@@ -1,20 +1,24 @@
-import { useEffect, useMemo } from "react"
 import { type ThreeElements } from "@react-three/fiber"
+import { useEffect, useMemo } from "react"
 import * as THREE from "three"
 import { ConvexGeometry, RoundedBoxGeometry } from "three-stdlib"
 
+import type { Geometry, SafetySetupSafetyZone } from "@wandelbots/nova-js/v1"
 import type {
+  Capsule,
   Collider,
   ConvexHull,
   DHParameter,
   MotionGroupDescription,
-  Sphere,
-  Capsule,
   RectangularCapsule,
+  Sphere,
 } from "@wandelbots/nova-js/v2"
-import type { Geometry, SafetySetupSafetyZone } from "@wandelbots/nova-js/v1"
 
-import { dhParametersToPlaneSize, orientationToQuaternion, verticesToCoplanarity } from "../utils/converters"
+import {
+  dhParametersToPlaneSize,
+  orientationToQuaternion,
+  verticesToCoplanarity,
+} from "../utils/converters"
 
 export type SafetyZonesRendererProps = {
   safetyZones: SafetySetupSafetyZone[] | MotionGroupDescription["safety_zones"]
@@ -50,7 +54,9 @@ export function SafetyZonesRenderer({
    */
   useEffect(() => {
     Array.isArray(safetyZones) &&
-    console.warn("SafetyZonesRenderer: The support of V1 safety zones is deprecated. Please migrate to V2 safety zones.")
+    console.warn(
+      "SafetyZonesRenderer: The support of V1 safety zones is deprecated. Please migrate to V2 safety zones.",
+    )
   }, [safetyZones])
 
   /**
@@ -63,14 +69,23 @@ export function SafetyZonesRenderer({
       return null
     }
 
-    const position = new THREE.Vector3(zone.pose.position[0] / 1000, zone.pose.position[1] / 1000, zone.pose.position[2] / 1000)
-    const orientation = new THREE.Vector3(zone.pose.orientation[0], zone.pose.orientation[1], zone.pose.orientation[2])
+    const position = new THREE.Vector3(
+      zone.pose.position[0] / 1000,
+      zone.pose.position[1] / 1000,
+      zone.pose.position[2] / 1000,
+    )
+    const orientation = new THREE.Vector3(
+      zone.pose.orientation[0],
+      zone.pose.orientation[1],
+      zone.pose.orientation[2],
+    )
 
     let geometry: React.ReactElement | null
 
-    const materialProps = zone.shape.shape_type === "plane"
-      ? { ...safetyZoneMaterialProps, side: THREE.DoubleSide }
-      : { ...safetyZoneMaterialProps, side: THREE.FrontSide }
+    const materialProps =
+      zone.shape.shape_type === "plane"
+        ? { ...safetyZoneMaterialProps, side: THREE.DoubleSide }
+        : { ...safetyZoneMaterialProps, side: THREE.FrontSide }
 
     switch (zone.shape.shape_type) {
       /**
@@ -118,7 +133,12 @@ export function SafetyZonesRenderer({
           vertices.push(newVertex)
         }
         try {
-          geometry = <primitive object={new ConvexGeometry(vertices)} attach="geometry" />
+          geometry = (
+            <primitive
+              object={new ConvexGeometry(vertices)}
+              attach="geometry"
+            />
+          )
         } catch (error) {
           console.log("Error creating ConvexGeometry:", error)
           return null
@@ -134,18 +154,26 @@ export function SafetyZonesRenderer({
        * Basically a rounded box with a rectangular cross-section.
        */
       case "rectangular_capsule": {
-        const shape = (zone.shape as RectangularCapsule)
+        const shape = zone.shape as RectangularCapsule
         const rcRadius = shape.radius / 1000
         const width = shape.sphere_center_distance_x / 1000
         const height = shape.sphere_center_distance_y / 1000
         const depth = rcRadius * 2
 
-        geometry = <primitive object={new RoundedBoxGeometry(width, height, depth, 2, rcRadius)} attach="geometry" />
+        geometry = (
+          <primitive
+            object={new RoundedBoxGeometry(width, height, depth, 2, rcRadius)}
+            attach="geometry"
+          />
+        )
         break
       }
 
       default: {
-        console.warn("Unsupported safety zone shape type:", zone.shape.shape_type)
+        console.warn(
+          "Unsupported safety zone shape type:",
+          zone.shape.shape_type,
+        )
         geometry = null
       }
     }
@@ -158,10 +186,7 @@ export function SafetyZonesRenderer({
         quaternion={orientationToQuaternion(orientation)}
       >
         {geometry}
-        <meshStandardMaterial
-          {...materialProps}
-          polygonOffsetFactor={-id}
-        />
+        <meshStandardMaterial {...materialProps} polygonOffsetFactor={-id} />
       </mesh>
     )
   }
@@ -170,9 +195,11 @@ export function SafetyZonesRenderer({
    * Helper function to render V2 safety zones
    */
   const renderV2SafetyZones = () => {
-    return Object.values(safetyZones ?? {}).map((zone: Collider, index: number) => {
-      return renderMesh(index, zone)
-    })
+    return Object.values(safetyZones ?? {}).map(
+      (zone: Collider, index: number) => {
+        return renderMesh(index, zone)
+      },
+    )
   }
 
   /**
@@ -182,62 +209,83 @@ export function SafetyZonesRenderer({
    */
   const renderV1SafetyZones = () => {
     if (Array.isArray(safetyZones)) {
-      return (safetyZones as SafetySetupSafetyZone[]).map((zone: SafetySetupSafetyZone, index) => {
-        let geometries: Geometry[] = []
-        if (zone.geometry) {
-          if (zone.geometry.compound) {
-            geometries = zone.geometry.compound.child_geometries
-          } else if (zone.geometry.convex_hull) {
-            geometries = [zone.geometry]
+      return (safetyZones as SafetySetupSafetyZone[]).map(
+        (zone: SafetySetupSafetyZone, index) => {
+          let geometries: Geometry[] = []
+          if (zone.geometry) {
+            if (zone.geometry.compound) {
+              geometries = zone.geometry.compound.child_geometries
+            } else if (zone.geometry.convex_hull) {
+              geometries = [zone.geometry]
+            }
           }
-        }
 
-        return geometries.map((geometry, i) => {
-          if (!geometry.convex_hull) return null
+          return geometries.map((geometry, i) => {
+            if (!geometry.convex_hull) return null
 
-          const vertices = geometry.convex_hull.vertices.map(
-            (v) => new THREE.Vector3(v.x / 1000, v.y / 1000, v.z / 1000),
-          )
-
-          // Check if the vertices are on the same plane and only define a plane
-          // Algorithm has troubles with vertices that are on the same plane so we
-          // add a new vertex slightly moved along the normal direction
-          const coplanarityResult = verticesToCoplanarity(vertices)
-
-          if (coplanarityResult.isCoplanar && coplanarityResult.normal) {
-            // Add a new vertex slightly moved along the normal direction
-            const offset = 0.0001
-            const newVertex = new THREE.Vector3().addVectors(
-              vertices[0],
-              coplanarityResult.normal.multiplyScalar(offset),
+            const vertices = geometry.convex_hull.vertices.map(
+              (v) => new THREE.Vector3(v.x / 1000, v.y / 1000, v.z / 1000),
             )
-            vertices.push(newVertex)
-          }
 
-          let convexGeometry
-          try {
-            convexGeometry = new ConvexGeometry(vertices)
-          } catch (error) {
-            console.log("Error creating ConvexGeometry:", error)
-            return null
-          }
-          return (
-            <mesh key={`${index}-${i}`} geometry={convexGeometry}>
-              <meshStandardMaterial
-                key={index}
-                attach="material"
-                color="#009f4d"
-                opacity={0.2}
-                depthTest={false}
-                depthWrite={false}
-                transparent
-                polygonOffset
-                polygonOffsetFactor={-i}
-              />
-            </mesh>
-          )
-        })
-      })
+            // Check if the vertices are on the same plane and only define a plane
+            // Algorithm has troubles with vertices that are on the same plane so we
+            // add a new vertex slightly moved along the normal direction
+            const coplanarityResult = verticesToCoplanarity(vertices)
+
+            if (coplanarityResult.isCoplanar && coplanarityResult.normal) {
+              // Add a new vertex slightly moved along the normal direction
+              const offset = 0.0001
+              const newVertex = new THREE.Vector3().addVectors(
+                vertices[0],
+                coplanarityResult.normal.multiplyScalar(offset),
+              )
+              vertices.push(newVertex)
+            }
+
+            let convexGeometry
+            try {
+              convexGeometry = new ConvexGeometry(vertices)
+            } catch (error) {
+              console.log("Error creating ConvexGeometry:", error)
+              return null
+            }
+
+            return (
+              <mesh
+                key={`${index}-${i}`}
+                position={
+                  new THREE.Vector3(
+                    geometry.init_pose.position!.x!,
+                    geometry.init_pose.position!.y!,
+                    geometry.init_pose.position!.z!,
+                  )
+                }
+                quaternion={
+                  new THREE.Quaternion(
+                    geometry.init_pose.orientation!.x!,
+                    geometry.init_pose.orientation!.y!,
+                    geometry.init_pose.orientation!.z!,
+                    geometry.init_pose.orientation!.w!,
+                  )
+                }
+                geometry={convexGeometry}
+              >
+                <meshStandardMaterial
+                  key={index}
+                  attach="material"
+                  color="#009f4d"
+                  opacity={0.2}
+                  depthTest={false}
+                  depthWrite={false}
+                  transparent
+                  polygonOffset
+                  polygonOffsetFactor={-i}
+                />
+              </mesh>
+            )
+          })
+        },
+      )
     }
     return null
   }
@@ -251,9 +299,5 @@ export function SafetyZonesRenderer({
       : renderV2SafetyZones()
   }, [safetyZones, renderV1SafetyZones, renderV2SafetyZones])
 
-  return (
-    <group {...props}>
-      {renderedSafetyZones}
-    </group>
-  )
+  return <group {...props}>{renderedSafetyZones}</group>
 }
