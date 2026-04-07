@@ -1,10 +1,10 @@
-import type { CollisionScene } from "@wandelbots/nova-js/v1"
+import type { CollisionSetup } from "@wandelbots/nova-api/v2"
 import ColliderCollection, {
   type MeshChildrenProvider,
 } from "./ColliderCollection"
 
 type CollisionSceneRendererProps = {
-  scene: CollisionScene
+  scene: CollisionSetup
   meshChildrenProvider: MeshChildrenProvider
 }
 

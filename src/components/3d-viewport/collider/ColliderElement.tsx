@@ -1,4 +1,4 @@
-import type { Collider } from "@wandelbots/nova-js/v1"
+import type { Collider } from "@wandelbots/nova-js/v2"
 import type React from "react"
 import * as THREE from "three"
 import { colliderShapeToBufferGeometry } from "./colliderShapeToBufferGeometry"

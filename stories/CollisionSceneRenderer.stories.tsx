@@ -1,7 +1,7 @@
 import { useTheme } from "@mui/material"
 import type { Meta, StoryObj } from "@storybook/react"
-import type { CollisionScene } from "@wandelbots/nova-js/v1"
 import * as THREE from "three"
+import type { CollisionSetup } from "@wandelbots/nova-api/v2"
 import CollisionSceneRenderer from "../src/components/3d-viewport/collider/CollisionSceneRenderer"
 import { Setup } from "../src/Setup"
 import { DEMO_CONVEX_HULL } from "./convexHull"
@@ -36,7 +36,7 @@ type Story = StoryObj<typeof CollisionSceneRenderer>
 function CollisionSceneRendererScene(
   _props: React.ComponentProps<typeof CollisionSceneRenderer>,
 ) {
-  const scene: CollisionScene = {
+  const scene: CollisionSetup = {
     colliders: {
       "test/sphere": {
         shape: {

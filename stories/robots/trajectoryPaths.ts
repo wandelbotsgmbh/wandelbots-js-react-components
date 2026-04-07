@@ -1,5 +1,5 @@
 import type { GetTrajectoryResponse } from "@wandelbots/nova-js/v1"
-import type { GetTrajectoryResponse as GetTrajectoryResponseV2  } from "@wandelbots/nova-js/v2"
+import type { GetTrajectoryResponse as GetTrajectoryResponseV2 } from "@wandelbots/nova-js/v2"
 
 export const trajectory: GetTrajectoryResponse = {
   trajectory: [
