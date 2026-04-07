@@ -42,10 +42,4 @@ const meta: Meta<StoryArgs> = {
 export default meta
 type Story = StoryObj<StoryArgs>
 
-/**
- * Displays TCP pose values in Wandelscript format.
- * Takes a simple TcpPose object containing position (x, y, z) and orientation (x, y, z, w) values.
- * Use the controls to modify the pose values and see the formatted output.
- * Toggle the copy button to enable manual copying of the pose string.
- */
-export const Interactive: Story = {}
+export const Default: Story = {}

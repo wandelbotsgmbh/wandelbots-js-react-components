@@ -33,12 +33,6 @@ For 3D-enabled components, use `/3d`:
 import { Robot, RobotCard } from "@wandelbots/wandelbots-js-react-components/3d"
 ```
 
-For the code editor, use `/wandelscript`:
-
-```typescript
-import { WandelscriptEditor } from "@wandelbots/wandelbots-js-react-components/wandelscript"
-```
-
 You can also import from the top-level package, but then you'll need to provide all optional dependencies:
 
 ```bash
@@ -56,7 +50,6 @@ npm install @wandelbots/wandelbots-js-react-components \
 | **Main** (`.`)      | All components                                                                                                            | React 18+, MUI v6/v7, @emotion/react, @emotion/styled, @mui/icons-material + all below |
 | **`/core`**         | Base components (AppHeader, ProgramControl, SafetyBar, VelocitySlider, JoggingPanel, DataGrid, Timer, themes, i18n, etc.) | React 18+, MUI v6/v7, @emotion/react, @emotion/styled, @mui/icons-material             |
 | **`/3d`**           | 3D visualization (Robot, RobotCard, CollisionSceneRenderer, SafetyZonesRenderer, TrajectoryRenderer)                      | All from `/core` + three, @react-three/fiber, @react-three/drei, three-stdlib          |
-| **`/wandelscript`** | Code editor (WandelscriptEditor)                                                                                          | All from `/core` + @monaco-editor/react, shiki, @shikijs/monaco                        |
 
 ## 4.x Core Changes
 
@@ -146,16 +139,6 @@ Safety components for production environments.
 - Real-time safety monitoring
 - Emergency stop integration
 
-### Code Editing
-
-Code editing capabilities for robot programming.
-
-**[WandelscriptEditor](https://wandelbotsgmbh.github.io/wandelbots-js-react-components/?path=/docs/wandelscript-wandelscripteditor--docs)** - Code editor
-
-- Monaco editor integration
-- Wandelscript syntax highlighting
-- IntelliSense support
-
 ### Data & Interface Components
 
 UI components for data display and user interaction.
@@ -229,10 +212,6 @@ Components integrate with the Wandelbots Nova ecosystem:
 - @react-three/fiber
 - @react-three/drei
 - three-stdlib
-
-**For `/wandelscript` (code editor):**
-
-- @monaco-editor/react
 
 ## Development
 

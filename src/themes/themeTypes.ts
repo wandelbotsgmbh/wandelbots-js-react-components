@@ -48,9 +48,6 @@ interface NovaComponentsExtension {
         sliderLegendColor?: string
       }
     }
-    WandelscriptEditor?: {
-      monacoTheme: editor.IStandaloneThemeData
-    }
   }
 }
 

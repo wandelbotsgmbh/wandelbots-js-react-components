@@ -31,18 +31,6 @@ const motionGroup = await nova.getMotionGroup("0@ur5e")
 const connectedMotionGroup = ConnectedMotionGroup.connect(nova, "0@ur5e")
 ```
 
-### Programs and Execution
-
-Programs contain robot instructions and can be executed.
-
-```typescript
-// Create or get a program
-const program = await nova.createProgram("my-program", wandelscriptCode)
-
-// Execute the program
-const execution = await nova.executeProgram(program.id)
-```
-
 ## Component Integration Patterns
 
 ### 1. Accepting Nova Client or URL

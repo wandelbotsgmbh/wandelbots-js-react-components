@@ -338,28 +338,7 @@ export function createDarkTheme(): Theme {
         VelocitySlider: {
           sliderLegendColor: baseTheme.palette.text.primary,
         },
-      },
-      WandelscriptEditor: {
-        monacoTheme: {
-          base: "vs-dark",
-          inherit: true,
-          rules: [
-            {
-              token: "keyword",
-              foreground: "#b349a9ff",
-            },
-          ],
-          colors: {
-            "editor.background": rgbToHex(
-              baseTheme.palette.backgroundPaperElevation?.[5] ?? "",
-            ),
-            "editor.foreground": "#d4d4d4",
-            "editorLineNumber.foreground": "#797979",
-            "editorLineNumber.activeForeground": "#e9e9e9",
-            "editor.lineHighlightBorder": "#e9e9e911",
-          },
-        },
-      },
+      }
     },
   } as Theme
 }

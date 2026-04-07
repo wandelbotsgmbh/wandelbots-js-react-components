@@ -17,8 +17,18 @@ function makeErrorMessage(error: unknown): string {
 // ServiceStatus type definition to replace nova-js dependency
 type ServiceStatus = {
   service: string
+  group?: string
   status: {
     code: string
+  }
+}
+
+type CellServiceStatus = {
+  service: string
+  group: string
+  status: {
+    code: string
+    severity: string
   }
 }
 
@@ -65,7 +75,7 @@ export async function waitForNovaInstanceStartup(instanceUrl: string) {
   while (true) {
     try {
       const { data: services } = (await axios.get(
-        `${instanceUrl}/api/v1/system/status`,
+        `${instanceUrl}/api/v2/system/status`,
       )) as { data: ServiceStatus[] }
 
       if (services.length === 0) {
@@ -125,9 +135,14 @@ export async function waitForCellStartup(
 
   while (true) {
     try {
-      const { data: services } = (await axios.get(
-        `${instanceUrl}/api/v1/cells/${cell}/status`,
-      )) as { data: ServiceStatus[] }
+      const { data } = await axios.get(
+        `${instanceUrl}/api/v2/cells/${cell}/status`,
+      )
+
+      const services: CellServiceStatus[] = Array.isArray(data)
+        ? data
+        : (data?.service_status ?? [])
+
 
       if (services.length === 0) {
         console.log(`Waiting for cell services to appear...`)

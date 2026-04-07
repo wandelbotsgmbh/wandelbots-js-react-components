@@ -26,11 +26,6 @@
       "types": "./dist/3d.d.ts",
       "import": "./dist/3d.es.js",
       "require": "./dist/3d.cjs.js"
-    },
-    "./wandelscript": {
-      "types": "./dist/wandelscript.d.ts",
-      "import": "./dist/wandelscript.es.js",
-      "require": "./dist/wandelscript.cjs.js"
     }
   },
   "types": "./dist/index.d.ts",

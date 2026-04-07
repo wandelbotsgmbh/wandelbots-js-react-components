@@ -16,8 +16,7 @@ export default defineConfig({
       entry: {
         index: resolve(__dirname, "src/index.ts"),
         core: resolve(__dirname, "src/core.ts"),
-        "3d": resolve(__dirname, "src/3d.ts"),
-        wandelscript: resolve(__dirname, "src/wandelscript.ts"),
+        "3d": resolve(__dirname, "src/3d.ts")
       },
       formats: ["es", "cjs"],
     },
@@ -39,7 +38,7 @@ export default defineConfig({
     sourcemap: true,
   },
   optimizeDeps: {
-    exclude: ["node_modules/.cache/storybook"],
+    exclude: ["node_modules/.cache/storybook", "node_modules/.cache"],
   },
   plugins: [
     react(),
