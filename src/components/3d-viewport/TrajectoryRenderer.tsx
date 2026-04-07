@@ -1,23 +1,23 @@
 import { Line } from "@react-three/drei"
-import type { GetTrajectoryResponse } from "@wandelbots/nova-js/v1"
+import type { Pose } from "@wandelbots/nova-js/v2"
 import * as THREE from "three"
 
 export type TrajectoryRendererProps = {
-  trajectory: GetTrajectoryResponse
+  trajectory: Pose[]
 } & React.JSX.IntrinsicElements["group"]
 
 export function TrajectoryRenderer({
-  trajectory,
-  ...props
-}: TrajectoryRendererProps) {
+                                     trajectory,
+                                     ...props
+                                   }: TrajectoryRendererProps) {
   const points =
-    trajectory.trajectory
-      ?.map((point) => {
-        if (point.tcp_pose) {
+    trajectory
+      ?.map((pose: Pose) => {
+        if (pose.position?.length) {
           return new THREE.Vector3(
-            point.tcp_pose.position.x / 1000,
-            point.tcp_pose.position.z / 1000,
-            -point.tcp_pose.position.y / 1000,
+            pose.position[0] / 1000,
+            pose.position[2] / 1000,
+            -pose.position[1] / 1000,
           )
         }
         return null

@@ -3,49 +3,31 @@ import * as TrajectoryRenderer from './TrajectoryRenderer.stories';
 
 <Meta of={TrajectoryRenderer} />
 
-# Trajectory Renderer (API v1)
+# Trajectory Renderer
 
 The `TrajectoryRenderer` component visualizes the planned trajectory of the robot.
 
-This component should be used with [nova-js](https://github.com/wandelbotsgmbh/nova-js). Pass the `GetTrajectoryResponse` from `NovaCellAPIClient.motion.getMotionTrajectory` (API v1) to the component.
-If the Plan Motion or Plan Trajectory endpoint is used, an motion will be generated which afterwards can be fetched from the `listMotions` endpoint. That motion id can be used to fetch the trajectory.
+This component requires a `Pose[]` array representing TCP positions along a trajectory.
+
+## How to obtain the Pose array
+
+1. First, fetch the trajectory using `getTrajectory` request - this returns a response containing a position array of joints.
+2. Pass the joint positions to the `forwardKinematics` request.
+3. The `forwardKinematics` response contains `tcp_poses` - an array of `Pose` objects.
+4. Pass this `tcp_poses` array to the `TrajectoryRenderer` component.
 
 ```tsx
-const motions = await apiClient.motion.listMotions()
-const trajectory = await apiClient.motion.getMotionTrajectory(
-    motions[0],
-    sampleTime,
-    responsesCoordinateSystem,
-  )
-  ...
-<TrajectoryRenderer trajectory={trajectory} />
-```
+// 1. Get trajectory (returns joint positions)
+const trajectoryResponse = await apiClient.motion.getTrajectory(cell, controller, trajectory)
 
-If the motion is executed using Wandelscript and the `ProgramStateConnection` is used, the trajectory can be fetched from the `getLatestTrajectories` endpoint. A single Wandelscript can contain multiple motions. 
-The `getLatestTrajectories` endpoint returns the all the latest trajectories of the robot since the last call. If you call the endpoint directly after the motion is finished, you will get the trajectories of the last motion. 
+// 2. Convert joint positions to TCP poses via forward kinematics
+const kinematicsResponse = await apiClient.kinematics.forwardKinematics(cell, {
+  motion_group_model: motionGroup,
+  joint_positions: trajectoryResponse.trajectory.joint_positions,
+})
 
-```tsx
-const [latestTrajectories, setLatestTrajectories] = useState<
-      GetTrajectoryResponse[]
-    >([])
-
-useEffect(() => {
-  autorun(() => {
-    if (store.executionState === "starting") {
-      setLatestTrajectories([])
-    }
-    if (store.executionState === "idle") {
-      getLatestTrajectories(wandelApp.nova.api).then(setLatestTrajectories)
-    }
-  })
-}, [])
-    
-...
-
-// in your render function
-{latestTrajectories.map((trajectory, index) => (
-  <TrajectoryRenderer key={index} trajectory={trajectory} />
-))}
+// 3. Render the trajectory using tcp_poses
+<TrajectoryRenderer trajectory={kinematicsResponse.tcp_poses} />
 ```
 
 <Story of={TrajectoryRenderer.TrajectoryRendererSt} />
