@@ -125,13 +125,18 @@ export function SafetyZonesRenderer({
        * Basically a rounded box with a rectangular cross-section.
        */
       case "rectangular_capsule": {
-        const shape = (zone.shape as RectangularCapsule)
+        const shape = zone.shape as RectangularCapsule
         const rcRadius = shape.radius / 1000
         const width = shape.sphere_center_distance_x / 1000
         const height = shape.sphere_center_distance_y / 1000
         const depth = rcRadius * 2
 
-        geometry = <primitive object={new RoundedBoxGeometry(width, height, depth, 2, rcRadius)} attach="geometry" />
+        geometry = (
+          <primitive
+            object={new RoundedBoxGeometry(width, height, depth, 2, rcRadius)}
+            attach="geometry"
+          />
+        )
         break
       }
 
@@ -149,10 +154,7 @@ export function SafetyZonesRenderer({
         quaternion={orientationToQuaternion(orientation)}
       >
         {geometry}
-        <meshStandardMaterial
-          {...materialProps}
-          polygonOffsetFactor={-id}
-        />
+        <meshStandardMaterial {...materialProps} polygonOffsetFactor={-id} />
       </mesh>
     )
   }
