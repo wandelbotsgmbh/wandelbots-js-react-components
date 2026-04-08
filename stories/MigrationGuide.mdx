@@ -1,6 +1,6 @@
 import { Meta } from '@storybook/addon-docs/blocks';
 
-<Meta title="Migration Guide"/>
+<Meta title="Migration Guide" />
 
 # Migration Guide
 
@@ -108,6 +108,15 @@ const connectedMotionGroup = await ConnectedMotionGroup.connect(nova, "0@ur5e")
 // Jogging components
 <JoggingPanel nova={nova} motionGroupId="0@ur5e" />
 ```
+
+## Breaking Changes from 4.x (API V1 & V2 both supported) to 5.x (API V2 only)
+
+### No support for V1 data
+- The components of this package do not accept data coming from V1 API anymore. Before using the package version from 5, ensure your application is currently running on V2 API.
+- Components, that were still supporting V1 data: `CoordinateSystemTransform`, `SafetyZoneRenderer`, `TrajectoryRenderer`, `CollisionSceneRenderer`
+
+### Wandelscript Editor
+- After its deprecation, Wandelscript and all corresponding components / functions, eg. `WandelScriptEditor` are removed. Make sure the consumer application does not include mentioned functionalities or components anymore.
 
 ## Common Issues
 
