@@ -166,7 +166,7 @@ export function SafetyZonesRenderer({
     return Object.values(safetyZones ?? {}).map((zone: Collider, index: number) => {
       return renderMesh(index, zone)
     })
-  }, [safetyZones])
+  }, [safetyZones, planeSize])
 
   return (
     <group {...props}>
