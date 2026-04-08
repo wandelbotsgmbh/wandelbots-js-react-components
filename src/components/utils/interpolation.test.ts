@@ -1,10 +1,10 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
+import { afterEach, beforeEach, describe, expect, it, type MockedFunction, vi } from "vitest"
 import { ValueInterpolator } from "./interpolation"
 
 describe("ValueInterpolator", () => {
   let interpolator: ValueInterpolator
-  let mockOnChange: ReturnType<typeof vi.fn>
-  let mockOnComplete: ReturnType<typeof vi.fn>
+  let mockOnChange: MockedFunction<(values: number[]) => void>
+  let mockOnComplete: MockedFunction<(values: number[]) => void>
 
   beforeEach(() => {
     mockOnChange = vi.fn()
