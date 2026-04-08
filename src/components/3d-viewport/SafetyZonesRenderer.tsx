@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "react"
+import { useMemo } from "react"
 import { type ThreeElements } from "@react-three/fiber"
 import * as THREE from "three"
 import { ConvexGeometry, RoundedBoxGeometry } from "three-stdlib"
