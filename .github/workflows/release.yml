@@ -38,7 +38,6 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: "lts/*"
-          cache: "pnpm"
       - name: Enable Corepack
         run: corepack enable
       - name: Install dependencies
@@ -65,7 +64,6 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: "lts/*"
-          cache: "pnpm"
       - name: Enable Corepack
         run: corepack enable
       - name: Install gltf-transform
