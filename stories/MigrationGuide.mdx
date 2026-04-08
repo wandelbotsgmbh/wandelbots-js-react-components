@@ -109,16 +109,6 @@ const connectedMotionGroup = await ConnectedMotionGroup.connect(nova, "0@ur5e")
 <JoggingPanel nova={nova} motionGroupId="0@ur5e" />
 ```
 
-### Special Cases for V1 Components
-
-If you're using trajectory, or collision scene renderers, they still use the V1 API:
-
-```tsx
-// These components still use V1
-import { NovaClient } from "@wandelbots/nova-js"
-import { TrajectoryRenderer } from "@wandelbots/wandelbots-js-react-components/3d"
-```
-
 ## Common Issues
 
 ### "Module not found" errors
