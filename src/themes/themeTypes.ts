@@ -1,5 +1,3 @@
-import type { editor } from "monaco-editor"
-
 type NovaColorPaletteExtension = {
   paletteExt?: {
     primary?: {
