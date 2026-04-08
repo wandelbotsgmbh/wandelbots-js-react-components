@@ -1,7 +1,7 @@
 import { useTheme } from "@mui/material"
 import type { Meta, StoryObj } from "@storybook/react"
 import * as THREE from "three"
-import type { CollisionSetup } from "@wandelbots/nova-api/v2"
+import type { CollisionSetup } from "@wandelbots/nova-js/v2"
 import CollisionSceneRenderer from "../src/components/3d-viewport/collider/CollisionSceneRenderer"
 import { Setup } from "../src/Setup"
 import { DEMO_CONVEX_HULL } from "./convexHull"
