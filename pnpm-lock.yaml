@@ -156,6 +156,9 @@ importers:
       npm-run-all:
         specifier: ^4.1.5
         version: 4.1.5
+      playwright:
+        specifier: ^1.59.1
+        version: 1.59.1
       postcss:
         specifier: ^8.5.3
         version: 8.5.6
@@ -5775,8 +5778,13 @@ packages:
     engines: {node: '>=18'}
     hasBin: true
 
-  playwright@1.57.0:
-    resolution: {integrity: sha512-ilYQj1s8sr2ppEJ2YVadYBN0Mb3mdo9J0wQ+UuDhzYqURwSoW4n1Xs5vs7ORwgDGmyEh33tRMeS8KhdkMoLXQw==}
+  playwright-core@1.59.1:
+    resolution: {integrity: sha512-HBV/RJg81z5BiiZ9yPzIiClYV/QMsDCKUyogwH9p3MCP6IYjUFu/MActgYAvK0oWyV9NlwM3GLBjADyWgydVyg==}
+    engines: {node: '>=18'}
+    hasBin: true
+
+  playwright@1.59.1:
+    resolution: {integrity: sha512-C8oWjPR3F81yljW9o5OxcWzfh6avkVwDD2VYdwIGqTkl+OGFISgypqzfu7dOe4QNLL2aqcWBmI3PMtLIK233lw==}
     engines: {node: '>=18'}
     hasBin: true
 
@@ -9781,7 +9789,7 @@ snapshots:
       jest-serializer-html: 7.1.0
       jest-watch-typeahead: 3.0.1(jest@30.2.0(@types/node@25.0.3)(babel-plugin-macros@3.1.0))
       nyc: 15.1.0
-      playwright: 1.57.0
+      playwright: 1.59.1
       playwright-core: 1.57.0
       rimraf: 3.0.2
       storybook: 10.2.6(@testing-library/dom@10.4.1)(prettier@3.7.4)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
@@ -9953,7 +9961,7 @@ snapshots:
   '@testing-library/dom@10.4.1':
     dependencies:
       '@babel/code-frame': 7.29.0
-      '@babel/runtime': 7.28.6
+      '@babel/runtime': 7.29.2
       '@types/aria-query': 5.0.4
       aria-query: 5.3.0
       dom-accessibility-api: 0.5.16
@@ -13678,9 +13686,11 @@ snapshots:
 
   playwright-core@1.57.0: {}
 
-  playwright@1.57.0:
+  playwright-core@1.59.1: {}
+
+  playwright@1.59.1:
     dependencies:
-      playwright-core: 1.57.0
+      playwright-core: 1.59.1
     optionalDependencies:
       fsevents: 2.3.2
 
