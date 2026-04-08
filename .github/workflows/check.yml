@@ -12,32 +12,35 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
+      - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v6
         with:
           node-version: "lts/*"
-          cache: "npm"
-      - run: npm ci
-      - run: npm run tsc
+          cache: "pnpm"
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm run tsc
 
   test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
+      - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v6
         with:
           node-version: "lts/*"
-          cache: "npm"
-      - run: npm ci
-      - run: npx playwright install --with-deps chromium
-      - run: npm run ci:test
+          cache: "pnpm"
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm run ci:test
 
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
+      - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v6
         with:
           node-version: "lts/*"
-          cache: "npm"
-      - run: npm ci
-      - run: npm run build
+          cache: "pnpm"
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm run build

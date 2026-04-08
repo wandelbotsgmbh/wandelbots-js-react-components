@@ -7,7 +7,7 @@ This guide explains the development workflow, tools, and best practices for cont
 ### Prerequisites
 
 - Node.js 18+ or 20+
-- npm or yarn
+- pnpm
 - Git
 
 ### Initial Setup
@@ -15,7 +15,7 @@ This guide explains the development workflow, tools, and best practices for cont
 ```bash
 git clone https://github.com/wandelbotsgmbh/wandelbots-js-react-components.git
 cd wandelbots-js-react-components
-npm install
+pnpm install
 ```
 
 ### Available Scripts
@@ -24,43 +24,43 @@ npm install
 
 ```bash
 # Start Storybook development server
-npm run dev
+pnpm run dev
 
 # Build and pack components on file changes
-npm run dev:pack
+pnpm run dev:pack
 
 # Build components on file changes
-npm run dev:build
+pnpm run dev:build
 
 # Develop with local nova-js changes
-npm run dev:wbjs
+pnpm run dev:wbjs
 ```
 
 #### Testing
 
 ```bash
 # Type checking
-npm run tsc
+pnpm run tsc
 
 # Unit tests
-npm run test:unit
-npm run test:unit:run
+pnpm run test:unit
+pnpm run test:unit:run
 
 # Visual regression tests (requires Storybook running)
-npm run test
+pnpm run test
 
 # Full CI test suite
-npm run ci:test
+pnpm run ci:test
 ```
 
 #### Building
 
 ```bash
 # Build library for production
-npm run build
+pnpm run build
 
 # Build Storybook for deployment
-npm run build-storybook
+pnpm run build-storybook
 ```
 
 ## Project Structure Deep Dive
@@ -207,7 +207,7 @@ Components are automatically tested for visual regressions using Storybook test 
 
 ```bash
 # Run visual tests
-npm run test
+pnpm run test
 ```
 
 ### Integration Testing with Mock Nova

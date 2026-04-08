@@ -219,7 +219,7 @@ export class JoggingStore {
     this.jogger.dispose()
   }
 
-  get coordSystemCountByName() {
+  get coordSystemCountByName(): Record<string, number> {
     return countBy(this.coordSystems, (cs) => cs.name)
   }
 
@@ -328,11 +328,11 @@ export class JoggingStore {
     return discreteIncrementOptions
   }
 
-  get incrementOptionsById() {
+  get incrementOptionsById(): Record<string, IncrementOption> {
     return keyBy(this.incrementOptions, (o) => o.id)
   }
 
-  get tabsById() {
+  get tabsById(): Record<string, { id: TabType; label: string }> {
     return keyBy(this.tabs, (t) => t.id)
   }
 
@@ -344,7 +344,7 @@ export class JoggingStore {
     return this.tabs.indexOf(this.currentTab)
   }
 
-  get coordSystemsById() {
+  get coordSystemsById(): Record<string, CoordinateSystem> {
     return keyBy(this.coordSystems, (cs) => cs.coordinate_system)
   }
 
@@ -363,7 +363,7 @@ export class JoggingStore {
       : this.selectedCoordSystemId
   }
 
-  get tcpsById() {
+  get tcpsById(): Record<string, RobotTcp> {
     return keyBy(this.tcps, (tcp) => tcp.id)
   }
 

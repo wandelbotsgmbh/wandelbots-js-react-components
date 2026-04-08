@@ -31,9 +31,9 @@
   "types": "./dist/index.d.ts",
   "scripts": {
     "dev": "storybook dev -p 6006 --no-open",
-    "dev:pack": "nodemon -V -w src -e '*' -x \"npm run build && npm pack\"",
+    "dev:pack": "nodemon -V -w src -e '*' -x \"pnpm run build && pnpm pack\"",
     "dev:build": "nodemon -V -w src -e '*' -x \"vite build && tsc --declaration --emitDeclarationOnly\"",
-    "dev:wbjs": "nodemon --watch $WBJS_PATH -e tgz --exec 'npm install file:$WBJS_PATH && storybook dev -p 6006 --no-open'",
+    "dev:wbjs": "nodemon --watch $WBJS_PATH -e tgz --exec 'pnpm install file:$WBJS_PATH && storybook dev -p 6006 --no-open'",
     "tsc": "tsc --pretty --noEmit -p stories/tsconfig.json",
     "test": "test-storybook --url http://127.0.0.1:6006 --index-json --browsers chromium",
     "test:unit": "vitest --workspace vitest.workspace.ts --project unit",
@@ -61,7 +61,7 @@
   "license": "Apache-2.0",
   "engines": {
     "node": ">=18.14.0",
-    "npm": ">=8.0.0"
+    "pnpm": ">=10.0.0"
   },
   "devDependencies": {
     "@emotion/react": "^11.14.0",
@@ -77,6 +77,7 @@
     "@rollup/plugin-terser": "^0.4.4",
     "@rollup/plugin-typescript": "^12.1.2",
     "@shikijs/monaco": "^3.1.0",
+    "@storybook/react": "^10.3.5",
     "@storybook/addon-docs": "^10.2.3",
     "@storybook/react-vite": "^10.2.3",
     "@storybook/test-runner": "^0.24.1",
