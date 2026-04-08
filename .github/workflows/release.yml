@@ -8,6 +8,7 @@ on:
       - main
       - v2
       - v3
+      - v4
   pull_request:
     types: [opened, synchronize, reopened]
 
@@ -83,7 +84,7 @@ jobs:
     needs: [build, no-draco-models]
     env:
       HUSKY: 0
-    if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/v2' || github.ref == 'refs/heads/v3') }}
+    if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/v2' || github.ref == 'refs/heads/v3' || github.ref == 'refs/heads/v4') }}
     steps:
       - name: Checkout
         uses: actions/checkout@v6
