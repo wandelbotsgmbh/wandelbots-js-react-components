@@ -7,9 +7,9 @@ export type TrajectoryRendererProps = {
 } & React.JSX.IntrinsicElements["group"]
 
 export function TrajectoryRenderer({
-                                     trajectory,
-                                     ...props
-                                   }: TrajectoryRendererProps) {
+  trajectory,
+  ...props
+}: TrajectoryRendererProps) {
   const points =
     trajectory
       ?.map((pose: Pose) => {
