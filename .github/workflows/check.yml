@@ -30,7 +30,7 @@ jobs:
           node-version: "lts/*"
           cache: "pnpm"
       - run: pnpm install --frozen-lockfile
-      - run: pnpm exec playwright install --with-deps chromium
+      - run: npx playwright install --with-deps chromium
       - run: pnpm run ci:test
 
   build:
