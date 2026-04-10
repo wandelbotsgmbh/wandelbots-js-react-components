@@ -59,13 +59,34 @@ jobs:
       - uses: actions/checkout@v6
         with:
           ref: ${{ matrix.branch }}
+      - name: Detect package manager
+        id: detect-pm
+        run: |
+          if grep -q '"packageManager"' package.json 2>/dev/null; then
+            echo "manager=pnpm" >> "$GITHUB_OUTPUT"
+          else
+            echo "manager=npm" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: pnpm/action-setup@v4
+        if: steps.detect-pm.outputs.manager == 'pnpm'
       - uses: actions/setup-node@v6
         with:
           node-version: "lts/*"
+          cache: ${{ steps.detect-pm.outputs.manager }}
       - name: Install dependencies
-        run: npm ci
+        run: |
+          if [ "${{ steps.detect-pm.outputs.manager }}" = "pnpm" ]; then
+            pnpm install
+          else
+            npm ci
+          fi
       - name: Build Storybook
-        run: npm run build-storybook
+        run: |
+          if [ "${{ steps.detect-pm.outputs.manager }}" = "pnpm" ]; then
+            pnpm run build-storybook
+          else
+            npm run build-storybook
+          fi
       - name: Sanitize branch name
         id: sanitize
         run: echo "SANITIZED_BRANCH=$(echo ${{ matrix.branch }} | sed 's/\//-/g')" >> $GITHUB_ENV

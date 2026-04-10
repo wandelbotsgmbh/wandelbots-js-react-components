@@ -1,0 +1,16 @@
+---
+# Node version used for development/CI, GitHub actions reads this as well
+useNodeVersion: 24.12.0
+
+# Only allow installing packages released more than 1 day ago to
+# mitigate risk of supply chain attacks
+# https://pnpm.io/settings#minimumreleaseage
+minimumReleaseAge: 1440
+minimumReleaseAgeExclude:
+  - "@wandelbots/nova-js"
+
+# Prompt to install deps if node_modules is out of date when running scripts
+verifyDepsBeforeRun: prompt
+
+# Support pnpm scripts on non-POSIX systems (e.g. Windows)
+shellEmulator: true

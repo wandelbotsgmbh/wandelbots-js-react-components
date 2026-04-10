@@ -30,16 +30,11 @@ jobs:
         uses: actions/checkout@v6
         with:
           fetch-depth: 0
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: "lts/*"
-      - name: Install dependencies
-        run: npm ci
+      - uses: ./.github/actions/setup-node
       - name: Verify the integrity of provenance attestations and registry signatures for installed dependencies
         run: npm audit signatures
       - name: Build
-        run: npm run build
+        run: pnpm run build
       - name: Upload build artifacts
         uses: actions/upload-artifact@v6
         with:
@@ -52,10 +47,7 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: "lts/*"
+      - uses: ./.github/actions/setup-node
       - name: Install gltf-transform
         run: npm install -g @gltf-transform/cli
       - name: Process GLB files
@@ -106,10 +98,7 @@ jobs:
           cd no-draco-models
           zip ../no-draco-models.zip *.glb
           cd ..
-      - name: Install Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: 24
+      - uses: ./.github/actions/setup-node
       - name: Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -155,10 +144,7 @@ jobs:
           FINAL_VERSION=$(echo $SNAPSHOT_VERSION | sed 's/[^a-zA-Z0-9.-]/-/g')
           # Update the package.json with the new version
           jq --arg version "$FINAL_VERSION" '.version = $version' package.json > package.tmp.json && mv package.tmp.json package.json
-      - name: Install Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: 24
+      - uses: ./.github/actions/setup-node
       - name: Publish snapshot to npm
         run: |
           # Publish the snapshot version
