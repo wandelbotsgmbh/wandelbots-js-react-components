@@ -59,38 +59,26 @@ jobs:
       - uses: actions/checkout@v6
         with:
           ref: ${{ matrix.branch }}
-      - name: Detect package manager
-        id: detect-pm
+      - name: Check for pnpm
+        id: check-pnpm
         run: |
           if grep -q '"packageManager"' package.json 2>/dev/null; then
-            echo "manager=pnpm" >> "$GITHUB_OUTPUT"
+            echo "supported=true" >> "$GITHUB_OUTPUT"
           else
-            echo "manager=npm" >> "$GITHUB_OUTPUT"
+            echo "supported=false" >> "$GITHUB_OUTPUT"
+            echo "Skipping branch — not using pnpm"
           fi
-      - uses: pnpm/action-setup@v4
-        if: steps.detect-pm.outputs.manager == 'pnpm'
-      - uses: actions/setup-node@v6
-        with:
-          node-version: "lts/*"
-          cache: ${{ steps.detect-pm.outputs.manager }}
-      - name: Install dependencies
-        run: |
-          if [ "${{ steps.detect-pm.outputs.manager }}" = "pnpm" ]; then
-            pnpm install
-          else
-            npm ci
-          fi
+      - uses: ./.github/actions/setup-node
+        if: steps.check-pnpm.outputs.supported == 'true'
       - name: Build Storybook
-        run: |
-          if [ "${{ steps.detect-pm.outputs.manager }}" = "pnpm" ]; then
-            pnpm run build-storybook
-          else
-            npm run build-storybook
-          fi
+        if: steps.check-pnpm.outputs.supported == 'true'
+        run: pnpm run build-storybook
       - name: Sanitize branch name
+        if: steps.check-pnpm.outputs.supported == 'true'
         id: sanitize
         run: echo "SANITIZED_BRANCH=$(echo ${{ matrix.branch }} | sed 's/\//-/g')" >> $GITHUB_ENV
       - uses: actions/upload-artifact@v6
+        if: steps.check-pnpm.outputs.supported == 'true'
         with:
           name: ${{ env.SANITIZED_BRANCH }}
           path: storybook-static/
@@ -125,7 +113,9 @@ jobs:
           echo "</ul></body></html>" >> public/overview.html
       - name: Move content from /public/main to public
         run: |
-          rsync -a public/main/ public/
+          if [ -d "public/main" ]; then
+            rsync -a public/main/ public/
+          fi
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v4
         with:
