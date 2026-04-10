@@ -1,0 +1,15 @@
+name: "Setup Node.js & pnpm"
+description: "Install Node.js and pnpm dependencies with caching"
+
+runs:
+  using: composite
+  steps:
+    - id: node-version
+      shell: bash
+      run: echo "version=$(yq '.useNodeVersion' pnpm-workspace.yaml)" >> "$GITHUB_OUTPUT"
+    - uses: actions/setup-node@v6
+      with:
+        node-version: ${{ steps.node-version.outputs.version }}
+    - uses: pnpm/action-setup@v4
+    - shell: bash
+      run: pnpm install --frozen-lockfile

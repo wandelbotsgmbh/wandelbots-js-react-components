@@ -4,6 +4,9 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+overrides:
+  storybook: ^10.2.3
+
 importers:
 
   .:
@@ -15,8 +18,8 @@ importers:
         specifier: ^8.27.0
         version: 8.27.1(@emotion/react@11.14.0(@types/react@19.2.7)(react@19.2.3))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.7)(react@19.2.3))(@types/react@19.2.7)(react@19.2.3))(@mui/material@7.3.7(@emotion/react@11.14.0(@types/react@19.2.7)(react@19.2.3))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.7)(react@19.2.3))(@types/react@19.2.7)(react@19.2.3))(@types/react@19.2.7)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(@mui/system@7.3.7(@emotion/react@11.14.0(@types/react@19.2.7)(react@19.2.3))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.7)(react@19.2.3))(@types/react@19.2.7)(react@19.2.3))(@types/react@19.2.7)(react@19.2.3))(@types/react@19.2.7)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       '@wandelbots/nova-js':
-        specifier: ^3.5.2
-        version: 3.5.2
+        specifier: ^3.5.4
+        version: 3.5.4
       axios:
         specifier: ^1.13.2
         version: 1.13.5
@@ -258,11 +261,11 @@ packages:
   '@asamuzakjp/nwsapi@2.3.9':
     resolution: {integrity: sha512-n8GuYSrI9bF7FFZ/SjhwevlHc8xaVlb/7HmHelnc/PZXBD2ZR49NnN9sMMuDdEGPeeRQ5d0hqlSlEpgCX3Wl0Q==}
 
-  '@auth0/auth0-auth-js@1.4.0':
-    resolution: {integrity: sha512-ShA7KT4KvcBEtxsXZTcrmoNxai5q1JXhB2aEBFnZD1L6LNLzzmiUWiFTtGMsaaITCylr8TJ/onEQk6XZmUHXbg==}
+  '@auth0/auth0-auth-js@1.6.0':
+    resolution: {integrity: sha512-/WYYNlsqhWA6I60pMVLFVeOgjOUCLdJThEAsjN8pAgYY09BTxbPaRIEVDgGu6ckoJpkmKvEYlHPO/vwRNrvX6w==}
 
-  '@auth0/auth0-spa-js@2.15.0':
-    resolution: {integrity: sha512-cXv1Isyy4JEc+GxesQPFj3SEbDSnCVQTGiardY9WLSoYTsMMU585Kgm9TJFPJO4dDq3wi+DSJoy3IUcB3rr9nA==}
+  '@auth0/auth0-spa-js@2.19.0':
+    resolution: {integrity: sha512-I2/wlIJ6Ch3X1AekG7w9F2wM5SbsnPX0MX0B67MM9vgqbLeSP8wfK1cuc279nmTEKnIxxDzcKHC6stWg/0fYQQ==}
 
   '@babel/code-frame@7.29.0':
     resolution: {integrity: sha512-9NhCeYjq9+3uxgdtp20LSiJXJvN0FeCtNGpJxuMFZ1Kv3cWUNb6DOhJwUvcVCzKGR66cw4njwM6hrJLqgOwbcw==}
@@ -2133,12 +2136,12 @@ packages:
   '@storybook/addon-docs@10.2.6':
     resolution: {integrity: sha512-7a37fu2hdOJRCITS+EimhVN9xVVvSeodmX6QdfxOim+2ECYnvMC9YVYpJ0et3XC8xnl9/3AbQ4y670Uw1hXcmg==}
     peerDependencies:
-      storybook: ^10.2.6
+      storybook: ^10.2.3
 
   '@storybook/builder-vite@10.2.6':
     resolution: {integrity: sha512-O/kvmUrfEn2VpzVOGJV3VvEQ9N4AOI8csdvsUsfjs6PSNwAiwvsx8+qTYYcheMilrO9+1Da9lFmd7oucSPto3Q==}
     peerDependencies:
-      storybook: ^10.2.6
+      storybook: ^10.2.3
       vite: ^5.0.0 || ^6.0.0 || ^7.0.0
 
   '@storybook/csf-plugin@10.2.6':
@@ -2146,7 +2149,7 @@ packages:
     peerDependencies:
       esbuild: '*'
       rollup: '*'
-      storybook: ^10.2.6
+      storybook: ^10.2.3
       vite: '*'
       webpack: '*'
     peerDependenciesMeta:
@@ -2173,14 +2176,14 @@ packages:
     peerDependencies:
       react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
       react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
-      storybook: ^10.2.6
+      storybook: ^10.2.3
 
   '@storybook/react-vite@10.2.6':
     resolution: {integrity: sha512-RYkbzro1dfmLujz2fXm3eAuSyfLRdgl4SoGUa3W+WjTiHu5+sF1i+/CBYaOUmFFiPMibWRy4MNodrSInERb4qA==}
     peerDependencies:
       react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
       react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
-      storybook: ^10.2.6
+      storybook: ^10.2.3
       vite: ^5.0.0 || ^6.0.0 || ^7.0.0
 
   '@storybook/react@10.2.6':
@@ -2188,7 +2191,7 @@ packages:
     peerDependencies:
       react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
       react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
-      storybook: ^10.2.6
+      storybook: ^10.2.3
       typescript: '>= 4.9.x'
     peerDependenciesMeta:
       typescript:
@@ -2199,7 +2202,7 @@ packages:
     engines: {node: '>=20.0.0'}
     hasBin: true
     peerDependencies:
-      storybook: ^0.0.0-0 || ^10.0.0 || ^10.0.0-0 || ^10.1.0-0 || ^10.2.0-0 || ^10.3.0-0
+      storybook: ^10.2.3
 
   '@svgr/babel-plugin-add-jsx-attribute@8.0.0':
     resolution: {integrity: sha512-b9MIk7yhdS1pMCZM8VeNfUlSKVRhsHZNMl5O9SfaX0l0t5wjdgu4IDzGB8bpnGBBOjGST3rRFVsaaEtI4W6f7g==}
@@ -2533,6 +2536,9 @@ packages:
   '@types/three@0.182.0':
     resolution: {integrity: sha512-WByN9V3Sbwbe2OkWuSGyoqQO8Du6yhYaXtXLoA5FkKTUJorZ+yOHBZ35zUUPQXlAKABZmbYp5oAqpA4RBjtJ/Q==}
 
+  '@types/three@0.183.1':
+    resolution: {integrity: sha512-f2Pu5Hrepfgavttdye3PsH5RWyY/AvdZQwIVhrc4uNtvF7nOWJacQKcoVJn0S4f0yYbmAE6AR+ve7xDcuYtMGw==}
+
   '@types/trusted-types@2.0.7':
     resolution: {integrity: sha512-ScaPdn1dQczgbl0QFTeTOmVHFULt394XJgOQNoyVhZ6r2vLnMLJfBPd53SB52T/3G36VI1/g2MZaX0cwDuXsfw==}
 
@@ -2768,11 +2774,11 @@ packages:
   '@vitest/utils@3.2.4':
     resolution: {integrity: sha512-fB2V0JFrQSMsCo9HiSq3Ezpdv4iYaXRG1Sx8edX3MwxfyNn83mKiGzOcH+Fkxt4MHxr3y42fQi1oeAInqgX2QA==}
 
-  '@wandelbots/nova-api@26.1.0-rc.8':
-    resolution: {integrity: sha512-jMPx2XlVrHpWKOkU+5bkMuoV2hF4SWky2ycZN7rkjaws9Df2wyswbBlvAlosQvwdc3Ktkrc9CR77p5ye5yoAEQ==}
+  '@wandelbots/nova-api@26.2.0-rc.2':
+    resolution: {integrity: sha512-ucfWITdDar3+qlb3qsHHwB4CRSuKCzZqm7uuxPDZlT7bMqknQl460gNOvUe7i5KIcuAj+Ah2xRlpyRUaF3iJQA==}
 
-  '@wandelbots/nova-js@3.5.2':
-    resolution: {integrity: sha512-gxy3/nwblQEZwxmfQLnSLGcPDo+h7oGw55isiz6nNbLn76FNPZlB4VRfZh4jF1CPyWwufc3uASszHsAxEfPwWQ==}
+  '@wandelbots/nova-js@3.5.4':
+    resolution: {integrity: sha512-5to94wEw9OSy4vS2uwGzFNAmaHdcoTSRBVIF6AzHrpjRAI7RcKACefNBZL5A0lbD8lD/n+wS5xqItKbeH2qwhg==}
 
   '@webgpu/types@0.1.68':
     resolution: {integrity: sha512-3ab1B59Ojb6RwjOspYLsTpCzbNB3ZaamIAxBMmvnNkiDoLTZUOBXZ9p5nAYVEkQlDdf6qAZWi1pqj9+ypiqznA==}
@@ -3797,7 +3803,7 @@ packages:
     resolution: {integrity: sha512-mbq2r2kK5+AcLl0XDJ3to91JOgzCbHOqj+J3n+FRw6drk+M1boRqMShSoMMm0HdzXPLmlr7iur+qJ5ZuhH6ayQ==}
     peerDependencies:
       eslint: '>=8'
-      storybook: ^10.1.11
+      storybook: ^10.2.3
 
   eslint-scope@7.2.2:
     resolution: {integrity: sha512-dOt21O7lTMhDM+X9mB4GX+DZrZtCUJPL/wlcTqxyrx5IvO0IYtILdtrQGQp+8n5S0gwSVmOf9NQrjMOgfQZlIg==}
@@ -5115,6 +5121,9 @@ packages:
 
   meshoptimizer@0.22.0:
     resolution: {integrity: sha512-IebiK79sqIy+E4EgOr+CAw+Ke8hAspXKzBd0JdgEmPHiAwmvEj2S4h1rfvo+o/BnfEYd/jAOg5IeeIjzlzSnDg==}
+
+  meshoptimizer@1.0.1:
+    resolution: {integrity: sha512-Vix+QlA1YYT3FwmBBZ+49cE5y/b+pRrcXKqGpS5ouh33d3lSp2PoTpCw19E0cKDFWalembrHnIaZetf27a+W2g==}
 
   micromark-util-character@2.1.1:
     resolution: {integrity: sha512-wv8tdUTJ3thSFFFJKtpYKOYiGP2+v96Hvk4Tu8KpCAsTMs6yi+nVmGh1syvSCsaxz45J6Jbw+9DD6g97+NV67Q==}
@@ -6542,7 +6551,7 @@ packages:
     resolution: {integrity: sha512-OAv8zAX7cPVceo04g3x0h9Rq225VC6tP9EVq0WhGPWYi4jR2BnKuzl6LqU0J9tE+Rv9JWpAIxxH+4jbGXdZPQQ==}
     engines: {node: '>=22'}
     peerDependencies:
-      storybook: ^10.0.0
+      storybook: ^10.2.3
       svg-inline-loader: ^0.8.2
 
   storybook@10.2.6:
@@ -6786,6 +6795,9 @@ packages:
 
   three@0.182.0:
     resolution: {integrity: sha512-GbHabT+Irv+ihI1/f5kIIsZ+Ef9Sl5A1Y7imvS5RQjWgtTPfPnZ43JmlYI7NtCRDK9zir20lQpfg8/9Yd02OvQ==}
+
+  three@0.183.2:
+    resolution: {integrity: sha512-di3BsL2FEQ1PA7Hcvn4fyJOlxRRgFYBpMTcyOgkwJIaDOdJMebEFPA+t98EvjuljDx4hNulAGwF6KIjtwI5jgQ==}
 
   through2@2.0.5:
     resolution: {integrity: sha512-/mrRod8xqpA+IHSLyGCQ2s8SPHiCDEeQJSep1jqLYeEUClOFG2Qsh+4FU6G9VeqpZnGW/Su8LQGc4YKni5rYSQ==}
@@ -7476,14 +7488,14 @@ snapshots:
 
   '@asamuzakjp/nwsapi@2.3.9': {}
 
-  '@auth0/auth0-auth-js@1.4.0':
+  '@auth0/auth0-auth-js@1.6.0':
     dependencies:
       jose: 6.1.3
       openid-client: 6.8.2
 
-  '@auth0/auth0-spa-js@2.15.0':
+  '@auth0/auth0-spa-js@2.19.0':
     dependencies:
-      '@auth0/auth0-auth-js': 1.4.0
+      '@auth0/auth0-auth-js': 1.6.0
       browser-tabs-lock: 1.3.0
       dpop: 2.1.1
       es-cookie: 1.3.2
@@ -9999,6 +10011,16 @@ snapshots:
       fflate: 0.8.2
       meshoptimizer: 0.22.0
 
+  '@types/three@0.183.1':
+    dependencies:
+      '@dimforge/rapier3d-compat': 0.12.0
+      '@tweenjs/tween.js': 23.1.3
+      '@types/stats.js': 0.17.4
+      '@types/webxr': 0.5.24
+      '@webgpu/types': 0.1.68
+      fflate: 0.8.2
+      meshoptimizer: 1.0.1
+
   '@types/trusted-types@2.0.7':
     optional: true
 
@@ -10229,22 +10251,22 @@ snapshots:
       loupe: 3.2.1
       tinyrainbow: 2.0.0
 
-  '@wandelbots/nova-api@26.1.0-rc.8':
+  '@wandelbots/nova-api@26.2.0-rc.2':
     dependencies:
       axios: 1.13.5
     transitivePeerDependencies:
       - debug
 
-  '@wandelbots/nova-js@3.5.2':
+  '@wandelbots/nova-js@3.5.4':
     dependencies:
-      '@auth0/auth0-spa-js': 2.15.0
-      '@types/three': 0.182.0
-      '@wandelbots/nova-api': 26.1.0-rc.8
+      '@auth0/auth0-spa-js': 2.19.0
+      '@types/three': 0.183.1
+      '@wandelbots/nova-api': 26.2.0-rc.2
       axios: 1.13.5
       mobx: 6.15.0
       path-to-regexp: 8.3.0
       reconnecting-websocket: 4.4.0
-      three: 0.182.0
+      three: 0.183.2
       url-join: 5.0.0
     transitivePeerDependencies:
       - debug
@@ -13014,6 +13036,8 @@ snapshots:
 
   meshoptimizer@0.22.0: {}
 
+  meshoptimizer@1.0.1: {}
+
   micromark-util-character@2.1.1:
     dependencies:
       micromark-util-symbol: 2.0.1
@@ -14800,6 +14824,8 @@ snapshots:
       three: 0.182.0
 
   three@0.182.0: {}
+
+  three@0.183.2: {}
 
   through2@2.0.5:
     dependencies:

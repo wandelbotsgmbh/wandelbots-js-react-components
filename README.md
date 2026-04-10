@@ -13,7 +13,7 @@ See the [Storybook](https://wandelbotsgmbh.github.io/wandelbots-js-react-compone
 ## Install
 
 ```bash
-npm install @wandelbots/wandelbots-js-react-components react react-dom @mui/material @emotion/react @emotion/styled
+pnpm add @wandelbots/wandelbots-js-react-components react react-dom @mui/material @emotion/react @emotion/styled
 ```
 
 Some modules require extra dependencies, like three.js. If you don't need 3D rendering in your application, always import from `/core`.
@@ -42,7 +42,7 @@ import { WandelscriptEditor } from "@wandelbots/wandelbots-js-react-components/w
 You can also import from the top-level package, but then you'll need to provide all optional dependencies:
 
 ```bash
-npm install @wandelbots/wandelbots-js-react-components \
+pnpm add @wandelbots/wandelbots-js-react-components \
  react react-dom \
  @mui/material @mui/icons-material @emotion/react @emotion/styled \
  three @react-three/fiber @react-three/drei three-stdlib \
@@ -241,8 +241,8 @@ To set up the project for development:
 ```bash
 git clone https://github.com/wandelbotsgmbh/wandelbots-js-react-components.git
 cd wandelbots-js-react-components
-npm install
-npm run dev  # Start Storybook development server
+pnpm install
+pnpm dev  # Start Storybook development server
 ```
 
 ## Robot Model Testing
@@ -252,9 +252,9 @@ View Robot Models in web view:
 ```bash
 git clone https://github.com/wandelbotsgmbh/wandelbots-js-react-components.git
 cd wandelbots-js-react-components
-npm install
-npm run td <instanceProviderURL> # instanceProviderURL can be provided via an instanceProviderConfig.json file. The entire command can be substituted by writing a nova instance ip into a file named .env.local
-npm run dev  # Start Storybook development server
+pnpm install
+pnpm td <instanceProviderURL> # instanceProviderURL can be provided via an instanceProviderConfig.json file. The entire command can be substituted by writing a nova instance ip into a file named .env.local
+pnpm dev  # Start Storybook development server
 ```
 
 instanceProviderConfig.json file:
@@ -275,12 +275,12 @@ CELL_ID=cell
 Build and test the package locally:
 
 ```bash
-npm run build
-npm pack
-npm install /path/to/wandelbots-wandelbots-js-react-components-x.x.x.tgz
+pnpm build
+pnpm pack
+pnpm add /path/to/wandelbots-wandelbots-js-react-components-x.x.x.tgz
 ```
 
-> **Note:** Use `npm install` with the `.tgz` file instead of `npm link` due to peer dependency requirements with React Three Fiber components.
+> **Note:** Use `pnpm add` with the `.tgz` file instead of `pnpm link` due to peer dependency requirements with React Three Fiber components.
 
 ## Contributing
 
