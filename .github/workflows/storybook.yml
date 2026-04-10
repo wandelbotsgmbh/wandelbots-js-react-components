@@ -62,7 +62,7 @@ jobs:
       - name: Detect package manager
         id: detect-pm
         run: |
-          if [ -f "pnpm-workspace.yaml" ] || [ -f "pnpm-lock.yaml" ]; then
+          if grep -q '"packageManager"' package.json 2>/dev/null; then
             echo "manager=pnpm" >> "$GITHUB_OUTPUT"
           else
             echo "manager=npm" >> "$GITHUB_OUTPUT"
