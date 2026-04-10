@@ -32,7 +32,7 @@ jobs:
           fetch-depth: 0
       - uses: ./.github/actions/setup-node
       - name: Verify the integrity of provenance attestations and registry signatures for installed dependencies
-        run: pnpm audit signatures
+        run: npm audit signatures
       - name: Build
         run: pnpm run build
       - name: Upload build artifacts

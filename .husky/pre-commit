@@ -1,5 +1,0 @@
-#!/usr/bin/env bash
-if [ -f ~/.nvm/nvm.sh ]; then
-  . ~/.nvm/nvm.sh
-fi
-npx --yes pnpm run tsc
