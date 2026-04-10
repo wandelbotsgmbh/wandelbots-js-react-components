@@ -6,7 +6,6 @@ This guide explains the development workflow, tools, and best practices for cont
 
 ### Prerequisites
 
-- Node.js 18+ or 20+
 - pnpm
 - Git
 
