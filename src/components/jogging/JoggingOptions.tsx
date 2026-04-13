@@ -10,7 +10,7 @@ import {
   type OrientationId,
 } from "./JoggingStore"
 
-export const JoggingOptions = observer(({ store }: { store: JoggingStore }) => {
+export const JoggingOptions = observer(({ store, useDegree }: { store: JoggingStore, useDegree: boolean }) => {
   const { t } = useTranslation()
   const componentId = useId()
   const joggingOptions: React.ReactElement[] = []

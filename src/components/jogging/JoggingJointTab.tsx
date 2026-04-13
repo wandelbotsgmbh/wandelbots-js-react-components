@@ -37,7 +37,13 @@ export const JoggingJointTab = observer(
 
     return (
       <Stack flexGrow={1} gap={2} sx={{ padding: "18px 24px" }}>
-        <JoggingVelocitySlider store={store} />
+        <JoggingVelocitySlider
+          store={store}
+          useDegree={
+            store.jointCategory === JointCategory.REVOLUTE
+          }
+        />
+
         <Divider />
 
         <Stack
@@ -76,7 +82,10 @@ export const JoggingJointTab = observer(
                     disabled={store.isLocked}
                     lowerLimit={jointLimits?.lower_limit}
                     upperLimit={jointLimits?.upper_limit}
-                    useDegree={store.currentMotionType === "rotate"}
+                    useDegree={
+                      store.jointCategory === JointCategory.REVOLUTE
+                    }
+
                     getValue={() => {
                       const value =
                         store.jogger.motionStream.rapidlyChangingMotionState

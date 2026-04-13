@@ -46,7 +46,7 @@ export enum JointCategory {
 }
 
 type TabType = "cartesian" | "joint" | "debug";
-
+export type CartesianMotionType = "translate" | "rotate"
 
 export class JoggingStore {
   selectedTabId: TabType = "cartesian";
@@ -96,7 +96,7 @@ export class JoggingStore {
    * When on the cartesian tab, jogging can be either translating or rotating
    * around the TCP.
    */
-  selectedCartesianMotionType: "translate" | "rotate" = "translate"
+  selectedCartesianMotionType: CartesianMotionType = "translate"
 
   /**
    * If the jogger is busy running an incremental jog, this will be set
@@ -379,41 +379,27 @@ export class JoggingStore {
   }
 
   /** Selected velocity in mm/sec or deg/sec */
-  get velocityInDisplayUnits() {
-    return this.currentMotionType === "translate"
-      ? this.translationVelocityMmPerSec
-      : this.rotationVelocityDegPerSec
+  velocityInDisplayUnits(useDegree: boolean) {
+    return useDegree
+      ? this.rotationVelocityDegPerSec
+      : this.translationVelocityMmPerSec
   }
+
 
   /** Minimum selectable velocity in mm/sec or deg/sec */
-  get minVelocityInDisplayUnits() {
-    return this.currentMotionType === "translate"
-      ? this.minTranslationVelocityMmPerSec
-      : this.minRotationVelocityDegPerSec
+  minVelocityInDisplayUnits(useDegree: boolean) {
+    return useDegree
+      ? this.minRotationVelocityDegPerSec
+      : this.minTranslationVelocityMmPerSec
   }
+
 
   /** Maximum selectable velocity in mm/sec or deg/sec */
-  get maxVelocityInDisplayUnits() {
-    return this.currentMotionType === "translate"
-      ? this.maxTranslationVelocityMmPerSec
-      : this.maxRotationVelocityDegPerSec
-  }
+  maxVelocityInDisplayUnits(useDegree: boolean) {
+    return useDegree
+      ? this.maxRotationVelocityDegPerSec :
+      this.maxTranslationVelocityMmPerSec
 
-  /**
-   * For velocity unit purposes, joint and cartesian rotation
-   * are treated as the same type of motion
-   */
-  get currentMotionType() {
-    if (
-      (
-        this.selectedTabId === "cartesian" &&
-        this.selectedCartesianMotionType === "translate"
-      ) || this.jointCategory === JointCategory.PRISMATIC
-    ) {
-      return "translate"
-    } else {
-      return "rotate"
-    }
   }
 
 
@@ -459,13 +445,14 @@ export class JoggingStore {
     this.incrementJogInProgress = incrementJog
   }
 
-  setVelocityFromSlider(velocity: number) {
-    if (this.currentMotionType === "translate") {
-      this.translationVelocityMmPerSec = velocity
-    } else {
+  setVelocityFromSlider(velocity: number,useDegree : boolean ) {
+    if (useDegree) {
       this.rotationVelocityDegPerSec = velocity
+    } else {
+      this.translationVelocityMmPerSec = velocity
     }
   }
+
 
   setSelectedCartesianMotionType(type: "translate" | "rotate") {
     this.selectedCartesianMotionType = type
