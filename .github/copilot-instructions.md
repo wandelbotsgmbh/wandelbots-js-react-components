@@ -61,7 +61,6 @@ Three.js based components for robotics visualization:
 Code editing interfaces for robot programming:
 - Monaco-based editors with syntax highlighting
 - Language-specific tooling and IntelliSense
-- Integration with Wandelscript and other robotics languages
 
 ### 4. Utility Components
 General-purpose UI components:
@@ -135,8 +134,7 @@ src/
 │   ├── 3d-viewport/     # 3D visualization components
 │   ├── jogging/         # Robot jogging components
 │   ├── robots/          # Robot rendering components
-│   ├── safetyBar/       # Safety-related components
-│   └── wandelscript-editor/ # Code editor components
+│   └── safetyBar/       # Safety-related components
 ├── themes/              # MUI theme configuration
 ├── i18n/               # Internationalization config
 ├── icons/              # Custom icon components

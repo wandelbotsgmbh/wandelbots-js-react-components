@@ -29,20 +29,13 @@ For 3D-enabled components, use `/3d`:
 import { Robot, RobotCard } from "@wandelbots/wandelbots-js-react-components/3d"
 ```
 
-For the code editor, use `/wandelscript`:
-
-```typescript
-import { WandelscriptEditor } from "@wandelbots/wandelbots-js-react-components/wandelscript"
-```
-
 You can also import everything from the main entry point, but you'll need to install all optional peer dependencies:
 
 ```bash
 pnpm add @wandelbots/wandelbots-js-react-components \
   react react-dom \
   @mui/material @mui/icons-material @emotion/react @emotion/styled \
-  three @react-three/fiber @react-three/drei three-stdlib \
-  @monaco-editor/react shiki @shikijs/monaco
+  three @react-three/fiber @react-three/drei three-stdlib
 ```
 
 **Available Entry Points:**
@@ -52,7 +45,6 @@ pnpm add @wandelbots/wandelbots-js-react-components \
 | **Main** (`.`)      | All components                                                                                                            | React 18+, MUI v6/v7, @emotion/react, @emotion/styled, @mui/icons-material + all below |
 | **`/core`**         | Base components (AppHeader, ProgramControl, SafetyBar, VelocitySlider, JoggingPanel, DataGrid, Timer, themes, i18n, etc.) | React 18+, MUI v6/v7, @emotion/react, @emotion/styled, @mui/icons-material             |
 | **`/3d`**           | 3D visualization (Robot, RobotCard, CollisionSceneRenderer, SafetyZonesRenderer, TrajectoryRenderer)                      | All from `/core` + three, @react-three/fiber, @react-three/drei, three-stdlib          |
-| **`/wandelscript`** | Code editor (WandelscriptEditor)                                                                                          | All from `/core` + @monaco-editor/react, shiki, @shikijs/monaco                        |
 
 
 ## Components Usage

@@ -1,6 +1,6 @@
 import { Meta } from '@storybook/addon-docs/blocks';
 
-<Meta title="Migration Guide"/>
+<Meta title="Migration Guide" />
 
 # Migration Guide
 
@@ -27,17 +27,11 @@ const connectedMotionGroup = await ConnectedMotionGroup.connect(nova, "0@your-mo
 
 ### Nova.js V2 API
 
-- **Most components use V2**: All components now use the Nova.js V2 API (`@wandelbots/nova-js/v2`)
-- **Exceptions**: The following components still use the V1 API:
-  - `TrajectoryRenderer`
-  - `CollisionSceneRenderer`
+- **All components use V2**: All components now use the Nova.js V2 API (`@wandelbots/nova-js/v2`)
 
 ```tsx
-// ✅ For most components, use V2
+// ✅ For all components, use V2
 import { NovaClient } from "@wandelbots/nova-js/v2"
-
-// ✅ For trajectory/collision components, continue using V1 if needed
-import { NovaClient } from "@wandelbots/nova-js/v1"
 ```
 
 ### Component Props
@@ -115,21 +109,20 @@ const connectedMotionGroup = await ConnectedMotionGroup.connect(nova, "0@ur5e")
 <JoggingPanel nova={nova} motionGroupId="0@ur5e" />
 ```
 
-### Special Cases for V1 Components
+## Breaking Changes from 4.x (API V1 & V2 both supported) to 5.x (API V2 only)
 
-If you're using trajectory, or collision scene renderers, they still use the V1 API:
+### No support for V1 data
+- The components of this package do not accept data coming from V1 API anymore. Before using the package version from 5, ensure your application is currently running on V2 API.
+- Components, that were still supporting V1 data: `CoordinateSystemTransform`, `SafetyZoneRenderer`, `TrajectoryRenderer`, `CollisionSceneRenderer`
 
-```tsx
-// These components still use V1
-import { NovaClient } from "@wandelbots/nova-js"
-import { TrajectoryRenderer, CollisionSceneRenderer } from "@wandelbots/wandelbots-js-react-components/3d"
-```
+### Wandelscript Editor
+- After its deprecation, Wandelscript and all corresponding components / functions, eg. `WandelScriptEditor` are removed. Make sure the consumer application does not include mentioned functionalities or components anymore.
 
 ## Common Issues
 
 ### "Module not found" errors
 
-- Ensure you're importing from the correct sub-paths: `/core`, `/3d`, or `/wandelscript`
+- Ensure you're importing from the correct sub-paths: `/3d` or `/core`
 - Check that peer dependencies are installed: `@wandelbots/nova-js`, `@mui/material`, `react`, `react-dom`
 
 ### Components not receiving motion state updates
