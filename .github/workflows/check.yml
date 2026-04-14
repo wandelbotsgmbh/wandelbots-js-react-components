@@ -12,32 +12,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
-      - uses: actions/setup-node@v6
-        with:
-          node-version: "lts/*"
-          cache: "npm"
-      - run: npm ci
-      - run: npm run tsc
+      - uses: ./.github/actions/setup-node
+      - run: pnpm run tsc
 
   test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
-      - uses: actions/setup-node@v6
-        with:
-          node-version: "lts/*"
-          cache: "npm"
-      - run: npm ci
-      - run: npx playwright install --with-deps chromium
-      - run: npm run ci:test
+      - uses: ./.github/actions/setup-node
+      - run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm run ci:test
 
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
-      - uses: actions/setup-node@v6
-        with:
-          node-version: "lts/*"
-          cache: "npm"
-      - run: npm ci
-      - run: npm run build
+      - uses: ./.github/actions/setup-node
+      - run: pnpm run build
