@@ -7,7 +7,9 @@ import pkg from "./package.json"
 // https://vitejs.dev/config/
 export default defineConfig({
   define: {
-    'import.meta.env.WANDELAPI_BASE_URL': JSON.stringify(process.env.WANDELAPI_BASE_URL || ''),
+    "import.meta.env.WANDELAPI_BASE_URL": JSON.stringify(
+      process.env.WANDELAPI_BASE_URL || "",
+    ),
   },
   build: {
     copyPublicDir: false,
@@ -16,7 +18,8 @@ export default defineConfig({
       entry: {
         index: resolve(__dirname, "src/index.ts"),
         core: resolve(__dirname, "src/core.ts"),
-        "3d": resolve(__dirname, "src/3d.ts")
+        "3d": resolve(__dirname, "src/3d.ts"),
+        "wb-icons": resolve(__dirname, "src/wb-icons.ts"),
       },
       formats: ["es", "cjs"],
     },
