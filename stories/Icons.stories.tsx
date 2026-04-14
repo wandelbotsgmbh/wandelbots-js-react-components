@@ -13,14 +13,10 @@ import {
   SafetyStateStopIcon,
 } from "../src/components/safetyBar/icons"
 import {
-  ArrowForwardFilledIcon,
   AxisXIcon,
   AxisYIcon,
   AxisZIcon,
-  ChevronDownIcon,
-  ExpandFilledIcon,
   HomeIcon,
-  InfoOutlinedIcon,
   JogMinusIcon,
   JogPlusIcon,
   JoggingIcon,
@@ -31,14 +27,10 @@ import {
 } from "../src/icons/index"
 
 const icons: Record<string, ComponentType<{ style?: React.CSSProperties }>> = {
-  ArrowForwardFilledIcon,
   AxisXIcon,
   AxisYIcon,
   AxisZIcon,
-  ChevronDownIcon,
-  ExpandFilledIcon,
   HomeIcon,
-  InfoOutlinedIcon,
   JogMinusIcon,
   JogPlusIcon,
   JoggingIcon,
