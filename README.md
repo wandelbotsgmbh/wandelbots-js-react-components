@@ -61,6 +61,10 @@ pnpm add @wandelbots/wandelbots-js-react-components \
 - **`/wb-icons`** — SVG icon components (general UI icons, safety bar icons, jogging icons, axis icons). Requires: React 18+.
 - **`/3d`** — 3D visualization (Robot, RobotCard, CollisionSceneRenderer, SafetyZonesRenderer, TrajectoryRenderer). Requires: all from `/core` + three, @react-three/fiber, @react-three/drei, three-stdlib.
 
+## 4.x to 5.x Migration Guide
+
+See section in [Migration Guide](https://wandelbotsgmbh.github.io/wandelbots-js-react-components/?path=/docs/migration-guide--docs#breaking-changes-from-4x-api-v1--v2-both-supported-to-5x-api-v2-only) for assistance.
+
 ## 4.x Core Changes
 
 Robot data is now fetched from a running nova instance. This eliminates the need of shipping every react application with the robot data attached.
@@ -85,7 +89,7 @@ interface DHParameter {
 
 ## 2.x to 3.x Migration Guide
 
-See [Migration Guide](https://wandelbotsgmbh.github.io/wandelbots-js-react-components/?path=/docs/migration-guide--docs) for assistance.
+See section in [Migration Guide](https://wandelbotsgmbh.github.io/wandelbots-js-react-components/?path=/docs/migration-guide--docs) for assistance.
 
 ## Components
 

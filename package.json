@@ -33,7 +33,6 @@
       "import": "./dist/wb-icons.es.js",
       "require": "./dist/wb-icons.cjs.js"
     }
-    }
   },
   "types": "./dist/index.d.ts",
   "scripts": {

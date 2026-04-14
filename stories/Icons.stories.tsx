@@ -113,6 +113,25 @@ const meta: Meta = {
   tags: ["!dev"],
   parameters: {
     layout: "padded",
+    docs: {
+      description: {
+        component: [
+          "Custom SVG icon components for robotics UI. Import from the `/wb-icons` entry point:",
+          "",
+          "```tsx",
+          'import { RobotIcon, HomeIcon } from "@wandelbots/wandelbots-js-react-components/wb-icons"',
+          "```",
+          "",
+          "Usage in JSX:",
+          "",
+          "```tsx",
+          "<RobotIcon style={{ fontSize: 24 }} />",
+          "```",
+          "",
+          "These are plain SVG React components. For standard UI icons (arrows, chevrons, info, etc.), use `@mui/icons-material` directly.",
+        ].join("\n"),
+      },
+    },
   },
 }
 
