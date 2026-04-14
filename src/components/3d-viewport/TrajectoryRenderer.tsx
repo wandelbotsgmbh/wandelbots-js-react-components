@@ -13,12 +13,11 @@ export function TrajectoryRenderer({
   const points =
     trajectory
       ?.map((pose: Pose) => {
-        if (pose.position?.length) {
-          return new THREE.Vector3(
-            pose.position[0] / 1000,
-            pose.position[2] / 1000,
-            -pose.position[1] / 1000,
-          )
+        if (pose.position && pose.position.length >= 3) {
+          const [x, y, z] = pose.position
+          if (isFinite(x) && isFinite(y) && isFinite(z)) {
+            return new THREE.Vector3(x / 1000, z / 1000, -y / 1000)
+          }
         }
         return null
       })
