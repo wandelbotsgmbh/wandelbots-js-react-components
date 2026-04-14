@@ -27,6 +27,12 @@
       "types": "./dist/3d.d.ts",
       "import": "./dist/3d.es.js",
       "require": "./dist/3d.cjs.js"
+    },
+    "./wb-icons": {
+      "types": "./dist/wb-icons.d.ts",
+      "import": "./dist/wb-icons.es.js",
+      "require": "./dist/wb-icons.cjs.js"
+    }
     }
   },
   "types": "./dist/index.d.ts",

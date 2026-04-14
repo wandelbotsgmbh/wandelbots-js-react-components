@@ -1,4 +1,3 @@
-export { DropdownArrowIcon } from "./DropdownArrowIcon"
 export { default as ArrowForwardFilledIcon } from "./arrowForwardFilled.svg"
 export { default as AxisXIcon } from "./axis-x.svg"
 export { default as AxisYIcon } from "./axis-y.svg"
