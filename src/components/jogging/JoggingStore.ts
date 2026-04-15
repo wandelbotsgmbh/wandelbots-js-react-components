@@ -397,9 +397,8 @@ export class JoggingStore {
   /** Maximum selectable velocity in mm/sec or deg/sec */
   maxVelocityInDisplayUnits(useDegree: boolean) {
     return useDegree
-      ? this.maxRotationVelocityDegPerSec :
-      this.maxTranslationVelocityMmPerSec
-
+      ? this.maxRotationVelocityDegPerSec
+      : this.maxTranslationVelocityMmPerSec
   }
 
 
