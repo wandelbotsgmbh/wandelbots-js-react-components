@@ -454,7 +454,7 @@ export class JoggingStore {
   }
 
 
-  setSelectedCartesianMotionType(type: "translate" | "rotate") {
+  setSelectedCartesianMotionType(type: CartesianMotionType) {
     this.selectedCartesianMotionType = type
   }
 
