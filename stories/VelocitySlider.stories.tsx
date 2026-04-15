@@ -23,8 +23,8 @@ const meta: Meta<typeof VelocitySlider> = {
   render: function Component(args) {
     const [, setArgs] = useArgs()
 
-    function onVelocityChange(newVelocity: number) {
-      args.onVelocityChange?.(newVelocity)
+    function onVelocityChange(newVelocity: number, useDegree: boolean) {
+      args.onVelocityChange?.(newVelocity, useDegree)
       setArgs({ velocity: newVelocity })
     }
 

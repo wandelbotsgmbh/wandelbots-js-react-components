@@ -118,9 +118,9 @@ export const JoggingOptions = observer(({ store, useDegree }: { store: JoggingSt
           ? null
           : store.discreteIncrementOptions.map((inc) => (
               <MenuItem key={inc.id} value={inc.id}>
-                {store.currentMotionType === "translate"
-                  ? `${inc.mm}mm`
-                  : `${inc.degrees}°`}
+                {useDegree
+                  ? `${inc.degrees}°`
+                  : `${inc.mm}mm`}
               </MenuItem>
             ))}
       </AdornedSelect>,
