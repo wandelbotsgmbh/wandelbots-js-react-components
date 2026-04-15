@@ -10,9 +10,10 @@ type VelocitySliderProps = {
   min: number
   max: number
   velocity: number
-  onVelocityChange: (newVelocity: number) => void
+  onVelocityChange: (newVelocity: number, useDegree: boolean) => void
   disabled?: boolean
   renderValue?: (value: number) => ReactNode
+  useDegree: boolean
   store: JoggingStore
 }
 
@@ -25,7 +26,7 @@ export const VelocitySlider = observer((props: VelocitySliderProps) => {
   function onSliderChange(_event: Event, newVelocity: number | number[]) {
     if (newVelocity === props.velocity || !isNumber(newVelocity)) return
 
-    props.onVelocityChange(newVelocity)
+    props.onVelocityChange(newVelocity, props.useDegree)
   }
 
   return (

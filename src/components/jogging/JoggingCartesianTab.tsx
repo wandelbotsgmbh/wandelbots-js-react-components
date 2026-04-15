@@ -194,8 +194,16 @@ export const JoggingCartesianTab = observer(
     return (
       <Stack flexGrow={1} gap={2} sx={{ padding: "18px 24px" }}>
         <Stack gap={2}>
-          <JoggingOptions store={store} />
-          <JoggingVelocitySlider store={store} />
+          <JoggingOptions
+            store={store}
+            useDegree={store.selectedCartesianMotionType === "rotate"}
+          />
+
+          <JoggingVelocitySlider
+            store={store}
+            useDegree={store.selectedCartesianMotionType === "rotate"}
+          />
+
           <Divider />
         </Stack>
 

@@ -10,7 +10,7 @@ import {
   type OrientationId,
 } from "./JoggingStore"
 
-export const JoggingOptions = observer(({ store }: { store: JoggingStore }) => {
+export const JoggingOptions = observer(({ store, useDegree }: { store: JoggingStore, useDegree: boolean }) => {
   const { t } = useTranslation()
   const componentId = useId()
   const joggingOptions: React.ReactElement[] = []
@@ -118,9 +118,9 @@ export const JoggingOptions = observer(({ store }: { store: JoggingStore }) => {
           ? null
           : store.discreteIncrementOptions.map((inc) => (
               <MenuItem key={inc.id} value={inc.id}>
-                {store.currentMotionType === "translate"
-                  ? `${inc.mm}mm`
-                  : `${inc.degrees}°`}
+                {useDegree
+                  ? `${inc.degrees}°`
+                  : `${inc.mm}mm`}
               </MenuItem>
             ))}
       </AdornedSelect>,
