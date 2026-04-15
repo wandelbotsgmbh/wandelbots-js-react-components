@@ -170,11 +170,6 @@ export class MotionStreamConnection {
     return this.controller.controller
   }
 
-  get wandelscriptIdentifier() {
-    const num = this.motionGroupId.split("@")[0]
-    return `${this.controllerId.replace(/-/g, "_")}_${num}`
-  }
-
   get joints() {
     return this.initialMotionState.joint_position.map((_, i) => {
       return {

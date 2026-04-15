@@ -29,10 +29,15 @@ For 3D-enabled components, use `/3d`:
 import { Robot, RobotCard } from "@wandelbots/wandelbots-js-react-components/3d"
 ```
 
-For the code editor, use `/wandelscript`:
+For SVG icon components (general UI icons and safety bar icons), use `/wb-icons`:
 
 ```typescript
-import { WandelscriptEditor } from "@wandelbots/wandelbots-js-react-components/wandelscript"
+import {
+  RobotIcon,
+  HomeIcon,
+  ControllerTypeVirtualIcon,
+  SafetyStateNormalIcon,
+} from "@wandelbots/wandelbots-js-react-components/wb-icons"
 ```
 
 You can also import everything from the main entry point, but you'll need to install all optional peer dependencies:
@@ -41,18 +46,15 @@ You can also import everything from the main entry point, but you'll need to ins
 pnpm add @wandelbots/wandelbots-js-react-components \
   react react-dom \
   @mui/material @mui/icons-material @emotion/react @emotion/styled \
-  three @react-three/fiber @react-three/drei three-stdlib \
-  @monaco-editor/react shiki @shikijs/monaco
+  three @react-three/fiber @react-three/drei three-stdlib
 ```
 
 **Available Entry Points:**
 
-| Entry Point         | Components                                                                                                                | Required Peer Dependencies                                                             |
-| ------------------- | ------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
-| **Main** (`.`)      | All components                                                                                                            | React 18+, MUI v6/v7, @emotion/react, @emotion/styled, @mui/icons-material + all below |
-| **`/core`**         | Base components (AppHeader, ProgramControl, SafetyBar, VelocitySlider, JoggingPanel, DataGrid, Timer, themes, i18n, etc.) | React 18+, MUI v6/v7, @emotion/react, @emotion/styled, @mui/icons-material             |
-| **`/3d`**           | 3D visualization (Robot, RobotCard, CollisionSceneRenderer, SafetyZonesRenderer, TrajectoryRenderer)                      | All from `/core` + three, @react-three/fiber, @react-three/drei, three-stdlib          |
-| **`/wandelscript`** | Code editor (WandelscriptEditor)                                                                                          | All from `/core` + @monaco-editor/react, shiki, @shikijs/monaco                        |
+- **`.`** (Main) — All components. Requires: React 18+, MUI v6/v7, @emotion/react, @emotion/styled, @mui/icons-material + all below.
+- **`/core`** — Base components (AppHeader, ProgramControl, SafetyBar, VelocitySlider, JoggingPanel, DataGrid, Timer, themes, i18n, etc.). Requires: React 18+, MUI v6/v7, @emotion/react, @emotion/styled, @mui/icons-material.
+- **`/wb-icons`** — SVG icon components (general UI icons, safety bar icons, jogging icons, axis icons). Requires: React 18+.
+- **`/3d`** — 3D visualization (Robot, RobotCard, CollisionSceneRenderer, SafetyZonesRenderer, TrajectoryRenderer). Requires: all from `/core` + three, @react-three/fiber, @react-three/drei, three-stdlib.
 
 
 ## Components Usage

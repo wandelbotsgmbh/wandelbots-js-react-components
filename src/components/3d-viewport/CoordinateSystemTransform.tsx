@@ -1,4 +1,4 @@
-import type { CoordinateSystem } from "@wandelbots/nova-js/v1"
+import type { CoordinateSystem } from "@wandelbots/nova-js/v2"
 import type { ReactNode } from "react"
 import { Quaternion, Vector3 } from "three"
 
@@ -14,28 +14,39 @@ export const CoordinateSystemTransform = ({
   children: ReactNode
 }) => {
   const position = new Vector3(
-    (coordinateSystem?.position?.x ?? 0) / 1000,
-    (coordinateSystem?.position?.y ?? 0) / 1000,
-    (coordinateSystem?.position?.z ?? 0) / 1000,
+    (coordinateSystem?.position?.[0] ?? 0) / 1000,
+    (coordinateSystem?.position?.[1] ?? 0) / 1000,
+    (coordinateSystem?.position?.[2] ?? 0) / 1000,
   )
 
-  let rotation = coordinateSystem?.rotation
-  const rotationType = rotation?.type
-  if (rotationType && rotationType !== "ROTATION_VECTOR") {
-    console.warn(
-      `Unsupported rotation type ${rotationType}. Only ROTATION_VECTOR is supported.`,
+  const orientationType = coordinateSystem?.orientation_type
+
+  let quaternion: Quaternion
+
+  if (orientationType === "QUATERNION") {
+    quaternion = new Quaternion(
+      coordinateSystem?.orientation?.[0] ?? 0,
+      coordinateSystem?.orientation?.[1] ?? 0,
+      coordinateSystem?.orientation?.[2] ?? 0,
+      coordinateSystem?.orientation?.[3] ?? 1,
     )
-    rotation = { type: "ROTATION_VECTOR", angles: [0, 0, 0, 0] }
+  } else {
+    if (orientationType && orientationType !== "ROTATION_VECTOR") {
+      console.warn(
+        `Unsupported orientation type ${orientationType}. Only ROTATION_VECTOR and QUATERNION are supported.`,
+      )
+    }
+    // Default to ROTATION_VECTOR
+    const rotationVector = new Vector3(
+      coordinateSystem?.orientation?.[0] ?? 0,
+      coordinateSystem?.orientation?.[1] ?? 0,
+      coordinateSystem?.orientation?.[2] ?? 0,
+    )
+    const magnitude = rotationVector.length()
+    const axis = rotationVector.normalize()
+    quaternion = new Quaternion().setFromAxisAngle(axis, magnitude)
   }
 
-  const rotationVector = new Vector3(
-    rotation?.angles[0] ?? 0,
-    rotation?.angles[1] ?? 0,
-    rotation?.angles[2] ?? 0,
-  )
-  const magnitude = rotationVector.length()
-  const axis = rotationVector.normalize()
-  const quaternion = new Quaternion().setFromAxisAngle(axis, magnitude)
   return (
     <group position={position} quaternion={quaternion}>
       {children}

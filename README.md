@@ -33,10 +33,15 @@ For 3D-enabled components, use `/3d`:
 import { Robot, RobotCard } from "@wandelbots/wandelbots-js-react-components/3d"
 ```
 
-For the code editor, use `/wandelscript`:
+For SVG icon components (general UI icons and safety bar icons), use `/wb-icons`:
 
 ```typescript
-import { WandelscriptEditor } from "@wandelbots/wandelbots-js-react-components/wandelscript"
+import {
+  RobotIcon,
+  HomeIcon,
+  ControllerTypeVirtualIcon,
+  SafetyStateNormalIcon,
+} from "@wandelbots/wandelbots-js-react-components/wb-icons"
 ```
 
 You can also import from the top-level package, but then you'll need to provide all optional dependencies:
@@ -51,12 +56,14 @@ pnpm add @wandelbots/wandelbots-js-react-components \
 
 **Available Entry Points:**
 
-| Entry Point         | Components                                                                                                                | Required Peer Dependencies                                                             |
-| ------------------- | ------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
-| **Main** (`.`)      | All components                                                                                                            | React 18+, MUI v6/v7, @emotion/react, @emotion/styled, @mui/icons-material + all below |
-| **`/core`**         | Base components (AppHeader, ProgramControl, SafetyBar, VelocitySlider, JoggingPanel, DataGrid, Timer, themes, i18n, etc.) | React 18+, MUI v6/v7, @emotion/react, @emotion/styled, @mui/icons-material             |
-| **`/3d`**           | 3D visualization (Robot, RobotCard, CollisionSceneRenderer, SafetyZonesRenderer, TrajectoryRenderer)                      | All from `/core` + three, @react-three/fiber, @react-three/drei, three-stdlib          |
-| **`/wandelscript`** | Code editor (WandelscriptEditor)                                                                                          | All from `/core` + @monaco-editor/react, shiki, @shikijs/monaco                        |
+- **`.`** (Main) — All components. Requires: React 18+, MUI v6/v7, @emotion/react, @emotion/styled, @mui/icons-material + all below.
+- **`/core`** — Base components (AppHeader, ProgramControl, SafetyBar, VelocitySlider, JoggingPanel, DataGrid, Timer, themes, i18n, etc.). Requires: React 18+, MUI v6/v7, @emotion/react, @emotion/styled, @mui/icons-material.
+- **`/wb-icons`** — SVG icon components (general UI icons, safety bar icons, jogging icons, axis icons). Requires: React 18+.
+- **`/3d`** — 3D visualization (Robot, RobotCard, CollisionSceneRenderer, SafetyZonesRenderer, TrajectoryRenderer). Requires: all from `/core` + three, @react-three/fiber, @react-three/drei, three-stdlib.
+
+## 4.x to 5.x Migration Guide
+
+See section in [Migration Guide](https://wandelbotsgmbh.github.io/wandelbots-js-react-components/?path=/docs/migration-guide--docs#breaking-changes-from-4x-api-v1--v2-both-supported-to-5x-api-v2-only) for assistance.
 
 ## 4.x Core Changes
 
@@ -69,6 +76,7 @@ The `wandelbots-js-react-components` library can be used both with and without a
 The list of available robots will now be automatically updated along with the nova version. There is no more need to update nova apps whenether there is a new supported robot the app wants to feature.
 
 Robot dh-parameters are now using a new format.
+
 ```
 interface DHParameter {
   'alpha': number;
@@ -81,7 +89,7 @@ interface DHParameter {
 
 ## 2.x to 3.x Migration Guide
 
-See [Migration Guide](https://wandelbotsgmbh.github.io/wandelbots-js-react-components/?path=/docs/migration-guide--docs) for assistance.
+See section in [Migration Guide](https://wandelbotsgmbh.github.io/wandelbots-js-react-components/?path=/docs/migration-guide--docs) for assistance.
 
 ## Components
 
@@ -145,16 +153,6 @@ Safety components for production environments.
 
 - Real-time safety monitoring
 - Emergency stop integration
-
-### Code Editing
-
-Code editing capabilities for robot programming.
-
-**[WandelscriptEditor](https://wandelbotsgmbh.github.io/wandelbots-js-react-components/?path=/docs/wandelscript-wandelscripteditor--docs)** - Code editor
-
-- Monaco editor integration
-- Wandelscript syntax highlighting
-- IntelliSense support
 
 ### Data & Interface Components
 
@@ -230,10 +228,6 @@ Components integrate with the Wandelbots Nova ecosystem:
 - @react-three/drei
 - three-stdlib
 
-**For `/wandelscript` (code editor):**
-
-- @monaco-editor/react
-
 ## Development
 
 To set up the project for development:
@@ -258,6 +252,7 @@ pnpm dev  # Start Storybook development server
 ```
 
 instanceProviderConfig.json file:
+
 ```
 {
   "url": "yourURL"
@@ -265,6 +260,7 @@ instanceProviderConfig.json file:
 ```
 
 .env.local file:
+
 ```
 WANDELAPI_BASE_URL=http://<instance-ip>
 CELL_ID=cell

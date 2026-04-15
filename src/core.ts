@@ -31,4 +31,3 @@ export * from "./lib/motionStateUpdate"
 export * from "./lib/MotionStreamConnection"
 export * from "./themes/themeTypes"
 export { createNovaMuiTheme } from "./themes/theming"
-

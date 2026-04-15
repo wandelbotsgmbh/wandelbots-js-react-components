@@ -258,11 +258,6 @@ export class ConnectedMotionGroup {
     return this.description.motion_group_model
   }
 
-  get wandelscriptIdentifier() {
-    const num = this.motionGroupId.split("@")[0]
-    return `${this.controllerId.replace(/-/g, "_")}_${num}`
-  }
-
   /** Jogging velocity in radians for rotation and joint movement */
   get joggingVelocityRads() {
     return (this.joggingVelocity * Math.PI) / 180

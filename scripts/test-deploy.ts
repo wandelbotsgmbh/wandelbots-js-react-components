@@ -1,4 +1,4 @@
-import { Cell, RobotController, VirtualControllerTypes } from "@wandelbots/nova-js/v1"
+import { Cell, RobotController } from "@wandelbots/nova-js/v2"
 import axios, { isAxiosError } from "axios"
 import { config } from "dotenv"
 import fs from "fs/promises"
@@ -21,8 +21,8 @@ const defaultControllers: RobotController[] = [
     configuration: {
       kind: "VirtualController",
       manufacturer: "universalrobots",
-      type: VirtualControllerTypes.UniversalrobotsUr5e,
-      position: "[1.17, -1.57, 1.36, 1.03, 1.29, 1.28, 0]",
+      type: "universalrobots-ur5e",
+      initial_joint_position: "[1.17, -1.57, 1.36, 1.03, 1.29, 1.28, 0]",
     },
   }
 ]
@@ -113,28 +113,26 @@ export async function testDeploy(
   await axios.put(
     // Note this must be the internal cells API in order for the CI setup additional
     // config to override the foundation services
-    `${instanceUrl}/api/v1/internal/cells/cell?completionTimeout=360`,
+    `${instanceUrl}/api/v2/internal/cells/cell?completion_timeout=360`,
     {
       name: cell,
       controllers: defaultControllers,
     } as Cell,
   )
 
-  await waitForCellStartup(instanceUrl, cell, {
-    timeout: 1000,
-  })
+  await waitForCellStartup(instanceUrl, cell)
 
   // Delete existing cell if it exists
   // if (extendedInstance) {
   //   const { data: cells } = (await axios.get(
-  //     `${instanceUrl}/api/v1/cells`,
+  //     `${instanceUrl}/api/v2/cells`,
   //   )) as {
   //     data: string[]
   //   }
   //   if (cells.includes(cell)) {
   //     console.log(`Deleting existing cell '${cell}'`)
   //     const res = await axios.delete(
-  //       `${instanceUrl}/api/v1/cells/${cell}?completionTimeout=180`,
+  //       `${instanceUrl}/api/v2/cells/${cell}?completion_timeout=180`,
   //     )
   //     if (res.status !== 200) {
   //       // It's a 202, so won't be thrown automatically

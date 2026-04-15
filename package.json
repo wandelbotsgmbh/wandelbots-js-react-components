@@ -28,10 +28,10 @@
       "import": "./dist/3d.es.js",
       "require": "./dist/3d.cjs.js"
     },
-    "./wandelscript": {
-      "types": "./dist/wandelscript.d.ts",
-      "import": "./dist/wandelscript.es.js",
-      "require": "./dist/wandelscript.cjs.js"
+    "./wb-icons": {
+      "types": "./dist/wb-icons.d.ts",
+      "import": "./dist/wb-icons.es.js",
+      "require": "./dist/wb-icons.cjs.js"
     }
   },
   "types": "./dist/index.d.ts",
@@ -71,7 +71,6 @@
   "devDependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
-    "@monaco-editor/react": "^4.7.0",
     "@mui/icons-material": "^7.3.7",
     "@mui/material": "^7.3.7",
     "@react-three/drei": "^10.2.0",
@@ -81,7 +80,6 @@
     "@rollup/plugin-node-resolve": "^16.0.0",
     "@rollup/plugin-terser": "^0.4.4",
     "@rollup/plugin-typescript": "^12.1.2",
-    "@shikijs/monaco": "^3.1.0",
     "@storybook/addon-docs": "^10.2.3",
     "@storybook/react": "^10.3.5",
     "@storybook/react-vite": "^10.2.3",
@@ -104,7 +102,6 @@
     "jest-simple-dot-reporter": "^1.0.5",
     "jest-summary-reporter": "^0.0.2",
     "jsdom": "^27.4.0",
-    "monaco-editor": "^0.55.1",
     "nodemon": "^3.1.9",
     "npm-run-all": "^4.1.5",
     "playwright": "^1.59.1",
@@ -120,7 +117,6 @@
     "rollup-plugin-peer-deps-external": "^2.2.4",
     "rollup-plugin-postcss": "^4.0.2",
     "semantic-release": "^25.0.2",
-    "shiki": "^3.1.0",
     "storybook": "^10.2.3",
     "storybook-preset-inline-svg": "^2.0.0",
     "three": "^0.182.0",
@@ -137,29 +133,17 @@
   "peerDependencies": {
     "@emotion/react": "^11.11.1",
     "@emotion/styled": "^11.11.0",
-    "@monaco-editor/react": "^4.7.0",
     "@mui/icons-material": "^6 || ^7",
     "@mui/material": "^6 || ^7",
     "@react-three/drei": "^9.122.0 || ^10",
     "@react-three/fiber": "^8 || ^9",
-    "@shikijs/monaco": "^3.1.0",
     "react": "^18.0.0 || ^19.0.0",
     "react-dom": "^18.0.0 || ^19.0.0",
-    "shiki": "^3.1.0",
     "three": ">=0.182",
     "three-stdlib": ">=2"
   },
   "peerDependenciesMeta": {
     "react-dom": {
-      "optional": true
-    },
-    "@monaco-editor/react": {
-      "optional": true
-    },
-    "@shikijs/monaco": {
-      "optional": true
-    },
-    "shiki": {
       "optional": true
     },
     "@react-three/drei": {

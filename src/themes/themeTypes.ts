@@ -1,5 +1,3 @@
-import type { editor } from "monaco-editor"
-
 type NovaColorPaletteExtension = {
   paletteExt?: {
     primary?: {
@@ -47,9 +45,6 @@ interface NovaComponentsExtension {
       VelocitySlider?: {
         sliderLegendColor?: string
       }
-    }
-    WandelscriptEditor?: {
-      monacoTheme: editor.IStandaloneThemeData
     }
   }
 }
