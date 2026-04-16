@@ -96,6 +96,8 @@ export const JoggingPanel = externalizeComponent(
 
     return (
       <Stack
+        data-testid="jogging-panel"
+        aria-label="jogging-panel"
         sx={{
           maxWidth: "460px",
           minWidth: "320px",
@@ -147,6 +149,8 @@ const JoggingPanelInner = observer(
       <Stack flexGrow={1} sx={{ overflow: "hidden" }}>
         {/* Tab selection */}
         <Tabs
+          data-testid="jogging-tabs"
+          aria-label="jogging-tabs"
           value={store.tabIndex}
           onChange={store.onTabChange}
           variant="fullWidth"
@@ -167,6 +171,8 @@ const JoggingPanelInner = observer(
             return (
               <Tab
                 key={tab.id}
+                data-testid={`jogging-tab-${tab.id}`}
+                aria-label={`jogging-tab-${tab.id}`}
                 label={
                   store.showTabIcons ? (
                     <Stack direction="row" alignItems="center">

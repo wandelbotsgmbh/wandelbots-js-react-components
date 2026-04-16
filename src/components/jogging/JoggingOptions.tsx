@@ -130,6 +130,8 @@ export const JoggingOptions = observer(({ store, useDegree }: { store: JoggingSt
   return (
     <Box
       component="div"
+      data-testid="jogging-options"
+      aria-label="jogging-options"
       sx={{
         display: "grid",
         gap: "16px",
