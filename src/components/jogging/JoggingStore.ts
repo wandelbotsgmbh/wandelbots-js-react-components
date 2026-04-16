@@ -130,8 +130,6 @@ export class JoggingStore {
 
   disposers: IReactionDisposer[] = []
 
-  dhParameters: DHParameter[] = []
-
   /**
    * Inverse solver from the kinematic model of the motion group to determine, which tabs should be rendered
    */
@@ -176,7 +174,7 @@ export class JoggingStore {
       orientation: tcp.pose.orientation as Vector3Simple,
     }))
 
-    return new JoggingStore(jogger, coordinatesystems || [], description, tcps, kinematicModel)
+    return new JoggingStore(jogger, coordinatesystems || [], description, tcps, kinematicModel.inverse_solver)
   }
 
   constructor(
@@ -184,7 +182,7 @@ export class JoggingStore {
     readonly coordSystems: CoordinateSystem[],
     readonly motionGroupDescription: MotionGroupDescription,
     readonly tcps: RobotTcp[],
-    readonly kinematicModel: KinematicModel,
+    readonly inverseSolverValue: string | null | undefined,
   ) {
     // TODO workaround for default coord system on backend having a canonical id
     // of empty string. Can remove when fixed on API side
@@ -196,7 +194,7 @@ export class JoggingStore {
     }
     this.selectedCoordSystemId = coordSystems[0]?.coordinate_system || "world"
     this.selectedTcpId = tcps[0]?.id || ""
-    this.inverseSolver = this.kinematicModel.inverse_solver
+    this.inverseSolver = inverseSolverValue
     this.jointType =
       motionGroupDescription?.dh_parameters?.[0]?.type ??
       JointTypeEnum.RevoluteJoint
@@ -320,11 +318,8 @@ export class JoggingStore {
       },
     ]
     // show the cartesian tab only : 1. when there is a solver or 2. when no solver could be loaded ( as a default )
-    // do not show the cartesia tab when the solver is null this means, it cannot get jogged cartesian
-    if (
-      this.inverseSolver === undefined ||
-      this.inverseSolver !== null
-    ) {
+    // do not show the cartesian tab when the solver is null this means, it cannot get jogged cartesian
+    if (this.inverseSolver !== null) {
       tempTabs.unshift({
         id: "cartesian",
         label: "Cartesian",
