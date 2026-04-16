@@ -71,8 +71,8 @@ export const JoggingJointTab = observer(
               return (
                 <Stack
                   key={`joint-${joint.index}`}
-                  data-testid={`jogging-joint-tab-${joint.index}`}
-                  aria-label={`jogging-joint-tab-${joint.index}`}
+                  data-testid={`jogging-joint-value-control-${joint.index}`}
+                  aria-label={`jogging-joint-value-control-${joint.index}`}
                   direction="row"
                   alignItems="center"
                   justifyContent={"center"}
@@ -92,8 +92,6 @@ export const JoggingJointTab = observer(
                   )}
 
                   <JoggingJointValueControl
-                    data-testid={`jogging-joint-value-control-${joint.index}`}
-                    aria-label={`jogging-joint-value-control-${joint.index}`}
                     disabled={store.isLocked}
                     lowerLimit={jointLimits?.lower_limit}
                     upperLimit={jointLimits?.upper_limit}
