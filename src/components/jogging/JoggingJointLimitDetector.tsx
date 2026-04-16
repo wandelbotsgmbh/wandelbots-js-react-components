@@ -1,4 +1,5 @@
 import { Typography } from "@mui/material"
+import { observer } from "mobx-react-lite"
 import isEqual from "lodash-es/isEqual"
 import { useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -9,7 +10,7 @@ import type { JoggingStore } from "./JoggingStore"
  * Monitors the active robot motion state and displays a message if
  * any joint limits are reached.
  */
-export const JoggingJointLimitDetector = ({
+export const JoggingJointLimitDetector = observer(({
   store,
 }: {
   store: JoggingStore
@@ -40,6 +41,8 @@ export const JoggingJointLimitDetector = ({
 
   return (
     <Typography
+      data-testid="jogging-joint-limit-detector"
+      aria-label="jogging-joint-limit-detector"
       color="error"
       sx={{
         margin: "0.5rem 1rem",
@@ -53,4 +56,4 @@ export const JoggingJointLimitDetector = ({
       })}
     </Typography>
   )
-}
+})
