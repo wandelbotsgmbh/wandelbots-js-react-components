@@ -8,6 +8,8 @@ export const JoggingBlocked = observer(({ store }: { store: JoggingStore }) => {
 
   return (
     <Backdrop
+      data-testid="jogging-blocked"
+      aria-label="jogging-blocked"
       open={true}
       sx={{
         position: "absolute",

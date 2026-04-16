@@ -36,7 +36,13 @@ export const JoggingJointTab = observer(
     }
 
     return (
-      <Stack flexGrow={1} gap={2} sx={{ padding: "18px 24px" }}>
+      <Stack
+        data-testid="jogging-joint-tab"
+        aria-label="jogging-joint-tab"
+        flexGrow={1}
+        gap={2}
+        sx={{ padding: "18px 24px" }}
+      >
         <JoggingVelocitySlider
           store={store}
           useDegree={
@@ -51,7 +57,12 @@ export const JoggingJointTab = observer(
           alignItems="stretch"
           sx={{ flexGrow: "1" }}
         >
-          <Stack alignItems="center" gap="24px">
+          <Stack
+            data-testid="jogging-joint-value-controls-wrapper"
+            aria-label="jogging-joint-value-controls-wrapper"
+            alignItems="center"
+            gap="24px"
+          >
             {store.jogger.motionStream.joints.map((joint) => {
               const jointLimits =
                 store.motionGroupDescription.operation_limits.auto_limits
@@ -60,6 +71,8 @@ export const JoggingJointTab = observer(
               return (
                 <Stack
                   key={`joint-${joint.index}`}
+                  data-testid={`jogging-joint-tab-${joint.index}`}
+                  aria-label={`jogging-joint-tab-${joint.index}`}
                   direction="row"
                   alignItems="center"
                   justifyContent={"center"}
@@ -79,6 +92,8 @@ export const JoggingJointTab = observer(
                   )}
 
                   <JoggingJointValueControl
+                    data-testid={`jogging-joint-value-control-${joint.index}`}
+                    aria-label={`jogging-joint-value-control-${joint.index}`}
                     disabled={store.isLocked}
                     lowerLimit={jointLimits?.lower_limit}
                     upperLimit={jointLimits?.upper_limit}

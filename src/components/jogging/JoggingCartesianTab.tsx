@@ -192,7 +192,13 @@ export const JoggingCartesianTab = observer(
     }
 
     return (
-      <Stack flexGrow={1} gap={2} sx={{ padding: "18px 24px" }}>
+      <Stack
+        data-testid="jogging-cartesian-tab"
+        aria-label="jogging-cartesian-tab"
+        flexGrow={1}
+        gap={2}
+        sx={{ padding: "18px 24px" }}
+      >
         <Stack gap={2}>
           <JoggingOptions
             store={store}
@@ -242,6 +248,8 @@ export const JoggingCartesianTab = observer(
               axisList.map((axis) => (
                 <JoggingCartesianAxisControl
                   key={axis.id}
+                  data-testid={`jogging-cartesian-axis-control-${axis.id}`}
+                  aria-label={`jogging-cartesian-axis-control-${axis.id}`}
                   colors={axis.colors}
                   disabled={store.isLocked}
                   activeJoggingDirection={
@@ -286,6 +294,8 @@ export const JoggingCartesianTab = observer(
               axisList.map((axis) => (
                 <JoggingCartesianAxisControl
                   key={axis.id}
+                  data-testid={`jogging-cartesian-axis-control-${axis.id}`}
+                  aria-label={`jogging-cartesian-axis-control-${axis.id}`}
                   colors={axis.colors}
                   disabled={store.isLocked}
                   activeJoggingDirection={

@@ -30,7 +30,13 @@ export const VelocitySlider = observer((props: VelocitySliderProps) => {
   }
 
   return (
-    <Stack direction="row" gap={2} alignItems="center">
+    <Stack
+      direction="row"
+      gap={2}
+      alignItems="center"
+      data-testid="velocity-slider"
+      aria-label="velocity-slider"
+    >
       {store.showVelocityLegend && (
         <Typography
           sx={{

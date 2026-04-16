@@ -137,7 +137,12 @@ export const JoggingCartesianAxisControl = externalizeComponent(
       }
 
       return (
-        <Stack height="64px" direction="row" justifyContent="center" {...rest}>
+        <Stack
+          height="64px"
+          direction="row"
+          justifyContent="center"
+          {...rest}
+        >
           <IconButton
             disabled={disabled}
             disableRipple
