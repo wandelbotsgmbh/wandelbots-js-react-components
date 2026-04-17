@@ -1,8 +1,11 @@
 import { tryParseJson } from "@wandelbots/nova-js"
-import type {
-  CoordinateSystem,
-  MotionGroupDescription,
-  RobotTcp,
+import {
+  type CoordinateSystem,
+  type DHParameter,
+  type MotionGroupDescription,
+  type RobotTcp,
+  type KinematicModel,
+  JointTypeEnum,
 } from "@wandelbots/nova-js/v2"
 import { countBy } from "lodash-es"
 import keyBy from "lodash-es/keyBy"
@@ -40,29 +43,11 @@ export type IncrementJogInProgress = {
   axis: JoggingAxis
 }
 
-export enum JointCategory {
-  REVOLUTE = "REVOLUTE",
-  PRISMATIC = "PRISMATIC",
-}
-
 type TabType = "cartesian" | "joint" | "debug";
 export type CartesianMotionType = "translate" | "rotate"
 
 export class JoggingStore {
   selectedTabId: TabType = "cartesian";
-
-  /**
-   * State of the jogging panel. Starts as "inactive"
-   */
-  activationState: "inactive" | "loading" | "active" = "inactive"
-
-  /**
-   * If an error occurred connecting to the jogging websocket
-   */
-  activationError: unknown | null = null
-
-  /** To avoid activation race conditions */
-  activationCounter: number = 0
 
   /** Locks to prevent UI interactions during certain operations */
   locks = new Set<string>()
@@ -146,6 +131,17 @@ export class JoggingStore {
   disposers: IReactionDisposer[] = []
 
   /**
+   * Inverse solver from the kinematic model of the motion group to determine, which tabs should be rendered
+   */
+  inverseSolver: string | null | undefined = undefined
+
+  /**
+   * Joint type to determine, whether the active robot should be displayed as Robot or Linear Axis and what tabs
+   * should be rendered by the JoggingPanel component.
+   */
+  jointType: JointTypeEnum = JointTypeEnum.RevoluteJoint
+
+  /**
    * Load a jogging store with the relevant data it needs
    * from the backend
    */
@@ -167,6 +163,10 @@ export class JoggingStore {
       ),
     ])
 
+    const kinematicModel: KinematicModel = await nova.api.motionGroupModels.getMotionGroupKinematicModel(
+      description.motion_group_model,
+    )
+
     const tcps = Object.entries(description.tcps || {}).map(([id, tcp]) => ({
       id,
       readable_name: tcp.name,
@@ -174,7 +174,7 @@ export class JoggingStore {
       orientation: tcp.pose.orientation as Vector3Simple,
     }))
 
-    return new JoggingStore(jogger, coordinatesystems || [], description, tcps)
+    return new JoggingStore(jogger, coordinatesystems || [], description, tcps, kinematicModel.inverse_solver)
   }
 
   constructor(
@@ -182,6 +182,7 @@ export class JoggingStore {
     readonly coordSystems: CoordinateSystem[],
     readonly motionGroupDescription: MotionGroupDescription,
     readonly tcps: RobotTcp[],
+    readonly inverseSolverValue: string | null | undefined,
   ) {
     // TODO workaround for default coord system on backend having a canonical id
     // of empty string. Can remove when fixed on API side
@@ -193,6 +194,10 @@ export class JoggingStore {
     }
     this.selectedCoordSystemId = coordSystems[0]?.coordinate_system || "world"
     this.selectedTcpId = tcps[0]?.id || ""
+    this.inverseSolver = inverseSolverValue
+    this.jointType =
+      motionGroupDescription?.dh_parameters?.[0]?.type ??
+      JointTypeEnum.RevoluteJoint
 
     // Make all properties observable and actions auto-bound
     makeAutoObservable(this, {}, { autoBind: true })
@@ -306,17 +311,22 @@ export class JoggingStore {
   }
 
   get tabs() {
-    const tempTabs : {id: TabType, label: string}[] = [{
-      id: "joint",
-      label: "Joints",
-    }] ;
-    if(this.isTcpCartesianMoveable){
+    const tempTabs: { id: TabType; label: string }[] = [
+      {
+        id: "joint",
+        label: "Joints",
+      },
+    ]
+    // show the cartesian tab only : 1. when there is a solver or 2. when no solver could be loaded ( as a default )
+    // do not show the cartesian tab when the solver is null this means, it cannot get jogged cartesian
+    if (this.inverseSolver !== null) {
       tempTabs.unshift({
         id: "cartesian",
         label: "Cartesian",
-      })}
+      })
+    }
 
-    return tempTabs;
+    return tempTabs
   }
 
 
@@ -346,10 +356,6 @@ export class JoggingStore {
 
   get coordSystemsById() {
     return keyBy(this.coordSystems, (cs) => cs.coordinate_system)
-  }
-
-  get selectedCoordSystem() {
-    return this.coordSystemsById[this.selectedCoordSystemId]
   }
 
   /**
@@ -401,24 +407,6 @@ export class JoggingStore {
       : this.maxTranslationVelocityMmPerSec
   }
 
-
-  /*
-  * ToDo replace Hardcoded Models with an api request that delivers the type (will become part of DH-Parameters)
-  *  Ticket already created
-  * */
-  get jointCategory(): JointCategory {
-    return this.motionGroupDescription.motion_group_model === "ABB_IRT710"
-      ? JointCategory.PRISMATIC
-      : JointCategory.REVOLUTE
-  }
-
-  get isTcpCartesianMoveable(): boolean{
-    if(this.motionGroupDescription.motion_group_model === "ABB_IRT710"){
-      return false;
-    }
-    return true;
-  }
-
   onTabChange(_event: React.SyntheticEvent, newValue: number) {
     const tab = this.tabs[newValue] || this.tabs[0]!
     this.selectedTabId = tab.id
@@ -444,7 +432,7 @@ export class JoggingStore {
     this.incrementJogInProgress = incrementJog
   }
 
-  setVelocityFromSlider(velocity: number,useDegree : boolean ) {
+  setVelocityFromSlider(velocity: number, useDegree: boolean) {
     if (useDegree) {
       this.rotationVelocityDegPerSec = velocity
     } else {

@@ -3,8 +3,9 @@ import { observer } from "mobx-react-lite"
 import type { ReactNode } from "react"
 import { JoggingJointLimitDetector } from "./JoggingJointLimitDetector"
 import { JoggingJointValueControl } from "./JoggingJointValueControl"
-import { type JoggingStore, JointCategory } from "./JoggingStore"
+import { type JoggingStore } from "./JoggingStore"
 import { JoggingVelocitySlider } from "./JoggingVelocitySlider"
+import { JointTypeEnum } from "@wandelbots/nova-js/v2"
 
 export const JoggingJointTab = observer(
   ({ store, children }: { store: JoggingStore; children: ReactNode }) => {
@@ -19,11 +20,11 @@ export const JoggingJointTab = observer(
         joint: opts.joint,
         direction: opts.direction,
         velocityUnit:
-          store.jointCategory === JointCategory.PRISMATIC
+          store.jointType === JointTypeEnum.PrismaticJoint
             ? "mm/s"
             : "rad/s",
         velocityValue:
-          store.jointCategory === JointCategory.PRISMATIC
+          store.jointType === JointTypeEnum.PrismaticJoint
             ? store.translationVelocityMmPerSec
             : store.rotationVelocityRadsPerSec,
 
@@ -46,7 +47,7 @@ export const JoggingJointTab = observer(
         <JoggingVelocitySlider
           store={store}
           useDegree={
-            store.jointCategory === JointCategory.REVOLUTE
+            store.jointType === JointTypeEnum.RevoluteJoint
           }
         />
 
@@ -96,7 +97,7 @@ export const JoggingJointTab = observer(
                     lowerLimit={jointLimits?.lower_limit}
                     upperLimit={jointLimits?.upper_limit}
                     useDegree={
-                      store.jointCategory === JointCategory.REVOLUTE
+                      store.jointType === JointTypeEnum.RevoluteJoint
                     }
 
                     getValue={() => {
