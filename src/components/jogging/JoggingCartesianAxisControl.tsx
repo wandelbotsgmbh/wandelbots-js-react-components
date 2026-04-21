@@ -201,6 +201,9 @@ export const JoggingCartesianAxisControl = externalizeComponent(
                 fontSize: "15px",
                 color: disabled ? theme.palette.action.disabled : colors.color,
                 fontWeight: 700,
+                fontVariantNumeric: "tabular-nums",
+                minWidth: "80px",
+                textAlign: "center",
               }}
               ref={valueContainerRef}
             >

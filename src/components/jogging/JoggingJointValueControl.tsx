@@ -57,7 +57,10 @@ export const JoggingJointValueControl = externalizeComponent(
       }))
 
       const updateValue = throttle(() => {
-        setCurrentValue(useDegree ? convertToDegree(getValue()) : getValue())
+        const newValue =useDegree ? convertToDegree(getValue()) : getValue();
+        if(currentValue !== newValue) {
+          setCurrentValue(newValue)
+        }
       }, 50)
 
       useAnimationFrame(updateValue)
@@ -188,6 +191,9 @@ export const JoggingJointValueControl = externalizeComponent(
                 fontWeight: 700,
                 position: "relative",
                 top: "5px",
+                fontVariantNumeric: "tabular-nums",
+                minWidth: "80px",
+                textAlign: "center",
 
                 color: disabled
                   ? theme.palette.action.disabled
