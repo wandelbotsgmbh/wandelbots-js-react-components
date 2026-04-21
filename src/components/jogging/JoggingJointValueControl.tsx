@@ -58,7 +58,7 @@ export const JoggingJointValueControl = externalizeComponent(
 
       const updateValue = throttle(() => {
         const newValue =useDegree ? convertToDegree(getValue()) : getValue();
-        if(currentValue !== newValue) {
+        if(newValue === undefined || currentValue === undefined || Math.abs(currentValue - newValue) > 1e-9) {
           setCurrentValue(newValue)
         }
       }, 50)
