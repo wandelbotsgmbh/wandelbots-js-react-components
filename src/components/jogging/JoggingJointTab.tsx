@@ -7,6 +7,7 @@ import { type JoggingStore } from "./JoggingStore"
 import { JoggingVelocitySlider } from "./JoggingVelocitySlider"
 import { JointTypeEnum } from "@wandelbots/nova-js/v2"
 
+
 export const JoggingJointTab = observer(
   ({ store, children }: { store: JoggingStore; children: ReactNode }) => {
     const theme = useTheme()

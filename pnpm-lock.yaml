@@ -20,8 +20,8 @@ importers:
         specifier: ^8.27.0
         version: 8.27.1(@emotion/react@11.14.0(@types/react@19.2.7)(react@19.2.3))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.7)(react@19.2.3))(@types/react@19.2.7)(react@19.2.3))(@mui/material@7.3.7(@emotion/react@11.14.0(@types/react@19.2.7)(react@19.2.3))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.7)(react@19.2.3))(@types/react@19.2.7)(react@19.2.3))(@types/react@19.2.7)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(@mui/system@7.3.7(@emotion/react@11.14.0(@types/react@19.2.7)(react@19.2.3))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.7)(react@19.2.3))(@types/react@19.2.7)(react@19.2.3))(@types/react@19.2.7)(react@19.2.3))(@types/react@19.2.7)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       '@wandelbots/nova-js':
-        specifier: ^3.5.4
-        version: 3.5.4
+        specifier: ^3.6.0
+        version: 3.6.0
       axios:
         specifier: ^1.15.0
         version: 1.15.0
@@ -2745,11 +2745,11 @@ packages:
   '@vitest/utils@3.2.4':
     resolution: {integrity: sha512-fB2V0JFrQSMsCo9HiSq3Ezpdv4iYaXRG1Sx8edX3MwxfyNn83mKiGzOcH+Fkxt4MHxr3y42fQi1oeAInqgX2QA==}
 
-  '@wandelbots/nova-api@26.2.0-rc.2':
-    resolution: {integrity: sha512-ucfWITdDar3+qlb3qsHHwB4CRSuKCzZqm7uuxPDZlT7bMqknQl460gNOvUe7i5KIcuAj+Ah2xRlpyRUaF3iJQA==}
+  '@wandelbots/nova-api@26.3.0-rc.2':
+    resolution: {integrity: sha512-vGE1YyG2hsmjSuC3wsAzdMfe17vmNdA1rev6NKwwpM8MJkCN9AqVhBbWjMsF/TOAdKOM7n/4YiwEsjyD9hfe7w==}
 
-  '@wandelbots/nova-js@3.5.4':
-    resolution: {integrity: sha512-5to94wEw9OSy4vS2uwGzFNAmaHdcoTSRBVIF6AzHrpjRAI7RcKACefNBZL5A0lbD8lD/n+wS5xqItKbeH2qwhg==}
+  '@wandelbots/nova-js@3.6.0':
+    resolution: {integrity: sha512-vq0k7c5PF2UXmJSEK4dKo8vEDwLf/Zw+AAH6uz0i/hiwvbx44dKpZCA75aGzG35rjklYU2ehd9FamNnYAua8Pg==}
 
   '@webgpu/types@0.1.68':
     resolution: {integrity: sha512-3ab1B59Ojb6RwjOspYLsTpCzbNB3ZaamIAxBMmvnNkiDoLTZUOBXZ9p5nAYVEkQlDdf6qAZWi1pqj9+ypiqznA==}
@@ -5548,8 +5548,8 @@ packages:
     resolution: {integrity: sha512-oWyT4gICAu+kaA7QWk/jvCHWarMKNs6pXOGWKDTr7cw4IGcUbW+PeTfbaQiLGheFRpjo6O9J0PmyMfQPjH71oA==}
     engines: {node: 20 || >=22}
 
-  path-to-regexp@8.3.0:
-    resolution: {integrity: sha512-7jdwVIRtsP8MYpdXSwOS0YdD0Du+qOoF/AEPIt88PcCFrZCzx41oxku1jD88hZBwbNUIEfpqvuhjFaMAqMTWnA==}
+  path-to-regexp@8.4.2:
+    resolution: {integrity: sha512-qRcuIdP69NPm4qbACK+aDogI5CBDMi1jKe0ry5rSQJz8JVLsC7jV8XpiJjGRLLol3N+R5ihGYcrPLTno6pAdBA==}
 
   path-type@3.0.0:
     resolution: {integrity: sha512-T2ZUsdZFHgA3u4e5PfPbjd7HDDpxPnQb5jN0SrDsjNSuVXHJqtwTnWqG0B1jZrgmJ/7lj1EmVIByWt1gxGkWvg==}
@@ -10075,20 +10075,20 @@ snapshots:
       loupe: 3.2.1
       tinyrainbow: 2.0.0
 
-  '@wandelbots/nova-api@26.2.0-rc.2':
+  '@wandelbots/nova-api@26.3.0-rc.2':
     dependencies:
       axios: 1.15.0
     transitivePeerDependencies:
       - debug
 
-  '@wandelbots/nova-js@3.5.4':
+  '@wandelbots/nova-js@3.6.0':
     dependencies:
       '@auth0/auth0-spa-js': 2.19.0
       '@types/three': 0.183.1
-      '@wandelbots/nova-api': 26.2.0-rc.2
+      '@wandelbots/nova-api': 26.3.0-rc.2
       axios: 1.15.0
       mobx: 6.15.0
-      path-to-regexp: 8.3.0
+      path-to-regexp: 8.4.2
       reconnecting-websocket: 4.4.0
       three: 0.183.2
       url-join: 5.0.0
@@ -13237,7 +13237,7 @@ snapshots:
       lru-cache: 11.2.4
       minipass: 7.1.2
 
-  path-to-regexp@8.3.0: {}
+  path-to-regexp@8.4.2: {}
 
   path-type@3.0.0:
     dependencies:
