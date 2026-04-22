@@ -98,7 +98,7 @@ export default meta
 
 export const Default: StoryObj<typeof JoggingPanel> = {
   args: {
-    nova: "https://mock.example.com",
+    nova: import.meta.env.WANDELAPI_BASE_URL || "https://mock.example.com",
     motionGroupId: "0@mock-ur5e",
   },
   argTypes: {
@@ -106,6 +106,15 @@ export const Default: StoryObj<typeof JoggingPanel> = {
       control: {
         type: "text",
       },
+      description:
+        "Nova instance URL. Set WANDELAPI_BASE_URL in .env.local to connect to a real instance.",
+    },
+    motionGroupId: {
+      control: {
+        type: "text",
+      },
+      description:
+        'Motion group ID e.g. "0@mock-ur5e". Set WANDELAPI_MOTION_GROUP_ID in .env.local.',
     },
   },
 }
