@@ -99,7 +99,8 @@ export const JoggingPanel = externalizeComponent(
         data-testid="jogging-panel"
         aria-label="jogging-panel"
         sx={{
-          width: "100%",
+          minWidth: "320px",
+          maxWidth: "460px",
           position: "relative",
           ...props.sx,
         }}
