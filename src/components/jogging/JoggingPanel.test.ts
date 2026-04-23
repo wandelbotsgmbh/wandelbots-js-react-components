@@ -238,6 +238,18 @@ describe("JoggerConnection TCP resolution", () => {
     expect(jogger.tcp).toBeUndefined()
   })
 
+  it("1-joint prismatic with motionGroup.tcp keeps tcp", () => {
+    const ms = mockMotionStream({
+      jointCount: 1,
+      firstJointType: JointTypeEnum.PrismaticJoint,
+      tcp: "PrismaticTCP",
+      dhParameters: makeDhParams(1, JointTypeEnum.PrismaticJoint),
+    })
+    const jogger = new JoggerConnection(ms)
+
+    expect(jogger.tcp).toBe("PrismaticTCP")
+  })
+
   it("2-joint revolute without motionGroup.tcp gets undefined (NO_TCP)", () => {
     const ms = setup2JointRevolute()
     const jogger = new JoggerConnection(ms)
