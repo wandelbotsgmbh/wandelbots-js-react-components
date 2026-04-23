@@ -3,12 +3,13 @@ import {
   tryParseJson,
   XYZ_TO_VECTOR,
 } from "@wandelbots/nova-js"
-import type {
-  InitializeMovementResponse,
-  MotionCommand,
-  NovaClient,
-  Pose,
-  StartMovementResponse,
+import {
+  JointTypeEnum,
+  type InitializeMovementResponse,
+  type MotionCommand,
+  type NovaClient,
+  type Pose,
+  type StartMovementResponse,
 } from "@wandelbots/nova-js/v2"
 import { when } from "mobx"
 import { Vector3 } from "three/src/math/Vector3.js"
@@ -110,7 +111,7 @@ export class JoggerConnection {
     readonly motionStream: MotionStreamConnection,
     readonly options: JoggerConnectionOptions | undefined = {},
   ) {
-    this.tcp = options?.tcp || motionStream.motionGroup.tcp || this.getDefaultTcp()
+    this.tcp = options?.tcp || motionStream.motionGroup.tcp || this.getDefaultTcp(motionStream)
     // this.coordinateSystem = options?.coordinateSystem || this.DEFAULT_COORDINATE_SYSTEM
     this.orientation = options?.orientation || this.DEFAULT_ORIENTATION
     this.timeout = options?.timeout || this.DEFAULT_INIT_TIMEOUT
@@ -119,8 +120,12 @@ export class JoggerConnection {
   }
 
   getDefaultTcp(motionStream: MotionStreamConnection){
-    if(motionStream.joints.length < 6 && Here ){
-
+    const firstJointType = motionStream.description.dh_parameters?.[0]?.type
+    if(
+      motionStream.joints.length < 6 &&
+      (firstJointType === JointTypeEnum.RevoluteJoint || firstJointType === JointTypeEnum.PrismaticJoint)
+    ){
+      return this.NO_TCP;
     }
     return this.DEFAULT_TCP;
   }
