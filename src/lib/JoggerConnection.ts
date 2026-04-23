@@ -55,7 +55,8 @@ export class JoggerConnection {
   ENDPOINT_JOGGING = "/execution/jogging"
   ENDPOINT_TRAJECTORY = "/execution/trajectory"
   DEFAULT_MODE = "off" as JoggerMode
-  DEFAULT_TCP = "Flange"
+  DEFAULT_TCP: string | undefined = "Flange"
+  NO_TCP: string | undefined = undefined;
   // DEFAULT_COORDINATE_SYSTEM = "world"
   DEFAULT_INIT_TIMEOUT = 5000
   DEFAULT_ORIENTATION = "coordsys" as JoggerOrientation
@@ -64,7 +65,7 @@ export class JoggerConnection {
   joggingSocket: AutoReconnectingWebsocket | null = null
   trajectorySocket: AutoReconnectingWebsocket | null = null
   timeout: number = this.DEFAULT_INIT_TIMEOUT
-  tcp: string
+  tcp: string | undefined
   // coordinateSystem?: string
   orientation: JoggerOrientation
   onError?: (err: unknown) => void
@@ -109,12 +110,19 @@ export class JoggerConnection {
     readonly motionStream: MotionStreamConnection,
     readonly options: JoggerConnectionOptions | undefined = {},
   ) {
-    this.tcp = options?.tcp || motionStream.motionGroup.tcp || this.DEFAULT_TCP
+    this.tcp = options?.tcp || motionStream.motionGroup.tcp || this.getDefaultTcp()
     // this.coordinateSystem = options?.coordinateSystem || this.DEFAULT_COORDINATE_SYSTEM
     this.orientation = options?.orientation || this.DEFAULT_ORIENTATION
     this.timeout = options?.timeout || this.DEFAULT_INIT_TIMEOUT
     this.mode = options?.mode || this.DEFAULT_MODE
     this.onError = options?.onError
+  }
+
+  getDefaultTcp(motionStream: MotionStreamConnection){
+    if(motionStream.joints.length < 6 && Here ){
+
+    }
+    return this.DEFAULT_TCP;
   }
 
   // Set a new tcp or other options. If current mode is jogging, will reinitialize the jogging websocket
@@ -271,7 +279,7 @@ export class JoggerConnection {
       this.joggingSocket.sendJson({
         message_type: "InitializeJoggingRequest",
         motion_group: this.motionGroupId,
-        tcp: this.tcp,
+        ...(this.tcp ? { tcp: this.tcp } : {}),
       })
     })
   }

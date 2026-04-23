@@ -39,6 +39,7 @@
     "dev": "storybook dev -p 6006 --no-open",
     "dev:pack": "nodemon -V -w src -e '*' -x \"pnpm run build && pnpm pack\"",
     "dev:build": "nodemon -V -w src -e '*' -x \"vite build && tsc --declaration --emitDeclarationOnly\"",
+    "dev:yalc": "nodemon -V -w src -e '*' -x \"vite build && tsc --declaration --emitDeclarationOnly && yalc push\"",
     "dev:wbjs": "nodemon --watch $WBJS_PATH -e tgz --exec 'pnpm install file:$WBJS_PATH && storybook dev -p 6006 --no-open'",
     "tsc": "tsc --pretty --noEmit -p stories/tsconfig.json",
     "test": "test-storybook --url http://127.0.0.1:6006 --index-json --browsers chromium",
