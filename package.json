@@ -51,6 +51,8 @@
     "ci:test:runner": "wait-on tcp:127.0.0.1:9009 && test-storybook --url http://127.0.0.1:9009 --index-json --browsers chromium",
     "build": "rimraf dist && vite build && tsc --declaration --emitDeclarationOnly",
     "build-storybook": "storybook build",
+    "lint": "biome check --error-on-warnings .",
+    "format": "biome format . --write",
     "prepare": "husky || true",
     "td": "tsx scripts/td-wrapper.ts"
   },
@@ -69,6 +71,7 @@
     "node": ">=18.14.0"
   },
   "devDependencies": {
+    "@biomejs/biome": "^2.4.6",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
     "@mui/icons-material": "^7.3.7",
@@ -94,7 +97,6 @@
     "@types/three": "^0.182.0",
     "@vitejs/plugin-react": "^4.3.4",
     "add": "^2.0.6",
-    "eslint-plugin-storybook": "^10.1.10",
     "glob": "^13.0.0",
     "http-server": "^14.1.1",
     "husky": "^9.1.7",
@@ -106,7 +108,6 @@
     "npm-run-all": "^4.1.5",
     "playwright": "^1.59.1",
     "postcss": "^8.5.3",
-    "prettier-eslint": "^16.3.0",
     "prop-types": "^15.8.1",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
