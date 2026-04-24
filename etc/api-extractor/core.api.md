@@ -6,12 +6,16 @@
 
 import { AutoReconnectingWebsocket } from '@wandelbots/nova-js';
 import { autorun } from 'mobx';
+import Box from '@mui/material/Box';
 import { Collider } from '@wandelbots/nova-js/v2';
 import type { ComponentType } from 'react';
 import { CoordinateSystem } from '@wandelbots/nova-js/v2';
+import { DataGridProps } from '@mui/x-data-grid';
 import { Dictionary } from 'lodash';
 import { EffectCallback } from 'react';
 import { FabProps } from '@mui/material/Fab';
+import { GridColDef } from '@mui/x-data-grid';
+import { GridRowParams } from '@mui/x-data-grid';
 import type { i18n as i18n_2 } from 'i18next';
 import { IReactionDisposer } from 'mobx';
 import { JointTypeEnum } from '@wandelbots/nova-js/v2';
@@ -869,6 +873,30 @@ export const VelocitySlider: ((props: VelocitySliderProps) => JSX.Element) & {
 //
 // @public (undocumented)
 export function VelocitySliderLabel(input: VelocitySliderLabelProps): JSX.Element;
+
+// @public (undocumented)
+export const WandelbotsDataGrid: (<T>(input: WandelbotsDataGridProps<T>) => JSX.Element) & {
+    displayName: string;
+};
+
+// @public (undocumented)
+export interface WandelbotsDataGridProps<T = Record<string, unknown>> {
+    columns: GridColDef[];
+    CustomToolbar?: React.ComponentType;
+    data: T[];
+    dataGridProps?: Partial<DataGridProps>;
+    getItemId?: (item: T) => string | number;
+    getRowData: (item: T) => Record<string, unknown> & {
+        id: string | number;
+    };
+    onRowClick?: (item: T, params: GridRowParams) => void;
+    searchPlaceholder?: string;
+    selectedItem?: T | null;
+    selectFirstByDefault?: boolean;
+    showCount?: boolean;
+    sx?: React.ComponentProps<typeof Box>["sx"];
+    title?: string;
+}
 
 // (No @packageDocumentation comment for this package)
 

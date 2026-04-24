@@ -9,16 +9,20 @@ import { autorun } from 'mobx';
 import { default as AxisXIcon } from './axis-x.svg';
 import { default as AxisYIcon } from './axis-y.svg';
 import { default as AxisZIcon } from './axis-z.svg';
+import Box from '@mui/material/Box';
 import { Collider } from '@wandelbots/nova-js/v2';
 import type { CollisionSetup } from '@wandelbots/nova-js/v2';
 import type { ComponentType } from 'react';
 import { default as ControllerTypePhysicalIcon } from './controller-type-physical.svg';
 import { default as ControllerTypeVirtualIcon } from './controller-type-virtual.svg';
 import { CoordinateSystem } from '@wandelbots/nova-js/v2';
+import { DataGridProps } from '@mui/x-data-grid';
 import type { DHParameter } from '@wandelbots/nova-js/v2';
 import { Dictionary } from 'lodash';
 import { EffectCallback } from 'react';
 import { FabProps } from '@mui/material/Fab';
+import { GridColDef } from '@mui/x-data-grid';
+import { GridRowParams } from '@mui/x-data-grid';
 import type { Group } from 'three';
 import { default as HomeIcon } from './home.svg';
 import type { i18n as i18n_2 } from 'i18next';
@@ -1085,6 +1089,30 @@ export const VelocitySlider: ((props: VelocitySliderProps) => JSX.Element) & {
 //
 // @public (undocumented)
 export function VelocitySliderLabel(input: VelocitySliderLabelProps): JSX.Element;
+
+// @public (undocumented)
+export const WandelbotsDataGrid: (<T>(input: WandelbotsDataGridProps<T>) => JSX.Element) & {
+    displayName: string;
+};
+
+// @public (undocumented)
+export interface WandelbotsDataGridProps<T = Record<string, unknown>> {
+    columns: GridColDef[];
+    CustomToolbar?: React.ComponentType;
+    data: T[];
+    dataGridProps?: Partial<DataGridProps>;
+    getItemId?: (item: T) => string | number;
+    getRowData: (item: T) => Record<string, unknown> & {
+        id: string | number;
+    };
+    onRowClick?: (item: T, params: GridRowParams) => void;
+    searchPlaceholder?: string;
+    selectedItem?: T | null;
+    selectFirstByDefault?: boolean;
+    showCount?: boolean;
+    sx?: React.ComponentProps<typeof Box>["sx"];
+    title?: string;
+}
 
 export { WBLogoIcon }
 
