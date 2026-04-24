@@ -134,4 +134,3 @@ export const linearAxisDescription: MotionGroupDescription = {
   operation_limits: { auto_limits: { joints: [] } },
   dh_parameters: linearAxisDhParameters,
 } as unknown as MotionGroupDescription
-

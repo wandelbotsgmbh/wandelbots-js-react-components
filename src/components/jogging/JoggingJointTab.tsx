@@ -7,13 +7,12 @@ import { type JoggingStore } from "./JoggingStore"
 import { JoggingVelocitySlider } from "./JoggingVelocitySlider"
 import { JointTypeEnum } from "@wandelbots/nova-js/v2"
 
-
 export const JoggingJointTab = observer(
   ({ store, children }: { store: JoggingStore; children: ReactNode }) => {
     const theme = useTheme()
     async function startJointJogging(opts: {
       joint: number
-      direction: "-" | "+",
+      direction: "-" | "+"
     }) {
       await store.activate()
 
@@ -21,14 +20,11 @@ export const JoggingJointTab = observer(
         joint: opts.joint,
         direction: opts.direction,
         velocityUnit:
-          store.jointType === JointTypeEnum.PrismaticJoint
-            ? "mm/s"
-            : "rad/s",
+          store.jointType === JointTypeEnum.PrismaticJoint ? "mm/s" : "rad/s",
         velocityValue:
           store.jointType === JointTypeEnum.PrismaticJoint
             ? store.translationVelocityMmPerSec
             : store.rotationVelocityRadsPerSec,
-
       })
     }
 
@@ -47,9 +43,7 @@ export const JoggingJointTab = observer(
       >
         <JoggingVelocitySlider
           store={store}
-          useDegree={
-            store.jointType === JointTypeEnum.RevoluteJoint
-          }
+          useDegree={store.jointType === JointTypeEnum.RevoluteJoint}
         />
 
         <Divider />
@@ -97,17 +91,12 @@ export const JoggingJointTab = observer(
                     disabled={store.isLocked}
                     lowerLimit={jointLimits?.lower_limit}
                     upperLimit={jointLimits?.upper_limit}
-                    useDegree={
-                      store.jointType === JointTypeEnum.RevoluteJoint
-                    }
-
+                    useDegree={store.jointType === JointTypeEnum.RevoluteJoint}
                     getValue={() => {
                       const value =
                         store.jogger.motionStream.rapidlyChangingMotionState
                           .joint_position[joint.index]
-                      return value !== undefined
-                        ? value
-                        : undefined
+                      return value !== undefined ? value : undefined
                     }}
                     startJogging={(direction: "-" | "+") =>
                       startJointJogging({

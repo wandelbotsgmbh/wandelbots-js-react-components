@@ -3,7 +3,7 @@ import fs from "fs/promises"
 
 // Simple delay function to replace nova-js dependency
 function delay(ms: number): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, ms))
+  return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
 // Simple error message function to replace nova-js dependency
@@ -142,7 +142,6 @@ export async function waitForCellStartup(
       const services: CellServiceStatus[] = Array.isArray(data)
         ? data
         : (data?.service_status ?? [])
-
 
       if (services.length === 0) {
         console.log(`Waiting for cell services to appear...`)

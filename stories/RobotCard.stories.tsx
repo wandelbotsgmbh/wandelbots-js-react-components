@@ -57,12 +57,7 @@ function RobotCardWithMockConnectedMotionGroup(
       connectedMotionGroup={mockConnectedMotionGroup}
       robotComponent={
         props.robotComponent ||
-        ((robotProps) => (
-          <Robot
-            {...robotProps}
-            getModel={getModel}
-          />
-        ))
+        ((robotProps) => <Robot {...robotProps} getModel={getModel} />)
       }
     />
   )

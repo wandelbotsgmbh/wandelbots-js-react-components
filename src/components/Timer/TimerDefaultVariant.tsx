@@ -21,7 +21,8 @@ export const TimerDefaultVariant = ({
   const { t } = useTranslation()
   const theme = useTheme()
   const { elapsedTime, currentProgress } = timerState
-  const { showErrorAnimation, showPauseAnimation, showMainText } = animationState
+  const { showErrorAnimation, showPauseAnimation, showMainText } =
+    animationState
 
   return (
     <Box

@@ -20,25 +20,27 @@ export function DHLinearAxis({
   // Calculate initial TCP position
   function calculateTcpPosition(jointValues: number[]): Vector3 {
     const tempMatrix = new Matrix4()
-    
+
     for (let i = 0; i < dhParameters.length; i++) {
       const param = dhParameters[i]
       const jointValue = jointValues[i] ?? 0
-      
+
       const matrix = new Matrix4()
         .makeRotationY(param.theta!) // Base rotation (if any)
         .multiply(
           new Matrix4().makeTranslation(
             param.a! / 1000,
-            (param.d! + jointValue * (param.reverse_rotation_direction ? -1 : 1)) / 1000,
-            0
-          )
+            (param.d! +
+              jointValue * (param.reverse_rotation_direction ? -1 : 1)) /
+              1000,
+            0,
+          ),
         ) // Translate along X by a, and Y by d + joint_position
         .multiply(new Matrix4().makeRotationX(param.alpha!)) // Rotate around X
-      
+
       tempMatrix.multiply(matrix)
     }
-    
+
     const position = new Vector3()
     const quaternion = new Quaternion()
     const scale = new Vector3()
@@ -47,7 +49,9 @@ export function DHLinearAxis({
   }
 
   // Calculate initial TCP position for rendering
-  const initialTcpPosition = calculateTcpPosition(rapidlyChangingMotionState.joint_position)
+  const initialTcpPosition = calculateTcpPosition(
+    rapidlyChangingMotionState.joint_position,
+  )
 
   function setTranslation(joints: THREE.Object3D[], jointValues: number[]) {
     accumulatedMatrix.identity()
@@ -59,19 +63,21 @@ export function DHLinearAxis({
     for (let jointIndex = 0; jointIndex < dhParameters.length; jointIndex++) {
       const jointValue = jointValues[jointIndex] ?? 0
       const param = dhParameters[jointIndex]
-      
+
       // Calculate and accumulate transformation
       const matrix = new Matrix4()
         .makeRotationY(param.theta!) // Base rotation (if any)
         .multiply(
           new Matrix4().makeTranslation(
             param.a! / 1000,
-            (param.d! + jointValue * (param.reverse_rotation_direction ? -1 : 1)) / 1000,
-            0
-          )
+            (param.d! +
+              jointValue * (param.reverse_rotation_direction ? -1 : 1)) /
+              1000,
+            0,
+          ),
         )
         .multiply(new Matrix4().makeRotationX(param.alpha!))
-      
+
       accumulatedMatrix.multiply(matrix)
     }
 
@@ -84,14 +90,25 @@ export function DHLinearAxis({
 
     // Update TCP marker
     if (tcpMeshRef.current) {
-      tcpMeshRef.current.position.set(tcpPosition.x, tcpPosition.y, tcpPosition.z)
+      tcpMeshRef.current.position.set(
+        tcpPosition.x,
+        tcpPosition.y,
+        tcpPosition.z,
+      )
     }
 
     // Update TCP line
     if (tcpLineRef.current) {
       const lineGeometry = tcpLineRef.current.geometry
       if (lineGeometry && lineGeometry.setPositions) {
-        lineGeometry.setPositions([0, 0, 0, tcpPosition.x, tcpPosition.y, tcpPosition.z])
+        lineGeometry.setPositions([
+          0,
+          0,
+          0,
+          tcpPosition.x,
+          tcpPosition.y,
+          tcpPosition.z,
+        ])
       }
     }
   }

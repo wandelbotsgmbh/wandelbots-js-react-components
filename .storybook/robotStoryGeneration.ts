@@ -22,17 +22,19 @@ export const generateRobotStories = async () => {
   `
 
   let modelNames: string[] = []
-  
+
   try {
     // Use Nova API to get available motion group models
     const baseUrl = process.env.WANDELAPI_BASE_URL
     const cellId = process.env.CELL_ID
-    
+
     if (baseUrl) {
       const nova = new NovaClient({ instanceUrl: baseUrl })
       modelNames = await nova.api.motionGroupModels.getMotionGroupModels()
     } else {
-      console.warn("WANDELAPI_BASE_URL not configured, no robot models will be available")
+      console.warn(
+        "WANDELAPI_BASE_URL not configured, no robot models will be available",
+      )
     }
   } catch (error) {
     console.warn("Failed to fetch motion group models from Nova API:", error)

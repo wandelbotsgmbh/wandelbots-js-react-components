@@ -44,10 +44,7 @@ type Story = StoryObj<typeof SafetyZonesRenderer>
 function SafetyZonesRendererScene(
   props: React.ComponentProps<typeof SafetyZonesRenderer>,
 ) {
-
-  return (
-    <SafetyZonesRenderer {...props} />
-  )
+  return <SafetyZonesRenderer {...props} />
 }
 export const SafetyZoneRenderer = {
   args: {
@@ -59,7 +56,7 @@ export const SafetyZoneRenderer = {
       ...safetyZonesLozenge,
       ...safetyZonesSphere,
     },
-    dhParameters: dhParams
+    dhParameters: dhParams,
   },
   render: (args) => <SafetyZonesRendererScene {...args} />,
   name: "Safety Zones",

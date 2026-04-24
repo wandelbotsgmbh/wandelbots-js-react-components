@@ -57,7 +57,7 @@ export class JoggerConnection {
   ENDPOINT_TRAJECTORY = "/execution/trajectory"
   DEFAULT_MODE = "off" as JoggerMode
   DEFAULT_TCP: string | undefined = "Flange"
-  NO_TCP: string | undefined = undefined;
+  NO_TCP: string | undefined = undefined
   // DEFAULT_COORDINATE_SYSTEM = "world"
   DEFAULT_INIT_TIMEOUT = 5000
   DEFAULT_ORIENTATION = "coordsys" as JoggerOrientation
@@ -97,7 +97,6 @@ export class JoggerConnection {
     // Get matching motion stream
     const motionStream = await MotionStreamConnection.open(nova, motionGroupId)
 
-
     // Initialize jogger with options
     const jogger = new JoggerConnection(motionStream, options)
 
@@ -112,7 +111,10 @@ export class JoggerConnection {
     readonly motionStream: MotionStreamConnection,
     readonly options: JoggerConnectionOptions | undefined = {},
   ) {
-    this.tcp = options?.tcp || motionStream.motionGroup.tcp || this.getDefaultTcp(motionStream)
+    this.tcp =
+      options?.tcp ||
+      motionStream.motionGroup.tcp ||
+      this.getDefaultTcp(motionStream)
     // this.coordinateSystem = options?.coordinateSystem || this.DEFAULT_COORDINATE_SYSTEM
     this.orientation = options?.orientation || this.DEFAULT_ORIENTATION
     this.timeout = options?.timeout || this.DEFAULT_INIT_TIMEOUT
@@ -120,15 +122,16 @@ export class JoggerConnection {
     this.onError = options?.onError
   }
 
-  getDefaultTcp(motionStream: MotionStreamConnection){
+  getDefaultTcp(motionStream: MotionStreamConnection) {
     const firstJointType = motionStream.description.dh_parameters?.[0]?.type
-    if(
+    if (
       motionStream.joints.length < 6 &&
-      (firstJointType === JointTypeEnum.RevoluteJoint || firstJointType === JointTypeEnum.PrismaticJoint)
-    ){
-      return this.NO_TCP;
+      (firstJointType === JointTypeEnum.RevoluteJoint ||
+        firstJointType === JointTypeEnum.PrismaticJoint)
+    ) {
+      return this.NO_TCP
     }
-    return this.DEFAULT_TCP;
+    return this.DEFAULT_TCP
   }
 
   // Set a new tcp or other options. If current mode is jogging, will reinitialize the jogging websocket
@@ -297,8 +300,7 @@ export class JoggerConnection {
     joint,
     direction,
     velocityValue,
-    velocityUnit
-
+    velocityUnit,
   }: {
     /** Index of the joint to rotate */
     joint: number
@@ -307,7 +309,6 @@ export class JoggerConnection {
     /** Speed of the rotation, unit is currently unused, but i wanted it there to raise awareness that not everything here is rad/s*/
     velocityValue: number
     velocityUnit: "mm/s" | "rad/s"
-
   }) {
     if (!this.joggingSocket || this.mode !== "jogging") {
       throw new Error(
@@ -317,8 +318,7 @@ export class JoggerConnection {
 
     const velocity = new Array(this.numJoints).fill(0)
 
-    velocity[joint] =
-      direction === "-" ? - velocityValue : velocityValue
+    velocity[joint] = direction === "-" ? -velocityValue : velocityValue
 
     this.joggingSocket.sendJson({
       message_type: "JointVelocityRequest",
@@ -408,14 +408,14 @@ export class JoggerConnection {
     axis: "x" | "y" | "z"
     direction: "-" | "+"
     motion:
-    | {
-      type: "rotate"
-      distanceRads: number
-    }
-    | {
-      type: "translate"
-      distanceMm: number
-    }
+      | {
+          type: "rotate"
+          distanceRads: number
+        }
+      | {
+          type: "translate"
+          distanceMm: number
+        }
   }) {
     const commands: MotionCommand[] = []
 
@@ -577,8 +577,8 @@ export class JoggerConnection {
         } else {
           throw new Error(
             result?.add_trajectory_error?.message ||
-            result?.message ||
-            "Failed to execute trajectory, unknown error",
+              result?.message ||
+              "Failed to execute trajectory, unknown error",
           )
         }
       }

@@ -43,11 +43,11 @@ export type IncrementJogInProgress = {
   axis: JoggingAxis
 }
 
-type TabType = "cartesian" | "joint" | "debug";
+type TabType = "cartesian" | "joint" | "debug"
 export type CartesianMotionType = "translate" | "rotate"
 
 export class JoggingStore {
-  selectedTabId: TabType = "cartesian";
+  selectedTabId: TabType = "cartesian"
 
   /** Locks to prevent UI interactions during certain operations */
   locks = new Set<string>()
@@ -163,9 +163,10 @@ export class JoggingStore {
       ),
     ])
 
-    const kinematicModel: KinematicModel = await nova.api.motionGroupModels.getMotionGroupKinematicModel(
-      description.motion_group_model,
-    )
+    const kinematicModel: KinematicModel =
+      await nova.api.motionGroupModels.getMotionGroupKinematicModel(
+        description.motion_group_model,
+      )
 
     const tcps = Object.entries(description.tcps || {}).map(([id, tcp]) => ({
       id,
@@ -174,7 +175,13 @@ export class JoggingStore {
       orientation: tcp.pose.orientation as Vector3Simple,
     }))
 
-    return new JoggingStore(jogger, coordinatesystems || [], description, tcps, kinematicModel.inverse_solver)
+    return new JoggingStore(
+      jogger,
+      coordinatesystems || [],
+      description,
+      tcps,
+      kinematicModel.inverse_solver,
+    )
   }
 
   constructor(
@@ -329,7 +336,6 @@ export class JoggingStore {
     return tempTabs
   }
 
-
   get incrementOptions() {
     return incrementOptions
   }
@@ -391,14 +397,12 @@ export class JoggingStore {
       : this.translationVelocityMmPerSec
   }
 
-
   /** Minimum selectable velocity in mm/sec or deg/sec */
   minVelocityInDisplayUnits(useDegree: boolean) {
     return useDegree
       ? this.minRotationVelocityDegPerSec
       : this.minTranslationVelocityMmPerSec
   }
-
 
   /** Maximum selectable velocity in mm/sec or deg/sec */
   maxVelocityInDisplayUnits(useDegree: boolean) {
@@ -439,7 +443,6 @@ export class JoggingStore {
       this.translationVelocityMmPerSec = velocity
     }
   }
-
 
   setSelectedCartesianMotionType(type: CartesianMotionType) {
     this.selectedCartesianMotionType = type

@@ -24,15 +24,15 @@ type JoggingJointValueControlProps = {
 export const JoggingJointValueControl = externalizeComponent(
   observer(
     ({
-       startJogging,
-       stopJogging,
-       lowerLimit,
-       upperLimit,
-       useDegree,
-       getValue,
-       disabled,
-       ...rest
-     }: JoggingJointValueControlProps) => {
+      startJogging,
+      stopJogging,
+      lowerLimit,
+      upperLimit,
+      useDegree,
+      getValue,
+      disabled,
+      ...rest
+    }: JoggingJointValueControlProps) => {
       const { t } = useTranslation()
       const [currentValue, setCurrentValue] = useState<number | undefined>()
       const theme = useTheme()
@@ -57,19 +57,23 @@ export const JoggingJointValueControl = externalizeComponent(
       }))
 
       const updateValue = throttle(() => {
-        const newValue =useDegree ? convertToDegree(getValue()) : getValue();
-        if(newValue === undefined || currentValue === undefined || Math.abs(currentValue - newValue) > 1e-9) {
+        const newValue = useDegree ? convertToDegree(getValue()) : getValue()
+        if (
+          newValue === undefined ||
+          currentValue === undefined ||
+          Math.abs(currentValue - newValue) > 1e-9
+        ) {
           setCurrentValue(newValue)
         }
       }, 50)
 
       useAnimationFrame(updateValue)
 
-      function convertToDegree(value: number| undefined){
-        if (value == undefined){
-          return undefined;
+      function convertToDegree(value: number | undefined) {
+        if (value == undefined) {
+          return undefined
         }
-        return radiansToDegrees(value);
+        return radiansToDegrees(value)
       }
 
       function onPointerDownMinus(ev: React.PointerEvent) {
@@ -115,7 +119,6 @@ export const JoggingJointValueControl = externalizeComponent(
           return output
         }
       }
-
 
       return (
         <Stack
@@ -164,8 +167,8 @@ export const JoggingJointValueControl = externalizeComponent(
               sx={{
                 pointerEvents: "none",
                 color:
-                theme.componentsExt?.JoggingPanel?.JoggingJoint?.Joint
-                  ?.arrowColor,
+                  theme.componentsExt?.JoggingPanel?.JoggingJoint?.Joint
+                    ?.arrowColor,
               }}
             />
           </IconButton>
@@ -206,8 +209,8 @@ export const JoggingJointValueControl = externalizeComponent(
             <Slider
               disabled
               aria-label="Joint position"
-              min={ useDegree ? convertToDegree(lowerLimit) : lowerLimit}
-              max={ useDegree ? convertToDegree(upperLimit) : upperLimit}
+              min={useDegree ? convertToDegree(lowerLimit) : lowerLimit}
+              max={useDegree ? convertToDegree(upperLimit) : upperLimit}
               value={currentValue || 0}
               track={false}
               sx={{
@@ -238,12 +241,20 @@ export const JoggingJointValueControl = externalizeComponent(
                 lowerLimit !== undefined &&
                 upperLimit !== undefined && [
                   {
-                    value: (useDegree ? convertToDegree(lowerLimit) : lowerLimit) as number,
-                    label: useDegree ? formatDegrees(convertToDegree(lowerLimit),0) : formatMm(lowerLimit),
+                    value: (useDegree
+                      ? convertToDegree(lowerLimit)
+                      : lowerLimit) as number,
+                    label: useDegree
+                      ? formatDegrees(convertToDegree(lowerLimit), 0)
+                      : formatMm(lowerLimit),
                   },
                   {
-                    value: (useDegree ? convertToDegree(upperLimit) : upperLimit) as number,
-                    label: useDegree ?  formatDegrees(convertToDegree(upperLimit),0) : formatMm(upperLimit),
+                    value: (useDegree
+                      ? convertToDegree(upperLimit)
+                      : upperLimit) as number,
+                    label: useDegree
+                      ? formatDegrees(convertToDegree(upperLimit), 0)
+                      : formatMm(upperLimit),
                   },
                 ]
               }
@@ -265,8 +276,8 @@ export const JoggingJointValueControl = externalizeComponent(
               sx={{
                 pointerEvents: "none",
                 color:
-                theme.componentsExt?.JoggingPanel?.JoggingJoint?.Joint
-                  ?.arrowColor,
+                  theme.componentsExt?.JoggingPanel?.JoggingJoint?.Joint
+                    ?.arrowColor,
               }}
             />
           </IconButton>

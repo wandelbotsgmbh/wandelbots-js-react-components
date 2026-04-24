@@ -9,10 +9,10 @@ import {
 } from "./robotStoryGeneration.ts"
 
 // Load environment variables from .env.local if present (optional)
-if (existsSync('.env.local')) {
-  dotenvConfig({ path: '.env.local' })
+if (existsSync(".env.local")) {
+  dotenvConfig({ path: ".env.local" })
 } else {
-  console.warn('.env.local not found — proceeding without it')
+  console.warn(".env.local not found — proceeding without it")
 }
 
 const config: StorybookConfig = {
@@ -28,7 +28,10 @@ const config: StorybookConfig = {
       : []),
   ],
   staticDirs: [
-    { from: '../stories/robots/robotConfig', to: '/stories/robots/robotConfig' }
+    {
+      from: "../stories/robots/robotConfig",
+      to: "/stories/robots/robotConfig",
+    },
   ],
   addons: ["storybook-preset-inline-svg", "@storybook/addon-docs"],
   framework: {
@@ -61,15 +64,17 @@ const config: StorybookConfig = {
     const { plugins = [] } = config
     plugins.push(robotStoryGenerationVitePlugin())
     config.plugins = plugins
-    
+
     // Make environment variables available in the browser
     config.define = {
       ...config.define,
-      'import.meta.env.WANDELAPI_BASE_URL': JSON.stringify(process.env.WANDELAPI_BASE_URL || ''),
-      'import.meta.env.CELL_ID': JSON.stringify(process.env.CELL_ID || 'cell'),
+      "import.meta.env.WANDELAPI_BASE_URL": JSON.stringify(
+        process.env.WANDELAPI_BASE_URL || "",
+      ),
+      "import.meta.env.CELL_ID": JSON.stringify(process.env.CELL_ID || "cell"),
     }
     console.log("Final Vite config for Storybook:", config)
-    
+
     return config
   },
 

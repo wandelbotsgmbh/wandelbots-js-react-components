@@ -5,7 +5,11 @@ import fs from "fs/promises"
 import { omit } from "lodash-es"
 import { username } from "username"
 import { makeErrorMessage } from "./errorHandling"
-import { patchLocalEnv, waitForCellStartup, waitForNovaInstanceStartup } from "./util"
+import {
+  patchLocalEnv,
+  waitForCellStartup,
+  waitForNovaInstanceStartup,
+} from "./util"
 config()
 
 /**
@@ -24,7 +28,7 @@ const defaultControllers: RobotController[] = [
       type: "universalrobots-ur5e",
       initial_joint_position: "[1.17, -1.57, 1.36, 1.03, 1.29, 1.28, 0]",
     },
-  }
+  },
 ]
 
 export async function testDeploy(
@@ -143,7 +147,6 @@ export async function testDeploy(
   //   }
   // }
 
-
   console.log(`test deployment completed in ${Date.now() - startTime}ms`)
 }
 
@@ -158,15 +161,16 @@ export async function main() {
       existingInstanceIp: process.env.GITLAB_CI
         ? undefined
         : process.env.API_GATEWAY_BASE,
-      instanceProvider: process.env.INSTANCE_PROVIDER_URL || process.env.INSTANCE_PROVIDER,
-    });
+      instanceProvider:
+        process.env.INSTANCE_PROVIDER_URL || process.env.INSTANCE_PROVIDER,
+    })
   } catch (err) {
-    console.error(makeErrorMessage(err));
-    process.exit(1);
+    console.error(makeErrorMessage(err))
+    process.exit(1)
   }
 }
 
-import { fileURLToPath } from 'url'
+import { fileURLToPath } from "url"
 if (fileURLToPath(import.meta.url) === process.argv[1]) {
   void main()
 }

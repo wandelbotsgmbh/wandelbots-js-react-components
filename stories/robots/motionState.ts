@@ -14,5 +14,5 @@ export const rapidlyChangingMotionState: MotionGroupState = {
   sequence_number: 0,
   standstill: true,
   timestamp: "2025-11-10T11:19:05.409098209Z",
-  description_revision: 0
+  description_revision: 0,
 }

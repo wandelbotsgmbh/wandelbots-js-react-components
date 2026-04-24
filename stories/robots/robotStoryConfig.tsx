@@ -10,13 +10,20 @@ export async function getDHParams(
   modelFromController: string,
 ): Promise<DHParameter[]> {
   const instanceUrl = import.meta.env.WANDELAPI_BASE_URL
-  
+
   // If we have an instance URL, try to fetch from API
-  if (instanceUrl && instanceUrl !== "undefined" && typeof instanceUrl === "string") {
+  if (
+    instanceUrl &&
+    instanceUrl !== "undefined" &&
+    typeof instanceUrl === "string"
+  ) {
     const nova = new NovaClient({ instanceUrl })
-    
+
     try {
-      const apiResult: any = await nova.api.motionGroupModels.getMotionGroupKinematicModel(modelFromController)
+      const apiResult: any =
+        await nova.api.motionGroupModels.getMotionGroupKinematicModel(
+          modelFromController,
+        )
       const dhParamsJson = apiResult.dh_parameters
       if (dhParamsJson && Array.isArray(dhParamsJson)) {
         return dhParamsJson.map((json: any) => {
@@ -30,29 +37,36 @@ export async function getDHParams(
         })
       }
     } catch (err) {
-      console.warn(`Failed to fetch DH params from API for ${modelFromController}, falling back to local config`)
+      console.warn(
+        `Failed to fetch DH params from API for ${modelFromController}, falling back to local config`,
+      )
     }
   }
-  
+
   // Fall back to loading from local robotConfig folder
   try {
-    const response = await fetch(`${import.meta.env.BASE_URL}stories/robots/robotConfig/kinematics/${modelFromController}.json`)
+    const response = await fetch(
+      `${import.meta.env.BASE_URL}stories/robots/robotConfig/kinematics/${modelFromController}.json`,
+    )
     if (response.ok) {
       const data = await response.json()
       if (data.dh_parameters && Array.isArray(data.dh_parameters)) {
-        return data.dh_parameters.map((json: any) => ({
-          a: json.a,
-          d: json.d,
-          alpha: json.alpha,
-          theta: json.theta,
-          reverse_rotation_direction: json.reverse_rotation_direction,
-        } as DHParameter))
+        return data.dh_parameters.map(
+          (json: any) =>
+            ({
+              a: json.a,
+              d: json.d,
+              alpha: json.alpha,
+              theta: json.theta,
+              reverse_rotation_direction: json.reverse_rotation_direction,
+            }) as DHParameter,
+        )
       }
     }
   } catch (err) {
     console.warn(`No local config found for ${modelFromController}`)
   }
-  
+
   return []
 }
 
@@ -124,7 +138,12 @@ function createMockGlbFile(modelFromController: string): string {
   const headerLength = 12
   const jsonChunkHeaderLength = 8
   const binChunkHeaderLength = 8
-  const totalLength = headerLength + jsonChunkHeaderLength + paddedJsonLength + binChunkHeaderLength + binaryLength
+  const totalLength =
+    headerLength +
+    jsonChunkHeaderLength +
+    paddedJsonLength +
+    binChunkHeaderLength +
+    binaryLength
 
   const buffer = new ArrayBuffer(totalLength)
   const dv = new DataView(buffer)
@@ -132,7 +151,7 @@ function createMockGlbFile(modelFromController: string): string {
   let offset = 0
 
   // magic 'glTF'
-  u8.set([0x67, 0x6C, 0x54, 0x46], offset)
+  u8.set([0x67, 0x6c, 0x54, 0x46], offset)
   offset += 4
 
   // version 2 little-endian
@@ -146,7 +165,7 @@ function createMockGlbFile(modelFromController: string): string {
   // JSON chunk header: length and type
   dv.setUint32(offset, paddedJsonLength, true)
   offset += 4
-  u8.set([0x4A, 0x53, 0x4F, 0x4E], offset) // 'JSON'
+  u8.set([0x4a, 0x53, 0x4f, 0x4e], offset) // 'JSON'
   offset += 4
 
   // JSON payload + padding
@@ -160,14 +179,16 @@ function createMockGlbFile(modelFromController: string): string {
   // BIN chunk header
   dv.setUint32(offset, binaryLength, true)
   offset += 4
-  u8.set([0x42, 0x49, 0x4E, 0x00], offset) // 'BIN\0'
+  u8.set([0x42, 0x49, 0x4e, 0x00], offset) // 'BIN\0'
   offset += 4
 
   // binary payload
   u8.set(binaryBytes, offset)
 
   const mockBlob = new Blob([buffer], { type: "model/gltf-binary" })
-  const mockFile = new File([mockBlob], `${modelFromController}.glb`, { type: "model/gltf-binary" })
+  const mockFile = new File([mockBlob], `${modelFromController}.glb`, {
+    type: "model/gltf-binary",
+  })
   return URL.createObjectURL(mockFile)
 }
 
@@ -180,51 +201,64 @@ export async function getModel(modelFromController: string): Promise<string> {
   if (modelCache.has(modelFromController)) {
     return modelCache.get(modelFromController)!
   }
-  
+
   // Create the promise and cache it immediately to prevent duplicate calls
   const modelPromise = (async () => {
     const instanceUrl = import.meta.env.WANDELAPI_BASE_URL
-    
+
     // If we have an instance URL, try to fetch from API
-    if (instanceUrl && instanceUrl !== "undefined" && typeof instanceUrl === "string") {
+    if (
+      instanceUrl &&
+      instanceUrl !== "undefined" &&
+      typeof instanceUrl === "string"
+    ) {
       const nova = new NovaClient({ instanceUrl })
-      
+
       // Configure axios to handle binary responses for GLB files
       const apiInstance = nova.api.motionGroupModels as any
       if (apiInstance.axios?.interceptors) {
         apiInstance.axios.interceptors.request.use((config: any) => {
-          if (config.url?.includes('/glb')) {
-            config.responseType = 'blob'
+          if (config.url?.includes("/glb")) {
+            config.responseType = "blob"
           }
           return config
         })
       }
-      
+
       try {
-        const file = await nova.api.motionGroupModels.getMotionGroupGlbModel(modelFromController)
+        const file =
+          await nova.api.motionGroupModels.getMotionGroupGlbModel(
+            modelFromController,
+          )
         const url = URL.createObjectURL(file)
         return url
       } catch (error) {
-        console.warn(`Failed to fetch model from API for ${modelFromController}, falling back to local file`)
+        console.warn(
+          `Failed to fetch model from API for ${modelFromController}, falling back to local file`,
+        )
       }
     }
-    
+
     // Try to load from local robotConfig folder
     try {
-      const response = await fetch(`${import.meta.env.BASE_URL}stories/robots/robotConfig/model/${modelFromController}.glb`)
+      const response = await fetch(
+        `${import.meta.env.BASE_URL}stories/robots/robotConfig/model/${modelFromController}.glb`,
+      )
       if (response.ok) {
         const blob = await response.blob()
         const url = URL.createObjectURL(blob)
         return url
       }
     } catch (error) {
-      console.warn(`No local GLB file found for ${modelFromController}, falling back to mock`)
+      console.warn(
+        `No local GLB file found for ${modelFromController}, falling back to mock`,
+      )
     }
-    
+
     // Final fallback: create mock GLB
     return createMockGlbFile(modelFromController)
   })()
-  
+
   // Cache the promise
   modelCache.set(modelFromController, modelPromise)
   return modelPromise
@@ -267,7 +301,7 @@ export function robotStory(
           revokeAllCachedModels()
         }
       }, [])
-      
+
       return <SupportedRobotScene {...args} dhParameters={dhParameters} />
     },
     name: modelFromController,

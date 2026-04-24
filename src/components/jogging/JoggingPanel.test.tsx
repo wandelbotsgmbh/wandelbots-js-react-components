@@ -86,7 +86,10 @@ function createJoggingStore(opts: {
   description: MotionGroupDescription
   inverseSolver?: string | null | undefined
 }): JoggingStore {
-  const motionStream = createMockMotionStream(opts.motionGroupState, opts.description)
+  const motionStream = createMockMotionStream(
+    opts.motionGroupState,
+    opts.description,
+  )
   const jogger = createMockJogger(motionStream)
 
   const coordSystems: CoordinateSystem[] = [
@@ -189,9 +192,7 @@ describe("JoggingPanel", () => {
         </JoggingJointTab>,
       )
 
-      const wrapper = screen.getByTestId(
-        "jogging-joint-value-controls-wrapper",
-      )
+      const wrapper = screen.getByTestId("jogging-joint-value-controls-wrapper")
       for (let i = 0; i < 6; i++) {
         expect(
           within(wrapper).getByTestId(`jogging-joint-value-control-${i}`),
@@ -214,9 +215,7 @@ describe("JoggingPanel", () => {
           <></>
         </JoggingCartesianTab>,
       )
-      expect(
-        screen.getByTestId("jogging-cartesian-tab"),
-      ).toBeInTheDocument()
+      expect(screen.getByTestId("jogging-cartesian-tab")).toBeInTheDocument()
     })
 
     it("shows X, Y, Z axis controls in cartesian tab", () => {
@@ -260,8 +259,7 @@ describe("JoggingPanel", () => {
     })
 
     it("uses mm/s as velocity unit for prismatic joints", () => {
-      const useDegree =
-        store.jointType === JointTypeEnum.RevoluteJoint
+      const useDegree = store.jointType === JointTypeEnum.RevoluteJoint
       expect(useDegree).toBe(false)
     })
 
@@ -272,9 +270,7 @@ describe("JoggingPanel", () => {
         </JoggingJointTab>,
       )
 
-      const wrapper = screen.getByTestId(
-        "jogging-joint-value-controls-wrapper",
-      )
+      const wrapper = screen.getByTestId("jogging-joint-value-controls-wrapper")
       expect(
         within(wrapper).getByTestId("jogging-joint-value-control-0"),
       ).toBeInTheDocument()
@@ -308,9 +304,7 @@ describe("JoggingPanel", () => {
         </JoggingJointTab>,
       )
 
-      const wrapper = screen.getByTestId(
-        "jogging-joint-value-controls-wrapper",
-      )
+      const wrapper = screen.getByTestId("jogging-joint-value-controls-wrapper")
       expect(
         within(wrapper).getByTestId("jogging-joint-value-control-0"),
       ).toBeInTheDocument()
@@ -540,7 +534,10 @@ describe("JoggingPanel", () => {
 
   describe("Dispose", () => {
     it("disposes the jogger connection when store is disposed", () => {
-      const motionStream = createMockMotionStream(ur5eMotionGroupState, ur5eDescription)
+      const motionStream = createMockMotionStream(
+        ur5eMotionGroupState,
+        ur5eDescription,
+      )
       const jogger = createMockJogger(motionStream)
 
       const store = new JoggingStore(
@@ -597,10 +594,18 @@ describe("JoggingPanel", () => {
     it("minVelocityInDisplayUnits and maxVelocityInDisplayUnits return correct bounds", () => {
       const store = createUr5eStore("solver")
 
-      expect(store.minVelocityInDisplayUnits(false)).toBe(store.minTranslationVelocityMmPerSec)
-      expect(store.maxVelocityInDisplayUnits(false)).toBe(store.maxTranslationVelocityMmPerSec)
-      expect(store.minVelocityInDisplayUnits(true)).toBe(store.minRotationVelocityDegPerSec)
-      expect(store.maxVelocityInDisplayUnits(true)).toBe(store.maxRotationVelocityDegPerSec)
+      expect(store.minVelocityInDisplayUnits(false)).toBe(
+        store.minTranslationVelocityMmPerSec,
+      )
+      expect(store.maxVelocityInDisplayUnits(false)).toBe(
+        store.maxTranslationVelocityMmPerSec,
+      )
+      expect(store.minVelocityInDisplayUnits(true)).toBe(
+        store.minRotationVelocityDegPerSec,
+      )
+      expect(store.maxVelocityInDisplayUnits(true)).toBe(
+        store.maxRotationVelocityDegPerSec,
+      )
     })
   })
 
@@ -608,37 +613,58 @@ describe("JoggingPanel", () => {
 
   describe("JoggerConnection TCP resolution", () => {
     it("6-joint revolute defaults to 'Flange' TCP from motionGroup.tcp", () => {
-      const ms = createMockMotionStream(ur5eMotionGroupState, ur5eDescription, "Flange")
+      const ms = createMockMotionStream(
+        ur5eMotionGroupState,
+        ur5eDescription,
+        "Flange",
+      )
       const jogger = new JoggerConnection(ms)
       expect(jogger.tcp).toBe("Flange")
     })
 
     it("1-joint prismatic without motionGroup.tcp gets undefined (NO_TCP)", () => {
-      const ms = createMockMotionStream(linearAxisMotionGroupState, linearAxisDescription)
+      const ms = createMockMotionStream(
+        linearAxisMotionGroupState,
+        linearAxisDescription,
+      )
       const jogger = new JoggerConnection(ms)
       expect(jogger.tcp).toBeUndefined()
     })
 
     it("1-joint prismatic with motionGroup.tcp keeps tcp", () => {
-      const ms = createMockMotionStream(linearAxisMotionGroupState, linearAxisDescription, "PrismaticTCP")
+      const ms = createMockMotionStream(
+        linearAxisMotionGroupState,
+        linearAxisDescription,
+        "PrismaticTCP",
+      )
       const jogger = new JoggerConnection(ms)
       expect(jogger.tcp).toBe("PrismaticTCP")
     })
 
     it("2-joint revolute without motionGroup.tcp gets undefined (NO_TCP)", () => {
-      const ms = createMockMotionStream(turnMockMotionGroupState, turnMockDescription)
+      const ms = createMockMotionStream(
+        turnMockMotionGroupState,
+        turnMockDescription,
+      )
       const jogger = new JoggerConnection(ms)
       expect(jogger.tcp).toBeUndefined()
     })
 
     it("explicit tcp option overrides any default", () => {
-      const ms = createMockMotionStream(linearAxisMotionGroupState, linearAxisDescription)
+      const ms = createMockMotionStream(
+        linearAxisMotionGroupState,
+        linearAxisDescription,
+      )
       const jogger = new JoggerConnection(ms, { tcp: "MyCustomTool" })
       expect(jogger.tcp).toBe("MyCustomTool")
     })
 
     it("6-joint revolute with explicit tcp option uses the provided value", () => {
-      const ms = createMockMotionStream(ur5eMotionGroupState, ur5eDescription, "Flange")
+      const ms = createMockMotionStream(
+        ur5eMotionGroupState,
+        ur5eDescription,
+        "Flange",
+      )
       const jogger = new JoggerConnection(ms, { tcp: "GripperTCP" })
       expect(jogger.tcp).toBe("GripperTCP")
     })
@@ -650,4 +676,3 @@ describe("JoggingPanel", () => {
     })
   })
 })
-
