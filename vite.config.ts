@@ -1,10 +1,10 @@
 import react from "@vitejs/plugin-react"
-import { globSync } from "glob"
 import { writeFileSync } from "node:fs"
 import { isAbsolute, resolve } from "node:path"
 import type { Plugin } from "vite"
 import { defineConfig } from "vite"
 import svgr from "vite-plugin-svgr"
+import { entry } from "./scripts/entry-points"
 
 // Treat anything that isn't a relative import or a file inside this package
 // as an external dependency. This correctly externalizes subpath imports like
@@ -53,31 +53,8 @@ const emitSvgDts = (): Plugin => ({
 // `./components/*` wildcard subpath export in package.json. Other source
 // modules (helpers under `src/lib/`, `src/themes/`, etc.) are bundled
 // into the aggregates and intentionally not exposed as a public API.
-const componentsRoot = resolve(__dirname, "src/components")
-const componentEntries = Object.fromEntries(
-  globSync("**/*.{ts,tsx}", {
-    cwd: componentsRoot,
-    ignore: [
-      "**/*.test.{ts,tsx}",
-      "**/*.stories.{ts,tsx}",
-      "**/__fixtures__/**",
-      "**/__mocks__/**",
-    ],
-    absolute: false,
-  }).map((rel) => {
-    const abs = resolve(componentsRoot, rel)
-    const name = `components/${rel.replace(/\.(ts|tsx)$/, "")}`
-    return [name, abs]
-  }),
-)
-
-const entry = {
-  index: resolve(__dirname, "src/index.ts"),
-  core: resolve(__dirname, "src/core.ts"),
-  "3d": resolve(__dirname, "src/3d.ts"),
-  "wb-icons": resolve(__dirname, "src/wb-icons.ts"),
-  ...componentEntries,
-}
+// The entry map itself lives in `scripts/entry-points.ts` so that
+// `scripts/api-extractor.ts` can iterate the same list.
 
 // https://vitejs.dev/config/
 export default defineConfig({

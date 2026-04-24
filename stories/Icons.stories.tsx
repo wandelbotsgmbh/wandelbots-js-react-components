@@ -11,7 +11,7 @@ import {
   SafetyStateManualActionRequiredIcon,
   SafetyStateNormalIcon,
   SafetyStateStopIcon,
-} from "../src/components/safetyBar/icons"
+} from "../src/SafetyBar/icons"
 import {
   AxisXIcon,
   AxisYIcon,
