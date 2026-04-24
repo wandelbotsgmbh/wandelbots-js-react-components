@@ -1,125 +1,59 @@
-# https://github.com/orgs/community/discussions/21582
-name: Build and Publish Storybook to GitHub Pages
+# Publishes Storybook for the protected branches (main, v2, v3) to the
+# `gh-pages` branch. Per-PR previews are handled separately by
+# `pr-preview.yml`, which deploys to `pr-preview/pr-<num>/`. The
+# `clean-exclude` list below ensures neither workflow wipes the other's output.
+#
+# NOTE: GitHub Pages must be configured to deploy from the `gh-pages` branch
+# (Settings → Pages → Source: Deploy from a branch → gh-pages / (root)).
+
+name: Publish Storybook
 
 on:
-  # Event for the workflow to run on
   push:
     branches:
-      - "**" # Run on all branches
+      - main
+      - v2
+      - v3
+  workflow_dispatch:
 
 permissions:
   contents: write
-  pages: write
-  id-token: write
-  actions: read
 
 concurrency:
-  group: "pages"
+  group: storybook-publish-${{ github.ref }}
   cancel-in-progress: true
 
-# List of jobs
 jobs:
-  build_matrix:
+  publish:
     runs-on: ubuntu-latest
-    outputs:
-      json_branches: ${{ steps.generate-matrix.outputs.json_branches }}
-    steps:
-      - uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
-      - name: Generate Matrix
-        id: generate-matrix
-        run: |
-          valid_branches=$(
-            git branch -r |
-            cut -c 3- |
-            sed 's/origin\///g' |
-            grep -E '^(main$|v(2|3)$|feat/|feature/|fix/|bugfix/)' |
-            sort -u
-          )
-
-          echo "Found branches:"
-          echo "${valid_branches}"
-
-          json_branches=$(printf '%s\n' "${valid_branches}" | jq -R . | jq -s -c .)
-          echo "json_branches=${json_branches}" >> $GITHUB_OUTPUT
-
-  build:
-    runs-on: ubuntu-latest
-    name: Build
     env:
       HUSKY: 0
-    needs:
-      - build_matrix
-    strategy:
-      matrix:
-        branch: ${{ fromJSON(needs.build_matrix.outputs.json_branches) }}
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v6
-        with:
-          ref: ${{ matrix.branch }}
-      - name: Check for pnpm
-        id: check-pnpm
-        run: |
-          if grep -q '"packageManager"' package.json 2>/dev/null; then
-            echo "supported=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "supported=false" >> "$GITHUB_OUTPUT"
-            echo "Skipping branch — not using pnpm"
-          fi
+
       - uses: ./.github/actions/setup-node
-        if: steps.check-pnpm.outputs.supported == 'true'
-      - name: Build Storybook
-        if: steps.check-pnpm.outputs.supported == 'true'
-        run: pnpm run build-storybook
-      - name: Sanitize branch name
-        if: steps.check-pnpm.outputs.supported == 'true'
-        id: sanitize
-        run: echo "SANITIZED_BRANCH=$(echo ${{ matrix.branch }} | sed 's/\//-/g')" >> $GITHUB_ENV
-      - uses: actions/upload-artifact@v6
-        if: steps.check-pnpm.outputs.supported == 'true'
-        with:
-          name: ${{ env.SANITIZED_BRANCH }}
-          path: storybook-static/
 
-  deploy:
-    runs-on: ubuntu-latest
-    name: Deploy
-    env:
-      HUSKY: 0
-    if: always()
-    needs:
-      - build_matrix
-      - build
-    steps:
-      - uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
-      - name: Setup Pages
-        uses: actions/configure-pages@v5
-      - name: Clean public folder
-        run: rm -rf public && mkdir -p public
-      - name: Download artifacts
-        uses: actions/download-artifact@v7
-        with:
-          path: public/
-      - name: Generate overview.html
+      - name: Build Storybook
+        run: pnpm run build-storybook
+
+      - name: Determine target folder
+        id: target
         run: |
-          echo "<html><body><h1>Storybook Versions</h1><ul>" > public/overview.html
-          for dir in $(ls public); do
-            echo "<li><a href=\"$dir\">$dir</a></li>" >> public/overview.html
-          done
-          echo "</ul></body></html>" >> public/overview.html
-      - name: Move content from /public/main to public
-        run: |
-          if [ -d "public/main" ]; then
-            rsync -a public/main/ public/
+          if [ "${{ github.ref_name }}" = "main" ]; then
+            echo "folder=." >> "$GITHUB_OUTPUT"
+          else
+            echo "folder=${{ github.ref_name }}" >> "$GITHUB_OUTPUT"
           fi
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v4
+
+      - name: Deploy to gh-pages
+        uses: JamesIves/github-pages-deploy-action@v4
         with:
-          path: ./public/
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+          branch: gh-pages
+          folder: storybook-static
+          target-folder: ${{ steps.target.outputs.folder }}
+          # Preserve other protected-branch deployments and all PR previews.
+          clean-exclude: |
+            pr-preview/
+            v2/
+            v3/
+          commit-message: "docs(storybook): publish ${{ github.ref_name }} @ ${{ github.sha }}"

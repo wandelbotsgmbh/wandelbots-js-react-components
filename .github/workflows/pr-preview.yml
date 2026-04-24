@@ -1,0 +1,60 @@
+# Deploys a Storybook preview for every pull request to
+# `gh-pages:/pr-preview/pr-<num>/` and posts a sticky comment on the PR with
+# the preview URL. The preview is torn down automatically when the PR closes.
+#
+# Uses https://github.com/rossjrw/pr-preview-action — the de-facto standard
+# for per-PR previews on GitHub Pages. Requires Pages to be served from the
+# `gh-pages` branch (classic "Deploy from a branch" mode).
+
+name: PR Preview
+
+on:
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+      - closed
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: pr-preview-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  deploy-preview:
+    if: github.event.action != 'closed'
+    runs-on: ubuntu-latest
+    env:
+      HUSKY: 0
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: ./.github/actions/setup-node
+
+      - name: Build Storybook
+        run: pnpm run build-storybook
+
+      - name: Deploy PR preview
+        uses: rossjrw/pr-preview-action@v1
+        with:
+          source-dir: storybook-static
+          preview-branch: gh-pages
+          umbrella-dir: pr-preview
+          action: deploy
+
+  remove-preview:
+    if: github.event.action == 'closed'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Remove PR preview
+        uses: rossjrw/pr-preview-action@v1
+        with:
+          preview-branch: gh-pages
+          umbrella-dir: pr-preview
+          action: remove
