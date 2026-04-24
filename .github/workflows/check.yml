@@ -15,6 +15,14 @@ jobs:
       - uses: ./.github/actions/setup-node
       - run: pnpm run tsc
 
+  # TODO: enable linting after fixing all lint errors
+  # lint:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v6
+  #     - uses: ./.github/actions/setup-node
+  #     - run: pnpm run lint
+
   test:
     runs-on: ubuntu-latest
     steps:
