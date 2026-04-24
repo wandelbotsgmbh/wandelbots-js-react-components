@@ -10,6 +10,8 @@
 import {
   Extractor,
   ExtractorConfig,
+  ExtractorLogLevel,
+  type ExtractorMessage,
   type ExtractorResult,
 } from "@microsoft/api-extractor"
 import { existsSync } from "node:fs"
@@ -29,7 +31,8 @@ if (!existsSync(distDir)) {
   process.exit(1)
 }
 
-let hadErrors = false
+const outOfDate: string[] = []
+const otherFailures: string[] = []
 
 for (const name of ENTRY_POINTS) {
   const configPath = resolve(
@@ -44,20 +47,45 @@ for (const name of ENTRY_POINTS) {
   const result: ExtractorResult = Extractor.invoke(config, {
     localBuild: local,
     showVerboseMessages: false,
+    // Swallow the default "please copy etc/api-extractor/temp/..." warning;
+    // we print a single clearer summary at the end instead.
+    messageCallback: (message: ExtractorMessage) => {
+      if (message.messageId === "console-api-report-not-copied") {
+        message.logLevel = ExtractorLogLevel.None
+        message.handled = true
+      }
+    },
   })
 
-  if (!result.succeeded) {
-    hadErrors = true
-    console.error(
-      `api-extractor failed for "${name}" with ${result.errorCount} error(s) and ${result.warningCount} warning(s).`,
-    )
-  } else if (result.apiReportChanged && !local) {
-    hadErrors = true
-    console.error(
-      `\nAPI report for "${name}" is out of date.\n` +
-        `Run \`pnpm api:update\` and commit the updated file(s) in etc/api-extractor/.`,
+  if (result.apiReportChanged && !local) {
+    outOfDate.push(name)
+  } else if (!result.succeeded) {
+    otherFailures.push(
+      `${name}: ${result.errorCount} error(s), ${result.warningCount} warning(s)`,
     )
   }
 }
 
-process.exit(hadErrors ? 1 : 0)
+if (outOfDate.length > 0) {
+  console.error(
+    `\n${"─".repeat(72)}\n` +
+      `API report${outOfDate.length > 1 ? "s are" : " is"} out of date for: ${outOfDate.join(", ")}\n\n` +
+      `The public API surface of this library has changed. To fix:\n\n` +
+      `  1. Run  pnpm api:update\n` +
+      `  2. Review the diff in etc/api-extractor/*.api.md\n` +
+      `  3. Commit the updated file(s)\n\n` +
+      `If the change removes or alters existing API (not purely additive),\n` +
+      `make sure at least one commit in this PR carries a conventional-commit\n` +
+      `breaking-change marker (e.g. "feat!: ..." or a "BREAKING CHANGE:" footer)\n` +
+      `so that semantic-release produces a major version bump.\n` +
+      `${"─".repeat(72)}`,
+  )
+}
+
+if (otherFailures.length > 0) {
+  console.error(
+    `\napi-extractor reported errors:\n  ${otherFailures.join("\n  ")}`,
+  )
+}
+
+process.exit(outOfDate.length > 0 || otherFailures.length > 0 ? 1 : 0)
