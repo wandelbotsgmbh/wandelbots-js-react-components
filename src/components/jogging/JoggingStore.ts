@@ -7,8 +7,8 @@ import {
   type RobotTcp,
 } from "@wandelbots/nova-js/v2"
 import { countBy } from "lodash-es"
-import keyBy from "lodash-es/keyBy"
-import uniqueId from "lodash-es/uniqueId"
+import keyBy from "lodash-es/keyBy.js"
+import uniqueId from "lodash-es/uniqueId.js"
 import { autorun, makeAutoObservable, type IReactionDisposer } from "mobx"
 import type {
   JoggerConnection,

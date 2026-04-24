@@ -1,6 +1,6 @@
 import Typography from "@mui/material/Typography"
+import isEqual from "lodash-es/isEqual.js"
 import { observer } from "mobx-react-lite"
-import isEqual from "lodash-es/isEqual"
 import { useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useAnimationFrame } from "../utils/hooks"
