@@ -1,0 +1,8 @@
+{
+  "extends": "./api-extractor-base.json",
+  "mainEntryPointFilePath": "<projectFolder>/dist/wb-icons.d.ts",
+  "apiReport": {
+    "enabled": true,
+    "reportFileName": "wb-icons.api.md"
+  }
+}

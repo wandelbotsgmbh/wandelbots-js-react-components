@@ -1,0 +1,8 @@
+{
+  "extends": "./api-extractor-base.json",
+  "mainEntryPointFilePath": "<projectFolder>/dist/3d.d.ts",
+  "apiReport": {
+    "enabled": true,
+    "reportFileName": "3d.api.md"
+  }
+}
