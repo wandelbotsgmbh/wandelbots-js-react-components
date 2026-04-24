@@ -7,6 +7,9 @@ on:
       - v2
       - v3
 
+permissions:
+  contents: read
+
 jobs:
   typecheck:
     runs-on: ubuntu-latest
