@@ -26,7 +26,7 @@ export function OrbitControlsAround({ children }: { children: ReactNode }) {
         setLockZoom(false)
       }, 100)
     },
-    [camera],
+    [scene],
   )
 
   return (

@@ -31,13 +31,8 @@ function LoadedRobotModel({
   postModelRender?: () => void
 } & ThreeElements["group"]) {
   const gltfResult = useGLTF(url)
-  let gltf
-  try {
-    const parsed = parseRobotModel(gltfResult, "robot.glb")
-    gltf = parsed.gltf
-  } catch (err) {
-    throw err
-  }
+  const parsed = parseRobotModel(gltfResult, "robot.glb")
+  const gltf = parsed.gltf
 
   const groupRef: React.RefCallback<Group> = useCallback(
     (group) => {

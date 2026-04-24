@@ -26,6 +26,7 @@ function RobotScene(
       import.meta.env.WANDELAPI_BASE_URL || "https://mock.example.com",
   })
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: intentionally runs only once on mount
   useEffect(() => {
     async function fetchConnectedMotionGroup() {
       const motionGroup = await ConnectedMotionGroup.connect(

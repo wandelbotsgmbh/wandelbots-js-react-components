@@ -4,9 +4,9 @@ import { NovaClient, type KinematicModel } from "@wandelbots/nova-js/v2"
 import { useEffect, useState } from "react"
 import { expect, fn, waitFor } from "storybook/test"
 import {
-  PresetEnvironment,
-  ConnectedMotionGroup,
-  MotionGroupVisualizer,
+    ConnectedMotionGroup,
+    MotionGroupVisualizer,
+    PresetEnvironment,
 } from "../../src"
 import { revokeAllModelUrls } from "../../src/components/robots/robotModelLogic"
 import { OrbitControlsAround } from "./OrbitControlsAround"
@@ -31,6 +31,7 @@ function MotionGroupVisualizerScene(
     import.meta.env.WANDELAPI_BASE_URL || "https://mock.example.com"
   const nova = new NovaClient({ instanceUrl })
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: intentionally runs only once on mount
   useEffect(() => {
     async function fetchConnectedMotionGroup() {
       const motionGroup = await ConnectedMotionGroup.connect(
@@ -71,6 +72,7 @@ function MotionGroupVisualizerScene(
   /**
    * If connection is set - fetch the kinematic model information needed for MotionGroupVisualizer
    */
+  // biome-ignore lint/correctness/useExhaustiveDependencies: only re-fetch when connected motion group changes
   useEffect(() => {
     fetchKinematicModel()
   }, [connectedMotionGroup])

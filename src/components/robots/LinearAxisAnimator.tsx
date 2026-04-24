@@ -25,6 +25,7 @@ export default function LinearAxisAnimator({
   const { invalidate } = useThree()
 
   // Initialize interpolator
+  // biome-ignore lint/correctness/useExhaustiveDependencies: initialize once on mount
   useEffect(() => {
     const initialJointValues = rapidlyChangingMotionState.joint_position.filter(
       (item) => item !== undefined,
@@ -98,6 +99,7 @@ export default function LinearAxisAnimator({
    * Fire an update joints call on every motion state change.
    * requestAnimationFrame used to avoid blocking main thread
    */
+  // biome-ignore lint/correctness/useExhaustiveDependencies: rapidlyChangingMotionState referenced via updateJoints closure
   useEffect(() => {
     updateJoints()
   }, [rapidlyChangingMotionState, updateJoints])

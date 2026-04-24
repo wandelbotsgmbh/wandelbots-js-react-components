@@ -74,6 +74,7 @@ export const JoggingPanel = externalizeComponent(
       }
     }
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies: intentionally re-init only on client/motion-group change
     useEffect(() => {
       init()
       return props.store
@@ -106,10 +107,9 @@ export const JoggingPanel = externalizeComponent(
         }}
       >
         {state.joggingStore ? (
-          <JoggingPanelInner
-            store={state.joggingStore}
-            children={props.children}
-          ></JoggingPanelInner>
+          <JoggingPanelInner store={state.joggingStore}>
+            {props.children}
+          </JoggingPanelInner>
         ) : (
           <LoadingCover message="Loading jogging" error={state.loadingError} />
         )}

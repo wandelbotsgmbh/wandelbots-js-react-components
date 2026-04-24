@@ -4,10 +4,10 @@ import { useId } from "react"
 import { useTranslation } from "react-i18next"
 import AdornedSelect from "../experimental/utils/AdornedSelect"
 import {
-  ORIENTATION_IDS,
-  type IncrementOptionId,
-  type JoggingStore,
-  type OrientationId,
+    ORIENTATION_IDS,
+    type IncrementOptionId,
+    type JoggingStore,
+    type OrientationId,
 } from "./JoggingStore"
 
 export const JoggingOptions = observer(
@@ -143,6 +143,7 @@ export const JoggingOptions = observer(
       >
         {joggingOptions.map((select, idx) => (
           <Box
+            // biome-ignore lint/suspicious/noArrayIndexKey: options list is static
             key={idx}
             sx={{
               gridColumn:

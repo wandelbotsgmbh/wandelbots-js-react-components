@@ -1,8 +1,8 @@
 import ChevronLeft from "@mui/icons-material/ChevronLeft"
 import ChevronRight from "@mui/icons-material/ChevronRight"
-import { radiansToDegrees } from "@wandelbots/nova-js"
 import { IconButton, Slider, Typography, useTheme } from "@mui/material"
 import Stack from "@mui/material/Stack"
+import { radiansToDegrees } from "@wandelbots/nova-js"
 import throttle from "lodash-es/throttle"
 import { observer, useLocalObservable } from "mobx-react-lite"
 import { useState } from "react"
@@ -70,7 +70,7 @@ export const JoggingJointValueControl = externalizeComponent(
       useAnimationFrame(updateValue)
 
       function convertToDegree(value: number | undefined) {
-        if (value == undefined) {
+        if (value === undefined) {
           return undefined
         }
         return radiansToDegrees(value)

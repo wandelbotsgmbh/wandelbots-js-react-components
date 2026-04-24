@@ -132,7 +132,8 @@ export function DHRobot({
                     meshRefs.current[index] = ref
                   }}
                   name={CHILD_MESH}
-                  key={"mesh_" + index}
+                  // biome-ignore lint/suspicious/noArrayIndexKey: dhParameters list is stable per robot
+                  key={`mesh_${index}`}
                   position={b}
                 >
                   <sphereGeometry args={[0.01, 32, 32]} />

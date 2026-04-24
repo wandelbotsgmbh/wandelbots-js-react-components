@@ -5,6 +5,7 @@ import { useEffect, type EffectCallback } from "react"
  * Run code once on component mount. Shorthand for useEffect(effect, []).
  */
 export function useMounted(effect: EffectCallback) {
+  // biome-ignore lint/correctness/useExhaustiveDependencies: intentionally runs only once on mount
   useEffect(effect, [])
 }
 
