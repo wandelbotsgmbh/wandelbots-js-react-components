@@ -94,7 +94,7 @@ export const JoggingJointValueControl = externalizeComponent(
       }
 
       function formatDegrees(value: number | undefined, precision = 1) {
-        if (value === undefined || isNaN(value)) return ""
+        if (value === undefined || Number.isNaN(value)) return ""
 
         const output = t("General.degree.variable", {
           amount: value.toFixed(precision),
@@ -107,7 +107,7 @@ export const JoggingJointValueControl = externalizeComponent(
         }
       }
       function formatMm(value: number | undefined, precision = 1) {
-        if (value === undefined || isNaN(value)) return ""
+        if (value === undefined || Number.isNaN(value)) return ""
 
         const output = t("General.mm.variable", {
           amount: value.toFixed(precision),

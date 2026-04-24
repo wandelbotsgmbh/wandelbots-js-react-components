@@ -1,5 +1,4 @@
 import { render, screen, within } from "@testing-library/react"
-import userEvent from "@testing-library/user-event"
 import { describe, expect, it, vi, beforeEach } from "vitest"
 import { JointTypeEnum } from "@wandelbots/nova-js/v2"
 import type {
@@ -7,7 +6,6 @@ import type {
   MotionGroupDescription,
   MotionGroupState,
   RobotTcp,
-  DHParameter,
 } from "@wandelbots/nova-js/v2"
 import { JoggingStore } from "./JoggingStore"
 import { JoggingJointTab } from "./JoggingJointTab"
@@ -153,7 +151,7 @@ describe("JoggingPanel", () => {
     it("hides Cartesian tab when inverseSolver is null (explicitly no solver)", () => {
       const store = createUr5eStore(null)
       expect(store.tabs).toHaveLength(1)
-      expect(store.tabs[0]!.id).toBe("joint")
+      expect(store.tabs[0]?.id).toBe("joint")
       expect(store.tabs.map((t) => t.id)).not.toContain("cartesian")
     })
 
@@ -186,11 +184,7 @@ describe("JoggingPanel", () => {
     })
 
     it("displays 6 joint controls in the joint tab", () => {
-      renderWithI18n(
-        <JoggingJointTab store={store}>
-          <></>
-        </JoggingJointTab>,
-      )
+      renderWithI18n(<JoggingJointTab store={store}></JoggingJointTab>)
 
       const wrapper = screen.getByTestId("jogging-joint-value-controls-wrapper")
       for (let i = 0; i < 6; i++) {
@@ -201,29 +195,17 @@ describe("JoggingPanel", () => {
     })
 
     it("renders the joint tab", () => {
-      renderWithI18n(
-        <JoggingJointTab store={store}>
-          <></>
-        </JoggingJointTab>,
-      )
+      renderWithI18n(<JoggingJointTab store={store}></JoggingJointTab>)
       expect(screen.getByTestId("jogging-joint-tab")).toBeInTheDocument()
     })
 
     it("renders the cartesian tab with translate/rotate toggle", () => {
-      renderWithI18n(
-        <JoggingCartesianTab store={store}>
-          <></>
-        </JoggingCartesianTab>,
-      )
+      renderWithI18n(<JoggingCartesianTab store={store}></JoggingCartesianTab>)
       expect(screen.getByTestId("jogging-cartesian-tab")).toBeInTheDocument()
     })
 
     it("shows X, Y, Z axis controls in cartesian tab", () => {
-      renderWithI18n(
-        <JoggingCartesianTab store={store}>
-          <></>
-        </JoggingCartesianTab>,
-      )
+      renderWithI18n(<JoggingCartesianTab store={store}></JoggingCartesianTab>)
       for (const axis of ["x", "y", "z"]) {
         expect(
           screen.getByTestId(`jogging-cartesian-axis-control-${axis}`),
@@ -255,7 +237,7 @@ describe("JoggingPanel", () => {
 
     it("only shows joint tab (no cartesian) when solver is null", () => {
       expect(store.tabs).toHaveLength(1)
-      expect(store.tabs[0]!.id).toBe("joint")
+      expect(store.tabs[0]?.id).toBe("joint")
     })
 
     it("uses mm/s as velocity unit for prismatic joints", () => {
@@ -264,11 +246,7 @@ describe("JoggingPanel", () => {
     })
 
     it("renders 1 joint control for single-axis prismatic group", () => {
-      renderWithI18n(
-        <JoggingJointTab store={store}>
-          <></>
-        </JoggingJointTab>,
-      )
+      renderWithI18n(<JoggingJointTab store={store}></JoggingJointTab>)
 
       const wrapper = screen.getByTestId("jogging-joint-value-controls-wrapper")
       expect(
@@ -298,11 +276,7 @@ describe("JoggingPanel", () => {
     })
 
     it("displays exactly 2 joint controls", () => {
-      renderWithI18n(
-        <JoggingJointTab store={store}>
-          <></>
-        </JoggingJointTab>,
-      )
+      renderWithI18n(<JoggingJointTab store={store}></JoggingJointTab>)
 
       const wrapper = screen.getByTestId("jogging-joint-value-controls-wrapper")
       expect(
@@ -503,11 +477,7 @@ describe("JoggingPanel", () => {
       })
       store.showJointsLegend = true
 
-      renderWithI18n(
-        <JoggingJointTab store={store}>
-          <></>
-        </JoggingJointTab>,
-      )
+      renderWithI18n(<JoggingJointTab store={store}></JoggingJointTab>)
 
       expect(screen.getByText("G1")).toBeInTheDocument()
       expect(screen.getByText("G2")).toBeInTheDocument()
@@ -520,11 +490,7 @@ describe("JoggingPanel", () => {
       })
       store.showJointsLegend = false
 
-      renderWithI18n(
-        <JoggingJointTab store={store}>
-          <></>
-        </JoggingJointTab>,
-      )
+      renderWithI18n(<JoggingJointTab store={store}></JoggingJointTab>)
 
       expect(screen.queryByText("G1")).not.toBeInTheDocument()
     })

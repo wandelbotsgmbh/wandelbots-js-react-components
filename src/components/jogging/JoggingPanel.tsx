@@ -74,7 +74,7 @@ export const JoggingPanel = externalizeComponent(
       }
     }
 
-    // biome-ignore lint/correctness/useExhaustiveDependencies: intentionally re-init only on client/motion-group change
+    // biome-ignore lint/correctness/useExhaustiveDependencies: pre-biome code
     useEffect(() => {
       init()
       return props.store
@@ -132,16 +132,10 @@ const JoggingPanelInner = observer(
     function renderTabContent() {
       if (store.currentTab.id === "cartesian") {
         return (
-          <>
-            <JoggingCartesianTab store={store}>{children}</JoggingCartesianTab>
-          </>
+          <JoggingCartesianTab store={store}>{children}</JoggingCartesianTab>
         )
       } else if (store.currentTab.id === "joint") {
-        return (
-          <>
-            <JoggingJointTab store={store}>{children}</JoggingJointTab>
-          </>
-        )
+        return <JoggingJointTab store={store}>{children}</JoggingJointTab>
       }
     }
 

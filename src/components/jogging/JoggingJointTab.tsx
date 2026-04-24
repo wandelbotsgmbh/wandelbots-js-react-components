@@ -3,7 +3,7 @@ import { observer } from "mobx-react-lite"
 import type { ReactNode } from "react"
 import { JoggingJointLimitDetector } from "./JoggingJointLimitDetector"
 import { JoggingJointValueControl } from "./JoggingJointValueControl"
-import { type JoggingStore } from "./JoggingStore"
+import type { JoggingStore } from "./JoggingStore"
 import { JoggingVelocitySlider } from "./JoggingVelocitySlider"
 import { JointTypeEnum } from "@wandelbots/nova-js/v2"
 

@@ -1,8 +1,8 @@
-import { Cell, RobotController } from "@wandelbots/nova-js/v2"
+import type { Cell, RobotController } from "@wandelbots/nova-js/v2"
 import axios, { isAxiosError } from "axios"
 import { config } from "dotenv"
-import fs from "fs/promises"
 import { omit } from "lodash-es"
+import fs from "node:fs/promises"
 import { username } from "username"
 import { makeErrorMessage } from "./errorHandling"
 import {
@@ -36,7 +36,7 @@ export async function testDeploy(
     instanceLifetimeMins?: number
     existingInstanceIp?: string
     cell?: string
-    additionalCellConfig?: Record<string, any>
+    additionalCellConfig?: Record<string, unknown>
     https?: boolean
     instanceProvider?: string
   } = {},
@@ -170,7 +170,7 @@ export async function main() {
   }
 }
 
-import { fileURLToPath } from "url"
+import { fileURLToPath } from "node:url"
 if (fileURLToPath(import.meta.url) === process.argv[1]) {
   void main()
 }

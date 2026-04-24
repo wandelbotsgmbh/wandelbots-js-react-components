@@ -1,5 +1,5 @@
 {
-  "$schema": "https://biomejs.dev/schemas/2.3.11/schema.json",
+  "$schema": "https://biomejs.dev/schemas/2.4.13/schema.json",
   "vcs": {
     "enabled": true,
     "clientKind": "git",
@@ -25,6 +25,31 @@
       }
     }
   },
+  "overrides": [
+    {
+      // Tests, stories and MUI samples frequently need `any`, non-null
+      // assertions and ad-hoc types for mocks and demo purposes.
+      "includes": [
+        "**/*.test.ts",
+        "**/*.test.tsx",
+        "stories/**",
+        "stories-dev/**"
+      ],
+      "linter": {
+        "rules": {
+          "suspicious": {
+            "noExplicitAny": "off"
+          },
+          "style": {
+            "noNonNullAssertion": "off"
+          },
+          "complexity": {
+            "noBannedTypes": "off"
+          }
+        }
+      }
+    }
+  ],
   "javascript": {
     "formatter": {
       "quoteStyle": "double",

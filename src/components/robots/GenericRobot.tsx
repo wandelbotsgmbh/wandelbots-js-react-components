@@ -1,8 +1,9 @@
 import { useGLTF } from "@react-three/drei"
 import type { ThreeElements } from "@react-three/fiber"
-import React, { useCallback, useEffect, useState } from "react"
+import type React from "react"
+import { useCallback, useEffect, useState } from "react"
 import type { Group, Mesh } from "three"
-import { type Object3D } from "three"
+import type { Object3D } from "three"
 import { isFlange, parseRobotModel } from "./robotModelLogic"
 
 export type RobotModelProps = {

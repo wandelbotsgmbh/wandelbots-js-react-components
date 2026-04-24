@@ -55,7 +55,7 @@ export const generateRobotStories = async () => {
       ${varName}.storyName = "${modelName}"
     `)
   }
-  return importStanza + "\n\n" + modelCsfAdditions.join("\n\n")
+  return `${importStanza}\n\n${modelCsfAdditions.join("\n\n")}`
 }
 
 export const unplugin = createUnplugin((options) => {
@@ -67,7 +67,7 @@ export const unplugin = createUnplugin((options) => {
     },
     async load(fileName) {
       const src = await readFile(fileName, "utf-8")
-      return src + "\n" + (await generateRobotStories())
+      return `${src}\n${await generateRobotStories()}`
     },
   }
 })

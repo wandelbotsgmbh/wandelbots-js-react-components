@@ -1,4 +1,6 @@
-import { type FC } from "react"
+/* biome-ignore-all lint/suspicious/noExplicitAny: pre-biome code */
+
+import type { FC } from "react"
 import { I18nextProvider } from "react-i18next"
 import { i18n } from "./i18n/config"
 

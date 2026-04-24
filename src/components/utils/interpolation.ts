@@ -375,5 +375,6 @@ export function useInterpolation(
     }
   }, [])
 
+  // biome-ignore lint/style/noNonNullAssertion: pre-biome code
   return [interpolatorRef.current!]
 }

@@ -27,7 +27,7 @@ function Lightformers({ positions = [2, 0, 2, 0, 2, 0, 2, 0] }) {
         <group>
           {positions.map((x, i) => (
             <Lightformer
-              // biome-ignore lint/suspicious/noArrayIndexKey: static array, index is stable
+              // biome-ignore lint/suspicious/noArrayIndexKey: pre-biome code
               key={i}
               form="circle"
               intensity={5}

@@ -76,7 +76,7 @@ function TabPanel(props: TabPanelProps) {
  */
 interface TabWrapperProps {
   children: React.ReactNode
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // biome-ignore lint/suspicious/noExplicitAny: pre-biome code
   [key: string]: any
 }
 
@@ -117,6 +117,7 @@ export const TabBar = externalizeComponent(
     const [uncontrolledActiveTab, setUncontrolledActiveTab] =
       useState(defaultActiveTab)
 
+    // biome-ignore lint/style/noNonNullAssertion: pre-biome code
     const currentValue = isControlled ? activeTab! : uncontrolledActiveTab
 
     // Keep uncontrolled state in range when items change

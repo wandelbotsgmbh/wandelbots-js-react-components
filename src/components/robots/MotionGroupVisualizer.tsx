@@ -1,12 +1,13 @@
-import React, { useEffect, useMemo, useState } from "react"
 import { JointTypeEnum } from "@wandelbots/nova-js/v2"
+import type React from "react"
+import { useEffect, useMemo, useState } from "react"
 
 import { externalizeComponent } from "../../externalizeComponent"
-import { SupportedRobot, type SupportedRobotProps } from "./SupportedRobot"
 import {
   SupportedLinearAxis,
   type SupportedLinearAxisProps,
 } from "./SupportedLinearAxis"
+import { SupportedRobot, type SupportedRobotProps } from "./SupportedRobot"
 
 export type MotionGroupVisualizerProps = {
   instanceUrl: string
@@ -66,5 +67,5 @@ export const MotionGroupVisualizer: React.FC<MotionGroupVisualizerProps> =
       return <SupportedLinearAxis dhParameters={dhParameters} {...rest} />
     }
 
-    return <></>
+    return null
   })

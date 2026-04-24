@@ -60,6 +60,7 @@ const config: StorybookConfig = {
     },
   },
 
+  // biome-ignore lint/suspicious/noExplicitAny: pre-biome code
   viteFinal: (config: any) => {
     const { plugins = [] } = config
     plugins.push(robotStoryGenerationVitePlugin())
@@ -85,7 +86,7 @@ const config: StorybookConfig = {
       test: /SupportedModels.stories.tsx$/,
       createIndex: async (fileName, opts) => {
         const baseCsf = readFileSync(fileName, "utf-8")
-        const generatedCsf = baseCsf + "\n\n" + (await generateRobotStories())
+        const generatedCsf = `${baseCsf}\n\n${await generateRobotStories()}`
 
         return loadCsf(generatedCsf, {
           ...opts,

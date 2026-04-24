@@ -1,6 +1,7 @@
 import { useFrame, useThree } from "@react-three/fiber"
 import type { DHParameter, MotionGroupState } from "@wandelbots/nova-js/v2"
-import React, { useCallback, useEffect, useRef } from "react"
+import type React from "react"
+import { useCallback, useEffect, useRef } from "react"
 import type { Group, Object3D } from "three"
 import { useAutorun } from "../utils/hooks"
 import { ValueInterpolator } from "../utils/interpolation"
@@ -25,7 +26,7 @@ export default function LinearAxisAnimator({
   const { invalidate } = useThree()
 
   // Initialize interpolator
-  // biome-ignore lint/correctness/useExhaustiveDependencies: initialize once on mount
+  // biome-ignore lint/correctness/useExhaustiveDependencies: pre-biome code
   useEffect(() => {
     const initialJointValues = rapidlyChangingMotionState.joint_position.filter(
       (item) => item !== undefined,
@@ -99,7 +100,7 @@ export default function LinearAxisAnimator({
    * Fire an update joints call on every motion state change.
    * requestAnimationFrame used to avoid blocking main thread
    */
-  // biome-ignore lint/correctness/useExhaustiveDependencies: rapidlyChangingMotionState referenced via updateJoints closure
+  // biome-ignore lint/correctness/useExhaustiveDependencies: pre-biome code
   useEffect(() => {
     updateJoints()
   }, [rapidlyChangingMotionState, updateJoints])

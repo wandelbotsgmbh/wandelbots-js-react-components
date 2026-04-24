@@ -91,7 +91,6 @@ export const RobotSetupReadinessIndicator = externalizeComponent(
               theme.palette.background.paper,
             textColor: theme.palette.secondary.contrastText,
           }
-        case RobotSetupReadinessState.PRECONDITION_NOT_FULFILLED:
         default:
           return {
             label: t(

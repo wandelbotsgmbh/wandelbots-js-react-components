@@ -48,6 +48,7 @@ export async function defaultGetModel(
 ): Promise<string> {
   // Check cache first
   if (modelCache.has(modelFromController)) {
+    // biome-ignore lint/style/noNonNullAssertion: pre-biome code
     return modelCache.get(modelFromController)!
   }
 
@@ -57,8 +58,10 @@ export async function defaultGetModel(
     const nova = new NovaClient({ instanceUrl })
 
     // Configure axios to handle binary responses for GLB files
+    // biome-ignore lint/suspicious/noExplicitAny: pre-biome code
     const apiInstance = nova.api.motionGroupModels as any
     if (apiInstance.axios?.interceptors) {
+      // biome-ignore lint/suspicious/noExplicitAny: pre-biome code
       apiInstance.axios.interceptors.request.use((config: any) => {
         if (config.url?.includes("/glb")) {
           config.responseType = "blob"

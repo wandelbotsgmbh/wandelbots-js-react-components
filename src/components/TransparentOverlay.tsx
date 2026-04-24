@@ -1,6 +1,6 @@
 import { Stack } from "@mui/material"
 import { omit } from "lodash-es"
-import React from "react"
+import type React from "react"
 
 export const TransparentOverlay = (
   props: React.ComponentProps<typeof Stack>,

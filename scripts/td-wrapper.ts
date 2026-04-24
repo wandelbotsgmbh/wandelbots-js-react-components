@@ -1,5 +1,5 @@
-import fs from "fs"
-import path from "path"
+import fs from "node:fs"
+import path from "node:path"
 import { testDeploy } from "./test-deploy"
 
 function getArgUrl(): string | undefined {
@@ -26,7 +26,7 @@ function getConfigUrl(): string | undefined {
     if (!fs.existsSync(cfgPath)) return undefined
     const raw = fs.readFileSync(cfgPath, "utf8")
     const cfg = JSON.parse(raw)
-    return cfg && cfg.url ? String(cfg.url) : undefined
+    return cfg?.url ? String(cfg.url) : undefined
   } catch (e) {
     return undefined
   }

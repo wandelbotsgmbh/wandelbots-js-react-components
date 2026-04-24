@@ -1,5 +1,6 @@
 import { Canvas } from "@react-three/fiber"
-import React, { useCallback } from "react"
+import type React from "react"
+import { useCallback } from "react"
 import type { Group } from "three"
 import { Mesh, MeshBasicMaterial, SphereGeometry } from "three"
 import { PresetEnvironment, SupportedRobot } from "../../src"

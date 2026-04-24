@@ -1,22 +1,22 @@
-import { type ThreeElements } from "@react-three/fiber"
+import type { ThreeElements } from "@react-three/fiber"
 import { useMemo } from "react"
 import * as THREE from "three"
 import { ConvexGeometry, RoundedBoxGeometry } from "three-stdlib"
 
 import type {
-    Capsule,
-    Collider,
-    ConvexHull,
-    DHParameter,
-    MotionGroupDescription,
-    RectangularCapsule,
-    Sphere,
+  Capsule,
+  Collider,
+  ConvexHull,
+  DHParameter,
+  MotionGroupDescription,
+  RectangularCapsule,
+  Sphere,
 } from "@wandelbots/nova-js/v2"
 
 import {
-    dhParametersToPlaneSize,
-    orientationToQuaternion,
-    verticesToCoplanarity,
+  dhParametersToPlaneSize,
+  orientationToQuaternion,
+  verticesToCoplanarity,
 } from "../utils/converters"
 
 export type SafetyZonesRendererProps = {
@@ -183,7 +183,7 @@ export function SafetyZonesRenderer({
   /**
    * Helper variable render safety zones
    */
-  // biome-ignore lint/correctness/useExhaustiveDependencies: planeSize is used transitively via renderMesh closure
+  // biome-ignore lint/correctness/useExhaustiveDependencies: pre-biome code
   const renderedSafetyZones = useMemo(() => {
     return Object.values(safetyZones ?? {}).map(
       (zone: Collider, index: number) => {

@@ -146,7 +146,7 @@ export const LogViewer = externalizeComponent(
 
       const displayMessage =
         isLongMessage && !isExpanded
-          ? message.message.substring(0, 150) + "..."
+          ? `${message.message.substring(0, 150)}...`
           : message.message
 
       return (
@@ -310,7 +310,7 @@ export const LogViewer = externalizeComponent(
               minWidth: "auto",
               padding: "4px 8px",
               "&:hover": {
-                backgroundColor: theme.palette.primary.main + "14", // 8% opacity
+                backgroundColor: `${theme.palette.primary.main}14`, // 8% opacity
               },
             }}
           >

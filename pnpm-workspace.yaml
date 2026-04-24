@@ -9,8 +9,8 @@ minimumReleaseAge: 1440
 minimumReleaseAgeExclude:
   - "@wandelbots/nova-js"
 
-# Prompt to install deps if node_modules is out of date when running scripts
-verifyDepsBeforeRun: prompt
+# Install deps if node_modules is out of date when running scripts
+verifyDepsBeforeRun: install
 
 # Support pnpm scripts on non-POSIX systems (e.g. Windows)
 shellEmulator: true
