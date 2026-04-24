@@ -1,17 +1,10 @@
-import { observer} from "mobx-react-lite"
+import { observer } from "mobx-react-lite"
 import { useTranslation } from "react-i18next"
 import { VelocitySlider, VelocitySliderLabel } from "../VelocitySlider"
 import type { JoggingStore } from "./JoggingStore"
 
 export const JoggingVelocitySlider = observer(
-  ({
-     store,
-     useDegree,
-   }: {
-    store: JoggingStore
-    useDegree: boolean
-  }) => {
-
+  ({ store, useDegree }: { store: JoggingStore; useDegree: boolean }) => {
     const { t } = useTranslation()
 
     function valueLabelFormat(value: number, useDegree: boolean): string {
@@ -19,7 +12,6 @@ export const JoggingVelocitySlider = observer(
         ? `ω = ${t("Jogging.Cartesian.Rotation.velocityDegPerSec.lb", { amount: value })}`
         : `v = ${t("Jogging.Cartesian.Translation.velocityMmPerSec.lb", { amount: value })}`
     }
-
 
     return (
       <VelocitySlider

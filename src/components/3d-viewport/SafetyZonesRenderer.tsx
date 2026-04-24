@@ -13,7 +13,11 @@ import type {
   RectangularCapsule,
 } from "@wandelbots/nova-js/v2"
 
-import { dhParametersToPlaneSize, orientationToQuaternion, verticesToCoplanarity } from "../utils/converters"
+import {
+  dhParametersToPlaneSize,
+  orientationToQuaternion,
+  verticesToCoplanarity,
+} from "../utils/converters"
 
 export type SafetyZonesRendererProps = {
   safetyZones: MotionGroupDescription["safety_zones"]
@@ -21,10 +25,10 @@ export type SafetyZonesRendererProps = {
 } & ThreeElements["group"]
 
 export function SafetyZonesRenderer({
-                                      safetyZones,
-                                      dhParameters,
-                                      ...props
-                                    }: SafetyZonesRendererProps) {
+  safetyZones,
+  dhParameters,
+  ...props
+}: SafetyZonesRendererProps) {
   /**
    * Common material properties for safety zone meshes
    */
@@ -54,14 +58,23 @@ export function SafetyZonesRenderer({
       return null
     }
 
-    const position = new THREE.Vector3(zone.pose.position[0] / 1000, zone.pose.position[1] / 1000, zone.pose.position[2] / 1000)
-    const orientation = new THREE.Vector3(zone.pose.orientation[0], zone.pose.orientation[1], zone.pose.orientation[2])
+    const position = new THREE.Vector3(
+      zone.pose.position[0] / 1000,
+      zone.pose.position[1] / 1000,
+      zone.pose.position[2] / 1000,
+    )
+    const orientation = new THREE.Vector3(
+      zone.pose.orientation[0],
+      zone.pose.orientation[1],
+      zone.pose.orientation[2],
+    )
 
     let geometry: React.ReactElement | null
 
-    const materialProps = zone.shape.shape_type === "plane"
-      ? { ...safetyZoneMaterialProps, side: THREE.DoubleSide }
-      : { ...safetyZoneMaterialProps, side: THREE.FrontSide }
+    const materialProps =
+      zone.shape.shape_type === "plane"
+        ? { ...safetyZoneMaterialProps, side: THREE.DoubleSide }
+        : { ...safetyZoneMaterialProps, side: THREE.FrontSide }
 
     switch (zone.shape.shape_type) {
       /**
@@ -109,7 +122,12 @@ export function SafetyZonesRenderer({
           vertices.push(newVertex)
         }
         try {
-          geometry = <primitive object={new ConvexGeometry(vertices)} attach="geometry" />
+          geometry = (
+            <primitive
+              object={new ConvexGeometry(vertices)}
+              attach="geometry"
+            />
+          )
         } catch (error) {
           console.log("Error creating ConvexGeometry:", error)
           return null
@@ -141,7 +159,10 @@ export function SafetyZonesRenderer({
       }
 
       default: {
-        console.warn("Unsupported safety zone shape type:", zone.shape.shape_type)
+        console.warn(
+          "Unsupported safety zone shape type:",
+          zone.shape.shape_type,
+        )
         geometry = null
       }
     }
@@ -163,14 +184,12 @@ export function SafetyZonesRenderer({
    * Helper variable render safety zones
    */
   const renderedSafetyZones = useMemo(() => {
-    return Object.values(safetyZones ?? {}).map((zone: Collider, index: number) => {
-      return renderMesh(index, zone)
-    })
+    return Object.values(safetyZones ?? {}).map(
+      (zone: Collider, index: number) => {
+        return renderMesh(index, zone)
+      },
+    )
   }, [safetyZones, planeSize])
 
-  return (
-    <group {...props}>
-      {renderedSafetyZones}
-    </group>
-  )
+  return <group {...props}>{renderedSafetyZones}</group>
 }

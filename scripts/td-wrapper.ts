@@ -1,6 +1,6 @@
-import fs from 'fs'
-import path from 'path'
-import { testDeploy } from './test-deploy'
+import fs from "fs"
+import path from "path"
+import { testDeploy } from "./test-deploy"
 
 function getArgUrl(): string | undefined {
   const argv = process.argv.slice(2)
@@ -11,7 +11,7 @@ function getArgUrl(): string | undefined {
     try {
       const parsed = JSON.parse(npmArgv as string)
       if (Array.isArray(parsed.original) && parsed.original.length > 2) {
-        return parsed.original.slice(2).join(' ')
+        return parsed.original.slice(2).join(" ")
       }
     } catch (e) {
       // ignore
@@ -22,9 +22,9 @@ function getArgUrl(): string | undefined {
 
 function getConfigUrl(): string | undefined {
   try {
-    const cfgPath = path.resolve(process.cwd(), 'instanceProviderConfig.json')
+    const cfgPath = path.resolve(process.cwd(), "instanceProviderConfig.json")
     if (!fs.existsSync(cfgPath)) return undefined
-    const raw = fs.readFileSync(cfgPath, 'utf8')
+    const raw = fs.readFileSync(cfgPath, "utf8")
     const cfg = JSON.parse(raw)
     return cfg && cfg.url ? String(cfg.url) : undefined
   } catch (e) {
@@ -37,8 +37,10 @@ async function main(): Promise<void> {
   if (!url) url = getConfigUrl()
 
   if (!url) {
-    console.error('No instance provider URL provided and instanceProviderConfig.json missing url')
-    console.error('Usage: pnpm run td -- <instanceProviderUrl>')
+    console.error(
+      "No instance provider URL provided and instanceProviderConfig.json missing url",
+    )
+    console.error("Usage: pnpm run td -- <instanceProviderUrl>")
     process.exit(1)
   }
 
@@ -46,7 +48,7 @@ async function main(): Promise<void> {
     await testDeploy({ instanceProvider: url })
     process.exit(0)
   } catch (err) {
-    console.error('test-deploy failed:', err)
+    console.error("test-deploy failed:", err)
     process.exit(1)
   }
 }

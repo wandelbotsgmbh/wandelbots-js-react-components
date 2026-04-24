@@ -70,9 +70,15 @@ export const IndicatorWithExplanation = observer(
               color,
             }}
           />
-          {label && (<div style={{
-              color,
-            }}>{label}</div>)}
+          {label && (
+            <div
+              style={{
+                color,
+              }}
+            >
+              {label}
+            </div>
+          )}
         </Stack>
         <Popover
           id={id}

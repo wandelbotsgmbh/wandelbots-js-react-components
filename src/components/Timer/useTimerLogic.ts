@@ -67,10 +67,11 @@ export const useTimerLogic = ({
   const pause = useCallback(() => {
     if (startTimeRef.current && timerState.isRunning) {
       const now = Date.now()
-      const totalElapsed = (now - startTimeRef.current) / 1000 + pausedTimeRef.current
+      const totalElapsed =
+        (now - startTimeRef.current) / 1000 + pausedTimeRef.current
       const currentProgress = ((totalElapsed / 60) % 1) * 100
       progressInterpolator.setTarget([currentProgress])
-      
+
       setTimerState((prev) => ({
         ...prev,
         elapsedTime: Math.floor(totalElapsed),
@@ -83,11 +84,7 @@ export const useTimerLogic = ({
       isPausedState: true,
     }))
     onPauseAnimation()
-  }, [
-    timerState.isRunning,
-    progressInterpolator,
-    onPauseAnimation,
-  ])
+  }, [timerState.isRunning, progressInterpolator, onPauseAnimation])
 
   const resume = useCallback(() => {
     if (timerState.isPausedState) {
@@ -150,7 +147,8 @@ export const useTimerLogic = ({
       const updateTimer = () => {
         if (startTimeRef.current) {
           const now = Date.now()
-          const totalElapsed = (now - startTimeRef.current) / 1000 + pausedTimeRef.current
+          const totalElapsed =
+            (now - startTimeRef.current) / 1000 + pausedTimeRef.current
           const currentProgress = ((totalElapsed / 60) % 1) * 100
 
           setTimerState((prev) => ({
@@ -159,7 +157,9 @@ export const useTimerLogic = ({
           }))
 
           // Only update progress interpolator if progress changed significantly
-          const progressDiff = Math.abs(currentProgress - lastProgressRef.current)
+          const progressDiff = Math.abs(
+            currentProgress - lastProgressRef.current,
+          )
           if (progressDiff > 0.1) {
             progressInterpolator.setTarget([currentProgress])
             lastProgressRef.current = currentProgress

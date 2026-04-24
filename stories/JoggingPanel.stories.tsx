@@ -9,7 +9,6 @@ import {
 } from "../src/index"
 import type { MotionGroupDescription } from "@wandelbots/nova-js/v2"
 
-
 const JoggingPanelWrapper = observer((props: JoggingPanelProps) => {
   const theme = useTheme()
 
@@ -42,7 +41,6 @@ const JoggingPanelWrapper = observer((props: JoggingPanelProps) => {
         />
       </Stack>
 
-
       <Stack gap={2}>
         <Typography
           variant="h6"
@@ -62,7 +60,6 @@ const JoggingPanelWrapper = observer((props: JoggingPanelProps) => {
           }}
         />
       </Stack>
-
 
       <Stack gap={2}>
         <Typography

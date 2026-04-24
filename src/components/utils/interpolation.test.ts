@@ -613,14 +613,14 @@ describe("ValueInterpolator", () => {
     interpolator3.startAutoInterpolation()
 
     // Wait for automatic interpolation to progress
-    await new Promise(resolve => setTimeout(resolve, 500))
+    await new Promise((resolve) => setTimeout(resolve, 500))
 
     // Check that all interpolators are moving independently
     const values1 = interpolator1.getCurrentValues()
     const values2 = interpolator2.getCurrentValues()
     const values3 = interpolator3.getCurrentValues()
 
-    console.log('Auto-interpolation values:', { values1, values2, values3 })
+    console.log("Auto-interpolation values:", { values1, values2, values3 })
 
     // All should have made significant progress toward their targets
     expect(values1[0]).toBeGreaterThan(1) // Moving toward 10
@@ -668,13 +668,18 @@ describe("ValueInterpolator", () => {
     for (let frame = 0; frame < 30; frame++) {
       manualInterpolator.update(1 / 60)
       manualValues.push(manualInterpolator.getCurrentValues()[0])
-      await new Promise(resolve => setTimeout(resolve, 16)) // ~60fps
+      await new Promise((resolve) => setTimeout(resolve, 16)) // ~60fps
     }
 
     // Check auto interpolator after same time
     const autoValue = autoInterpolator.getCurrentValues()[0]
 
-    console.log('Mixed mode - Manual final:', manualValues[manualValues.length - 1], 'Auto final:', autoValue)
+    console.log(
+      "Mixed mode - Manual final:",
+      manualValues[manualValues.length - 1],
+      "Auto final:",
+      autoValue,
+    )
 
     // Both should have made progress
     expect(manualValues[manualValues.length - 1]).toBeGreaterThan(0.5)
@@ -703,16 +708,16 @@ describe("ValueInterpolator", () => {
     for (let i = 0; i < 5; i++) {
       interpolator.startAutoInterpolation()
       expect(interpolator.isInterpolating()).toBe(true)
-      
+
       interpolator.stop()
       expect(interpolator.isInterpolating()).toBe(false)
-      
-      await new Promise(resolve => setTimeout(resolve, 10))
+
+      await new Promise((resolve) => setTimeout(resolve, 10))
     }
 
     // Final start
     interpolator.startAutoInterpolation()
-    await new Promise(resolve => setTimeout(resolve, 200))
+    await new Promise((resolve) => setTimeout(resolve, 200))
 
     // Should still be working correctly
     const finalValue = interpolator.getCurrentValues()[0]
@@ -728,7 +733,7 @@ describe("ValueInterpolator", () => {
     // useAutorun(() => {
     //   requestAnimationFrame(() => updateJoints(newJointValues))
     // })
-    
+
     const interpolator1 = new ValueInterpolator([0, 0, 0], {
       tension: 120,
       friction: 20,
@@ -749,12 +754,12 @@ describe("ValueInterpolator", () => {
 
     const interpolators = [interpolator1, interpolator2, interpolator3]
 
-    // Simulate the RobotAnimator pattern where multiple components 
+    // Simulate the RobotAnimator pattern where multiple components
     // schedule setTarget calls via requestAnimationFrame
     const targetSets = [
       [1, 2, 3],
-      [4, 5, 6], 
-      [7, 8, 9]
+      [4, 5, 6],
+      [7, 8, 9],
     ]
 
     // Schedule all setTarget calls via requestAnimationFrame (like RobotAnimator does)
@@ -765,20 +770,22 @@ describe("ValueInterpolator", () => {
     })
 
     // Wait for requestAnimationFrame calls to execute
-    await new Promise(resolve => setTimeout(resolve, 50))
+    await new Promise((resolve) => setTimeout(resolve, 50))
 
     // Now manually update all interpolators for several frames
     for (let frame = 0; frame < 30; frame++) {
-      interpolators.forEach(interpolator => {
+      interpolators.forEach((interpolator) => {
         interpolator.update(1 / 60)
       })
-      await new Promise(resolve => setTimeout(resolve, 16))
+      await new Promise((resolve) => setTimeout(resolve, 16))
     }
 
     // Check the results
-    const finalValues = interpolators.map(interpolator => interpolator.getCurrentValues())
-    
-    console.log('RAF setTarget pattern results:', finalValues)
+    const finalValues = interpolators.map((interpolator) =>
+      interpolator.getCurrentValues(),
+    )
+
+    console.log("RAF setTarget pattern results:", finalValues)
 
     // All should have made progress toward their respective targets
     expect(finalValues[0][0]).toBeGreaterThan(0.3) // Moving toward 1
@@ -790,13 +797,13 @@ describe("ValueInterpolator", () => {
     expect(finalValues[1][0]).not.toBeCloseTo(finalValues[2][0], 0)
 
     // Clean up
-    interpolators.forEach(interpolator => interpolator.destroy())
+    interpolators.forEach((interpolator) => interpolator.destroy())
   })
 
   it("should handle simultaneous setTarget calls without target blending interference", () => {
     // Test the specific case where setTarget is called on multiple interpolators
     // at nearly the same time (which could trigger the target blending bug)
-    
+
     const interpolator1 = new ValueInterpolator([0], {
       tension: 120,
       friction: 20,
@@ -813,7 +820,7 @@ describe("ValueInterpolator", () => {
     const now = performance.now()
     interpolator1.setTarget([10])
     interpolator2.setTarget([20])
-    
+
     // Verify the targets were set correctly (not blended)
     expect(interpolator1.getCurrentValues()[0]).toBe(0) // Should start at 0
     expect(interpolator2.getCurrentValues()[0]).toBe(0) // Should start at 0
@@ -825,12 +832,15 @@ describe("ValueInterpolator", () => {
     const values1 = interpolator1.getCurrentValues()[0]
     const values2 = interpolator2.getCurrentValues()[0]
 
-    console.log('Simultaneous setTarget - Values after 1 frame:', { values1, values2 })
+    console.log("Simultaneous setTarget - Values after 1 frame:", {
+      values1,
+      values2,
+    })
 
     // Both should be moving in the right direction
     expect(values1).toBeGreaterThan(0) // Moving toward 10
     expect(values2).toBeGreaterThan(0) // Moving toward 20
-    
+
     // Interpolator2 should be moving faster (higher target)
     expect(values2).toBeGreaterThan(values1)
 
@@ -873,11 +883,12 @@ describe("ValueInterpolator", () => {
     interpolator3.startAutoInterpolation()
 
     // Wait for REAL animation frames to process
-    await new Promise(resolve => {
+    await new Promise((resolve) => {
       let frameCount = 0
       const checkProgress = () => {
         frameCount++
-        if (frameCount >= 30) { // Wait for ~30 real frames
+        if (frameCount >= 30) {
+          // Wait for ~30 real frames
           resolve(undefined)
         } else {
           requestAnimationFrame(checkProgress)
@@ -891,7 +902,7 @@ describe("ValueInterpolator", () => {
     const values2 = interpolator2.getCurrentValues()[0]
     const values3 = interpolator3.getCurrentValues()[0]
 
-    console.log('Real RAF test results:', { values1, values2, values3 })
+    console.log("Real RAF test results:", { values1, values2, values3 })
 
     // All should have made significant progress
     expect(values1).toBeGreaterThan(1)
@@ -970,7 +981,7 @@ describe("ValueInterpolator", () => {
     const values1 = interpolator1.getCurrentValues()
     const values2 = interpolator2.getCurrentValues()
 
-    console.log('useFrame simulation results:', { values1, values2 })
+    console.log("useFrame simulation results:", { values1, values2 })
 
     // Both should have made good progress
     expect(values1[0]).toBeGreaterThan(0.5) // Moving toward 1
@@ -993,7 +1004,7 @@ describe("ValueInterpolator", () => {
   it("should handle CartesianJoggingAxisVisualization pattern with multiple components", async () => {
     // This test replicates the exact pattern from CartesianJoggingAxisVisualization
     // where multiple components watch the same MobX observable and call setTarget via RAF
-    
+
     const interpolator1 = new ValueInterpolator([0, 0, 0, 0, 0, 0, 1], {
       tension: 120,
       friction: 20,
@@ -1035,7 +1046,7 @@ describe("ValueInterpolator", () => {
     requestAnimationFrame(() => updateFlangePose3(pose3))
 
     // Wait for RAF calls to execute
-    await new Promise(resolve => setTimeout(resolve, 32))
+    await new Promise((resolve) => setTimeout(resolve, 32))
 
     // Now simulate useFrame updates for all three interpolators
     for (let frame = 0; frame < 30; frame++) {
@@ -1043,17 +1054,17 @@ describe("ValueInterpolator", () => {
       interpolator1.update(delta)
       interpolator2.update(delta)
       interpolator3.update(delta)
-      await new Promise(resolve => setTimeout(resolve, 16))
+      await new Promise((resolve) => setTimeout(resolve, 16))
     }
 
     const values1 = interpolator1.getCurrentValues()
     const values2 = interpolator2.getCurrentValues()
     const values3 = interpolator3.getCurrentValues()
 
-    console.log('CartesianJoggingAxisVisualization pattern results:')
-    console.log('Component 1:', values1.slice(0, 3))
-    console.log('Component 2:', values2.slice(0, 3))
-    console.log('Component 3:', values3.slice(0, 3))
+    console.log("CartesianJoggingAxisVisualization pattern results:")
+    console.log("Component 1:", values1.slice(0, 3))
+    console.log("Component 2:", values2.slice(0, 3))
+    console.log("Component 3:", values3.slice(0, 3))
 
     // Each interpolator should be moving toward its own target
     expect(values1[0]).toBeCloseTo(0.1, 1) // Should be close to target 0.1
@@ -1101,16 +1112,16 @@ describe("ValueInterpolator", () => {
     })
 
     // Wait for all RAF calls to execute
-    await new Promise(resolve => setTimeout(resolve, 100))
+    await new Promise((resolve) => setTimeout(resolve, 100))
 
     // Run interpolation for a while
     for (let frame = 0; frame < 50; frame++) {
       interpolator.update(1 / 60)
-      await new Promise(resolve => setTimeout(resolve, 16))
+      await new Promise((resolve) => setTimeout(resolve, 16))
     }
 
     const finalValues = interpolator.getCurrentValues()
-    console.log('Rapid pose updates result:', finalValues.slice(0, 3))
+    console.log("Rapid pose updates result:", finalValues.slice(0, 3))
 
     // Should converge toward the final target [0.15, 0.15, 0.15]
     expect(finalValues[0]).toBeCloseTo(0.15, 1)

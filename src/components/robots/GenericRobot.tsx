@@ -20,12 +20,12 @@ function isMesh(node: Object3D): node is Mesh {
 }
 
 // Separate component that only renders when we have a valid URL
-function LoadedRobotModel({ 
-  url, 
-  flangeRef, 
-  postModelRender, 
-  ...props 
-}: { 
+function LoadedRobotModel({
+  url,
+  flangeRef,
+  postModelRender,
+  ...props
+}: {
   url: string
   flangeRef?: React.Ref<Group>
   postModelRender?: () => void
@@ -33,10 +33,10 @@ function LoadedRobotModel({
   const gltfResult = useGLTF(url)
   let gltf
   try {
-    const parsed = parseRobotModel(gltfResult, 'robot.glb')
+    const parsed = parseRobotModel(gltfResult, "robot.glb")
     gltf = parsed.gltf
   } catch (err) {
-    throw err;
+    throw err
   }
 
   const groupRef: React.RefCallback<Group> = useCallback(
@@ -66,7 +66,12 @@ function LoadedRobotModel({
         }
         // Fallback to empty group if geometry is missing
         return (
-          <group name={node.name} key={node.uuid} position={node.position} rotation={node.rotation} />
+          <group
+            name={node.name}
+            key={node.uuid}
+            position={node.position}
+            rotation={node.rotation}
+          />
         )
       } else {
         return (
@@ -82,7 +87,7 @@ function LoadedRobotModel({
         )
       }
     } catch (e) {
-      console.warn('Error rendering node', node.name, e)
+      console.warn("Error rendering node", node.name, e)
       return null
     }
   }
@@ -101,21 +106,21 @@ export function GenericRobot({
   ...props
 }: RobotModelProps) {
   const [resolvedURL, setResolvedURL] = useState<string | null>(null)
-  
+
   useEffect(() => {
     const resolveURL = async () => {
       try {
-        if (typeof modelURL === 'string') {
+        if (typeof modelURL === "string") {
           setResolvedURL(modelURL)
         } else {
           const url = await modelURL
           setResolvedURL(url)
         }
       } catch (error) {
-        console.error('Failed to resolve model URL:', error)
+        console.error("Failed to resolve model URL:", error)
       }
     }
-    
+
     resolveURL()
   }, [modelURL])
 
@@ -123,9 +128,9 @@ export function GenericRobot({
   if (!resolvedURL) {
     return null // Loading state
   }
-  
+
   return (
-    <LoadedRobotModel 
+    <LoadedRobotModel
       url={resolvedURL}
       flangeRef={flangeRef}
       postModelRender={postModelRender}

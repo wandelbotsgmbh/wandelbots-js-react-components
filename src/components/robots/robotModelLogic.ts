@@ -8,7 +8,9 @@ const modelCache = new Map<string, Promise<string>>()
  * Revoke a cached model's object URL to prevent memory leaks.
  * Call this when a component unmounts or no longer needs the model.
  */
-export async function revokeModelUrl(modelFromController: string): Promise<void> {
+export async function revokeModelUrl(
+  modelFromController: string,
+): Promise<void> {
   const urlPromise = modelCache.get(modelFromController)
   if (!urlPromise) return
 
@@ -35,36 +37,42 @@ export async function revokeAllModelUrls(): Promise<void> {
       } catch (e) {
         // Ignore errors
       }
-    })
+    }),
   )
   modelCache.clear()
 }
 
-export async function defaultGetModel(modelFromController: string, instanceUrlProp?: string): Promise<string> {
+export async function defaultGetModel(
+  modelFromController: string,
+  instanceUrlProp?: string,
+): Promise<string> {
   // Check cache first
   if (modelCache.has(modelFromController)) {
     return modelCache.get(modelFromController)!
   }
-  
+
   // Create the promise and cache it immediately to prevent duplicate calls
   const modelPromise = (async () => {
     const instanceUrl = instanceUrlProp || import.meta.env.WANDELAPI_BASE_URL
     const nova = new NovaClient({ instanceUrl })
-    
+
     // Configure axios to handle binary responses for GLB files
     const apiInstance = nova.api.motionGroupModels as any
     if (apiInstance.axios?.interceptors) {
       apiInstance.axios.interceptors.request.use((config: any) => {
-        if (config.url?.includes('/glb')) {
-          config.responseType = 'blob'
+        if (config.url?.includes("/glb")) {
+          config.responseType = "blob"
         }
         return config
       })
     }
-    
+
     try {
-      const file = await nova.api.motionGroupModels.getMotionGroupGlbModel(modelFromController)
-      
+      const file =
+        await nova.api.motionGroupModels.getMotionGroupGlbModel(
+          modelFromController,
+        )
+
       // Create object URL from the file and return it
       const url = URL.createObjectURL(file)
       return url
@@ -73,7 +81,7 @@ export async function defaultGetModel(modelFromController: string, instanceUrlPr
       throw error
     }
   })()
-  
+
   // Cache the promise
   modelCache.set(modelFromController, modelPromise)
   return modelPromise

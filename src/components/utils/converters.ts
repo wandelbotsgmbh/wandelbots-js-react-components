@@ -30,7 +30,9 @@ export function tryStringifyJson(json: unknown): string | undefined {
   }
 }
 
-export function orientationToQuaternion(orientation: THREE.Vector3): THREE.Quaternion {
+export function orientationToQuaternion(
+  orientation: THREE.Vector3,
+): THREE.Quaternion {
   const angle = orientation.length()
   const quaternion = new THREE.Quaternion()
   if (angle > 1e-6) {
@@ -46,7 +48,7 @@ export function dhParametersToPlaneSize(dhParameters: DHParameter[]) {
     return defaultPlaneSize
   }
   const reachRadiusM = dhParameters.reduce((sum, p) => {
-    return sum + (Math.abs(p.a ?? 0) / 1000) + (Math.abs(p.d ?? 0) / 1000)
+    return sum + Math.abs(p.a ?? 0) / 1000 + Math.abs(p.d ?? 0) / 1000
   }, 0)
   const size = reachRadiusM * 2
   if (!Number.isFinite(size) || size <= 0) {
@@ -55,8 +57,9 @@ export function dhParametersToPlaneSize(dhParameters: DHParameter[]) {
   return size
 }
 
-
-export function verticesToCoplanarity(vertices: THREE.Vector3[]): CoplanarityResult {
+export function verticesToCoplanarity(
+  vertices: THREE.Vector3[],
+): CoplanarityResult {
   if (vertices.length < 3) {
     console.log("Not enough vertices to define a plane")
     return { isCoplanar: false }

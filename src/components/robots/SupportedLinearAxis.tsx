@@ -22,7 +22,10 @@ export type SupportedLinearAxisProps = {
   dhParameters: DHParameter[]
   flangeRef?: React.Ref<THREE.Group>
   instanceUrl?: string
-  getModel?: (modelFromController: string, instanceUrl?: string) => Promise<string> | undefined
+  getModel?: (
+    modelFromController: string,
+    instanceUrl?: string,
+  ) => Promise<string> | undefined
   postModelRender?: () => void
   transparentColor?: string
 } & ThreeElements["group"]
@@ -81,8 +84,12 @@ export const SupportedLinearAxis = externalizeComponent(
                 modelURL={(() => {
                   const result = getModel(modelFromController, instanceUrl)
                   if (!result) {
-                    const mockBlob = new Blob([], { type: 'model/gltf-binary' })
-                    const mockFile = new File([mockBlob], `${modelFromController}.glb`, { type: 'model/gltf-binary' })
+                    const mockBlob = new Blob([], { type: "model/gltf-binary" })
+                    const mockFile = new File(
+                      [mockBlob],
+                      `${modelFromController}.glb`,
+                      { type: "model/gltf-binary" },
+                    )
                     return Promise.resolve(URL.createObjectURL(mockFile))
                   }
                   return result

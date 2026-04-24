@@ -338,7 +338,7 @@ export function createDarkTheme(): Theme {
         VelocitySlider: {
           sliderLegendColor: baseTheme.palette.text.primary,
         },
-      }
+      },
     },
   } as Theme
 }

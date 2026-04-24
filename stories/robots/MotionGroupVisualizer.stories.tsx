@@ -3,7 +3,11 @@ import type { StoryObj } from "@storybook/react-vite"
 import { NovaClient, type KinematicModel } from "@wandelbots/nova-js/v2"
 import { useEffect, useState } from "react"
 import { expect, fn, waitFor } from "storybook/test"
-import { PresetEnvironment, ConnectedMotionGroup, MotionGroupVisualizer } from "../../src"
+import {
+  PresetEnvironment,
+  ConnectedMotionGroup,
+  MotionGroupVisualizer,
+} from "../../src"
 import { revokeAllModelUrls } from "../../src/components/robots/robotModelLogic"
 import { OrbitControlsAround } from "./OrbitControlsAround"
 import { sharedStoryConfig } from "./robotStoryConfig"
@@ -19,10 +23,12 @@ function MotionGroupVisualizerScene(
 ) {
   const [connectedMotionGroup, setConnectedMotionGroup] =
     useState<ConnectedMotionGroup>()
-  const [inverseSolver, setInverseSolver] = useState<string | undefined | null>(undefined)
+  const [inverseSolver, setInverseSolver] = useState<string | undefined | null>(
+    undefined,
+  )
 
-
-  const instanceUrl = import.meta.env.WANDELAPI_BASE_URL || "https://mock.example.com"
+  const instanceUrl =
+    import.meta.env.WANDELAPI_BASE_URL || "https://mock.example.com"
   const nova = new NovaClient({ instanceUrl })
 
   useEffect(() => {
@@ -46,10 +52,12 @@ function MotionGroupVisualizerScene(
    * Gets the kinematic model needed for MotionGroupVisualizer
    */
   const fetchKinematicModel = async () => {
-    if(connectedMotionGroup) {
+    if (connectedMotionGroup) {
       try {
         const { inverse_solver, dh_parameters }: KinematicModel =
-          await nova.api.motionGroupModels.getMotionGroupKinematicModel(connectedMotionGroup?.modelFromController)
+          await nova.api.motionGroupModels.getMotionGroupKinematicModel(
+            connectedMotionGroup?.modelFromController,
+          )
 
         setInverseSolver(inverse_solver)
       } catch (err) {
@@ -90,7 +98,9 @@ function MotionGroupVisualizerScene(
             {...props}
             instanceUrl={instanceUrl}
             modelFromController={connectedMotionGroup.modelFromController}
-            rapidlyChangingMotionState={connectedMotionGroup.rapidlyChangingMotionState}
+            rapidlyChangingMotionState={
+              connectedMotionGroup.rapidlyChangingMotionState
+            }
             dhParameters={connectedMotionGroup.dhParameters ?? []}
             inverseSolver={inverseSolver}
           />
@@ -100,9 +110,11 @@ function MotionGroupVisualizerScene(
   )
 }
 
-export const MotionGroupVisualizerStory: StoryObj<typeof MotionGroupVisualizerScene> = {
+export const MotionGroupVisualizerStory: StoryObj<
+  typeof MotionGroupVisualizerScene
+> = {
   args: {
-    postModelRender: fn()
+    postModelRender: fn(),
   },
   play: async ({ args }) => {
     /**
