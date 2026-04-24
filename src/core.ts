@@ -1,7 +1,6 @@
 // Core components without heavy dependencies (Three.js, Monaco, MUI X)
 export * from "./components/AppHeader"
 export * from "./components/CycleTimer"
-export * from "./components/DataGrid"
 export * from "./components/jogging/JoggingCartesianAxisControl"
 export * from "./components/jogging/JoggingJointValueControl"
 export * from "./components/jogging/JoggingPanel"
