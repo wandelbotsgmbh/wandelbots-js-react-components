@@ -1,14 +1,14 @@
 import { Divider, Stack, Typography, useTheme } from "@mui/material"
+import { JointTypeEnum } from "@wandelbots/nova-js/v2"
 import { observer } from "mobx-react-lite"
 import type { ReactNode } from "react"
 import { JoggingJointLimitDetector } from "./JoggingJointLimitDetector"
 import { JoggingJointValueControl } from "./JoggingJointValueControl"
 import type { JoggingStore } from "./JoggingStore"
 import { JoggingVelocitySlider } from "./JoggingVelocitySlider"
-import { JointTypeEnum } from "@wandelbots/nova-js/v2"
 
 export const JoggingJointTab = observer(
-  ({ store, children }: { store: JoggingStore; children: ReactNode }) => {
+  ({ store, children }: { store: JoggingStore; children?: ReactNode }) => {
     const theme = useTheme()
     async function startJointJogging(opts: {
       joint: number

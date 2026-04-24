@@ -1,28 +1,28 @@
 import { render, screen, within } from "@testing-library/react"
-import { describe, expect, it, vi, beforeEach } from "vitest"
-import { JointTypeEnum } from "@wandelbots/nova-js/v2"
 import type {
   CoordinateSystem,
   MotionGroupDescription,
   MotionGroupState,
   RobotTcp,
 } from "@wandelbots/nova-js/v2"
-import { JoggingStore } from "./JoggingStore"
-import { JoggingJointTab } from "./JoggingJointTab"
-import { JoggingCartesianTab } from "./JoggingCartesianTab"
+import { JointTypeEnum } from "@wandelbots/nova-js/v2"
 import { I18nextProvider } from "react-i18next"
+import { beforeEach, describe, expect, it, vi } from "vitest"
 import { i18n } from "../../i18n/config"
-import { JoggerConnection } from "../../lib/JoggerConnection"
 import type { JoggerConnection as JoggerConnectionType } from "../../lib/JoggerConnection"
+import { JoggerConnection } from "../../lib/JoggerConnection"
 import type { MotionStreamConnection } from "../../lib/MotionStreamConnection"
 import {
-  ur5eMotionGroupState,
-  ur5eDescription,
-  turnMockMotionGroupState,
-  turnMockDescription,
-  linearAxisMotionGroupState,
   linearAxisDescription,
+  linearAxisMotionGroupState,
+  turnMockDescription,
+  turnMockMotionGroupState,
+  ur5eDescription,
+  ur5eMotionGroupState,
 } from "./__fixtures__/motionStreamMockData"
+import { JoggingCartesianTab } from "./JoggingCartesianTab"
+import { JoggingJointTab } from "./JoggingJointTab"
+import { JoggingStore } from "./JoggingStore"
 
 // ---------- helpers ----------
 
