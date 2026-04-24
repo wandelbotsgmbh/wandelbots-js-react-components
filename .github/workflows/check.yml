@@ -41,6 +41,14 @@ jobs:
       - uses: ./.github/actions/setup-node
       - run: pnpm run build
 
+  consumer-imports:
+    name: Consumer import tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: ./.github/actions/setup-node
+      - run: pnpm run test:consumer
+
   api-surface:
     name: Check API surface is up to date
     runs-on: ubuntu-latest

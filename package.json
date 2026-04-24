@@ -50,6 +50,7 @@
     "test": "test-storybook --url http://127.0.0.1:6006 --index-json --browsers chromium",
     "test:unit": "vitest --workspace vitest.workspace.ts --project unit",
     "test:unit:run": "vitest run --workspace vitest.workspace.ts --project unit",
+    "test:consumer": "pnpm run build && vitest run --workspace vitest.workspace.ts --project consumer",
     "ci:test": "run-s ci:test:build ci:test:built",
     "ci:test:build": "storybook build --quiet --test",
     "ci:test:built": "run-p --race ci:test:server ci:test:runner",
