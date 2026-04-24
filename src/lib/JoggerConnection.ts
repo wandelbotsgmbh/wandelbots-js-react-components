@@ -97,6 +97,7 @@ export class JoggerConnection {
     // Get matching motion stream
     const motionStream = await MotionStreamConnection.open(nova, motionGroupId)
 
+
     // Initialize jogger with options
     const jogger = new JoggerConnection(motionStream, options)
 
