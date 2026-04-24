@@ -3,12 +3,13 @@ import {
   tryParseJson,
   XYZ_TO_VECTOR,
 } from "@wandelbots/nova-js"
-import type {
-  InitializeMovementResponse,
-  MotionCommand,
-  NovaClient,
-  Pose,
-  StartMovementResponse,
+import {
+  JointTypeEnum,
+  type InitializeMovementResponse,
+  type MotionCommand,
+  type NovaClient,
+  type Pose,
+  type StartMovementResponse,
 } from "@wandelbots/nova-js/v2"
 import { when } from "mobx"
 import { Vector3 } from "three/src/math/Vector3.js"
@@ -55,7 +56,8 @@ export class JoggerConnection {
   ENDPOINT_JOGGING = "/execution/jogging"
   ENDPOINT_TRAJECTORY = "/execution/trajectory"
   DEFAULT_MODE = "off" as JoggerMode
-  DEFAULT_TCP = "Flange"
+  DEFAULT_TCP: string | undefined = "Flange"
+  NO_TCP: string | undefined = undefined;
   // DEFAULT_COORDINATE_SYSTEM = "world"
   DEFAULT_INIT_TIMEOUT = 5000
   DEFAULT_ORIENTATION = "coordsys" as JoggerOrientation
@@ -64,7 +66,7 @@ export class JoggerConnection {
   joggingSocket: AutoReconnectingWebsocket | null = null
   trajectorySocket: AutoReconnectingWebsocket | null = null
   timeout: number = this.DEFAULT_INIT_TIMEOUT
-  tcp: string
+  tcp: string | undefined
   // coordinateSystem?: string
   orientation: JoggerOrientation
   onError?: (err: unknown) => void
@@ -95,6 +97,7 @@ export class JoggerConnection {
     // Get matching motion stream
     const motionStream = await MotionStreamConnection.open(nova, motionGroupId)
 
+
     // Initialize jogger with options
     const jogger = new JoggerConnection(motionStream, options)
 
@@ -109,12 +112,23 @@ export class JoggerConnection {
     readonly motionStream: MotionStreamConnection,
     readonly options: JoggerConnectionOptions | undefined = {},
   ) {
-    this.tcp = options?.tcp || motionStream.motionGroup.tcp || this.DEFAULT_TCP
+    this.tcp = options?.tcp || motionStream.motionGroup.tcp || this.getDefaultTcp(motionStream)
     // this.coordinateSystem = options?.coordinateSystem || this.DEFAULT_COORDINATE_SYSTEM
     this.orientation = options?.orientation || this.DEFAULT_ORIENTATION
     this.timeout = options?.timeout || this.DEFAULT_INIT_TIMEOUT
     this.mode = options?.mode || this.DEFAULT_MODE
     this.onError = options?.onError
+  }
+
+  getDefaultTcp(motionStream: MotionStreamConnection){
+    const firstJointType = motionStream.description.dh_parameters?.[0]?.type
+    if(
+      motionStream.joints.length < 6 &&
+      (firstJointType === JointTypeEnum.RevoluteJoint || firstJointType === JointTypeEnum.PrismaticJoint)
+    ){
+      return this.NO_TCP;
+    }
+    return this.DEFAULT_TCP;
   }
 
   // Set a new tcp or other options. If current mode is jogging, will reinitialize the jogging websocket
@@ -271,7 +285,7 @@ export class JoggerConnection {
       this.joggingSocket.sendJson({
         message_type: "InitializeJoggingRequest",
         motion_group: this.motionGroupId,
-        tcp: this.tcp,
+        ...(this.tcp ? { tcp: this.tcp } : {}),
       })
     })
   }
