@@ -212,6 +212,33 @@ describe("CJS interop", () => {
     expect(Object.keys(cjs).sort()).toEqual(Object.keys(esm).sort())
   })
 
+  // Regression test: Vitest's `await import()` goes through Vite's lenient
+  // resolver, which happily accepts extensionless ESM specifiers like
+  // `lodash-es/throttle`. Real downstream consumers hit Node's strict ESM
+  // resolver, which requires `.js`. Spawn a real Node process so the whole
+  // dependency graph (including transitive imports from dist/) is exercised
+  // under strict resolution.
+  it.each([
+    "components/DataGrid",
+    "components/VelocitySlider",
+    "components/jogging/JoggingPanel",
+    "components/jogging/JoggingJointValueControl",
+    "components/jogging/JoggingJointLimitDetector",
+    "components/jogging/JoggingStore",
+  ])("Node strict ESM can import %s and its transitive deps", (sub) => {
+    // Redirect stderr to stdout so the assertion message surfaces any
+    // "Cannot find module" errors from the child process.
+    execFileSync(
+      process.execPath,
+      [
+        "--input-type=module",
+        "-e",
+        `await import(${JSON.stringify(`${pkgName}/${sub}`)})`,
+      ],
+      { cwd: sandbox, stdio: "pipe", encoding: "utf8" },
+    )
+  })
+
   it('Node can load the CJS output under `"type": "module"`', () => {
     // Sanity check that `.cjs` extension was emitted (not `.cjs.js`) so
     // that Node's CJS loader accepts it despite the package being ESM.
