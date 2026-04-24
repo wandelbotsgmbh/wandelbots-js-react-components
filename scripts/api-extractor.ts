@@ -71,7 +71,7 @@ if (outOfDate.length > 0) {
     `\n${"─".repeat(72)}\n` +
       `API report${outOfDate.length > 1 ? "s are" : " is"} out of date for: ${outOfDate.join(", ")}\n\n` +
       `The public API surface of this library has changed. To fix:\n\n` +
-      `  1. Run  pnpm api:update\n` +
+      `  1. Run pnpm api:update\n` +
       `  2. Review the diff in etc/api-extractor/*.api.md\n` +
       `  3. Commit the updated file(s)\n\n` +
       `If the change removes or alters existing API (not purely additive),\n` +
