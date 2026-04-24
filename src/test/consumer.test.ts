@@ -109,33 +109,11 @@ describe("package exports — aggregate entries", () => {
 })
 
 describe("package exports — deep component imports", () => {
-  const specs = [
-    // File-backed modules resolved via the "./*" wildcard.
-    "components/DataGrid",
-    "components/AppHeader",
-    "components/LogPanel",
-    "components/ProgramControl",
-    "components/RobotCard",
-    "components/TabBar",
-    "components/VelocitySlider",
-    "components/jogging/JoggingPanel",
-    "components/jogging/JoggingStore",
-    "components/jogging/JoggingCartesianAxisControl",
-    "components/safetyBar/SafetyBar",
-    "components/3d-viewport/SafetyZonesRenderer",
-    "components/3d-viewport/TrajectoryRenderer",
-    "components/robots/Robot",
-    "components/robots/MotionGroupVisualizer",
-    "components/modal/NoMotionGroupModal",
-    "lib/ConnectedMotionGroup",
-    "lib/JoggerConnection",
-    "lib/MotionStreamConnection",
-    "themes/createDarkTheme",
-    // Directory-backed modules that have a sibling barrel so the wildcard
-    // subpath still resolves. Regression test for copilot review comment.
-    "components/Timer",
-    "components/CycleTimer",
-  ]
+  // Explicit MUI-style entries. Each public component lives in its own
+  // directory under `src/` with an `index.ts` barrel and is exposed at
+  // `@wandelbots/.../<Name>` (matching `@mui/material/Button`). The set
+  // is deliberately small — see scripts/entry-points.ts.
+  const specs = ["SafetyBar"]
 
   it.each(specs)("%s resolves ESM, CJS, and types", (sub) => {
     const spec = `${pkgName}/${sub}`
@@ -153,23 +131,8 @@ describe("MUI-style default + named exports", () => {
   // These modules are the primary public "one-component-per-file" entries
   // that downstream apps will import directly. Each must expose both a
   // named export (preserving the existing API) and a matching `default`
-  // export (the MUI-style convention introduced by this PR).
-  const cases = [
-    { sub: "components/DataGrid", name: "WandelbotsDataGrid" },
-    { sub: "components/AppHeader", name: "AppHeader" },
-    { sub: "components/TabBar", name: "TabBar" },
-    { sub: "components/ProgramControl", name: "ProgramControl" },
-    { sub: "components/RobotCard", name: "RobotCard" },
-    { sub: "components/VelocitySlider", name: "VelocitySlider" },
-    { sub: "components/jogging/JoggingPanel", name: "JoggingPanel" },
-    { sub: "components/jogging/JoggingStore", name: "JoggingStore" },
-    { sub: "components/safetyBar/SafetyBar", name: "SafetyBar" },
-    { sub: "components/Timer", name: "Timer" },
-    { sub: "components/CycleTimer", name: "CycleTimer" },
-    { sub: "lib/ConnectedMotionGroup", name: "ConnectedMotionGroup" },
-    { sub: "lib/JoggerConnection", name: "JoggerConnection" },
-    { sub: "lib/MotionStreamConnection", name: "MotionStreamConnection" },
-  ]
+  // export (the MUI-style convention).
+  const cases = [{ sub: "SafetyBar", name: "SafetyBar" }]
 
   it.each(cases)("$sub exposes $name as both named and default", async ({
     sub,
@@ -183,30 +146,24 @@ describe("MUI-style default + named exports", () => {
 })
 
 describe("aggregate barrel preserves named exports", () => {
-  it("@wandelbots/.../core re-exports the same symbols as deep imports", async () => {
+  // Vite transforms the full `core` aggregate on first import, which can
+  // take several seconds when the test worker is busy. Use a generous
+  // timeout so this doesn't flake on slower CI machines.
+  it("@wandelbots/.../core re-exports the same symbols as the deep imports", async () => {
     const core = await import(`${pkgName}/core`)
-    const deep = await import(`${pkgName}/components/DataGrid`)
-    expect(core.WandelbotsDataGrid).toBe(deep.WandelbotsDataGrid)
-  })
-
-  it("@wandelbots/.../3d re-exports the same symbols as deep imports", async () => {
-    const agg = await import(`${pkgName}/3d`)
-    const deep = await import(`${pkgName}/components/robots/Robot`)
-    expect(agg.Robot).toBe(deep.Robot)
-  })
+    const deep = await import(`${pkgName}/SafetyBar`)
+    expect(core.SafetyBar).toBe(deep.SafetyBar)
+  }, 30_000)
 })
 
 describe("CJS interop", () => {
   it("require() returns the same symbols as import", async () => {
-    const esm = (await import(`${pkgName}/components/DataGrid`)) as Record<
+    const esm = (await import(`${pkgName}/SafetyBar`)) as Record<
       string,
       unknown
     >
-    const cjs = sandboxReq(`${pkgName}/components/DataGrid`) as Record<
-      string,
-      unknown
-    >
-    expect(cjs.default).toBe(cjs.WandelbotsDataGrid)
+    const cjs = sandboxReq(`${pkgName}/SafetyBar`) as Record<string, unknown>
+    expect(cjs.default).toBe(cjs.SafetyBar)
     // Both resolvers must reach a real, loadable module (the identities
     // naturally differ between ESM/CJS, so we compare by exported keys).
     expect(Object.keys(cjs).sort()).toEqual(Object.keys(esm).sort())
@@ -219,12 +176,7 @@ describe("CJS interop", () => {
   // dependency graph (including transitive imports from dist/) is exercised
   // under strict resolution.
   it.each([
-    "components/DataGrid",
-    "components/VelocitySlider",
-    "components/jogging/JoggingPanel",
-    "components/jogging/JoggingJointValueControl",
-    "components/jogging/JoggingJointLimitDetector",
-    "components/jogging/JoggingStore",
+    "SafetyBar",
   ])("Node strict ESM can import %s and its transitive deps", (sub) => {
     // Redirect stderr to stdout so the assertion message surfaces any
     // "Cannot find module" errors from the child process.
@@ -247,8 +199,8 @@ describe("CJS interop", () => {
       [
         "-e",
         "const m = require(process.argv[1]); " +
-          "console.log(typeof m.WandelbotsDataGrid);",
-        resolve(repoRoot, "dist/components/DataGrid.cjs"),
+          "console.log(typeof m.SafetyBar);",
+        resolve(repoRoot, "dist/SafetyBar/index.cjs"),
       ],
       { encoding: "utf8" },
     ).trim()

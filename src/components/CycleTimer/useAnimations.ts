@@ -14,13 +14,23 @@ export const useAnimations = () => {
   })
 
   // Refs for managing timeouts and intervals
-  const pauseAnimationTimeoutRef = useRef<NodeJS.Timeout | null>(null)
-  const errorAnimationTimeoutRef = useRef<NodeJS.Timeout | null>(null)
-  const pulsatingIntervalRef = useRef<NodeJS.Timeout | null>(null)
-  const fadeTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const pauseAnimationTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  )
+  const errorAnimationTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  )
+  const pulsatingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(
+    null,
+  )
+  const fadeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const pulseCountRef = useRef<number>(0)
-  const idlePulsatingIntervalRef = useRef<NodeJS.Timeout | null>(null)
-  const idleDotsIntervalRef = useRef<NodeJS.Timeout | null>(null)
+  const idlePulsatingIntervalRef = useRef<ReturnType<
+    typeof setInterval
+  > | null>(null)
+  const idleDotsIntervalRef = useRef<ReturnType<typeof setInterval> | null>(
+    null,
+  )
 
   const triggerPauseAnimation = useCallback(() => {
     setAnimationState((prev) => ({ ...prev, showPauseAnimation: true }))

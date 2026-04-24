@@ -333,15 +333,11 @@ export type JoggerMode = "jogging" | "trajectory" | "off";
 // @public (undocumented)
 export type JoggerOrientation = "coordsys" | "tool";
 
-// Warning: (ae-forgotten-export) The symbol "JoggingCartesianAxisControlProps" needs to be exported by the entry point core.d.ts
-//
 // @public
 export const JoggingCartesianAxisControl: ((input: JoggingCartesianAxisControlProps) => JSX.Element) & {
     displayName: string;
 };
 
-// Warning: (ae-forgotten-export) The symbol "JoggingJointValueControlProps" needs to be exported by the entry point core.d.ts
-//
 // @public
 export const JoggingJointValueControl: ((input: JoggingJointValueControlProps) => JSX.Element) & {
     displayName: string;
@@ -403,7 +399,6 @@ export class JoggingStore {
     dispose(): void;
     // (undocumented)
     disposers: IReactionDisposer[];
-    // Warning: (ae-forgotten-export) The symbol "IncrementJogInProgress" needs to be exported by the entry point core.d.ts
     incrementJogInProgress: IncrementJogInProgress | null;
     // (undocumented)
     get incrementOptions(): readonly [{
@@ -458,15 +453,10 @@ export class JoggingStore {
     get rotationVelocityRadsPerSec(): number;
     // (undocumented)
     saveToLocalStorage(): void;
-    // Warning: (ae-forgotten-export) The symbol "CartesianMotionType" needs to be exported by the entry point core.d.ts
     selectedCartesianMotionType: CartesianMotionType;
     selectedCoordSystemId: string;
-    // Warning: (ae-forgotten-export) The symbol "IncrementOptionId" needs to be exported by the entry point core.d.ts
     selectedIncrementId: IncrementOptionId;
-    // Warning: (ae-forgotten-export) The symbol "OrientationId" needs to be exported by the entry point core.d.ts
     selectedOrientation: OrientationId;
-    // Warning: (ae-forgotten-export) The symbol "TabType" needs to be exported by the entry point core.d.ts
-    //
     // (undocumented)
     selectedTabId: TabType;
     selectedTcpId: string;
@@ -782,8 +772,6 @@ export interface SafetyBarProps {
     transformOrigin?: PopoverOrigin;
 }
 
-// Warning: (ae-forgotten-export) The symbol "CodeFabProps" needs to be exported by the entry point core.d.ts
-//
 // @public (undocumented)
 export const SelectableFab: (props: CodeFabProps) => JSX.Element;
 
@@ -884,15 +872,11 @@ export class ValueInterpolator {
 // @public (undocumented)
 export type Vector3Simple = [number, number, number];
 
-// Warning: (ae-forgotten-export) The symbol "VelocitySliderProps" needs to be exported by the entry point core.d.ts
-//
 // @public
 export const VelocitySlider: ((props: VelocitySliderProps) => JSX.Element) & {
     displayName: string;
 };
 
-// Warning: (ae-forgotten-export) The symbol "VelocitySliderLabelProps" needs to be exported by the entry point core.d.ts
-//
 // @public (undocumented)
 export function VelocitySliderLabel(input: VelocitySliderLabelProps): JSX.Element;
 
