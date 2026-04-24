@@ -47,6 +47,25 @@ const emitSvgDts = (): Plugin => ({
   },
 })
 
+// Public entry points that get their own aggregate bundle. Every other
+// module in src/ is also emitted individually thanks to preserveModules,
+// so consumers can deep-import any of them via the wildcard subpath export
+// in package.json.
+//
+// Directory-backed components (folders with an `index.tsx`) have a
+// same-name sibling barrel file (e.g. `src/components/Timer.ts` next to
+// `src/components/Timer/index.tsx`) so `<pkg>/components/Timer` resolves
+// via the wildcard. Those barrels are listed as entries so Rollup can't
+// optimize them away during the `preserveModules` flatten pass.
+const entry = {
+  index: resolve(__dirname, "src/index.ts"),
+  core: resolve(__dirname, "src/core.ts"),
+  "3d": resolve(__dirname, "src/3d.ts"),
+  "wb-icons": resolve(__dirname, "src/wb-icons.ts"),
+  "components/Timer": resolve(__dirname, "src/components/Timer.ts"),
+  "components/CycleTimer": resolve(__dirname, "src/components/CycleTimer.tsx"),
+}
+
 // https://vitejs.dev/config/
 export default defineConfig({
   define: {
@@ -63,12 +82,7 @@ export default defineConfig({
       // individual component (e.g. "<pkg>/components/DataGrid") for better
       // bundle size and dev-server performance, while the aggregate entries
       // below continue to work as a non-breaking convenience.
-      entry: {
-        index: resolve(__dirname, "src/index.ts"),
-        core: resolve(__dirname, "src/core.ts"),
-        "3d": resolve(__dirname, "src/3d.ts"),
-        "wb-icons": resolve(__dirname, "src/wb-icons.ts"),
-      },
+      entry,
       // Formats are specified per-output below to get distinct file
       // extensions per format (`.js` for ESM, `.cjs` for CJS). This is
       // required because this package is `"type": "module"` — Node would
@@ -77,12 +91,9 @@ export default defineConfig({
     },
     rollupOptions: {
       external: isExternal,
-      input: {
-        index: resolve(__dirname, "src/index.ts"),
-        core: resolve(__dirname, "src/core.ts"),
-        "3d": resolve(__dirname, "src/3d.ts"),
-        "wb-icons": resolve(__dirname, "src/wb-icons.ts"),
-      },
+      // Rollup ignores `build.lib.entry` when `build.lib.formats` is empty,
+      // so we pass the same entry map through `input` directly.
+      input: entry,
       output: [
         {
           format: "es",

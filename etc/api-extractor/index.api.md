@@ -1028,12 +1028,34 @@ export interface TabItem {
 // @public (undocumented)
 export function tcpMotionEqual(oldMotionState: MotionGroupState, newMotionState: MotionGroupState, changeDeltaThreshold: number): boolean;
 
-// Warning: (ae-forgotten-export) The symbol "TimerProps" needs to be exported by the entry point index.d.ts
-//
 // @public
 export const Timer: ((input: TimerProps) => JSX.Element) & {
     displayName: string;
 };
+
+// @public (undocumented)
+export interface TimerControls {
+    // (undocumented)
+    isPaused: () => boolean;
+    // (undocumented)
+    pause: () => void;
+    // (undocumented)
+    reset: () => void;
+    // (undocumented)
+    resume: () => void;
+    // (undocumented)
+    start: (elapsedSeconds?: number) => void;
+}
+
+// @public (undocumented)
+export interface TimerProps {
+    autoStart?: boolean;
+    className?: string;
+    compact?: boolean;
+    hasError?: boolean;
+    onTimerReady: (controls: TimerControls) => void;
+    variant?: "default" | "small";
+}
 
 // @public (undocumented)
 export function TrajectoryRenderer(input: TrajectoryRendererProps): JSX.Element;
