@@ -26,8 +26,9 @@ export default function ColliderCollection({
           key={colliderKey}
           name={colliderKey}
           collider={collider}
-          children={meshChildrenProvider(colliderKey, collider)}
-        />
+        >
+          {meshChildrenProvider(colliderKey, collider)}
+        </ColliderElement>
       ))}
     </group>
   )

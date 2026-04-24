@@ -42,11 +42,17 @@ const PaletteOverview = () => {
               Object.keys(theme.palette[category]).map((shade) => (
                 <Grid key={shade} sx={{ alignItems: "center" }}>
                   <Typography variant="body2">{shade}</Typography>
-                  <Tooltip title={(theme.palette[category] as any)[shade]}>
+                  <Tooltip
+                    title={
+                      (theme.palette[category] as Record<string, string>)[shade]
+                    }
+                  >
                     <Box
                       component="div"
                       sx={{
-                        bgcolor: (theme.palette[category] as any)[shade],
+                        bgcolor: (
+                          theme.palette[category] as Record<string, string>
+                        )[shade],
                         width: 40,
                         height: 20,
                       }}
@@ -59,13 +65,24 @@ const PaletteOverview = () => {
               Object.keys(theme.paletteExt.primary).map((shade) => (
                 <Grid key={shade} sx={{ alignItems: "center" }}>
                   <Typography variant="body2">{shade}</Typography>
-                  <Tooltip title={(theme.paletteExt?.primary as any)?.[shade]}>
+                  <Tooltip
+                    title={
+                      (
+                        theme.paletteExt?.primary as
+                          | Record<string, string>
+                          | undefined
+                      )?.[shade]
+                    }
+                  >
                     <Box
                       component="div"
                       sx={{
                         bgcolor:
-                          (theme.paletteExt?.primary as any)?.[shade] ??
-                          "transparent",
+                          (
+                            theme.paletteExt?.primary as
+                              | Record<string, string>
+                              | undefined
+                          )?.[shade] ?? "transparent",
                         width: 40,
                         height: 20,
                       }}
@@ -79,14 +96,23 @@ const PaletteOverview = () => {
                 <Grid key={shade} sx={{ alignItems: "center" }}>
                   <Typography variant="body2">{shade}</Typography>
                   <Tooltip
-                    title={(theme.paletteExt?.secondary as any)?.[shade]}
+                    title={
+                      (
+                        theme.paletteExt?.secondary as
+                          | Record<string, string>
+                          | undefined
+                      )?.[shade]
+                    }
                   >
                     <Box
                       component="div"
                       sx={{
                         bgcolor:
-                          (theme.paletteExt?.secondary as any)?.[shade] ??
-                          "transparent",
+                          (
+                            theme.paletteExt?.secondary as
+                              | Record<string, string>
+                              | undefined
+                          )?.[shade] ?? "transparent",
                         width: 40,
                         height: 20,
                       }}

@@ -1,5 +1,4 @@
 import { Alert, AlertTitle, Grid } from "@mui/material"
-import React from "react"
 
 const sectionProps = {
   item: true,

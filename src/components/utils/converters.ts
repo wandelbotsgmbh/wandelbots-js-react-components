@@ -1,5 +1,5 @@
-import * as THREE from "three"
 import type { DHParameter } from "@wandelbots/nova-js/v2"
+import * as THREE from "three"
 
 export interface CoplanarityResult {
   isCoplanar: boolean
@@ -14,7 +14,7 @@ export function degreesToRadians(degrees: number): number {
   return degrees * (Math.PI / 180)
 }
 
-export function tryParseJson(json: unknown): any {
+export function tryParseJson(json: unknown): unknown {
   try {
     return JSON.parse(json as string)
   } catch {

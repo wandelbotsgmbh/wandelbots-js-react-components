@@ -1,3 +1,6 @@
+/* biome-ignore-all lint/style/noNonNullAssertion: pre-biome code */
+/* biome-ignore-all lint/suspicious/noExplicitAny: pre-biome code */
+
 import { Line } from "@react-three/drei"
 import type { DHParameter } from "@wandelbots/nova-js/v2"
 import React, { useRef } from "react"
@@ -99,50 +102,49 @@ export function DHRobot({
   }
 
   return (
-    <>
-      <RobotAnimator
-        rapidlyChangingMotionState={rapidlyChangingMotionState}
-        dhParameters={dhParameters}
-        onRotationChanged={setRotation}
-      >
-        <group {...props} name="Scene">
-          <mesh>
-            <sphereGeometry args={[0.01, 32, 32]} />
-            <meshStandardMaterial color={"black"} depthTest={true} />
-          </mesh>
-          {dhParameters!.map((param, index) => {
-            const { a, b } = getLinePoints(
-              param,
-              rapidlyChangingMotionState.joint_position[index] ?? 0,
-            )
-            const jointName = `dhrobot_J0${index}`
-            return (
-              <group name={jointName} key={jointName}>
-                <Line
-                  ref={(ref) => {
-                    lineRefs.current[index] = ref
-                  }}
-                  name={CHILD_LINE}
-                  points={[a, b]}
-                  color={"white"}
-                  lineWidth={5}
-                />
-                <mesh
-                  ref={(ref) => {
-                    meshRefs.current[index] = ref
-                  }}
-                  name={CHILD_MESH}
-                  key={"mesh_" + index}
-                  position={b}
-                >
-                  <sphereGeometry args={[0.01, 32, 32]} />
-                  <meshStandardMaterial color={"black"} depthTest={true} />
-                </mesh>
-              </group>
-            )
-          })}
-        </group>
-      </RobotAnimator>
-    </>
+    <RobotAnimator
+      rapidlyChangingMotionState={rapidlyChangingMotionState}
+      dhParameters={dhParameters}
+      onRotationChanged={setRotation}
+    >
+      <group {...props} name="Scene">
+        <mesh>
+          <sphereGeometry args={[0.01, 32, 32]} />
+          <meshStandardMaterial color={"black"} depthTest={true} />
+        </mesh>
+        {dhParameters?.map((param, index) => {
+          const { a, b } = getLinePoints(
+            param,
+            rapidlyChangingMotionState.joint_position[index] ?? 0,
+          )
+          const jointName = `dhrobot_J0${index}`
+          return (
+            <group name={jointName} key={jointName}>
+              <Line
+                ref={(ref) => {
+                  lineRefs.current[index] = ref
+                }}
+                name={CHILD_LINE}
+                points={[a, b]}
+                color={"white"}
+                lineWidth={5}
+              />
+              <mesh
+                ref={(ref) => {
+                  meshRefs.current[index] = ref
+                }}
+                name={CHILD_MESH}
+                // biome-ignore lint/suspicious/noArrayIndexKey: pre-biome code
+                key={`mesh_${index}`}
+                position={b}
+              >
+                <sphereGeometry args={[0.01, 32, 32]} />
+                <meshStandardMaterial color={"black"} depthTest={true} />
+              </mesh>
+            </group>
+          )
+        })}
+      </group>
+    </RobotAnimator>
   )
 }

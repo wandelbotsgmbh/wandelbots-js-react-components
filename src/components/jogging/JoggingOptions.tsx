@@ -143,6 +143,7 @@ export const JoggingOptions = observer(
       >
         {joggingOptions.map((select, idx) => (
           <Box
+            // biome-ignore lint/suspicious/noArrayIndexKey: pre-biome code
             key={idx}
             sx={{
               gridColumn:

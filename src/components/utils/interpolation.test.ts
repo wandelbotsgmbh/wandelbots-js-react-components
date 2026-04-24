@@ -578,7 +578,9 @@ describe("ValueInterpolator", () => {
     })
 
     // Clean up
-    interpolators.forEach((interpolator) => interpolator.destroy())
+    interpolators.forEach((interpolator) => {
+      interpolator.destroy()
+    })
   })
 
   it("should handle multiple interpolators using auto-interpolation without interference", async () => {
@@ -797,7 +799,9 @@ describe("ValueInterpolator", () => {
     expect(finalValues[1][0]).not.toBeCloseTo(finalValues[2][0], 0)
 
     // Clean up
-    interpolators.forEach((interpolator) => interpolator.destroy())
+    interpolators.forEach((interpolator) => {
+      interpolator.destroy()
+    })
   })
 
   it("should handle simultaneous setTarget calls without target blending interference", () => {

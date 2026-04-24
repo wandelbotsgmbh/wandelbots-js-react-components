@@ -3,7 +3,6 @@ import EditIcon from "@mui/icons-material/Edit"
 import FavoriteIcon from "@mui/icons-material/Favorite"
 import NavigationIcon from "@mui/icons-material/Navigation"
 import Fab from "@mui/material/Fab"
-import React from "react"
 
 export default function FabExample() {
   return (

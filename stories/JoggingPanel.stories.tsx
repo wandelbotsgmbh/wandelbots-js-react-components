@@ -7,7 +7,6 @@ import {
   type JoggingPanelProps,
   type JoggingStore,
 } from "../src/index"
-import type { MotionGroupDescription } from "@wandelbots/nova-js/v2"
 
 const JoggingPanelWrapper = observer((props: JoggingPanelProps) => {
   const theme = useTheme()

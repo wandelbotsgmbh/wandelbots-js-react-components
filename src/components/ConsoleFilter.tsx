@@ -20,5 +20,5 @@ export default function ConsoleFilter() {
     }
   }, [])
 
-  return <></>
+  return null
 }

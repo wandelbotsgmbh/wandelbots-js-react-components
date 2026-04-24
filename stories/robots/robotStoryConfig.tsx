@@ -20,13 +20,13 @@ export async function getDHParams(
     const nova = new NovaClient({ instanceUrl })
 
     try {
-      const apiResult: any =
-        await nova.api.motionGroupModels.getMotionGroupKinematicModel(
+      const apiResult =
+        (await nova.api.motionGroupModels.getMotionGroupKinematicModel(
           modelFromController,
-        )
+        )) as { dh_parameters?: unknown }
       const dhParamsJson = apiResult.dh_parameters
       if (dhParamsJson && Array.isArray(dhParamsJson)) {
-        return dhParamsJson.map((json: any) => {
+        return dhParamsJson.map((json: Partial<DHParameter>) => {
           return {
             a: json.a,
             d: json.d,
@@ -52,7 +52,7 @@ export async function getDHParams(
       const data = await response.json()
       if (data.dh_parameters && Array.isArray(data.dh_parameters)) {
         return data.dh_parameters.map(
-          (json: any) =>
+          (json: Partial<DHParameter>) =>
             ({
               a: json.a,
               d: json.d,
@@ -198,8 +198,9 @@ function createMockGlbFile(modelFromController: string): string {
  */
 export async function getModel(modelFromController: string): Promise<string> {
   // Check cache first
-  if (modelCache.has(modelFromController)) {
-    return modelCache.get(modelFromController)!
+  const cached = modelCache.get(modelFromController)
+  if (cached) {
+    return cached
   }
 
   // Create the promise and cache it immediately to prevent duplicate calls
@@ -215,8 +216,10 @@ export async function getModel(modelFromController: string): Promise<string> {
       const nova = new NovaClient({ instanceUrl })
 
       // Configure axios to handle binary responses for GLB files
+      // biome-ignore lint/suspicious/noExplicitAny: accessing internal axios instance
       const apiInstance = nova.api.motionGroupModels as any
       if (apiInstance.axios?.interceptors) {
+        // biome-ignore lint/suspicious/noExplicitAny: axios request config
         apiInstance.axios.interceptors.request.use((config: any) => {
           if (config.url?.includes("/glb")) {
             config.responseType = "blob"

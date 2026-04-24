@@ -1,6 +1,8 @@
+/* biome-ignore-all lint/style/noNonNullAssertion: pre-biome code */
+/* biome-ignore-all lint/suspicious/noExplicitAny: pre-biome code */
+
 import { Line } from "@react-three/drei"
-import type { DHParameter } from "@wandelbots/nova-js/v2"
-import React, { useRef } from "react"
+import { useRef } from "react"
 import type * as THREE from "three"
 import { Matrix4, Quaternion, Vector3 } from "three"
 import LinearAxisAnimator from "./LinearAxisAnimator"
@@ -100,7 +102,7 @@ export function DHLinearAxis({
     // Update TCP line
     if (tcpLineRef.current) {
       const lineGeometry = tcpLineRef.current.geometry
-      if (lineGeometry && lineGeometry.setPositions) {
+      if (lineGeometry?.setPositions) {
         lineGeometry.setPositions([
           0,
           0,
@@ -114,32 +116,30 @@ export function DHLinearAxis({
   }
 
   return (
-    <>
-      <LinearAxisAnimator
-        rapidlyChangingMotionState={rapidlyChangingMotionState}
-        dhParameters={dhParameters}
-        onTranslationChanged={setTranslation}
-      >
-        <group {...props} name="Scene">
-          {/* Base (origin) - Green sphere representing initial previous position */}
-          <mesh name="Base" position={[0, 0, 0]}>
-            <sphereGeometry args={[0.02, 32, 32]} />
-            <meshStandardMaterial color={"green"} depthTest={true} />
-          </mesh>
-          {/* Line from Base to TCP */}
-          <Line
-            ref={tcpLineRef}
-            points={[new Vector3(0, 0, 0), initialTcpPosition]}
-            color={"White"}
-            lineWidth={5}
-          />
-          {/* TCP (Tool Center Point) - Red sphere that shows final position */}
-          <mesh ref={tcpMeshRef} name="TCP" position={initialTcpPosition}>
-            <sphereGeometry args={[0.025, 32, 32]} />
-            <meshStandardMaterial color={"red"} depthTest={true} />
-          </mesh>
-        </group>
-      </LinearAxisAnimator>
-    </>
+    <LinearAxisAnimator
+      rapidlyChangingMotionState={rapidlyChangingMotionState}
+      dhParameters={dhParameters}
+      onTranslationChanged={setTranslation}
+    >
+      <group {...props} name="Scene">
+        {/* Base (origin) - Green sphere representing initial previous position */}
+        <mesh name="Base" position={[0, 0, 0]}>
+          <sphereGeometry args={[0.02, 32, 32]} />
+          <meshStandardMaterial color={"green"} depthTest={true} />
+        </mesh>
+        {/* Line from Base to TCP */}
+        <Line
+          ref={tcpLineRef}
+          points={[new Vector3(0, 0, 0), initialTcpPosition]}
+          color={"White"}
+          lineWidth={5}
+        />
+        {/* TCP (Tool Center Point) - Red sphere that shows final position */}
+        <mesh ref={tcpMeshRef} name="TCP" position={initialTcpPosition}>
+          <sphereGeometry args={[0.025, 32, 32]} />
+          <meshStandardMaterial color={"red"} depthTest={true} />
+        </mesh>
+      </group>
+    </LinearAxisAnimator>
   )
 }

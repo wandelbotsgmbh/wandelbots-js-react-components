@@ -51,7 +51,7 @@ importers:
         version: 7.0.0
     devDependencies:
       '@biomejs/biome':
-        specifier: ^2.4.6
+        specifier: ^2.4.13
         version: 2.4.13
       '@emotion/react':
         specifier: ^11.14.0

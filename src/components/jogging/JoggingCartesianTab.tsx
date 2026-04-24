@@ -65,6 +65,7 @@ export const JoggingCartesianTab = observer(
           ),
         )
       },
+      // biome-ignore lint/suspicious/noExplicitAny: pre-biome code
       { fireImmediately: true } as any,
     )
 

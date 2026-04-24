@@ -1,8 +1,8 @@
 import { useGLTF } from "@react-three/drei"
 import type { ThreeElements } from "@react-three/fiber"
-import React, { useCallback, useEffect, useState } from "react"
-import type { Group, Mesh } from "three"
-import { type Object3D } from "three"
+import type React from "react"
+import { useCallback, useEffect, useState } from "react"
+import type { Group, Mesh, Object3D } from "three"
 import { isFlange, parseRobotModel } from "./robotModelLogic"
 
 export type RobotModelProps = {
@@ -31,13 +31,8 @@ function LoadedRobotModel({
   postModelRender?: () => void
 } & ThreeElements["group"]) {
   const gltfResult = useGLTF(url)
-  let gltf
-  try {
-    const parsed = parseRobotModel(gltfResult, "robot.glb")
-    gltf = parsed.gltf
-  } catch (err) {
-    throw err
-  }
+  const parsed = parseRobotModel(gltfResult, "robot.glb")
+  const gltf = parsed.gltf
 
   const groupRef: React.RefCallback<Group> = useCallback(
     (group) => {

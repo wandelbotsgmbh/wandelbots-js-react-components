@@ -1,8 +1,8 @@
 import ChevronLeft from "@mui/icons-material/ChevronLeft"
 import ChevronRight from "@mui/icons-material/ChevronRight"
-import { radiansToDegrees } from "@wandelbots/nova-js"
 import { IconButton, Slider, Typography, useTheme } from "@mui/material"
 import Stack from "@mui/material/Stack"
+import { radiansToDegrees } from "@wandelbots/nova-js"
 import throttle from "lodash-es/throttle"
 import { observer, useLocalObservable } from "mobx-react-lite"
 import { useState } from "react"
@@ -70,7 +70,7 @@ export const JoggingJointValueControl = externalizeComponent(
       useAnimationFrame(updateValue)
 
       function convertToDegree(value: number | undefined) {
-        if (value == undefined) {
+        if (value === undefined) {
           return undefined
         }
         return radiansToDegrees(value)
@@ -94,7 +94,7 @@ export const JoggingJointValueControl = externalizeComponent(
       }
 
       function formatDegrees(value: number | undefined, precision = 1) {
-        if (value === undefined || isNaN(value)) return ""
+        if (value === undefined || Number.isNaN(value)) return ""
 
         const output = t("General.degree.variable", {
           amount: value.toFixed(precision),
@@ -107,7 +107,7 @@ export const JoggingJointValueControl = externalizeComponent(
         }
       }
       function formatMm(value: number | undefined, precision = 1) {
-        if (value === undefined || isNaN(value)) return ""
+        if (value === undefined || Number.isNaN(value)) return ""
 
         const output = t("General.mm.variable", {
           amount: value.toFixed(precision),

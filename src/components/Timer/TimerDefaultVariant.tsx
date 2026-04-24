@@ -50,23 +50,23 @@ export const TimerDefaultVariant = ({
         sx={{
           opacity: showPauseAnimation || showErrorAnimation ? 0.6 : 1,
           transition: "opacity 0.5s ease-out",
-          [`& .MuiGauge-valueArc`]: {
+          "& .MuiGauge-valueArc": {
             fill: hasError
               ? theme.palette.error.light
               : theme.palette.success.main,
             transition: "fill 0.5s ease-out",
           },
-          [`& .MuiGauge-referenceArc`]: {
+          "& .MuiGauge-referenceArc": {
             fill: "#171927",
             stroke: "transparent",
             strokeWidth: 0,
             transition:
               "fill 0.5s ease-out, stroke 0.5s ease-out, stroke-width 0.5s ease-out",
           },
-          [`& .MuiGauge-valueText`]: {
+          "& .MuiGauge-valueText": {
             display: "none",
           },
-          [`& .MuiGauge-text`]: {
+          "& .MuiGauge-text": {
             display: "none",
           },
         }}

@@ -46,6 +46,7 @@ export const JoggingCartesianAxisControl = externalizeComponent(
         useState<JoggingDirection | null>(null)
 
       // Trigger pointer "release" events because e.g. firefox does not trigger pointer events as soon as a component is disabled
+      // biome-ignore lint/correctness/useExhaustiveDependencies: pre-biome code
       useEffect(() => {
         if (!disabled) {
           return

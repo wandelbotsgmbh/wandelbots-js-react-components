@@ -1,12 +1,12 @@
-import { useArgs } from "storybook/preview-api"
 import type { Meta, StoryObj } from "@storybook/react-vite"
-import { VelocitySlider } from "../src"
+import { useArgs } from "storybook/preview-api"
+import { type JoggingStore, VelocitySlider } from "../src"
 
 const mockStore = {
   showTabIcons: false,
   showVelocitySliderLabel: true,
   showVelocityLegend: false,
-} as any
+} as unknown as JoggingStore
 
 const meta: Meta<typeof VelocitySlider> = {
   title: "Jogging/VelocitySlider",

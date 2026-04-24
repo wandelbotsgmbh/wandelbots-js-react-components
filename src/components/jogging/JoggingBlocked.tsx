@@ -1,7 +1,7 @@
 import { Alert, AlertTitle, Backdrop, Button, Stack } from "@mui/material"
 import { observer } from "mobx-react-lite"
 import { useTranslation } from "react-i18next"
-import { type JoggingStore } from "./JoggingStore"
+import type { JoggingStore } from "./JoggingStore"
 
 export const JoggingBlocked = observer(({ store }: { store: JoggingStore }) => {
   const { t } = useTranslation()

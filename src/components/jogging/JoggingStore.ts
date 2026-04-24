@@ -1,11 +1,10 @@
 import { tryParseJson } from "@wandelbots/nova-js"
 import {
+  JointTypeEnum,
   type CoordinateSystem,
-  type DHParameter,
+  type KinematicModel,
   type MotionGroupDescription,
   type RobotTcp,
-  type KinematicModel,
-  JointTypeEnum,
 } from "@wandelbots/nova-js/v2"
 import { countBy } from "lodash-es"
 import keyBy from "lodash-es/keyBy"
@@ -221,6 +220,7 @@ export class JoggingStore {
     this.disposers.push(autorun(() => this.saveToLocalStorage()))
 
     // Assign joggingStore to window
+    // biome-ignore lint/suspicious/noExplicitAny: pre-biome code
     ;(window as any).joggingStore = this
   }
 
@@ -353,6 +353,7 @@ export class JoggingStore {
   }
 
   get currentTab() {
+    // biome-ignore lint/style/noNonNullAssertion: pre-biome code
     return this.tabsById[this.selectedTabId] || this.tabs[0]!
   }
 
@@ -412,6 +413,7 @@ export class JoggingStore {
   }
 
   onTabChange(_event: React.SyntheticEvent, newValue: number) {
+    // biome-ignore lint/style/noNonNullAssertion: pre-biome code
     const tab = this.tabs[newValue] || this.tabs[0]!
     this.selectedTabId = tab.id
   }

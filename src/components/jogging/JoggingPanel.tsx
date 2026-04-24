@@ -74,6 +74,7 @@ export const JoggingPanel = externalizeComponent(
       }
     }
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies: pre-biome code
     useEffect(() => {
       init()
       return props.store
@@ -106,10 +107,9 @@ export const JoggingPanel = externalizeComponent(
         }}
       >
         {state.joggingStore ? (
-          <JoggingPanelInner
-            store={state.joggingStore}
-            children={props.children}
-          ></JoggingPanelInner>
+          <JoggingPanelInner store={state.joggingStore}>
+            {props.children}
+          </JoggingPanelInner>
         ) : (
           <LoadingCover message="Loading jogging" error={state.loadingError} />
         )}
@@ -132,16 +132,10 @@ const JoggingPanelInner = observer(
     function renderTabContent() {
       if (store.currentTab.id === "cartesian") {
         return (
-          <>
-            <JoggingCartesianTab store={store}>{children}</JoggingCartesianTab>
-          </>
+          <JoggingCartesianTab store={store}>{children}</JoggingCartesianTab>
         )
       } else if (store.currentTab.id === "joint") {
-        return (
-          <>
-            <JoggingJointTab store={store}>{children}</JoggingJointTab>
-          </>
-        )
+        return <JoggingJointTab store={store}>{children}</JoggingJointTab>
       }
     }
 

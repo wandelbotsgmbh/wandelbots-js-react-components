@@ -26,6 +26,7 @@ function RobotScene(
       import.meta.env.WANDELAPI_BASE_URL || "https://mock.example.com",
   })
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: pre-biome code
   useEffect(() => {
     async function fetchConnectedMotionGroup() {
       const motionGroup = await ConnectedMotionGroup.connect(

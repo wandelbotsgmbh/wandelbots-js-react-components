@@ -15,7 +15,7 @@ export function TrajectoryRenderer({
       ?.map((pose: Pose) => {
         if (pose.position && pose.position.length >= 3) {
           const [x, y, z] = pose.position
-          if (isFinite(x) && isFinite(y) && isFinite(z)) {
+          if (Number.isFinite(x) && Number.isFinite(y) && Number.isFinite(z)) {
             return new THREE.Vector3(x / 1000, z / 1000, -y / 1000)
           }
         }

@@ -1,5 +1,5 @@
 import axios from "axios"
-import fs from "fs/promises"
+import fs from "node:fs/promises"
 
 // Simple delay function to replace nova-js dependency
 function delay(ms: number): Promise<void> {

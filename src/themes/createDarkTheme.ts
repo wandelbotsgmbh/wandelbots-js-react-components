@@ -1,4 +1,4 @@
-import { createTheme, rgbToHex, type Theme } from "@mui/material"
+import { createTheme, type Theme } from "@mui/material"
 
 export function createDarkTheme(): Theme {
   const baseTheme = createTheme({
