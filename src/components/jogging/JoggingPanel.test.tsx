@@ -34,8 +34,8 @@ function createMockMotionStream(
   const jointPositions = motionGroupState.joint_position as number[]
 
   return {
-    nova: {} as any,
-    controller: { controller: motionGroupState.controller } as any,
+    nova: {},
+    controller: { controller: motionGroupState.controller },
     motionGroup: {
       ...motionGroupState,
       tcp: tcpOverride,
@@ -46,7 +46,7 @@ function createMockMotionStream(
       addEventListener: vi.fn(),
       changeUrl: vi.fn(),
       close: vi.fn(),
-    } as any,
+    },
     rapidlyChangingMotionState: { ...motionGroupState },
     motionGroupId: motionGroupState.motion_group,
     controllerId: motionGroupState.controller,
@@ -366,6 +366,7 @@ describe("JoggingPanel", () => {
 
     it("falls back to first tab when selected tab is invalid", () => {
       const store = createUr5eStore(null)
+      // biome-ignore lint/suspicious/noExplicitAny: intentionally setting invalid tab id to test fallback
       store.selectedTabId = "cartesian" as any
       expect(store.currentTab.id).toBe("joint")
     })

@@ -25,7 +25,7 @@ describe("RobotAnimator", () => {
     // Test that the component accepts different numbers of DH parameters
     const mockMotionState4Joints: MotionGroupState = {
       joint_position: [0.1, 0.2, 0.3, 0.4],
-    } as any
+    } as unknown as MotionGroupState
 
     const mockDHParameters4Joints: DHParameter[] = [
       { theta: 0, reverse_rotation_direction: false },
@@ -36,7 +36,7 @@ describe("RobotAnimator", () => {
 
     const mockMotionState7Joints: MotionGroupState = {
       joint_position: [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7],
-    } as any
+    } as unknown as MotionGroupState
 
     const mockDHParameters7Joints: DHParameter[] = Array(7).fill({
       theta: 0,

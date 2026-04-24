@@ -29,6 +29,7 @@ declare module "@mui/material/Grid" {
 
 // Make Grid compatible with JSX
 declare module "@mui/material/Grid" {
+  // biome-ignore lint/suspicious/noExplicitAny: pre-biome code
   const Grid: React.FC<any>
   export default Grid
 }
