@@ -1,4 +1,6 @@
-import { Stack, Typography, useTheme, type SxProps } from "@mui/material"
+import { useTheme, type SxProps } from "@mui/material/styles"
+import Stack from "@mui/material/Stack"
+import Typography from "@mui/material/Typography"
 import Slider from "@mui/material/Slider"
 import isNumber from "lodash-es/isNumber"
 import { observer } from "mobx-react-lite"

@@ -1,5 +1,6 @@
 import CloseIcon from "@mui/icons-material/Close"
-import { Box, IconButton } from "@mui/material"
+import Box from "@mui/material/Box"
+import IconButton from "@mui/material/IconButton"
 import Button from "@mui/material/Button"
 import SnackbarContent from "@mui/material/SnackbarContent"
 

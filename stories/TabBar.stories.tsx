@@ -1,23 +1,19 @@
-import {
-  CheckCircle,
-  Error as ErrorIcon,
-  History,
-  PlayArrow,
-  Settings,
-  SmartToy,
-} from "@mui/icons-material"
-import {
-  Alert,
-  Box,
-  Button,
-  Card,
-  CardContent,
-  List,
-  ListItem,
-  ListItemIcon,
-  ListItemText,
-  Typography,
-} from "@mui/material"
+import CheckCircle from "@mui/icons-material/CheckCircle"
+import ErrorIcon from "@mui/icons-material/Error"
+import History from "@mui/icons-material/History"
+import PlayArrow from "@mui/icons-material/PlayArrow"
+import Settings from "@mui/icons-material/Settings"
+import SmartToy from "@mui/icons-material/SmartToy"
+import Alert from "@mui/material/Alert"
+import Box from "@mui/material/Box"
+import Button from "@mui/material/Button"
+import Card from "@mui/material/Card"
+import CardContent from "@mui/material/CardContent"
+import List from "@mui/material/List"
+import ListItem from "@mui/material/ListItem"
+import ListItemIcon from "@mui/material/ListItemIcon"
+import ListItemText from "@mui/material/ListItemText"
+import Typography from "@mui/material/Typography"
 import type { Meta, StoryObj } from "@storybook/react"
 import { useState } from "react"
 import { TabBar } from "../src/index"

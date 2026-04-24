@@ -1,4 +1,7 @@
-import { capitalize, CircularProgress, Stack, useTheme } from "@mui/material"
+import CircularProgress from "@mui/material/CircularProgress"
+import Stack from "@mui/material/Stack"
+import { useTheme } from "@mui/material/styles"
+import { capitalize } from "@mui/material/utils"
 import { lowerFirst } from "lodash-es"
 import { useEffect, useState } from "react"
 import { makeErrorMessage } from "./utils/errorHandling"

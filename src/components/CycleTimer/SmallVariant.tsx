@@ -1,4 +1,6 @@
-import { Box, Typography, useTheme } from "@mui/material"
+import { useTheme } from "@mui/material/styles"
+import Box from "@mui/material/Box"
+import Typography from "@mui/material/Typography"
 import { useTranslation } from "react-i18next"
 import type { AnimationState, TimerState } from "./types"
 import { formatTimeLocalized } from "./utils"

@@ -1,4 +1,5 @@
-import { Box, MenuItem } from "@mui/material"
+import Box from "@mui/material/Box"
+import MenuItem from "@mui/material/MenuItem"
 import { observer } from "mobx-react-lite"
 import { useId } from "react"
 import { useTranslation } from "react-i18next"

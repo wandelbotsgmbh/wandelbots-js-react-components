@@ -1,4 +1,6 @@
-import { IconButton, Typography, useTheme } from "@mui/material"
+import { useTheme } from "@mui/material/styles"
+import IconButton from "@mui/material/IconButton"
+import Typography from "@mui/material/Typography"
 import Stack from "@mui/material/Stack"
 import { observer } from "mobx-react-lite"
 import React, { useEffect, useRef, useState, type ReactNode } from "react"

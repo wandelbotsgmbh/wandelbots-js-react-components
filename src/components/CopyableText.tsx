@@ -1,4 +1,7 @@
-import { Stack, Tooltip, Typography, useTheme } from "@mui/material"
+import { useTheme } from "@mui/material/styles"
+import Stack from "@mui/material/Stack"
+import Tooltip from "@mui/material/Tooltip"
+import Typography from "@mui/material/Typography"
 import { useEffect, useState } from "react"
 
 export const CopyableText = (props: {

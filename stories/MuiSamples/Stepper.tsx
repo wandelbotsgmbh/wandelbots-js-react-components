@@ -1,4 +1,4 @@
-import { Box } from "@mui/material"
+import Box from "@mui/material/Box"
 import Button from "@mui/material/Button"
 import Step from "@mui/material/Step"
 import StepLabel from "@mui/material/StepLabel"

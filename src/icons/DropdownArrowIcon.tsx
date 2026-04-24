@@ -1,5 +1,4 @@
-import { SvgIcon, type SvgIconProps } from "@mui/material"
-
+import SvgIcon, { type SvgIconProps } from "@mui/material/SvgIcon"
 export const DropdownArrowIcon = (props: SvgIconProps) => {
   return (
     <SvgIcon {...props} viewBox="0 0 10 8">

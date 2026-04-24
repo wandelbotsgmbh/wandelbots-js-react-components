@@ -1,4 +1,5 @@
-import { Typography, useTheme } from "@mui/material"
+import { useTheme } from "@mui/material/styles"
+import Typography from "@mui/material/Typography"
 import type { Meta, StoryObj } from "@storybook/react-vite"
 import { useRef } from "react"
 import { JoggingCartesianAxisControl } from "../src"

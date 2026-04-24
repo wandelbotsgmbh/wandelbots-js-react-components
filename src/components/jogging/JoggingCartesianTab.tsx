@@ -1,11 +1,8 @@
-import {
-  Divider,
-  Stack,
-  ToggleButton,
-  Typography,
-  useTheme,
-  type Theme,
-} from "@mui/material"
+import { useTheme, type Theme } from "@mui/material/styles"
+import Divider from "@mui/material/Divider"
+import Stack from "@mui/material/Stack"
+import ToggleButton from "@mui/material/ToggleButton"
+import Typography from "@mui/material/Typography"
 import {
   degreesToRadians,
   radiansToDegrees,
