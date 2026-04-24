@@ -3,7 +3,7 @@
   // https://github.com/pmndrs/drei/blob/master/tsconfig.json
   "compilerOptions": {
     "target": "es6",
-    "lib": ["es2019", "dom"],
+    "lib": ["es2020", "dom"],
     "outDir": "dist",
     "rootDir": "src",
     "module": "preserve",
@@ -15,7 +15,6 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "declaration": true,
-    "declarationMap": true,
     "verbatimModuleSyntax": true,
     // Stops vscode from sometimes deleting chunks of code accidentally
     "allowUnreachableCode": true
@@ -24,5 +23,12 @@
     "checkMdx": true
   },
   "include": ["src/"],
-  "exclude": ["node_modules"]
+  "exclude": [
+    "node_modules",
+    "src/test/**",
+    "src/**/*.test.ts",
+    "src/**/*.test.tsx",
+    "src/**/__fixtures__/**",
+    "src/**/__mocks__/**"
+  ]
 }

@@ -9,9 +9,13 @@ export const useTimerAnimations = () => {
   })
 
   // Refs for managing timeouts
-  const pauseAnimationTimeoutRef = useRef<NodeJS.Timeout | null>(null)
-  const errorAnimationTimeoutRef = useRef<NodeJS.Timeout | null>(null)
-  const fadeTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const pauseAnimationTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  )
+  const errorAnimationTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  )
+  const fadeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const triggerPauseAnimation = useCallback(() => {
     setAnimationState((prev) => ({ ...prev, showPauseAnimation: true }))
