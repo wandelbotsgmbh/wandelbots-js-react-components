@@ -9,7 +9,6 @@ on:
 
 permissions:
   contents: read
-  pull-requests: write
 
 jobs:
   typecheck:
@@ -52,6 +51,11 @@ jobs:
   api-surface:
     name: Check API surface is up to date
     runs-on: ubuntu-latest
+    # Needs PR write access to post/update the advisory sticky comment.
+    # All other jobs keep the workflow-default read-only permissions.
+    permissions:
+      contents: read
+      pull-requests: write
     steps:
       - uses: actions/checkout@v6
         with:

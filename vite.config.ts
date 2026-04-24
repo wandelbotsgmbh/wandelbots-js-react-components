@@ -25,7 +25,9 @@ const isExternal = (id: string, importer: string | undefined) => {
 // and then can't find a matching `.d.ts`, which makes api-extractor throw
 // an internal error. Emit a tiny `foo.svg.d.ts` shim next to each SVG
 // output so both the declaration resolver and api-extractor are happy.
-// The shim matches src/declarations.d.ts for consistency.
+// The shim is equivalent to the ambient `declare module "*.svg"` in
+// src/declarations.d.ts (just using named imports instead of the `React.`
+// namespace).
 const emitSvgDts = (): Plugin => ({
   name: "emit-svg-dts",
   apply: "build",
