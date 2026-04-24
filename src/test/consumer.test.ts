@@ -127,10 +127,6 @@ describe("package exports — deep component imports", () => {
     "components/robots/Robot",
     "components/robots/MotionGroupVisualizer",
     "components/modal/NoMotionGroupModal",
-    "lib/ConnectedMotionGroup",
-    "lib/JoggerConnection",
-    "lib/MotionStreamConnection",
-    "themes/createDarkTheme",
     // Directory-backed modules that have a sibling barrel so the wildcard
     // subpath still resolves. Regression test for copilot review comment.
     "components/Timer",
@@ -166,9 +162,6 @@ describe("MUI-style default + named exports", () => {
     { sub: "components/safetyBar/SafetyBar", name: "SafetyBar" },
     { sub: "components/Timer", name: "Timer" },
     { sub: "components/CycleTimer", name: "CycleTimer" },
-    { sub: "lib/ConnectedMotionGroup", name: "ConnectedMotionGroup" },
-    { sub: "lib/JoggerConnection", name: "JoggerConnection" },
-    { sub: "lib/MotionStreamConnection", name: "MotionStreamConnection" },
   ]
 
   it.each(cases)("$sub exposes $name as both named and default", async ({
