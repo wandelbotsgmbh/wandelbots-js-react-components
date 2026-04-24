@@ -9,6 +9,7 @@ on:
 
 permissions:
   contents: read
+  pull-requests: write
 
 jobs:
   typecheck:
@@ -41,21 +42,37 @@ jobs:
       - run: pnpm run build
 
   api-surface:
-    name: Check API surface for breaking changes
+    name: Check API surface is up to date
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
         with:
-          # Fetch the full history so we can diff against the PR base and
-          # inspect commit messages for BREAKING CHANGE markers.
+          # Needed so the advisory breaking-change check can diff against the
+          # PR base.
           fetch-depth: 0
       - uses: ./.github/actions/setup-node
       - name: Build library
         run: pnpm run build
       - name: Verify API reports are up to date
+        # Changes to the API reports under etc/api-extractor/*.api.md must be
+        # committed alongside the PR (run `pnpm api:update`).
         run: pnpm run api:check
-      - name: Check for unversioned breaking changes
+      - name: Advisory check for breaking API changes
+        id: breaking
         env:
           BASE_REF: origin/${{ github.base_ref }}
           HEAD_REF: ${{ github.event.pull_request.head.sha }}
+          COMMENT_BODY_OUT: ${{ runner.temp }}/api-breaking-comment.md
         run: pnpm run api:check-breaking
+      - name: Comment on PR when potentially breaking
+        if: steps.breaking.outputs.breaking == 'true'
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: api-surface-breaking
+          path: ${{ runner.temp }}/api-breaking-comment.md
+      - name: Resolve breaking comment when no longer applicable
+        if: steps.breaking.outputs.breaking != 'true'
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: api-surface-breaking
+          delete: true
