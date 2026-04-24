@@ -99,3 +99,5 @@ export const Timer = externalizeComponent(
     },
   ),
 )
+
+export default Timer

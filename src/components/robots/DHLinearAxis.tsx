@@ -143,3 +143,5 @@ export function DHLinearAxis({
     </LinearAxisAnimator>
   )
 }
+
+export default DHLinearAxis

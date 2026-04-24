@@ -77,3 +77,5 @@ function Lightformers({ positions = [2, 0, 2, 0, 2, 0, 2, 0] }) {
     </>
   )
 }
+
+export default PresetEnvironment

@@ -364,3 +364,5 @@ export const LogViewer = externalizeComponent(
     )
   }),
 )
+
+export default LogViewer

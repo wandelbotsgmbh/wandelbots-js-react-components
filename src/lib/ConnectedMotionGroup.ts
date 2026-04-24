@@ -437,3 +437,5 @@ export class ConnectedMotionGroup {
     this.joggingVelocity = velocity
   }
 }
+
+export default ConnectedMotionGroup

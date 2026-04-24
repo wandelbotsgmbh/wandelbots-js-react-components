@@ -4,3 +4,5 @@ export type {
   CycleTimerProps,
   CycleTimerState,
 } from "./types"
+
+export { CycleTimer as default } from "./index"

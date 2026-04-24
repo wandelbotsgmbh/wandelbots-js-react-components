@@ -47,3 +47,5 @@ export const ThemeSelect = ({ kind, sx, ...rest }: ThemeSelectProps) => {
 
   return <Select sx={style} {...rest} />
 }
+
+export default ThemeSelect

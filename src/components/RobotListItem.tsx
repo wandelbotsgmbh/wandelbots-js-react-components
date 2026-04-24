@@ -151,3 +151,5 @@ export const RobotListItem = externalizeComponent(
     },
   ),
 )
+
+export default RobotListItem

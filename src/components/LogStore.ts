@@ -42,3 +42,5 @@ export class LogStore {
     this.addMessage(message, "debug")
   }
 }
+
+export default LogStore

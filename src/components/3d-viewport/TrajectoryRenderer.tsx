@@ -37,3 +37,5 @@ export function TrajectoryRenderer({
     </group>
   )
 }
+
+export default TrajectoryRenderer

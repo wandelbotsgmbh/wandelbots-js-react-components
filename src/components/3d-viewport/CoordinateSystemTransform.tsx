@@ -53,3 +53,5 @@ export const CoordinateSystemTransform = ({
     </group>
   )
 }
+
+export default CoordinateSystemTransform

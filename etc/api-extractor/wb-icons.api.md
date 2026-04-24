@@ -4,72 +4,74 @@
 
 ```ts
 
-import { default as AxisXIcon } from './axis-x.svg';
-import { default as AxisYIcon } from './axis-y.svg';
-import { default as AxisZIcon } from './axis-z.svg';
-import { default as ControllerTypePhysicalIcon } from './controller-type-physical.svg';
-import { default as ControllerTypeVirtualIcon } from './controller-type-virtual.svg';
-import { default as HomeIcon } from './home.svg';
-import { default as JoggingIcon } from './jogging.svg';
-import { default as JogMinusIcon } from './jog-minus.svg';
-import { default as JogPlusIcon } from './jog-plus.svg';
-import { default as OperationModeAutomaticIcon } from './operation-mode-automatic.svg';
-import { default as OperationModeErrorIcon } from './operation-mode-error.svg';
-import { default as OperationModeManualIcon } from './operation-mode-manual.svg';
-import { default as OrientationCoordSystemIcon } from './orientation-coord-system.svg';
-import { default as OrientationToolIcon } from './orientation-tool.svg';
-import { default as RobotIcon } from './robot.svg';
-import { default as RotationIcon } from './rotation.svg';
-import { default as SafetyStateErrorIcon } from './safety-state-error.svg';
-import { default as SafetyStateEstopIcon } from './safety-state-estop.svg';
-import { default as SafetyStateManualActionRequiredIcon } from './safety-state-manual-action-required.svg';
-import { default as SafetyStateNormalIcon } from './safety-state-normal.svg';
-import { default as SafetyStateStopIcon } from './safety-state-stop.svg';
-import { default as WBLogoIcon } from './wbLogo.svg';
+import type { FunctionComponent } from 'react';
+import type { SVGAttributes } from 'react';
 
-export { AxisXIcon }
+// @public (undocumented)
+export const AxisXIcon: FunctionComponent<SVGAttributes<SVGElement>>;
 
-export { AxisYIcon }
+// @public (undocumented)
+export const AxisYIcon: FunctionComponent<SVGAttributes<SVGElement>>;
 
-export { AxisZIcon }
+// @public (undocumented)
+export const AxisZIcon: FunctionComponent<SVGAttributes<SVGElement>>;
 
-export { ControllerTypePhysicalIcon }
+// @public (undocumented)
+export const ControllerTypePhysicalIcon: FunctionComponent<SVGAttributes<SVGElement>>;
 
-export { ControllerTypeVirtualIcon }
+// @public (undocumented)
+export const ControllerTypeVirtualIcon: FunctionComponent<SVGAttributes<SVGElement>>;
 
-export { HomeIcon }
+// @public (undocumented)
+export const HomeIcon: FunctionComponent<SVGAttributes<SVGElement>>;
 
-export { JoggingIcon }
+// @public (undocumented)
+export const JoggingIcon: FunctionComponent<SVGAttributes<SVGElement>>;
 
-export { JogMinusIcon }
+// @public (undocumented)
+export const JogMinusIcon: FunctionComponent<SVGAttributes<SVGElement>>;
 
-export { JogPlusIcon }
+// @public (undocumented)
+export const JogPlusIcon: FunctionComponent<SVGAttributes<SVGElement>>;
 
-export { OperationModeAutomaticIcon }
+// @public (undocumented)
+export const OperationModeAutomaticIcon: FunctionComponent<SVGAttributes<SVGElement>>;
 
-export { OperationModeErrorIcon }
+// @public (undocumented)
+export const OperationModeErrorIcon: FunctionComponent<SVGAttributes<SVGElement>>;
 
-export { OperationModeManualIcon }
+// @public (undocumented)
+export const OperationModeManualIcon: FunctionComponent<SVGAttributes<SVGElement>>;
 
-export { OrientationCoordSystemIcon }
+// @public (undocumented)
+export const OrientationCoordSystemIcon: FunctionComponent<SVGAttributes<SVGElement>>;
 
-export { OrientationToolIcon }
+// @public (undocumented)
+export const OrientationToolIcon: FunctionComponent<SVGAttributes<SVGElement>>;
 
-export { RobotIcon }
+// @public (undocumented)
+export const RobotIcon: FunctionComponent<SVGAttributes<SVGElement>>;
 
-export { RotationIcon }
+// @public (undocumented)
+export const RotationIcon: FunctionComponent<SVGAttributes<SVGElement>>;
 
-export { SafetyStateErrorIcon }
+// @public (undocumented)
+export const SafetyStateErrorIcon: FunctionComponent<SVGAttributes<SVGElement>>;
 
-export { SafetyStateEstopIcon }
+// @public (undocumented)
+export const SafetyStateEstopIcon: FunctionComponent<SVGAttributes<SVGElement>>;
 
-export { SafetyStateManualActionRequiredIcon }
+// @public (undocumented)
+export const SafetyStateManualActionRequiredIcon: FunctionComponent<SVGAttributes<SVGElement>>;
 
-export { SafetyStateNormalIcon }
+// @public (undocumented)
+export const SafetyStateNormalIcon: FunctionComponent<SVGAttributes<SVGElement>>;
 
-export { SafetyStateStopIcon }
+// @public (undocumented)
+export const SafetyStateStopIcon: FunctionComponent<SVGAttributes<SVGElement>>;
 
-export { WBLogoIcon }
+// @public (undocumented)
+export const WBLogoIcon: FunctionComponent<SVGAttributes<SVGElement>>;
 
 // (No @packageDocumentation comment for this package)
 

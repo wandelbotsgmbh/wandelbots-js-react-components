@@ -182,3 +182,5 @@ export class MotionStreamConnection {
     this.motionStateSocket.close()
   }
 }
+
+export default MotionStreamConnection

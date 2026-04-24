@@ -193,3 +193,5 @@ export const AppHeader = externalizeComponent(
     )
   }),
 )
+
+export default AppHeader

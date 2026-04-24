@@ -87,3 +87,5 @@ export const LoadingErrorMessage = (props: {
     </Stack>
   )
 }
+
+export default LoadingCover

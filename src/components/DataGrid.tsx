@@ -660,3 +660,5 @@ export const WandelbotsDataGrid = externalizeComponent(
 )
 
 WandelbotsDataGrid.displayName = "WandelbotsDataGrid"
+
+export default WandelbotsDataGrid

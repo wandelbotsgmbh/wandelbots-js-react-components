@@ -75,3 +75,5 @@ export const ControllerTypeIndicator = observer(
     )
   },
 )
+
+export default ControllerTypeIndicator

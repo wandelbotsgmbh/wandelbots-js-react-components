@@ -191,3 +191,5 @@ export const ProgramStateIndicator = externalizeComponent(
     },
   ),
 )
+
+export default ProgramStateIndicator

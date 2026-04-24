@@ -321,3 +321,5 @@ export const TabBar = externalizeComponent(
     )
   }),
 )
+
+export default TabBar

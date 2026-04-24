@@ -107,3 +107,5 @@ export const SupportedRobot = externalizeComponent(
     )
   },
 )
+
+export default SupportedRobot

@@ -50,3 +50,5 @@ export const PoseJointValues = externalizeComponent(
     )
   }),
 )
+
+export default PoseJointValues
