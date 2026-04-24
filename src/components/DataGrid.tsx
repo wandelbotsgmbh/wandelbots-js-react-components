@@ -1,7 +1,10 @@
 import ClearIcon from "@mui/icons-material/Clear"
 import FilterListIcon from "@mui/icons-material/FilterList"
 import SearchIcon from "@mui/icons-material/Search"
-import { Box, Divider, Typography, useTheme } from "@mui/material"
+import { useTheme } from "@mui/material/styles"
+import Box from "@mui/material/Box"
+import Divider from "@mui/material/Divider"
+import Typography from "@mui/material/Typography"
 import {
   DataGrid,
   type DataGridProps,

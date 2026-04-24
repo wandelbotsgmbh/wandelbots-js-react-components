@@ -1,4 +1,6 @@
-import { Stack, Typography, useTheme } from "@mui/material"
+import { useTheme } from "@mui/material/styles"
+import Stack from "@mui/material/Stack"
+import Typography from "@mui/material/Typography"
 import type { Meta, StoryObj } from "@storybook/react-vite"
 import { runInAction } from "mobx"
 import { observer, useLocalObservable } from "mobx-react-lite"

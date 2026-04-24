@@ -1,6 +1,6 @@
 import DeleteIcon from "@mui/icons-material/Delete"
 import FolderIcon from "@mui/icons-material/Folder"
-import { Box } from "@mui/material"
+import Box from "@mui/material/Box"
 import Avatar from "@mui/material/Avatar"
 import Checkbox from "@mui/material/Checkbox"
 import FormControlLabel from "@mui/material/FormControlLabel"

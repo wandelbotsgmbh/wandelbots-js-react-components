@@ -1,4 +1,5 @@
-import { Button, Stack } from "@mui/material"
+import Button from "@mui/material/Button"
+import Stack from "@mui/material/Stack"
 import { observer } from "mobx-react-lite"
 import { useState } from "react"
 import { externalizeComponent } from "../../externalizeComponent"

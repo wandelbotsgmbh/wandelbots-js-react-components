@@ -1,4 +1,6 @@
-import { Divider, Stack, type PopoverOrigin } from "@mui/material"
+import Divider from "@mui/material/Divider"
+import type { PopoverOrigin } from "@mui/material/Popover"
+import Stack from "@mui/material/Stack"
 import type { OperationMode, SafetyStateType } from "@wandelbots/nova-js/v2"
 import { observer } from "mobx-react-lite"
 import { externalizeComponent } from "../../externalizeComponent"

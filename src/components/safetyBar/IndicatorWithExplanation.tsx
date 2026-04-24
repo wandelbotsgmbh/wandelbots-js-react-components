@@ -1,11 +1,7 @@
-import {
-  Popover,
-  Stack,
-  SvgIcon,
-  Typography,
-  type PopoverOrigin,
-  type TypographyProps,
-} from "@mui/material"
+import Popover, { type PopoverOrigin } from "@mui/material/Popover"
+import Stack from "@mui/material/Stack"
+import SvgIcon from "@mui/material/SvgIcon"
+import Typography, { type TypographyProps } from "@mui/material/Typography"
 import { observer, useLocalObservable } from "mobx-react-lite"
 import type { ElementType, ReactNode } from "react"
 

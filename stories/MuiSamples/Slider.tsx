@@ -1,6 +1,6 @@
 import VolumeDown from "@mui/icons-material/VolumeDown"
 import VolumeUp from "@mui/icons-material/VolumeUp"
-import { Box } from "@mui/material"
+import Box from "@mui/material/Box"
 import Grid from "@mui/material/Grid"
 import Slider from "@mui/material/Slider"
 import Typography from "@mui/material/Typography"

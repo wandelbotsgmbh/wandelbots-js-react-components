@@ -1,4 +1,7 @@
-import { Box, Chip, Typography, useTheme } from "@mui/material"
+import { useTheme } from "@mui/material/styles"
+import Box from "@mui/material/Box"
+import Chip from "@mui/material/Chip"
+import Typography from "@mui/material/Typography"
 import { observer } from "mobx-react-lite"
 import { useTranslation } from "react-i18next"
 import { externalizeComponent } from "../externalizeComponent"

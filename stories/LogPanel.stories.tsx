@@ -1,4 +1,5 @@
-import { Button, Stack } from "@mui/material"
+import Button from "@mui/material/Button"
+import Stack from "@mui/material/Stack"
 import type { Meta, StoryObj } from "@storybook/react-vite"
 import { useState } from "react"
 import { LogPanel, type LogStore } from "../src/index"

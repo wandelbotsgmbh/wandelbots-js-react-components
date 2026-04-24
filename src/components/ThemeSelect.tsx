@@ -1,6 +1,7 @@
 // TODO implement this as part of theme?
 
-import { Select, useTheme, type SxProps } from "@mui/material"
+import { useTheme, type SxProps } from "@mui/material/styles"
+import Select from "@mui/material/Select"
 import defaultsDeep from "lodash-es/defaultsDeep"
 
 type ThemeSelectProps = {

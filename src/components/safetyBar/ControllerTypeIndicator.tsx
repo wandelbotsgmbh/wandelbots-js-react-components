@@ -1,4 +1,5 @@
-import { useTheme, type PopoverOrigin } from "@mui/material"
+import { useTheme } from "@mui/material/styles"
+import type { PopoverOrigin } from "@mui/material/Popover"
 import { observer } from "mobx-react-lite"
 import { useId } from "react"
 import { Trans, useTranslation } from "react-i18next"

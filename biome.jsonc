@@ -22,6 +22,24 @@
         // vscode already warns about these
         "noUnusedVariables": "off",
         "noUnusedFunctionParameters": "off"
+      },
+      "style": {
+        // Disallow barrel imports from MUI packages. These pull in the
+        // entire package and hurt bundle size / dev-mode performance.
+        // Use subpath imports instead, e.g.:
+        //   import Button from "@mui/material/Button"
+        //   import HomeIcon from "@mui/icons-material/Home"
+        "noRestrictedImports": {
+          "level": "error",
+          "options": {
+            "paths": {
+              "@mui/material": "Use a subpath import like '@mui/material/Button' instead of a barrel import from '@mui/material'.",
+              "@mui/icons-material": "Use a subpath import like '@mui/icons-material/Home' instead of a barrel import from '@mui/icons-material'.",
+              "@mui/lab": "Use a subpath import like '@mui/lab/LoadingButton' instead of a barrel import from '@mui/lab'.",
+              "@mui/styles": "Use a subpath import instead of a barrel import from '@mui/styles'."
+            }
+          }
+        }
       }
     }
   },

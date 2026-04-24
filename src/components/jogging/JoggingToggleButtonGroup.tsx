@@ -1,6 +1,6 @@
-import type { ToggleButtonGroupProps } from "@mui/material"
-import { styled, ToggleButtonGroup } from "@mui/material"
-
+import type { ToggleButtonGroupProps } from "@mui/material/ToggleButtonGroup"
+import { styled } from "@mui/material/styles"
+import ToggleButtonGroup from "@mui/material/ToggleButtonGroup"
 export const JoggingToggleButtonGroup: React.ComponentType<ToggleButtonGroupProps> =
   styled(ToggleButtonGroup)(({ theme }) => ({
     "&.MuiToggleButtonGroup-root": {

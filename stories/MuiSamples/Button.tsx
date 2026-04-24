@@ -2,7 +2,8 @@ import CloudUploadIcon from "@mui/icons-material/CloudUpload"
 import DeleteIcon from "@mui/icons-material/Delete"
 import KeyboardVoiceIcon from "@mui/icons-material/KeyboardVoice"
 import SaveIcon from "@mui/icons-material/Save"
-import { Stack, Typography } from "@mui/material"
+import Stack from "@mui/material/Stack"
+import Typography from "@mui/material/Typography"
 import Button from "@mui/material/Button"
 
 export default function ButtonsExample() {

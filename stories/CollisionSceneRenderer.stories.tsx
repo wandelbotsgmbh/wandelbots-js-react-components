@@ -1,4 +1,4 @@
-import { useTheme } from "@mui/material"
+import { useTheme } from "@mui/material/styles"
 import type { Meta, StoryObj } from "@storybook/react"
 import * as THREE from "three"
 import type { CollisionSetup } from "@wandelbots/nova-js/v2"

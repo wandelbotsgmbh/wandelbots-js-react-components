@@ -1,4 +1,7 @@
-import { Box, Fade, Typography, useTheme } from "@mui/material"
+import { useTheme } from "@mui/material/styles"
+import Box from "@mui/material/Box"
+import Fade from "@mui/material/Fade"
+import Typography from "@mui/material/Typography"
 import { Gauge } from "@mui/x-charts/Gauge"
 import { useTranslation } from "react-i18next"
 import type { AnimationState, TimerState } from "./types"

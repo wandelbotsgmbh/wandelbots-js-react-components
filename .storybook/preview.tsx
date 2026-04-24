@@ -1,4 +1,5 @@
-import { CssBaseline, ThemeProvider } from "@mui/material"
+import { ThemeProvider } from "@mui/material/styles"
+import CssBaseline from "@mui/material/CssBaseline"
 import type { Preview } from "@storybook/react-vite"
 import { createNovaMuiTheme } from "../src"
 import { DocsContainer } from "./DocsContainer"

@@ -1,15 +1,12 @@
-import {
-  alpha,
-  AppBar,
-  Backdrop,
-  Box,
-  IconButton,
-  Menu,
-  MenuItem,
-  type SxProps,
-  Toolbar,
-  Typography,
-} from "@mui/material"
+import { alpha, type SxProps } from "@mui/material/styles"
+import AppBar from "@mui/material/AppBar"
+import Backdrop from "@mui/material/Backdrop"
+import Box from "@mui/material/Box"
+import IconButton from "@mui/material/IconButton"
+import Menu from "@mui/material/Menu"
+import MenuItem from "@mui/material/MenuItem"
+import Toolbar from "@mui/material/Toolbar"
+import Typography from "@mui/material/Typography"
 import { observer } from "mobx-react-lite"
 import { type MouseEvent, type ReactNode, useState } from "react"
 import { externalizeComponent } from "../externalizeComponent"

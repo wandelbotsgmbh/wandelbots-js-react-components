@@ -1,4 +1,4 @@
-import { Typography } from "@mui/material"
+import Typography from "@mui/material/Typography"
 import { observer } from "mobx-react-lite"
 import isEqual from "lodash-es/isEqual"
 import { useRef, useState } from "react"

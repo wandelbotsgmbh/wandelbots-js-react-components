@@ -1,4 +1,4 @@
-import type { SxProps } from "@mui/material"
+import type { SxProps } from "@mui/material/styles"
 import { observer } from "mobx-react-lite"
 import { useEffect, useMemo, useRef } from "react"
 import { externalizeComponent } from "../externalizeComponent"

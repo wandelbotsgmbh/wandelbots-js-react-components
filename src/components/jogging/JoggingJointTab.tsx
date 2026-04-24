@@ -1,4 +1,7 @@
-import { Divider, Stack, Typography, useTheme } from "@mui/material"
+import { useTheme } from "@mui/material/styles"
+import Divider from "@mui/material/Divider"
+import Stack from "@mui/material/Stack"
+import Typography from "@mui/material/Typography"
 import { JointTypeEnum } from "@wandelbots/nova-js/v2"
 import { observer } from "mobx-react-lite"
 import type { ReactNode } from "react"

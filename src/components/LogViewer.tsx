@@ -1,18 +1,14 @@
-import {
-  ContentCopy,
-  DescriptionOutlined as DocumentIcon,
-  ExpandLess,
-  ExpandMore,
-} from "@mui/icons-material"
-import type { SxProps } from "@mui/material"
-import {
-  Box,
-  Button,
-  IconButton,
-  Paper,
-  Typography,
-  useTheme,
-} from "@mui/material"
+import ContentCopy from "@mui/icons-material/ContentCopy"
+import DocumentIcon from "@mui/icons-material/DescriptionOutlined"
+import ExpandLess from "@mui/icons-material/ExpandLess"
+import ExpandMore from "@mui/icons-material/ExpandMore"
+import type { SxProps } from "@mui/material/styles"
+import { useTheme } from "@mui/material/styles"
+import Box from "@mui/material/Box"
+import Button from "@mui/material/Button"
+import IconButton from "@mui/material/IconButton"
+import Paper from "@mui/material/Paper"
+import Typography from "@mui/material/Typography"
 import { observer } from "mobx-react-lite"
 import { useEffect, useRef, useState } from "react"
 import { externalizeComponent } from "../externalizeComponent"

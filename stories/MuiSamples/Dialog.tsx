@@ -1,6 +1,6 @@
 import AddIcon from "@mui/icons-material/Add"
 import PersonIcon from "@mui/icons-material/Person"
-import { ListItemButton } from "@mui/material"
+import ListItemButton from "@mui/material/ListItemButton"
 import Avatar from "@mui/material/Avatar"
 import Button from "@mui/material/Button"
 import { blue } from "@mui/material/colors"

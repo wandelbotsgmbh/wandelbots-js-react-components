@@ -1,4 +1,6 @@
-import { Chip, Typography, useTheme } from "@mui/material"
+import { useTheme } from "@mui/material/styles"
+import Chip from "@mui/material/Chip"
+import Typography from "@mui/material/Typography"
 import type { OperationMode, SafetyStateType } from "@wandelbots/nova-js/v2"
 import { observer } from "mobx-react-lite"
 import { useTranslation } from "react-i18next"

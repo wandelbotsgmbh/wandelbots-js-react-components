@@ -2,15 +2,13 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore"
 import FavoriteIcon from "@mui/icons-material/Favorite"
 import MoreVertIcon from "@mui/icons-material/MoreVert"
 import ShareIcon from "@mui/icons-material/Share"
-import {
-  Avatar,
-  Box,
-  CardHeader,
-  CardMedia,
-  Collapse,
-  Grid,
-  IconButton,
-} from "@mui/material"
+import Avatar from "@mui/material/Avatar"
+import Box from "@mui/material/Box"
+import CardHeader from "@mui/material/CardHeader"
+import CardMedia from "@mui/material/CardMedia"
+import Collapse from "@mui/material/Collapse"
+import Grid from "@mui/material/Grid"
+import IconButton from "@mui/material/IconButton"
 import Button from "@mui/material/Button"
 import Card from "@mui/material/Card"
 import CardActions from "@mui/material/CardActions"
