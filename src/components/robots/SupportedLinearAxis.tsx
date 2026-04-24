@@ -106,3 +106,5 @@ export const SupportedLinearAxis = externalizeComponent(
     )
   },
 )
+
+export default SupportedLinearAxis

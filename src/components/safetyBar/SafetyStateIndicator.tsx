@@ -159,3 +159,5 @@ export const SafetyStateIndicator = observer(
     }
   },
 )
+
+export default SafetyStateIndicator

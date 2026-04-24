@@ -154,3 +154,5 @@ export const CycleTimer = externalizeComponent(
     },
   ),
 )
+
+export default CycleTimer

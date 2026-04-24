@@ -67,3 +67,5 @@ export const LogPanel = externalizeComponent(
     )
   }),
 )
+
+export default LogPanel

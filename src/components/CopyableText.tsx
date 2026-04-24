@@ -85,3 +85,5 @@ export const CopyableText = (props: {
     </Tooltip>
   )
 }
+
+export default CopyableText

@@ -491,3 +491,5 @@ export const RobotCard = externalizeComponent(
     },
   ),
 )
+
+export default RobotCard

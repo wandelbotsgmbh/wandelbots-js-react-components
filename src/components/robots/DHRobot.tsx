@@ -148,3 +148,5 @@ export function DHRobot({
     </RobotAnimator>
   )
 }
+
+export default DHRobot

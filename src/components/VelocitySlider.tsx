@@ -113,3 +113,5 @@ export function VelocitySliderLabel({ value, sx }: VelocitySliderLabelProps) {
     </Stack>
   )
 }
+
+export default VelocitySlider

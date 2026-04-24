@@ -289,3 +289,5 @@ export const JoggingJointValueControl = externalizeComponent(
     },
   ),
 )
+
+export default JoggingJointValueControl

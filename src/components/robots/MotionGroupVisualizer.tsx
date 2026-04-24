@@ -69,3 +69,5 @@ export const MotionGroupVisualizer: React.FC<MotionGroupVisualizerProps> =
 
     return null
   })
+
+export default MotionGroupVisualizer

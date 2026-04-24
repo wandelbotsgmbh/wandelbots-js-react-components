@@ -194,3 +194,5 @@ export function SafetyZonesRenderer({
 
   return <group {...props}>{renderedSafetyZones}</group>
 }
+
+export default SafetyZonesRenderer

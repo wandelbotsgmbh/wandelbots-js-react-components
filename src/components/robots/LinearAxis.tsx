@@ -70,3 +70,5 @@ export function LinearAxis({
 }
 
 export { defaultGetModel }
+
+export default LinearAxis

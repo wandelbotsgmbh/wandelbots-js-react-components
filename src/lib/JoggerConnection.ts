@@ -690,3 +690,5 @@ export class JoggerConnection {
     })
   }
 }
+
+export default JoggerConnection

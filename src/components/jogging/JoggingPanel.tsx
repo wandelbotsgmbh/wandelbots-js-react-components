@@ -200,3 +200,5 @@ const JoggingPanelInner = observer(
     )
   },
 )
+
+export default JoggingPanel

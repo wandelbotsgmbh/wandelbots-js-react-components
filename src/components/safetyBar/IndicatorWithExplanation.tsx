@@ -133,3 +133,5 @@ export const IndicatorWithExplanation = observer(
     )
   },
 )
+
+export default IndicatorWithExplanation

@@ -263,3 +263,5 @@ export const ProgramControl = externalizeComponent(
     },
   ),
 )
+
+export default ProgramControl

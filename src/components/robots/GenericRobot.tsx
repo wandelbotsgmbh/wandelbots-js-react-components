@@ -133,3 +133,5 @@ export function GenericRobot({
     />
   )
 }
+
+export default GenericRobot

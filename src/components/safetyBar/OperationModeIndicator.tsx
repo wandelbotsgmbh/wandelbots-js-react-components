@@ -94,3 +94,5 @@ export const OperationModeIndicator = observer(
     }
   },
 )
+
+export default OperationModeIndicator

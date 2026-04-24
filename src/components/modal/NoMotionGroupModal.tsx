@@ -87,3 +87,5 @@ export function NoMotionGroupModal({
     </Dialog>
   )
 }
+
+export default NoMotionGroupModal

@@ -15,23 +15,29 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.es.js",
-      "require": "./dist/index.cjs.js"
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
     },
     "./core": {
       "types": "./dist/core.d.ts",
-      "import": "./dist/core.es.js",
-      "require": "./dist/core.cjs.js"
+      "import": "./dist/core.js",
+      "require": "./dist/core.cjs"
     },
     "./3d": {
       "types": "./dist/3d.d.ts",
-      "import": "./dist/3d.es.js",
-      "require": "./dist/3d.cjs.js"
+      "import": "./dist/3d.js",
+      "require": "./dist/3d.cjs"
     },
     "./wb-icons": {
       "types": "./dist/wb-icons.d.ts",
-      "import": "./dist/wb-icons.es.js",
-      "require": "./dist/wb-icons.cjs.js"
+      "import": "./dist/wb-icons.js",
+      "require": "./dist/wb-icons.cjs"
+    },
+    "./package.json": "./package.json",
+    "./*": {
+      "types": "./dist/*.d.ts",
+      "import": "./dist/*.js",
+      "require": "./dist/*.cjs"
     }
   },
   "types": "./dist/index.d.ts",
@@ -44,6 +50,7 @@
     "test": "test-storybook --url http://127.0.0.1:6006 --index-json --browsers chromium",
     "test:unit": "vitest --workspace vitest.workspace.ts --project unit",
     "test:unit:run": "vitest run --workspace vitest.workspace.ts --project unit",
+    "test:consumer": "pnpm run build && vitest run --workspace vitest.workspace.ts --project consumer",
     "ci:test": "run-s ci:test:build ci:test:built",
     "ci:test:build": "storybook build --quiet --test",
     "ci:test:built": "run-p --race ci:test:server ci:test:runner",

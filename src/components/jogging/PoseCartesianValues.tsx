@@ -51,3 +51,5 @@ export const PoseCartesianValues = externalizeComponent(
     )
   }),
 )
+
+export default PoseCartesianValues

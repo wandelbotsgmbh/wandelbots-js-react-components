@@ -233,3 +233,5 @@ export const JoggingCartesianAxisControl = externalizeComponent(
     },
   ),
 )
+
+export default JoggingCartesianAxisControl

@@ -481,3 +481,5 @@ export class JoggingStore {
     }
   }
 }
+
+export default JoggingStore

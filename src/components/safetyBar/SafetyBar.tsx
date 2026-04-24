@@ -68,3 +68,5 @@ export const SafetyBar = externalizeComponent(
     },
   ),
 )
+
+export default SafetyBar

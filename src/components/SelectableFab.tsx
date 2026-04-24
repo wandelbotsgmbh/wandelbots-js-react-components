@@ -48,3 +48,5 @@ export const SelectableFab = (props: CodeFabProps) => {
     />
   )
 }
+
+export default SelectableFab
