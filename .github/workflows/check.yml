@@ -78,13 +78,13 @@ jobs:
         run: pnpm run api:check-breaking
       - name: Comment on PR when potentially breaking
         if: steps.breaking.outputs.breaking == 'true'
-        uses: marocchino/sticky-pull-request-comment@v2
+        uses: marocchino/sticky-pull-request-comment@v3
         with:
           header: api-surface-breaking
           path: ${{ runner.temp }}/api-breaking-comment.md
       - name: Resolve breaking comment when no longer applicable
         if: steps.breaking.outputs.breaking != 'true'
-        uses: marocchino/sticky-pull-request-comment@v2
+        uses: marocchino/sticky-pull-request-comment@v3
         with:
           header: api-surface-breaking
           delete: true
