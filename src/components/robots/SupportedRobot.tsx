@@ -63,11 +63,9 @@ export const SupportedRobot = externalizeComponent(
       const result = getModel(modelFromController, instanceUrl)
       if (!result) {
         const mockBlob = new Blob([], { type: "model/gltf-binary" })
-        const mockFile = new File(
-          [mockBlob],
-          `${modelFromController}.glb`,
-          { type: "model/gltf-binary" },
-        )
+        const mockFile = new File([mockBlob], `${modelFromController}.glb`, {
+          type: "model/gltf-binary",
+        })
         return Promise.resolve(URL.createObjectURL(mockFile))
       }
       return result
