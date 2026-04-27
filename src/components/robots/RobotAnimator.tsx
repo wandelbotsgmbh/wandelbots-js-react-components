@@ -106,7 +106,7 @@ export default function RobotAnimator({
    * Calling setTarget with the same values is idempotent and cheap.
    */
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
+  // biome-ignore lint/correctness/useExhaustiveDependencies: false positive
   useEffect(() => {
     applyMotionState(rapidlyChangingMotionState)
   }, [rapidlyChangingMotionState])
