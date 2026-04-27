@@ -105,6 +105,8 @@ export default function RobotAnimator({
    * Plain-prop path: catch reference changes not tracked by MobX.
    * Calling setTarget with the same values is idempotent and cheap.
    */
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
   useEffect(() => {
     applyMotionState(rapidlyChangingMotionState)
   }, [rapidlyChangingMotionState])
