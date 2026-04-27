@@ -7,13 +7,15 @@ import { Environment, Lightformer } from "@react-three/drei"
  */
 export function PresetEnvironment() {
   return (
-    <Environment>
+    <Environment frames={1}>
       <Lightformers />
     </Environment>
   )
 }
 
-function Lightformers({ positions = [2, 0, 2, 0, 2, 0, 2, 0] }) {
+const defaultPositions = [2, 0, 2, 0, 2, 0, 2, 0]
+
+function Lightformers({ positions = defaultPositions }) {
   return (
     <>
       {/* Ceiling */}

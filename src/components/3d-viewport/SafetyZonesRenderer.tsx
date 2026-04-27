@@ -19,6 +19,19 @@ import {
   verticesToCoplanarity,
 } from "../utils/converters"
 
+/**
+ * Common material properties for safety zone meshes
+ */
+const safetyZoneMaterialProps = {
+  attach: "material" as const,
+  color: "#009f4d",
+  opacity: 0.2,
+  depthTest: false,
+  depthWrite: false,
+  transparent: true,
+  polygonOffset: true,
+}
+
 export type SafetyZonesRendererProps = {
   safetyZones: MotionGroupDescription["safety_zones"]
   dhParameters?: DHParameter[]
@@ -30,23 +43,13 @@ export function SafetyZonesRenderer({
   ...props
 }: SafetyZonesRendererProps) {
   /**
-   * Common material properties for safety zone meshes
-   */
-  const safetyZoneMaterialProps = {
-    attach: "material" as const,
-    color: "#009f4d",
-    opacity: 0.2,
-    depthTest: false,
-    depthWrite: false,
-    transparent: true,
-    polygonOffset: true,
-  }
-
-  /**
    * Plane size for the plane safety zones, returns the reach distance
    * of the robot
    */
-  const planeSize = dhParametersToPlaneSize(dhParameters ?? [])
+  const planeSize = useMemo(
+    () => dhParametersToPlaneSize(dhParameters ?? []),
+    [dhParameters],
+  )
 
   /**
    * Helper function to render plane, sphere, and capsule meshes

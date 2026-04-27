@@ -1,6 +1,6 @@
 import type { ThreeElements } from "@react-three/fiber"
 import type { DHParameter, MotionGroupState } from "@wandelbots/nova-js/v2"
-import { Suspense, useCallback, useEffect, useState } from "react"
+import { Suspense, useCallback, useEffect, useMemo, useState } from "react"
 import { DHRobot } from "./DHRobot"
 
 import { ErrorBoundary } from "react-error-boundary"
@@ -59,6 +59,20 @@ export const SupportedRobot = externalizeComponent(
       }
     }, [robotGroup, transparentColor])
 
+    const modelURL = useMemo(() => {
+      const result = getModel(modelFromController, instanceUrl)
+      if (!result) {
+        const mockBlob = new Blob([], { type: "model/gltf-binary" })
+        const mockFile = new File(
+          [mockBlob],
+          `${modelFromController}.glb`,
+          { type: "model/gltf-binary" },
+        )
+        return Promise.resolve(URL.createObjectURL(mockFile))
+      }
+      return result
+    }, [modelFromController, instanceUrl, getModel])
+
     const dhrobot = (
       <DHRobot
         rapidlyChangingMotionState={rapidlyChangingMotionState}
@@ -82,19 +96,7 @@ export const SupportedRobot = externalizeComponent(
               dhParameters={dhParameters}
             >
               <GenericRobot
-                modelURL={(() => {
-                  const result = getModel(modelFromController, instanceUrl)
-                  if (!result) {
-                    const mockBlob = new Blob([], { type: "model/gltf-binary" })
-                    const mockFile = new File(
-                      [mockBlob],
-                      `${modelFromController}.glb`,
-                      { type: "model/gltf-binary" },
-                    )
-                    return Promise.resolve(URL.createObjectURL(mockFile))
-                  }
-                  return result
-                })()}
+                modelURL={modelURL}
                 postModelRender={postModelRender}
                 flangeRef={flangeRef}
                 {...props}
