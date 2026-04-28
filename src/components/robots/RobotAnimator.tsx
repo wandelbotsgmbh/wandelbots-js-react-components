@@ -1,7 +1,7 @@
 import { useFrame, useThree } from "@react-three/fiber"
 import type { DHParameter, MotionGroupState } from "@wandelbots/nova-js/v2"
 import type React from "react"
-import { useCallback, useEffect, useRef } from "react"
+import { useEffect, useRef } from "react"
 import type { Group, Object3D } from "three"
 import { useAutorun } from "../utils/hooks"
 import { ValueInterpolator } from "../utils/interpolation"
@@ -20,10 +20,11 @@ export default function RobotAnimator({
   onRotationChanged,
   children,
 }: RobotAnimatorProps) {
-  const jointValues = useRef<number[]>([])
   const jointObjects = useRef<Object3D[]>([])
   const interpolatorRef = useRef<ValueInterpolator | null>(null)
   const { invalidate } = useThree()
+  const motionStateRef = useRef(rapidlyChangingMotionState)
+  motionStateRef.current = rapidlyChangingMotionState
 
   // Initialize interpolator
   // biome-ignore lint/correctness/useExhaustiveDependencies: pre-biome code
@@ -83,34 +84,32 @@ export default function RobotAnimator({
     }
   }
 
-  const updateJoints = useCallback(() => {
-    const newJointValues = rapidlyChangingMotionState.joint_position.filter(
+  // Single path for feeding new joint targets — works for both MobX and plain props
+  function applyMotionState(state: MotionGroupState) {
+    const newJointValues = state.joint_position.filter(
       (item) => item !== undefined,
     )
-
-    requestAnimationFrame(() => {
-      jointValues.current = newJointValues
-      interpolatorRef.current?.setTarget(newJointValues)
-    })
-  }, [rapidlyChangingMotionState])
+    interpolatorRef.current?.setTarget(newJointValues)
+    invalidate()
+  }
 
   /**
-   * Fire an update joints call on every motion state change.
-   * requestAnimationFrame used to avoid blocking main thread
-   */
-  // biome-ignore lint/correctness/useExhaustiveDependencies: pre-biome code
-  useEffect(() => {
-    updateJoints()
-  }, [rapidlyChangingMotionState, updateJoints])
-
-  /**
-   * As some consumer applications (eg. storybook) deliver
-   * mobx observable for rapidlyChangingMotionState, we need to
-   * register the watcher to get the newest value updates
+   * MobX path: autorun tracks observable reads inside the callback.
+   * Reads motionStateRef.current which dereferences the observable's properties.
    */
   useAutorun(() => {
-    updateJoints()
+    applyMotionState(motionStateRef.current)
   })
+
+  /**
+   * Plain-prop path: catch reference changes not tracked by MobX.
+   * Calling setTarget with the same values is idempotent and cheap.
+   */
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: false positive
+  useEffect(() => {
+    applyMotionState(rapidlyChangingMotionState)
+  }, [rapidlyChangingMotionState])
 
   return <group ref={setGroupRef}>{children}</group>
 }

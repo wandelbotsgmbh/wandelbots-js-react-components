@@ -312,10 +312,6 @@ export class JoggerConnection {
     // (undocumented)
     dispose(): Promise<void[]>;
     // (undocumented)
-    ENDPOINT_JOGGING: string;
-    // (undocumented)
-    ENDPOINT_TRAJECTORY: string;
-    // (undocumented)
     getDefaultTcp(motionStream: MotionStreamConnection): string | undefined;
     // (undocumented)
     initializeJoggingWebsocket(): Promise<void>;

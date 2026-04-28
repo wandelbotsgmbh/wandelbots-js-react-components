@@ -1,6 +1,6 @@
 /* biome-ignore-all lint/suspicious/noExplicitAny: pre-biome code */
 
-import type { FC } from "react"
+import { type FC, memo } from "react"
 import { I18nextProvider } from "react-i18next"
 import { i18n } from "./i18n/config"
 
@@ -12,9 +12,11 @@ import { i18n } from "./i18n/config"
 export function externalizeComponent<T extends React.JSX.ElementType>(
   Component: T,
 ): T {
-  const WrappedComponent = ((props: T) => (
+  const MemoizedComponent = memo(Component as any)
+
+  const WrappedComponent = ((props: any) => (
     <NovaComponentsProvider>
-      <Component {...(props as any)} />
+      <MemoizedComponent {...props} />
     </NovaComponentsProvider>
   )) as any
 

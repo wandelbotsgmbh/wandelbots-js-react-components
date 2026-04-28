@@ -103,13 +103,12 @@ export function GenericRobot({
   const [resolvedURL, setResolvedURL] = useState<string | null>(null)
 
   useEffect(() => {
+    let cancelled = false
     const resolveURL = async () => {
       try {
-        if (typeof modelURL === "string") {
-          setResolvedURL(modelURL)
-        } else {
-          const url = await modelURL
-          setResolvedURL(url)
+        const url = typeof modelURL === "string" ? modelURL : await modelURL
+        if (!cancelled) {
+          setResolvedURL((prev: string | null) => (prev === url ? prev : url))
         }
       } catch (error) {
         console.error("Failed to resolve model URL:", error)
@@ -117,6 +116,9 @@ export function GenericRobot({
     }
 
     resolveURL()
+    return () => {
+      cancelled = true
+    }
   }, [modelURL])
 
   // Don't render until we have a resolved URL
