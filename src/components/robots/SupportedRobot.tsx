@@ -62,11 +62,9 @@ export const SupportedRobot = externalizeComponent(
     const modelURL = useMemo(() => {
       const result = getModel(modelFromController, instanceUrl)
       if (!result) {
-        const mockBlob = new Blob([], { type: "model/gltf-binary" })
-        const mockFile = new File([mockBlob], `${modelFromController}.glb`, {
-          type: "model/gltf-binary",
-        })
-        return Promise.resolve(URL.createObjectURL(mockFile))
+        throw new Error(
+          `No model found for robot "${modelFromController}". Ensure the model is available or provide a custom getModel function.`,
+        )
       }
       return result
     }, [modelFromController, instanceUrl, getModel])
