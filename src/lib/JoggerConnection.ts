@@ -53,8 +53,6 @@ export type JoggerMode = "jogging" | "trajectory" | "off"
 export type JoggerOrientation = "coordsys" | "tool"
 
 export class JoggerConnection {
-  ENDPOINT_JOGGING = "/execution/jogging"
-  ENDPOINT_TRAJECTORY = "/execution/trajectory"
   DEFAULT_MODE = "off" as JoggerMode
   DEFAULT_TCP: string | undefined = "Flange"
   NO_TCP: string | undefined = undefined
@@ -257,7 +255,7 @@ export class JoggerConnection {
       }, this.timeout)
 
       this.joggingSocket = this.nova.openReconnectingWebsocket(
-        this.ENDPOINT_JOGGING,
+        `/controllers/${this.motionStream.controllerId}/execution/jogging`,
       )
       this.joggingSocket.addEventListener("message", (ev: MessageEvent) => {
         const data = tryParseJson(ev.data)
@@ -564,7 +562,7 @@ export class JoggerConnection {
 
     // Execute the planned motion https://portal.wandelbots.io/docs/api/v2/ui/#/operations/executeTrajectory
     this.trajectorySocket = this.nova.openReconnectingWebsocket(
-      this.ENDPOINT_TRAJECTORY,
+      `/controllers/${this.motionStream.controllerId}/execution/trajectory`,
     )
 
     const messageInitializeMovementResponse = (
