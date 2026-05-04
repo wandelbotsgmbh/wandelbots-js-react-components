@@ -1,0 +1,6 @@
+import{n as e}from"./chunk-DnJy8xQt.js";import{Ma as t,S as n,lt as r}from"./iframe-XS2jLBOb.js";var i,a,o,s;e((()=>{n(),i=t(),a={title:`Jogging/PoseJointValues`,tags:[`!dev`],component:r,argTypes:{joints:{control:`object`,description:`Joint configuration object with joints array in radians`},showCopyButton:{control:`boolean`,description:`Whether to show the copy button`}},args:{joints:[.1234,-1.5678,2.3456,-.789,1.2345,-2.6789],showCopyButton:!1},render:function(e){return(0,i.jsx)(r,{joints:e.joints,showCopyButton:e.showCopyButton})}},o={name:`Pose Joint Values`},o.parameters={...o.parameters,docs:{...o.parameters?.docs,source:{originalSource:`{
+  name: "Pose Joint Values"
+}`,...o.parameters?.docs?.source},description:{story:`Displays joint values in array format with 4 decimal precision.
+Takes a Joints object containing an array of joint positions in radians.
+Use the controls to modify the joint values and see the formatted output.
+Toggle the copy button to enable manual copying of the joint values string.`,...o.parameters?.docs?.description}}},s=[`Interactive`]}))();export{o as Interactive,s as __namedExportsOrder,a as default};
