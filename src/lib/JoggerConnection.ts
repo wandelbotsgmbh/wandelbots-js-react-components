@@ -380,6 +380,7 @@ export class JoggerConnection {
       message_type: "TcpVelocityRequest",
       translation,
       rotation,
+      use_tool_coordinate_system: this.orientation === "tool",
     })
   }
 
