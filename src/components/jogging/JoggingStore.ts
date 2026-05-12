@@ -237,7 +237,7 @@ export class JoggingStore {
 
   async deactivate() {
     if (this.jogger.mode === "jogging") {
-      return this.jogger.stop()
+      await this.jogger.setJoggingMode("off")
     }
   }
 
