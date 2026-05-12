@@ -1,0 +1,1 @@
+import{r as a}from"./iframe-C5c9tU-p.js";const r=a.createContext();class o{constructor(){this.usedNamespaces={}}addUsedNamespaces(s){s.forEach(e=>{this.usedNamespaces[e]||(this.usedNamespaces[e]=!0)})}getUsedNamespaces(){return Object.keys(this.usedNamespaces)}}export{r as I,o as R};
