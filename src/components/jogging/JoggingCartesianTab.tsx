@@ -114,7 +114,8 @@ export const JoggingCartesianTab = observer(
     async function startCartesianJogging(opts: JoggingCartesianOpts) {
       if (store.isLocked) return
 
-      const jogger = await store.activate()
+      await store.activate()
+
       if (store.activeDiscreteIncrement) {
         return runIncrementalCartesianJog(opts, store.activeDiscreteIncrement)
       }
