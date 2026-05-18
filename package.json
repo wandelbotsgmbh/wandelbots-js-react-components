@@ -171,7 +171,7 @@
     }
   },
   "dependencies": {
-    "@mui/x-charts": "^8.27.0",
+    "@mui/x-charts": "^9.2.0",
     "@mui/x-data-grid": "^8.27.0",
     "@wandelbots/nova-js": "^3.6.0",
     "axios": "^1.15.0",
@@ -181,7 +181,7 @@
     "mobx": "^6.13.6",
     "mobx-react-lite": "^4.1.0",
     "react-error-boundary": "^6.0.3",
-    "react-i18next": "^16.5.2",
+    "react-i18next": "^17.0.8",
     "username": "^7.0.0"
   },
   "pnpm": {
