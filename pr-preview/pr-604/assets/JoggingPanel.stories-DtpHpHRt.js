@@ -1,0 +1,13 @@
+import{a as e,i as t}from"./preload-helper-Cs4UwXAW.js";import{$r as n,Et as r,Ga as i,Jr as a,Jt as o,L as s,Qr as c,Xr as l,Yr as u,Zr as d,pa as f,qr as p,qt as m,ya as h}from"./iframe-BvHxi_cZ.js";var g=e({Default:()=>y,__namedExportsOrder:()=>S,default:()=>v}),_,v,y,b,x,S,C=t((()=>{f(),m(),c(),l(),p(),s(),_=i(),v={title:`Jogging/JoggingPanel`,tags:[`!dev`],component:u(e=>{let t=h();return a(()=>({translationStore:null})),(0,_.jsxs)(o,{direction:`column`,gap:4,sx:{maxWidth:`min-content`},children:[(0,_.jsxs)(o,{gap:2,children:[(0,_.jsx)(n,{variant:`h6`,component:`h3`,color:t.palette.text.primary,children:`Jogging Panel Joint Rotation`}),(0,_.jsx)(r,{...e,sx:{width:`320px`,backgroundColor:t.palette.backgroundPaperElevation?.[5]}})]}),(0,_.jsxs)(o,{gap:2,children:[(0,_.jsx)(n,{variant:`h6`,component:`h3`,color:t.palette.text.primary,children:`Jogging Panel Joint Translation`}),(0,_.jsx)(r,{...e,sx:{width:`320px`,backgroundColor:t.palette.backgroundPaperElevation?.[5]},onSetup:e=>{e.motionGroupDescription.motion_group_model=`ABB_IRT710`}})]}),(0,_.jsxs)(o,{gap:2,children:[(0,_.jsx)(n,{variant:`h6`,component:`h3`,color:t.palette.text.primary,children:`Jogging Panel with Custom Controls`}),(0,_.jsx)(b,{props:e})]}),(0,_.jsxs)(o,{gap:2,children:[(0,_.jsx)(n,{variant:`h6`,component:`h3`,color:t.palette.text.primary,children:`Jogging Panel Blocked by Another Connection`}),(0,_.jsx)(x,{props:e})]})]})})},y={args:{nova:`https://mock.example.com`,motionGroupId:`0@mock-ur5e`},argTypes:{nova:{control:{type:`text`}}}},b=u(({props:e})=>{let t=h(),i=a(()=>({joggingStore:null}));return(0,_.jsx)(r,{...e,sx:{width:`460px`,backgroundColor:t.palette.backgroundPaperElevation?.[5]},onSetup:e=>d(()=>i.joggingStore=e),children:i.joggingStore&&(0,_.jsx)(o,{alignItems:`center`,justifyContent:`center`,sx:{background:t.palette.backgroundPaperElevation?.[7],borderRadius:`16px`,minHeight:`200px`},children:(0,_.jsx)(n,{color:t.palette.text.primary,children:`${i.joggingStore.currentTab.id} children`})})})}),x=u(({props:e})=>{let t=h(),n=a(()=>({joggingStore:null}));return(0,_.jsx)(r,{...e,onSetup:e=>d(()=>{n.joggingStore=e,n.joggingStore.blocked=!0}),sx:{width:`320px`,backgroundColor:t.palette.backgroundPaperElevation?.[5]}})}),y.parameters={...y.parameters,docs:{...y.parameters?.docs,source:{originalSource:`{
+  args: {
+    nova: "https://mock.example.com",
+    motionGroupId: "0@mock-ur5e"
+  },
+  argTypes: {
+    nova: {
+      control: {
+        type: "text"
+      }
+    }
+  }
+}`,...y.parameters?.docs?.source}}},S=[`Default`]}));C();export{y as Default,S as __namedExportsOrder,v as default,C as n,g as t};
