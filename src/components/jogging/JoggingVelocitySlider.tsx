@@ -4,7 +4,15 @@ import { VelocitySlider, VelocitySliderLabel } from "../VelocitySlider"
 import type { JoggingStore } from "./JoggingStore"
 
 export const JoggingVelocitySlider = observer(
-  ({ store, useDegree }: { store: JoggingStore; useDegree: boolean }) => {
+  ({
+    store,
+    useDegree,
+    isJointVelocitySlider,
+  }: {
+    store: JoggingStore
+    useDegree: boolean
+    isJointVelocitySlider?: boolean
+  }) => {
     const { t } = useTranslation()
 
     function valueLabelFormat(value: number, useDegree: boolean): string {
@@ -16,10 +24,21 @@ export const JoggingVelocitySlider = observer(
     return (
       <VelocitySlider
         store={store}
-        velocity={store.velocityInDisplayUnits(useDegree)}
+        velocity={store.velocityInDisplayUnits(
+          useDegree,
+          isJointVelocitySlider,
+        )}
         min={store.minVelocityInDisplayUnits(useDegree)}
-        max={store.maxVelocityInDisplayUnits(useDegree)}
-        onVelocityChange={store.setVelocityFromSlider}
+        max={
+          isJointVelocitySlider
+            ? store.maxJointVelocityInDisplayUnits
+            : store.maxVelocityInDisplayUnits(useDegree)
+        }
+        onVelocityChange={(newVelocity, useDegree) =>
+          isJointVelocitySlider
+            ? store.setJointVelocityFromSlider(newVelocity)
+            : store.setVelocityFromSlider(newVelocity, useDegree)
+        }
         useDegree={useDegree}
         disabled={store.isLocked}
         renderValue={(value) => (

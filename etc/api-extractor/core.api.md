@@ -20,10 +20,11 @@ import type { i18n as i18n_2 } from 'i18next';
 import { IReactionDisposer } from 'mobx';
 import { JointTypeEnum } from '@wandelbots/nova-js/v2';
 import { JSX } from 'react/jsx-runtime';
+import { LimitSet } from '@wandelbots/nova-js/v2';
 import { MotionGroupDescription } from '@wandelbots/nova-js/v2';
 import type { MotionGroupState } from '@wandelbots/nova-js/v2';
 import { NovaClient } from '@wandelbots/nova-js/v2';
-import type { OperationMode } from '@wandelbots/nova-js/v2';
+import { OperationMode } from '@wandelbots/nova-js/v2';
 import type { PopoverOrigin } from '@mui/material/Popover';
 import { Pose } from '@wandelbots/nova-js/v2';
 import { default as React_2 } from 'react';
@@ -369,6 +370,7 @@ export class JoggingStore {
         mm: number;
         degrees: number;
     } | undefined;
+    get activeOperationLimits(): LimitSet | undefined;
     // (undocumented)
     block(): void;
     blocked: boolean;
@@ -419,7 +421,9 @@ export class JoggingStore {
     get isLocked(): boolean;
     // (undocumented)
     readonly jogger: JoggerConnection;
+    jointTranslationVelocityMmPerSec: number;
     jointType: JointTypeEnum;
+    jointVelocityDegPerSec: number;
     static loadFor(jogger: JoggerConnection): Promise<JoggingStore>;
     // (undocumented)
     loadFromLocalStorage(): void;
@@ -435,8 +439,9 @@ export class JoggingStore {
     // (undocumented)
     lock(id: string): void;
     locks: Set<string>;
-    maxRotationVelocityDegPerSec: number;
-    maxTranslationVelocityMmPerSec: number;
+    get maxJointVelocityInDisplayUnits(): number;
+    get maxRotationVelocityDegPerSec(): number;
+    get maxTranslationVelocityMmPerSec(): number;
     maxVelocityInDisplayUnits(useDegree: boolean): number;
     minRotationVelocityDegPerSec: number;
     minTranslationVelocityMmPerSec: number;
@@ -445,7 +450,10 @@ export class JoggingStore {
     readonly motionGroupDescription: MotionGroupDescription;
     // (undocumented)
     onTabChange(_event: React.SyntheticEvent, newValue: number): void;
+    // (undocumented)
+    operationMode: OperationMode | null;
     rotationVelocityDegPerSec: number;
+    rotationVelocityFallbackDegPerSec: number;
     get rotationVelocityRadsPerSec(): number;
     // (undocumented)
     saveToLocalStorage(): void;
@@ -458,6 +466,8 @@ export class JoggingStore {
     selectedTcpId: string;
     // (undocumented)
     setCurrentIncrementJog(incrementJog: IncrementJogInProgress | null): void;
+    // (undocumented)
+    setJointVelocityFromSlider(velocity: number): void;
     // (undocumented)
     setSelectedCartesianMotionType(type: CartesianMotionType): void;
     // (undocumented)
@@ -494,12 +504,13 @@ export class JoggingStore {
     readonly tcps: RobotTcp[];
     // (undocumented)
     get tcpsById(): Dictionary<RobotTcp>;
+    translationVelocityFallbackMmPerSec: number;
     translationVelocityMmPerSec: number;
     // (undocumented)
     unblock(): void;
     // (undocumented)
     unlock(id: string): void;
-    velocityInDisplayUnits(useDegree: boolean): number;
+    velocityInDisplayUnits(useDegree: boolean, isJointVelocity?: boolean): number;
     withMotionLock(fn: () => Promise<void>): Promise<void>;
 }
 

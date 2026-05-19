@@ -5,7 +5,7 @@ import type {
   MotionGroupState,
   RobotTcp,
 } from "@wandelbots/nova-js/v2"
-import { JointTypeEnum } from "@wandelbots/nova-js/v2"
+import { JointTypeEnum, OperationMode } from "@wandelbots/nova-js/v2"
 import { I18nextProvider } from "react-i18next"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import { i18n } from "../../i18n/config"
@@ -573,6 +573,193 @@ describe("JoggingPanel", () => {
       expect(store.maxVelocityInDisplayUnits(true)).toBe(
         store.maxRotationVelocityDegPerSec,
       )
+    })
+  })
+
+  // ---- Joint-specific velocity ----
+
+  describe("Joint velocity", () => {
+    describe("setJointVelocityFromSlider", () => {
+      it("updates jointVelocityDegPerSec for revolute joints and leaves mm/s field unchanged", () => {
+        const store = createUr5eStore()
+        store.setJointVelocityFromSlider(45)
+        expect(store.jointVelocityDegPerSec).toBe(45)
+        expect(store.jointTranslationVelocityMmPerSec).toBe(10)
+      })
+
+      it("updates jointTranslationVelocityMmPerSec for prismatic joints and leaves deg/s field unchanged", () => {
+        const store = createJoggingStore({
+          motionGroupState: linearAxisMotionGroupState,
+          description: linearAxisDescription,
+          inverseSolver: null,
+        })
+        store.setJointVelocityFromSlider(80)
+        expect(store.jointTranslationVelocityMmPerSec).toBe(80)
+        expect(store.jointVelocityDegPerSec).toBe(1)
+      })
+    })
+
+    describe("velocityInDisplayUnits with isJointVelocity=true", () => {
+      it("returns jointVelocityDegPerSec for revolute joints", () => {
+        const store = createUr5eStore()
+        store.jointVelocityDegPerSec = 30
+        expect(store.velocityInDisplayUnits(true, true)).toBe(30)
+      })
+
+      it("returns jointTranslationVelocityMmPerSec for prismatic joints", () => {
+        const store = createJoggingStore({
+          motionGroupState: linearAxisMotionGroupState,
+          description: linearAxisDescription,
+          inverseSolver: null,
+        })
+        store.jointTranslationVelocityMmPerSec = 75
+        expect(store.velocityInDisplayUnits(false, true)).toBe(75)
+      })
+
+      it("is independent from cartesian velocity fields when isJointVelocity=true", () => {
+        const store = createUr5eStore()
+        store.rotationVelocityDegPerSec = 99
+        store.jointVelocityDegPerSec = 5
+        expect(store.velocityInDisplayUnits(true, true)).toBe(5)
+        expect(store.velocityInDisplayUnits(true, false)).toBe(99)
+      })
+    })
+
+    describe("maxJointVelocityInDisplayUnits", () => {
+      it("falls back to rotationVelocityFallbackDegPerSec when no API limits (revolute)", () => {
+        const store = createUr5eStore()
+        expect(store.maxJointVelocityInDisplayUnits).toBe(
+          store.rotationVelocityFallbackDegPerSec,
+        )
+      })
+
+      it("falls back to translationVelocityFallbackMmPerSec when no API limits (prismatic)", () => {
+        const store = createJoggingStore({
+          motionGroupState: linearAxisMotionGroupState,
+          description: linearAxisDescription,
+          inverseSolver: null,
+        })
+        expect(store.maxJointVelocityInDisplayUnits).toBe(
+          store.translationVelocityFallbackMmPerSec,
+        )
+      })
+
+      it("converts rad/s joint velocity to deg/s for revolute joints", () => {
+        const descWithLimits = {
+          ...ur5eDescription,
+          operation_limits: {
+            auto_limits: { joints: [{ velocity: Math.PI }] },
+          },
+        } as unknown as MotionGroupDescription
+        const store = createJoggingStore({
+          motionGroupState: ur5eMotionGroupState,
+          description: descWithLimits,
+        })
+        // Math.PI rad/s → 180 deg/s, floored → 180
+        expect(store.maxJointVelocityInDisplayUnits).toBe(180)
+      })
+
+      it("uses raw mm/s joint velocity for prismatic joints without conversion", () => {
+        const descWithLimits = {
+          ...linearAxisDescription,
+          operation_limits: {
+            auto_limits: { joints: [{ velocity: 100.9 }] },
+          },
+        } as unknown as MotionGroupDescription
+        const store = createJoggingStore({
+          motionGroupState: linearAxisMotionGroupState,
+          description: descWithLimits,
+          inverseSolver: null,
+        })
+        // 100.9 mm/s, floored → 100
+        expect(store.maxJointVelocityInDisplayUnits).toBe(100)
+      })
+
+      it("takes the maximum velocity across multiple revolute joints", () => {
+        const descWithLimits = {
+          ...ur5eDescription,
+          operation_limits: {
+            auto_limits: {
+              joints: [
+                { velocity: Math.PI / 4 }, // ~45 deg/s
+                { velocity: Math.PI }, // 180 deg/s
+                { velocity: Math.PI / 2 }, // ~90 deg/s
+              ],
+            },
+          },
+        } as unknown as MotionGroupDescription
+        const store = createJoggingStore({
+          motionGroupState: ur5eMotionGroupState,
+          description: descWithLimits,
+        })
+        expect(store.maxJointVelocityInDisplayUnits).toBe(180)
+      })
+    })
+  })
+
+  // ---- activeOperationLimits ----
+
+  describe("activeOperationLimits", () => {
+    const descWithAllLimits = {
+      ...ur5eDescription,
+      operation_limits: {
+        auto_limits: { joints: [{ velocity: 1 }] },
+        manual_limits: { joints: [{ velocity: 2 }] },
+        manual_t1_limits: { joints: [{ velocity: 3 }] },
+        manual_t2_limits: { joints: [{ velocity: 4 }] },
+      },
+    } as unknown as MotionGroupDescription
+
+    function storeWithAllLimits() {
+      return createJoggingStore({
+        motionGroupState: ur5eMotionGroupState,
+        description: descWithAllLimits,
+      })
+    }
+
+    it("returns auto_limits when operationMode is OperationModeAuto", () => {
+      const store = storeWithAllLimits()
+      store.operationMode = OperationMode.OperationModeAuto
+      expect(store.activeOperationLimits?.joints?.[0]?.velocity).toBe(1)
+    })
+
+    it("returns manual_limits when operationMode is OperationModeManual", () => {
+      const store = storeWithAllLimits()
+      store.operationMode = OperationMode.OperationModeManual
+      expect(store.activeOperationLimits?.joints?.[0]?.velocity).toBe(2)
+    })
+
+    it("returns manual_t1_limits when operationMode is OperationModeManualT1", () => {
+      const store = storeWithAllLimits()
+      store.operationMode = OperationMode.OperationModeManualT1
+      expect(store.activeOperationLimits?.joints?.[0]?.velocity).toBe(3)
+    })
+
+    it("returns manual_t2_limits when operationMode is OperationModeManualT2", () => {
+      const store = storeWithAllLimits()
+      store.operationMode = OperationMode.OperationModeManualT2
+      expect(store.activeOperationLimits?.joints?.[0]?.velocity).toBe(4)
+    })
+
+    it("falls back to auto_limits when operationMode is null (controller did not report a mode)", () => {
+      const store = storeWithAllLimits()
+      store.operationMode = null
+      expect(store.activeOperationLimits?.joints?.[0]?.velocity).toBe(1)
+    })
+
+    it("falls back to auto_limits when mode is Manual but manual_limits is absent", () => {
+      const descAutoOnly = {
+        ...ur5eDescription,
+        operation_limits: {
+          auto_limits: { joints: [{ velocity: 1 }] },
+        },
+      } as unknown as MotionGroupDescription
+      const store = createJoggingStore({
+        motionGroupState: ur5eMotionGroupState,
+        description: descAutoOnly,
+      })
+      store.operationMode = OperationMode.OperationModeManual
+      expect(store.activeOperationLimits?.joints?.[0]?.velocity).toBe(1)
     })
   })
 
