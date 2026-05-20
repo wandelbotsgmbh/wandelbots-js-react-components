@@ -9,6 +9,7 @@ import { JoggingJointLimitDetector } from "./JoggingJointLimitDetector"
 import { JoggingJointValueControl } from "./JoggingJointValueControl"
 import type { JoggingStore } from "./JoggingStore"
 import { JoggingVelocitySlider } from "./JoggingVelocitySlider"
+import { degreesToRadians } from "../utils/converters"
 
 export const JoggingJointTab = observer(
   ({ store, children }: { store: JoggingStore; children?: ReactNode }) => {
@@ -25,8 +26,8 @@ export const JoggingJointTab = observer(
           store.jointType === JointTypeEnum.PrismaticJoint ? "mm/s" : "rad/s",
         velocityValue:
           store.jointType === JointTypeEnum.PrismaticJoint
-            ? store.translationVelocityMmPerSec
-            : store.rotationVelocityRadsPerSec,
+            ? store.jointTranslationVelocityMmPerSec
+            : degreesToRadians(store.jointVelocityDegPerSec),
       })
     }
 
@@ -46,6 +47,7 @@ export const JoggingJointTab = observer(
         <JoggingVelocitySlider
           store={store}
           useDegree={store.jointType === JointTypeEnum.RevoluteJoint}
+          isJointVelocitySlider
         />
 
         <Divider />
@@ -63,8 +65,7 @@ export const JoggingJointTab = observer(
           >
             {store.jogger.motionStream.joints.map((joint) => {
               const jointLimits =
-                store.motionGroupDescription.operation_limits.auto_limits
-                  ?.joints?.[joint.index]?.position
+                store.activeOperationLimits?.joints?.[joint.index]?.position
 
               return (
                 <Stack

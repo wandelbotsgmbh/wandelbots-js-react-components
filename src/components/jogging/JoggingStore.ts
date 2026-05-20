@@ -1,7 +1,9 @@
 import { tryParseJson } from "@wandelbots/nova-js"
 import {
   JointTypeEnum,
+  OperationMode,
   type CoordinateSystem,
+  type JointLimits,
   type KinematicModel,
   type MotionGroupDescription,
   type RobotTcp,
@@ -15,6 +17,7 @@ import type {
   JoggerOrientation,
   Vector3Simple,
 } from "../../lib/JoggerConnection"
+import { degreesToRadians, radiansToDegree } from "../utils/converters"
 
 const discreteIncrementOptions = [
   { id: "0.1", mm: 0.1, degrees: 0.05 },
@@ -88,20 +91,27 @@ export class JoggingStore {
    */
   incrementJogInProgress: IncrementJogInProgress | null = null
 
+  /** How fast the robot goes when doing joint translate in mm/s */
+  jointTranslationVelocityMmPerSec: number = 10
   /** How fast the robot goes when doing cartesian translate jogging in mm/s */
   translationVelocityMmPerSec: number = 10
+
+  /** How fast the robot goes when joint rotation jogging in °/s */
+  jointVelocityDegPerSec: number = 1
   /** How fast the robot goes when doing cartesian or joint rotation jogging in °/s */
   rotationVelocityDegPerSec: number = 1
 
-  /** Minimum translation velocity user can choose on the velocity slider in °/s */
+  /** Fallback for cartesian and joint rotation if not defined by the motion group description **/
+  rotationVelocityFallbackDegPerSec = 60
+
+  /** Fallback for cartesian and joint translation if not defined by the motion group description **/
+  translationVelocityFallbackMmPerSec = 250
+
+  /** Minimum translation velocity user can choose on the velocity slider in mm/s */
   minTranslationVelocityMmPerSec: number = 5
-  /** Maximum translation velocity user can choose on the velocity slider in °/s */
-  maxTranslationVelocityMmPerSec: number = 250
 
   /** Minimum rotation velocity user can choose on the velocity slider in °/s */
   minRotationVelocityDegPerSec: number = 1
-  /** Maximum rotation velocity user can choose on the velocity slider in °/s */
-  maxRotationVelocityDegPerSec: number = 60
 
   /** Whether to show the coordinate system select dropdown in the UI */
   showCoordSystemSelect: boolean = false
@@ -139,6 +149,8 @@ export class JoggingStore {
    * should be rendered by the JoggingPanel component.
    */
   jointType: JointTypeEnum = JointTypeEnum.RevoluteJoint
+
+  operationMode: OperationMode | null = null
 
   /**
    * Load a jogging store with the relevant data it needs
@@ -198,6 +210,7 @@ export class JoggingStore {
         break
       }
     }
+    this.operationMode = jogger.motionStream.controller.operation_mode
     this.selectedCoordSystemId = coordSystems[0]?.coordinate_system || "world"
     this.selectedTcpId = tcps[0]?.id || ""
     this.inverseSolver = inverseSolverValue
@@ -386,30 +399,120 @@ export class JoggingStore {
       : discreteIncrementOptions.find((d) => d.id === this.selectedIncrementId)
   }
 
+  /** Operation limits for the current operation mode, falling back to auto_limits */
+  get activeOperationLimits() {
+    const { operation_limits } = this.motionGroupDescription
+
+    let velocityAttribute: keyof MotionGroupDescription["operation_limits"] =
+      "auto_limits"
+
+    switch (this.operationMode) {
+      case OperationMode.OperationModeManual:
+        velocityAttribute = "manual_limits"
+        break
+      case OperationMode.OperationModeManualT1:
+        velocityAttribute = "manual_t1_limits"
+        break
+      case OperationMode.OperationModeManualT2:
+        velocityAttribute = "manual_t2_limits"
+        break
+      default:
+        velocityAttribute = "auto_limits"
+        break
+    }
+
+    return operation_limits[velocityAttribute] ?? operation_limits.auto_limits
+  }
+
   /** The selected rotation velocity converted to radians per second */
   get rotationVelocityRadsPerSec() {
-    return (this.rotationVelocityDegPerSec * Math.PI) / 180
+    return degreesToRadians(this.rotationVelocityDegPerSec)
   }
 
-  /** Selected velocity in mm/sec or deg/sec */
-  velocityInDisplayUnits(useDegree: boolean) {
-    return useDegree
-      ? this.rotationVelocityDegPerSec
-      : this.translationVelocityMmPerSec
+  /**
+   * Internal function for retrieving joint velocity based on joint limits and fallback value
+   * Prismatic Joint - the api already delivers the data in mm/s - no recalculation needed
+   * Revolute Joint - the api delivers the data in rad/s - convert to deg/s
+   * @param joint
+   * @param fallback
+   * @private
+   */
+  private getJointVelocity(joint: JointLimits, fallback: number) {
+    if (joint.velocity === null || joint.velocity === undefined) return fallback
+    return this.jointType === JointTypeEnum.RevoluteJoint
+      ? radiansToDegree(joint.velocity)
+      : joint.velocity
   }
 
-  /** Minimum selectable velocity in mm/sec or deg/sec */
+  /** Maximum rotation velocity user can choose on the velocity slider in °/s */
+  get maxRotationVelocityDegPerSec() {
+    const velocityInRadPerSec =
+      this.activeOperationLimits?.tcp?.orientation_velocity
+
+    return velocityInRadPerSec !== null && velocityInRadPerSec !== undefined
+      ? radiansToDegree(velocityInRadPerSec)
+      : this.rotationVelocityFallbackDegPerSec
+  }
+
+  /** Maximum translation velocity user can choose on the velocity slider in mm/s */
+  get maxTranslationVelocityMmPerSec() {
+    const velocityInMmPerSec = this.activeOperationLimits?.tcp?.velocity
+
+    return velocityInMmPerSec ?? this.translationVelocityFallbackMmPerSec
+  }
+
+  /**
+   * Maximum joint velocity user can choose on the velocity slider.
+   * Returns deg/s for revolute joints, mm/s for prismatic joints.
+   */
+  get maxJointVelocityInDisplayUnits() {
+    const fallback =
+      this.jointType === JointTypeEnum.RevoluteJoint
+        ? this.rotationVelocityFallbackDegPerSec
+        : this.translationVelocityFallbackMmPerSec
+
+    const joints = this.activeOperationLimits?.joints ?? []
+
+    if (joints.length === 0) return fallback
+
+    const velocities = joints.map((joint: JointLimits) =>
+      this.getJointVelocity(joint, fallback),
+    )
+    return Math.floor(Math.max(...velocities))
+  }
+
+  /**  Minimum selectable velocity in mm/sec or deg/sec */
   minVelocityInDisplayUnits(useDegree: boolean) {
     return useDegree
       ? this.minRotationVelocityDegPerSec
       : this.minTranslationVelocityMmPerSec
   }
 
-  /** Maximum selectable velocity in mm/sec or deg/sec */
+  /**
+   * Maximum selectable velocity in mm/sec or deg/sec
+   *
+   * If data provided by the api is already present - read out the limits from the motionGroupDescription
+   * In other case - return the fallbacks
+   */
   maxVelocityInDisplayUnits(useDegree: boolean) {
-    return useDegree
-      ? this.maxRotationVelocityDegPerSec
-      : this.maxTranslationVelocityMmPerSec
+    return Math.floor(
+      useDegree
+        ? this.maxRotationVelocityDegPerSec
+        : this.maxTranslationVelocityMmPerSec,
+    )
+  }
+
+  /** Selected velocity in mm/sec or deg/sec */
+  velocityInDisplayUnits(useDegree: boolean, isJointVelocity?: boolean) {
+    if (isJointVelocity) {
+      return this.jointType === JointTypeEnum.RevoluteJoint
+        ? this.jointVelocityDegPerSec
+        : this.jointTranslationVelocityMmPerSec
+    } else {
+      return useDegree
+        ? this.rotationVelocityDegPerSec
+        : this.translationVelocityMmPerSec
+    }
   }
 
   onTabChange(_event: React.SyntheticEvent, newValue: number) {
@@ -443,6 +546,14 @@ export class JoggingStore {
       this.rotationVelocityDegPerSec = velocity
     } else {
       this.translationVelocityMmPerSec = velocity
+    }
+  }
+
+  setJointVelocityFromSlider(velocity: number) {
+    if (this.jointType === JointTypeEnum.RevoluteJoint) {
+      this.jointVelocityDegPerSec = velocity
+    } else {
+      this.jointTranslationVelocityMmPerSec = velocity
     }
   }
 

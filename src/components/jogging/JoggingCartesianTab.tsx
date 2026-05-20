@@ -76,7 +76,6 @@ export const JoggingCartesianTab = observer(
       const jointPosition = jogger.motionStream.rapidlyChangingMotionState
         .joint_position as Vector3Simple
       if (!tcpPose) return
-
       await store.withMotionLock(async () => {
         try {
           store.setCurrentIncrementJog({
