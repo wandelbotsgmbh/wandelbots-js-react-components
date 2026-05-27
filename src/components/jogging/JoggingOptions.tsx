@@ -57,7 +57,6 @@ export const JoggingOptions = observer(
     }
 
     if (store.showTcpSelect) {
-      const tcpLoading = store.tcpChangeInProgress || store.isTcpUnresolved
       joggingOptions.push(
         <AdornedSelect
           key="tcp"
@@ -66,13 +65,13 @@ export const JoggingOptions = observer(
           value={store.selectedTcpId}
           size="small"
           variant="filled"
-          displayEmpty={tcpLoading}
+          displayEmpty={store.tcpChangeInProgress}
           onChange={(event) =>
             store.requestTcpChange(event.target.value as string)
           }
-          disabled={store.isLocked || tcpLoading}
+          disabled={store.isLocked || store.tcpChangeInProgress}
           endAdornment={
-            tcpLoading ? (
+            store.tcpChangeInProgress ? (
               <InputAdornment position="end">
                 <CircularProgress size={16} />
               </InputAdornment>

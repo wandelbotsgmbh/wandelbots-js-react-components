@@ -210,6 +210,9 @@ export class JoggingStore {
     // Only trust the server-reported active TCP; don't guess from defaults
     this.selectedTcpId =
       jogger.motionStream.rapidlyChangingMotionState.tcp ?? ""
+    // If server hasn't reported a TCP yet but the robot has TCPs, mark as in-progress
+    // until the autorun below picks up the server value
+    this.tcpChangeInProgress = this.tcps.length > 0 && !this.selectedTcpId
     this.inverseSolver = inverseSolverValue
     this.jointType =
       motionGroupDescription?.dh_parameters?.[0]?.type ??
@@ -229,18 +232,15 @@ export class JoggingStore {
     // Automatically save user settings to local storage when save changes
     this.disposers.push(autorun(() => this.saveToLocalStorage()))
 
-    // Sync server-reported TCP → UI (only when no TCP change is in progress)
+    // Sync server-reported TCP → UI (only when no user-initiated TCP change is in flight)
     this.disposers.push(
       autorun(() => {
         const serverTcp =
           this.jogger.motionStream.rapidlyChangingMotionState.tcp
-        if (
-          !this.tcpChangeInProgress &&
-          serverTcp &&
-          serverTcp !== this.selectedTcpId
-        ) {
+        if (serverTcp && serverTcp !== this.selectedTcpId) {
           runInAction(() => {
             this.selectedTcpId = serverTcp
+            this.tcpChangeInProgress = false
           })
         }
       }),
@@ -403,13 +403,6 @@ export class JoggingStore {
     return keyBy(this.tcps, (tcp) => tcp.id)
   }
 
-  /**
-   * True when the server has not yet reported an active TCP.
-   * The UI should show a loading/indeterminate state in this case.
-   */
-  get isTcpUnresolved() {
-    return this.tcps.length > 0 && !this.selectedTcpId
-  }
 
   get activeDiscreteIncrement() {
     return this.selectedOrientation === "tool"

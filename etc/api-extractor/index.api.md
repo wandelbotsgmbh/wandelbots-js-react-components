@@ -498,7 +498,6 @@ export class JoggingStore {
     get localStorageSave(): {
         selectedTabId: TabType;
         selectedCoordSystemId: string;
-        selectedTcpId: string;
         selectedOrientation: string;
         selectedIncrementId: string;
         selectedCartesianMotionType: CartesianMotionType;
@@ -516,6 +515,7 @@ export class JoggingStore {
     readonly motionGroupDescription: MotionGroupDescription;
     // (undocumented)
     onTabChange(_event: React.SyntheticEvent, newValue: number): void;
+    requestTcpChange(tcpId: string): Promise<void>;
     rotationVelocityDegPerSec: number;
     get rotationVelocityRadsPerSec(): number;
     // (undocumented)
@@ -538,8 +538,6 @@ export class JoggingStore {
     // (undocumented)
     setSelectedOrientation(orientation: OrientationId): void;
     // (undocumented)
-    setSelectedTcpId(id: string): void;
-    // (undocumented)
     setVelocityFromSlider(velocity: number, useDegree: boolean): void;
     showCoordSystemSelect: boolean;
     showIncrementSelect: boolean;
@@ -561,6 +559,7 @@ export class JoggingStore {
     id: TabType;
     label: string;
     }>;
+    tcpChangeInProgress: boolean;
     // (undocumented)
     readonly tcps: RobotTcp[];
     // (undocumented)
