@@ -158,6 +158,16 @@ export class MotionStreamConnection {
             latestMotionState.standstill
         })
       }
+
+      // handle execute state changes
+      if (
+        this.rapidlyChangingMotionState.execute !==
+        latestMotionState.execute
+      ) {
+        runInAction(() => {
+          this.rapidlyChangingMotionState.execute = latestMotionState.execute
+        })
+      }
     })
     makeAutoObservable(this)
   }
