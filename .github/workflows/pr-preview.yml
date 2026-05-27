@@ -20,9 +20,12 @@ permissions:
   contents: write
   pull-requests: write
 
+  
+# These all push to the same `gh-pages` branch, 
+# so we need to ensure they don't step on each other.
 concurrency:
-  group: pr-preview-${{ github.event.pull_request.number }}
-  cancel-in-progress: true
+  group: pr-preview
+  cancel-in-progress: false
 
 jobs:
   deploy-preview:
