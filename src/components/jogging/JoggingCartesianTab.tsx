@@ -52,7 +52,6 @@ export const JoggingCartesianTab = observer(
         store.setSelectedCartesianMotionType(newMotionType)
     }
 
-
     async function runIncrementalCartesianJog(
       opts: JoggingCartesianOpts,
       increment: DiscreteIncrementOption,

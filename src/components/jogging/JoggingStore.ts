@@ -234,7 +234,11 @@ export class JoggingStore {
       autorun(() => {
         const serverTcp =
           this.jogger.motionStream.rapidlyChangingMotionState.tcp
-        if (!this.tcpChangeInProgress && serverTcp && serverTcp !== this.selectedTcpId) {
+        if (
+          !this.tcpChangeInProgress &&
+          serverTcp &&
+          serverTcp !== this.selectedTcpId
+        ) {
           runInAction(() => {
             this.selectedTcpId = serverTcp
           })
@@ -301,7 +305,6 @@ export class JoggingStore {
     if (this.coordSystemsById[save.selectedCoordSystemId]) {
       this.selectedCoordSystemId = save.selectedCoordSystemId
     }
-
 
     if (this.incrementOptionsById[save.selectedIncrementId]) {
       this.selectedIncrementId = save.selectedIncrementId
@@ -503,7 +506,6 @@ export class JoggingStore {
       })
     }
   }
-
 
   private waitForTcpConfirmation(
     tcpId: string,
