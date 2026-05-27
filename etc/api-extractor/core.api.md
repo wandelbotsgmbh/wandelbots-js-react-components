@@ -466,6 +466,8 @@ export class JoggingStore {
     setSelectedIncrementId(id: IncrementOptionId): void;
     // (undocumented)
     setSelectedOrientation(orientation: OrientationId): void;
+    // @deprecated (undocumented)
+    setSelectedTcpId(id: string): void;
     // (undocumented)
     setVelocityFromSlider(velocity: number, useDegree: boolean): void;
     showCoordSystemSelect: boolean;

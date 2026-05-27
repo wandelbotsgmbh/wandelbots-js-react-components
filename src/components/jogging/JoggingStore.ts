@@ -447,6 +447,16 @@ export class JoggingStore {
   }
 
   /**
+   * @deprecated Use {@link requestTcpChange} instead. This method now delegates
+   * to `requestTcpChange` which properly communicates the TCP change to the server.
+   */
+  setSelectedTcpId(id: string): void {
+    this.requestTcpChange(id).catch((err) => {
+      console.error("Failed to change TCP:", err)
+    })
+  }
+
+  /**
    * Request a TCP change on the server. Sends an InitializeJoggingRequest
    * with the new TCP to the backend via the jogging websocket.
    *
