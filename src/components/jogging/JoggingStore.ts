@@ -455,9 +455,14 @@ export class JoggingStore {
 
     this.tcpChangeInProgress = true
     try {
+      // 1. Tell the jogging endpoint to use the new TCP
       await this.jogger.setOptions({ tcp: tcpId })
 
-      // Wait for server to report the new TCP via state stream (max 10s)
+      // 2. Update the state-stream websocket to report the new TCP's pose
+      //    The state-stream uses ?tcp= to know which TCP's data to return
+      this.updateMotionStreamTcp(tcpId)
+
+      // 3. Wait for server to report the new TCP via state stream (max 10s)
       const confirmed = await this.waitForTcpConfirmation(tcpId, 10_000)
 
       runInAction(() => {
@@ -481,6 +486,21 @@ export class JoggingStore {
         this.tcpChangeInProgress = false
       })
     }
+  }
+
+  /**
+   * Update the motion state-stream websocket URL to report data for the given TCP.
+   * The state-stream uses a `tcp` query parameter to determine which TCP pose to report.
+   */
+  private updateMotionStreamTcp(tcpId: string) {
+    const { motionStream } = this.jogger
+    const nova = motionStream.nova
+    const controllerId = motionStream.controllerId
+    const motionGroupId = motionStream.motionGroupId
+    const newUrl = nova.makeWebsocketURL(
+      `/controllers/${controllerId}/motion-groups/${motionGroupId}/state-stream?tcp=${encodeURIComponent(tcpId)}`,
+    )
+    motionStream.motionStateSocket.changeUrl(newUrl)
   }
 
   private waitForTcpConfirmation(
