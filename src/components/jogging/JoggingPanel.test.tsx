@@ -23,6 +23,7 @@ import {
 import { JoggingCartesianTab } from "./JoggingCartesianTab"
 import { JoggingJointTab } from "./JoggingJointTab"
 import { JoggingStore } from "./JoggingStore"
+import { StreamStateSection } from "./StreamStateSection"
 
 // ---------- helpers ----------
 
@@ -494,6 +495,58 @@ describe("JoggingPanel", () => {
       renderWithI18n(<JoggingJointTab store={store}></JoggingJointTab>)
 
       expect(screen.queryByText("G1")).not.toBeInTheDocument()
+    })
+  })
+
+  // ---- StreamStateSection ----
+
+  describe("StreamStateSection", () => {
+    it("shows 'Ready' when execute is absent", () => {
+      const store = createUr5eStore()
+      store.jogger.motionStream.rapidlyChangingMotionState.execute = undefined
+      renderWithI18n(<StreamStateSection store={store} />)
+      expect(screen.getByTestId("KIND_UNKNOWN")).toBeInTheDocument()
+    })
+
+    it("shows 'Running' when jogging state is RUNNING", () => {
+      const store = createUr5eStore()
+      store.jogger.motionStream.rapidlyChangingMotionState.execute = {
+        joint_position: [],
+        details: {
+          kind: "JOGGING",
+          state: { kind: "RUNNING" },
+        },
+      } as unknown as typeof store.jogger.motionStream.rapidlyChangingMotionState.execute
+      renderWithI18n(<StreamStateSection store={store} />)
+      expect(screen.getByTestId("RUNNING")).toBeInTheDocument()
+    })
+
+    it("shows 'Paused (collision proximity)' when jogging state is PAUSED_NEAR_COLLISION", () => {
+      const store = createUr5eStore()
+      store.jogger.motionStream.rapidlyChangingMotionState.execute = {
+        joint_position: [],
+        details: {
+          kind: "JOGGING",
+          state: { kind: "PAUSED_NEAR_COLLISION", description: "" },
+        },
+      } as unknown as typeof store.jogger.motionStream.rapidlyChangingMotionState.execute
+      renderWithI18n(<StreamStateSection store={store} />)
+      expect(screen.getByTestId("PAUSED_NEAR_COLLISION")).toBeInTheDocument()
+    })
+
+    it("shows 'End of trajectory' when trajectory state is END_OF_TRAJECTORY", () => {
+      const store = createUr5eStore()
+      store.jogger.motionStream.rapidlyChangingMotionState.execute = {
+        joint_position: [],
+        details: {
+          kind: "TRAJECTORY",
+          trajectory: "some-id",
+          location: 1,
+          state: { kind: "END_OF_TRAJECTORY" },
+        },
+      } as unknown as typeof store.jogger.motionStream.rapidlyChangingMotionState.execute
+      renderWithI18n(<StreamStateSection store={store} />)
+      expect(screen.getByTestId("END_OF_TRAJECTORY")).toBeInTheDocument()
     })
   })
 

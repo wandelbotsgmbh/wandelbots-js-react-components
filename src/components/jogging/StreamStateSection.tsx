@@ -44,6 +44,7 @@ export const StreamStateSection = observer(({ store }: Props) => {
           fontSize: "0.75rem", // Smaller than body2
           lineHeight: 1.2,
         }}
+        data-testid={statusStream}
       >
         {t(`Jogging.StreamStateSection.${statusStream}.lb`)}
       </Typography>
