@@ -1,4 +1,5 @@
 import Typography from "@mui/material/Typography"
+import Box from "@mui/material/Box"
 import isEqual from "lodash-es/isEqual.js"
 import { observer } from "mobx-react-lite"
 import { useRef, useState } from "react"
@@ -37,21 +38,29 @@ export const JoggingJointLimitDetector = observer(
     }
 
     return (
-      <Typography
-        data-testid="jogging-joint-limit-detector"
-        aria-label="jogging-joint-limit-detector"
-        color="error"
+      <Box
         sx={{
-          margin: "0.5rem 1rem",
-          textAlign: "center",
-          minHeight: "1.5rem",
-          visibility: jointLimitReachedIndices.length ? "visible" : "hidden",
+          display: "flex",
+          flexDirection: "row",
+          justifyContent: "center",
         }}
       >
-        {t("Jogging.JointLimitsReached.lb", {
-          jointNumbers: jointLimitReachedIndices.map((i) => i + 1).join(", "),
-        })}
-      </Typography>
+        <Typography
+          data-testid="jogging-joint-limit-detector"
+          aria-label="jogging-joint-limit-detector"
+          color="error"
+          variant="body2"
+          sx={{
+            fontSize: "0.75rem",
+            lineHeight: 1.2,
+            visibility: jointLimitReachedIndices.length ? "visible" : "hidden",
+          }}
+        >
+          {t("Jogging.JointLimitsReached.lb", {
+            jointNumbers: jointLimitReachedIndices.map((i) => i + 1).join(", "),
+          })}
+        </Typography>
+      </Box>
     )
   },
 )
