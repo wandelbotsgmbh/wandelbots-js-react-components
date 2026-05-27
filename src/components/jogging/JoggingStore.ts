@@ -13,6 +13,7 @@ import {
   autorun,
   makeAutoObservable,
   runInAction,
+  when,
   type IReactionDisposer,
 } from "mobx"
 import type {
@@ -403,7 +404,6 @@ export class JoggingStore {
     return keyBy(this.tcps, (tcp) => tcp.id)
   }
 
-
   get activeDiscreteIncrement() {
     return this.selectedOrientation === "tool"
       ? undefined
@@ -458,6 +458,7 @@ export class JoggingStore {
     if (tcpId === this.selectedTcpId) return
 
     this.tcpChangeInProgress = true
+    const previousTcp = this.jogger.tcp
     const wasOff = this.jogger.mode !== "jogging"
 
     try {
@@ -481,14 +482,16 @@ export class JoggingStore {
         if (confirmed) {
           this.selectedTcpId = tcpId
         } else {
-          // Timeout: use only what the server actually reports
+          // Timeout: revert jogger tcp and use only what the server reports
+          this.jogger.tcp = previousTcp
           this.selectedTcpId =
             this.jogger.motionStream.rapidlyChangingMotionState.tcp ?? ""
         }
       })
     } catch (err) {
-      // On error, use only what the server actually reports
+      // On error, revert jogger tcp and use only what the server reports
       runInAction(() => {
+        this.jogger.tcp = previousTcp
         this.selectedTcpId =
           this.jogger.motionStream.rapidlyChangingMotionState.tcp ?? ""
       })
@@ -505,18 +508,19 @@ export class JoggingStore {
     timeoutMs: number,
   ): Promise<boolean> {
     return new Promise((resolve) => {
-      const startTime = Date.now()
-      const interval = setInterval(() => {
-        const currentTcp =
-          this.jogger.motionStream.rapidlyChangingMotionState.tcp
-        if (currentTcp === tcpId) {
-          clearInterval(interval)
+      const timeout = setTimeout(() => {
+        disposer()
+        resolve(false)
+      }, timeoutMs)
+
+      const disposer = when(
+        () =>
+          this.jogger.motionStream.rapidlyChangingMotionState.tcp === tcpId,
+        () => {
+          clearTimeout(timeout)
           resolve(true)
-        } else if (Date.now() - startTime >= timeoutMs) {
-          clearInterval(interval)
-          resolve(false)
-        }
-      }, 100)
+        },
+      )
     })
   }
 
