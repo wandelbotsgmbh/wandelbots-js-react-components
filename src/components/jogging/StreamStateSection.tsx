@@ -1,11 +1,11 @@
 import { observer } from "mobx-react-lite"
 import { useTranslation } from "react-i18next"
 
+import { useTheme } from "@mui/material/styles"
 import Box from "@mui/material/Box"
 import Typography from "@mui/material/Typography"
 
-import type JoggingStore from "./JoggingStore"
-import { useTheme } from "@mui/material/styles"
+import type { JoggingStore } from "./JoggingStore"
 
 type Props = {
   store: JoggingStore
