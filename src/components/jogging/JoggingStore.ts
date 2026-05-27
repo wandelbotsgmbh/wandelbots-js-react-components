@@ -514,8 +514,7 @@ export class JoggingStore {
       }, timeoutMs)
 
       const disposer = when(
-        () =>
-          this.jogger.motionStream.rapidlyChangingMotionState.tcp === tcpId,
+        () => this.jogger.motionStream.rapidlyChangingMotionState.tcp === tcpId,
         () => {
           clearTimeout(timeout)
           resolve(true)

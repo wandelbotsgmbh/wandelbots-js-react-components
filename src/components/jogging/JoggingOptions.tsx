@@ -67,9 +67,11 @@ export const JoggingOptions = observer(
           variant="filled"
           displayEmpty={store.tcpChangeInProgress}
           onChange={(event) => {
-            store.requestTcpChange(event.target.value as string).catch((err) => {
-              console.error("Failed to change TCP:", err)
-            })
+            store
+              .requestTcpChange(event.target.value as string)
+              .catch((err) => {
+                console.error("Failed to change TCP:", err)
+              })
           }}
           disabled={store.isLocked || store.tcpChangeInProgress}
           endAdornment={
