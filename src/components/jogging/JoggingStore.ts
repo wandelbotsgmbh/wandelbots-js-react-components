@@ -267,9 +267,13 @@ export class JoggingStore {
   /** Activate the jogger with current settings */
   async activate() {
     if (this.currentTab.id === "cartesian") {
-      // Only update orientation if it differs; TCP is managed via requestTcpChange
-      if (this.jogger.orientation !== this.selectedOrientation) {
-        this.jogger.setOptions({
+      // Ensure jogger has the correct TCP and orientation before starting
+      if (
+        this.jogger.tcp !== this.selectedTcpId ||
+        this.jogger.orientation !== this.selectedOrientation
+      ) {
+        await this.jogger.setOptions({
+          tcp: this.selectedTcpId || undefined,
           orientation: this.selectedOrientation as JoggerOrientation,
         })
       }
@@ -447,22 +451,34 @@ export class JoggingStore {
   }
 
   /**
-   * Request a TCP change on the server. Sets tcpChangeInProgress while waiting
-   * for the server to confirm the change via the motion state stream.
+   * Request a TCP change on the server. Sends an InitializeJoggingRequest
+   * with the new TCP to the backend via the jogging websocket.
+   *
+   * If the jogger is actively jogging, the websocket is reinitialised with the new TCP.
+   * If the jogger is idle, a jogging websocket is briefly opened to communicate the
+   * TCP change, then closed again.
    */
   async requestTcpChange(tcpId: string): Promise<void> {
     if (tcpId === this.selectedTcpId) return
 
     this.tcpChangeInProgress = true
+    const wasOff = this.jogger.mode !== "jogging"
+
     try {
-      // 1. Tell the jogging endpoint to use the new TCP
-      await this.jogger.setOptions({ tcp: tcpId })
+      // Store the new TCP on the jogger
+      this.jogger.tcp = tcpId
 
-      // 2. Update the state-stream websocket to report the new TCP's pose
-      //    The state-stream uses ?tcp= to know which TCP's data to return
-      this.updateMotionStreamTcp(tcpId)
+      if (wasOff) {
+        // Jogger is idle — briefly open a jogging websocket to send
+        // InitializeJoggingRequest with the new TCP, then close it
+        await this.jogger.setJoggingMode("jogging")
+        await this.jogger.setJoggingMode("off")
+      } else {
+        // Jogger is actively jogging — reinitialize with the new TCP
+        await this.jogger.setJoggingMode("jogging", false)
+      }
 
-      // 3. Wait for server to report the new TCP via state stream (max 10s)
+      // Wait for server to confirm the new TCP via state stream (max 10s)
       const confirmed = await this.waitForTcpConfirmation(tcpId, 10_000)
 
       runInAction(() => {
@@ -488,20 +504,6 @@ export class JoggingStore {
     }
   }
 
-  /**
-   * Update the motion state-stream websocket URL to report data for the given TCP.
-   * The state-stream uses a `tcp` query parameter to determine which TCP pose to report.
-   */
-  private updateMotionStreamTcp(tcpId: string) {
-    const { motionStream } = this.jogger
-    const nova = motionStream.nova
-    const controllerId = motionStream.controllerId
-    const motionGroupId = motionStream.motionGroupId
-    const newUrl = nova.makeWebsocketURL(
-      `/controllers/${controllerId}/motion-groups/${motionGroupId}/state-stream?tcp=${encodeURIComponent(tcpId)}`,
-    )
-    motionStream.motionStateSocket.changeUrl(newUrl)
-  }
 
   private waitForTcpConfirmation(
     tcpId: string,
