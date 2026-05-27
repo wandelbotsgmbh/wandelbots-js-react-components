@@ -9,7 +9,12 @@ import {
 import { countBy } from "lodash-es"
 import keyBy from "lodash-es/keyBy.js"
 import uniqueId from "lodash-es/uniqueId.js"
-import { autorun, makeAutoObservable, type IReactionDisposer } from "mobx"
+import {
+  autorun,
+  makeAutoObservable,
+  runInAction,
+  type IReactionDisposer,
+} from "mobx"
 import type {
   JoggerConnection,
   JoggerOrientation,
@@ -61,6 +66,9 @@ export class JoggingStore {
 
   /** Id of selected tool center point from among the options available on the robot */
   selectedTcpId: string = ""
+
+  /** Whether a TCP change request is currently in flight */
+  tcpChangeInProgress: boolean = false
 
   /**
    * Whether the user is jogging in the coordinate system or tool orientation.
@@ -199,7 +207,9 @@ export class JoggingStore {
       }
     }
     this.selectedCoordSystemId = coordSystems[0]?.coordinate_system || "world"
-    this.selectedTcpId = tcps[0]?.id || ""
+    // Only trust the server-reported active TCP; don't guess from defaults
+    this.selectedTcpId =
+      jogger.motionStream.rapidlyChangingMotionState.tcp ?? ""
     this.inverseSolver = inverseSolverValue
     this.jointType =
       motionGroupDescription?.dh_parameters?.[0]?.type ??
@@ -218,6 +228,19 @@ export class JoggingStore {
 
     // Automatically save user settings to local storage when save changes
     this.disposers.push(autorun(() => this.saveToLocalStorage()))
+
+    // Sync server-reported TCP → UI (only when no TCP change is in progress)
+    this.disposers.push(
+      autorun(() => {
+        const serverTcp =
+          this.jogger.motionStream.rapidlyChangingMotionState.tcp
+        if (!this.tcpChangeInProgress && serverTcp && serverTcp !== this.selectedTcpId) {
+          runInAction(() => {
+            this.selectedTcpId = serverTcp
+          })
+        }
+      }),
+    )
 
     // Assign joggingStore to window
     // biome-ignore lint/suspicious/noExplicitAny: pre-biome code
@@ -244,12 +267,9 @@ export class JoggingStore {
   /** Activate the jogger with current settings */
   async activate() {
     if (this.currentTab.id === "cartesian") {
-      if (
-        this.jogger.tcp !== this.selectedTcpId ||
-        this.jogger.orientation !== this.selectedOrientation
-      ) {
+      // Only update orientation if it differs; TCP is managed via requestTcpChange
+      if (this.jogger.orientation !== this.selectedOrientation) {
         this.jogger.setOptions({
-          tcp: this.selectedTcpId,
           orientation: this.selectedOrientation as JoggerOrientation,
         })
       }
@@ -278,9 +298,6 @@ export class JoggingStore {
       this.selectedCoordSystemId = save.selectedCoordSystemId
     }
 
-    if (this.tcpsById[save.selectedTcpId]) {
-      this.selectedTcpId = save.selectedTcpId
-    }
 
     if (this.incrementOptionsById[save.selectedIncrementId]) {
       this.selectedIncrementId = save.selectedIncrementId
@@ -310,7 +327,6 @@ export class JoggingStore {
     return {
       selectedTabId: this.selectedTabId,
       selectedCoordSystemId: this.selectedCoordSystemId,
-      selectedTcpId: this.selectedTcpId,
       selectedOrientation: this.selectedOrientation,
       selectedIncrementId: this.selectedIncrementId,
       selectedCartesianMotionType: this.selectedCartesianMotionType,
@@ -380,6 +396,14 @@ export class JoggingStore {
     return keyBy(this.tcps, (tcp) => tcp.id)
   }
 
+  /**
+   * True when the server has not yet reported an active TCP.
+   * The UI should show a loading/indeterminate state in this case.
+   */
+  get isTcpUnresolved() {
+    return this.tcps.length > 0 && !this.selectedTcpId
+  }
+
   get activeDiscreteIncrement() {
     return this.selectedOrientation === "tool"
       ? undefined
@@ -422,8 +446,61 @@ export class JoggingStore {
     this.selectedCoordSystemId = id
   }
 
-  setSelectedTcpId(id: string) {
-    this.selectedTcpId = id
+  /**
+   * Request a TCP change on the server. Sets tcpChangeInProgress while waiting
+   * for the server to confirm the change via the motion state stream.
+   */
+  async requestTcpChange(tcpId: string): Promise<void> {
+    if (tcpId === this.selectedTcpId) return
+
+    this.tcpChangeInProgress = true
+    try {
+      await this.jogger.setOptions({ tcp: tcpId })
+
+      // Wait for server to report the new TCP via state stream (max 10s)
+      const confirmed = await this.waitForTcpConfirmation(tcpId, 10_000)
+
+      runInAction(() => {
+        if (confirmed) {
+          this.selectedTcpId = tcpId
+        } else {
+          // Timeout: use only what the server actually reports
+          this.selectedTcpId =
+            this.jogger.motionStream.rapidlyChangingMotionState.tcp ?? ""
+        }
+      })
+    } catch (err) {
+      // On error, use only what the server actually reports
+      runInAction(() => {
+        this.selectedTcpId =
+          this.jogger.motionStream.rapidlyChangingMotionState.tcp ?? ""
+      })
+      throw err
+    } finally {
+      runInAction(() => {
+        this.tcpChangeInProgress = false
+      })
+    }
+  }
+
+  private waitForTcpConfirmation(
+    tcpId: string,
+    timeoutMs: number,
+  ): Promise<boolean> {
+    return new Promise((resolve) => {
+      const startTime = Date.now()
+      const interval = setInterval(() => {
+        const currentTcp =
+          this.jogger.motionStream.rapidlyChangingMotionState.tcp
+        if (currentTcp === tcpId) {
+          clearInterval(interval)
+          resolve(true)
+        } else if (Date.now() - startTime >= timeoutMs) {
+          clearInterval(interval)
+          resolve(false)
+        }
+      }, 100)
+    })
   }
 
   setSelectedOrientation(orientation: OrientationId) {

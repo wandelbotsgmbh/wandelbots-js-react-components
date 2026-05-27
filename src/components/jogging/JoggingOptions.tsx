@@ -1,4 +1,6 @@
 import Box from "@mui/material/Box"
+import CircularProgress from "@mui/material/CircularProgress"
+import InputAdornment from "@mui/material/InputAdornment"
 import MenuItem from "@mui/material/MenuItem"
 import { observer } from "mobx-react-lite"
 import { useId } from "react"
@@ -55,6 +57,7 @@ export const JoggingOptions = observer(
     }
 
     if (store.showTcpSelect) {
+      const tcpLoading = store.tcpChangeInProgress || store.isTcpUnresolved
       joggingOptions.push(
         <AdornedSelect
           key="tcp"
@@ -63,10 +66,18 @@ export const JoggingOptions = observer(
           value={store.selectedTcpId}
           size="small"
           variant="filled"
+          displayEmpty={tcpLoading}
           onChange={(event) =>
-            store.setSelectedTcpId(event.target.value as string)
+            store.requestTcpChange(event.target.value as string)
           }
-          disabled={store.isLocked}
+          disabled={store.isLocked || tcpLoading}
+          endAdornment={
+            tcpLoading ? (
+              <InputAdornment position="end">
+                <CircularProgress size={16} />
+              </InputAdornment>
+            ) : undefined
+          }
         >
           {store.tcps.map((tcp) => (
             <MenuItem key={tcp.id} value={tcp.id}>
