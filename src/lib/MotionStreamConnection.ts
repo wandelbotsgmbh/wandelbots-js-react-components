@@ -161,8 +161,7 @@ export class MotionStreamConnection {
 
       // handle execute state changes
       if (
-        this.rapidlyChangingMotionState.execute !==
-        latestMotionState.execute
+        this.rapidlyChangingMotionState.execute !== latestMotionState.execute
       ) {
         runInAction(() => {
           this.rapidlyChangingMotionState.execute = latestMotionState.execute
