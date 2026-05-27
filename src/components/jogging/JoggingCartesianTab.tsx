@@ -27,6 +27,7 @@ import type {
 } from "./JoggingStore"
 import { JoggingToggleButtonGroup } from "./JoggingToggleButtonGroup"
 import { JoggingVelocitySlider } from "./JoggingVelocitySlider"
+import { StreamStateSection } from "./StreamStateSection"
 
 type JoggingCartesianOpts = {
   axis: JoggingAxis
@@ -338,6 +339,9 @@ export const JoggingCartesianTab = observer(
 
         {/* Show message if joint limits reached */}
         <JoggingJointLimitDetector store={store} />
+
+        <Divider />
+        <StreamStateSection store={store} />
 
         {children && <Divider />}
 
