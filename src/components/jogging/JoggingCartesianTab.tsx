@@ -15,7 +15,6 @@ import YAxisIcon from "../../icons/axis-y.svg"
 import ZAxisIcon from "../../icons/axis-z.svg"
 import RotationIcon from "../../icons/rotation.svg"
 import type { Vector3Simple } from "../../lib/JoggerConnection"
-import { useReaction } from "../utils/hooks"
 import { JoggingCartesianAxisControl } from "./JoggingCartesianAxisControl"
 import { JoggingJointLimitDetector } from "./JoggingJointLimitDetector"
 import { JoggingOptions } from "./JoggingOptions"
@@ -52,19 +51,6 @@ export const JoggingCartesianTab = observer(
       if (newMotionType === "translate" || newMotionType === "rotate")
         store.setSelectedCartesianMotionType(newMotionType)
     }
-
-    useReaction(
-      () => [store.selectedCoordSystemId, store.selectedTcpId],
-      () => {
-        store.jogger.motionStream.motionStateSocket.changeUrl(
-          store.jogger.nova.makeWebsocketURL(
-            `/controllers/${store.jogger.motionStream.controllerId}/motion-groups/${store.jogger.motionGroupId}/state-stream?tcp=${store.selectedTcpId}`,
-          ),
-        )
-      },
-      // biome-ignore lint/suspicious/noExplicitAny: pre-biome code
-      { fireImmediately: true } as any,
-    )
 
     async function runIncrementalCartesianJog(
       opts: JoggingCartesianOpts,

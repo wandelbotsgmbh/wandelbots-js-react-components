@@ -1,4 +1,6 @@
 import Box from "@mui/material/Box"
+import CircularProgress from "@mui/material/CircularProgress"
+import InputAdornment from "@mui/material/InputAdornment"
 import MenuItem from "@mui/material/MenuItem"
 import { observer } from "mobx-react-lite"
 import { useId } from "react"
@@ -63,10 +65,22 @@ export const JoggingOptions = observer(
           value={store.selectedTcpId}
           size="small"
           variant="filled"
-          onChange={(event) =>
-            store.setSelectedTcpId(event.target.value as string)
+          displayEmpty={store.tcpChangeInProgress}
+          onChange={(event) => {
+            store
+              .requestTcpChange(event.target.value as string)
+              .catch((err) => {
+                console.error("Failed to change TCP:", err)
+              })
+          }}
+          disabled={store.isLocked || store.tcpChangeInProgress}
+          endAdornment={
+            store.tcpChangeInProgress ? (
+              <InputAdornment position="end">
+                <CircularProgress size={16} />
+              </InputAdornment>
+            ) : undefined
           }
-          disabled={store.isLocked}
         >
           {store.tcps.map((tcp) => (
             <MenuItem key={tcp.id} value={tcp.id}>
