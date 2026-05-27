@@ -17,7 +17,8 @@ export const StreamStateSection = observer(({ store }: Props) => {
   const theme = useTheme()
 
   const statusStream =
-    store.jogger.motionStream.rapidlyChangingMotionState.execute?.details?.state?.kind ?? "KIND_UNKNOWN"
+    store.jogger.motionStream.rapidlyChangingMotionState.execute?.details?.state
+      ?.kind ?? "KIND_UNKNOWN"
 
   return (
     <Box
