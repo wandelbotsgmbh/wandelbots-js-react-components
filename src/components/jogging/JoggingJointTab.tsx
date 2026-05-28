@@ -9,6 +9,7 @@ import { JoggingJointLimitDetector } from "./JoggingJointLimitDetector"
 import { JoggingJointValueControl } from "./JoggingJointValueControl"
 import type { JoggingStore } from "./JoggingStore"
 import { JoggingVelocitySlider } from "./JoggingVelocitySlider"
+import { StreamStateSection } from "./StreamStateSection"
 
 export const JoggingJointTab = observer(
   ({ store, children }: { store: JoggingStore; children?: ReactNode }) => {
@@ -114,6 +115,9 @@ export const JoggingJointTab = observer(
           </Stack>
         </Stack>
         <JoggingJointLimitDetector store={store} />
+
+        <Divider />
+        <StreamStateSection store={store} />
 
         {children && <Divider />}
 
