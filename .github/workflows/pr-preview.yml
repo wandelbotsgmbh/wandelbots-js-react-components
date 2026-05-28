@@ -20,14 +20,21 @@ permissions:
   contents: write
   pull-requests: write
 
+
+# Only run one deployment workflow at a time across all PRs, 
+# to avoid race conditions
 concurrency:
-  group: pr-preview-${{ github.event.pull_request.number }}
-  cancel-in-progress: true
+  group: gh-pages-deploy
+  cancel-in-progress: false
 
 jobs:
   deploy-preview:
     if: github.event.action != 'closed'
     runs-on: ubuntu-latest
+    # Cancel previous builds for the same PR (e.g. rapid pushes),
+    concurrency:
+      group: pr-preview-${{ github.event.pull_request.number }}
+      cancel-in-progress: true
     env:
       HUSKY: 0
     steps:
@@ -41,6 +48,7 @@ jobs:
       - name: Deploy PR preview
         uses: rossjrw/pr-preview-action@v1
         with:
+          wait-for-pages-deployment: true
           source-dir: storybook-static
           preview-branch: gh-pages
           umbrella-dir: pr-preview

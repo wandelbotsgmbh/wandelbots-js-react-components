@@ -10,14 +10,16 @@ test("motion stream", async () => {
   const motionStream = await MotionStreamConnection.open(nova, "0@mock-ur5e")
   expect(motionStream.joints.length).toBe(6)
 
-  // Test changing the url
+  // Test changing the url (e.g. changing response_rate)
   motionStream.motionStateSocket.changeUrl(
-    nova.makeWebsocketURL("/motion-groups/0@mock-ur5e/state-stream?tcp=foo"),
+    nova.makeWebsocketURL(
+      "/motion-groups/0@mock-ur5e/state-stream?response_rate=100",
+    ),
   )
 
   await motionStream.motionStateSocket.firstMessage()
 
   expect(motionStream.motionStateSocket.url).toBe(
-    "wss://mock.example.com/api/v2/cells/cell/motion-groups/0@mock-ur5e/state-stream?tcp=foo",
+    "wss://mock.example.com/api/v2/cells/cell/motion-groups/0@mock-ur5e/state-stream?response_rate=100",
   )
 })

@@ -232,6 +232,16 @@ export class ConnectedMotionGroup {
         })
       }
 
+      // handle active TCP changes (tcp is a string identifier, not a pose)
+      if (
+        latestMotionState.tcp !== undefined &&
+        this.rapidlyChangingMotionState.tcp !== latestMotionState.tcp
+      ) {
+        runInAction(() => {
+          this.rapidlyChangingMotionState.tcp = latestMotionState.tcp
+        })
+      }
+
       // handle standstill changes
       if (
         this.rapidlyChangingMotionState.standstill !==
