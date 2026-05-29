@@ -462,7 +462,8 @@ export class JoggingStore {
    *
    * If the jogger is actively jogging, the websocket is reinitialised with the new TCP.
    * If the jogger is idle, a jogging websocket is briefly opened to communicate the
-   * TCP change, then closed again.
+   * TCP change. The websocket is kept open until the state-stream confirms the
+   * change (or a 1s timeout), to ensure the backend has time to process it.
    */
   async requestTcpChange(tcpId: string): Promise<void> {
     if (tcpId === this.selectedTcpId) return
@@ -476,17 +477,29 @@ export class JoggingStore {
       this.jogger.tcp = tcpId
 
       if (wasOff) {
-        // Jogger is idle — briefly open a jogging websocket to send
-        // InitializeJoggingRequest with the new TCP, then close it
+        // Jogger is idle — open a jogging websocket to send
+        // InitializeJoggingRequest with the new TCP
         await this.jogger.setJoggingMode("jogging")
-        await this.jogger.setJoggingMode("off")
       } else {
         // Jogger is actively jogging — reinitialize with the new TCP
         await this.jogger.setJoggingMode("jogging", false)
       }
 
-      // Wait for server to confirm the new TCP via state stream (max 10s)
-      const confirmed = await this.waitForTcpConfirmation(tcpId, 10_000)
+      // Wait for server to confirm the new TCP via state stream.
+      // Use a short 1s timeout — if not confirmed in time, close the
+      // websocket anyway and continue waiting.
+      let confirmed = await this.waitForTcpConfirmation(tcpId, 1_000)
+
+      // If the jogger was idle, close the websocket now
+      if (wasOff) {
+        await this.jogger.setJoggingMode("off")
+      }
+
+      // If not yet confirmed, wait an additional 2s for the state-stream
+      // to report the change (it may arrive after the jogging websocket closes)
+      if (!confirmed) {
+        confirmed = await this.waitForTcpConfirmation(tcpId, 2_000)
+      }
 
       runInAction(() => {
         if (confirmed) {
@@ -499,7 +512,10 @@ export class JoggingStore {
         }
       })
     } catch (err) {
-      // On error, revert jogger tcp and use only what the server reports
+      // On error, close the websocket if we opened it, revert jogger tcp
+      if (wasOff) {
+        await this.jogger.setJoggingMode("off").catch(() => {})
+      }
       runInAction(() => {
         this.jogger.tcp = previousTcp
         this.selectedTcpId =
