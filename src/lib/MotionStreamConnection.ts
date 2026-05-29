@@ -168,6 +168,26 @@ export class MotionStreamConnection {
             latestMotionState.standstill
         })
       }
+
+      // handle joint limit changes
+      const currentLimits =
+        this.rapidlyChangingMotionState.joint_limit_reached.limit_reached
+      const newLimits = latestMotionState.joint_limit_reached.limit_reached
+      if (currentLimits.some((v, i) => v !== newLimits[i])) {
+        runInAction(() => {
+          this.rapidlyChangingMotionState.joint_limit_reached =
+            latestMotionState.joint_limit_reached
+        })
+      }
+
+      // handle execute state changes
+      if (
+        this.rapidlyChangingMotionState.execute !== latestMotionState.execute
+      ) {
+        runInAction(() => {
+          this.rapidlyChangingMotionState.execute = latestMotionState.execute
+        })
+      }
     })
     makeAutoObservable(this)
   }

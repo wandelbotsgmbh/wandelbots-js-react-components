@@ -9,13 +9,7 @@ import {
 import { countBy } from "lodash-es"
 import keyBy from "lodash-es/keyBy.js"
 import uniqueId from "lodash-es/uniqueId.js"
-import {
-  autorun,
-  makeAutoObservable,
-  runInAction,
-  when,
-  type IReactionDisposer,
-} from "mobx"
+import { autorun, makeAutoObservable, type IReactionDisposer } from "mobx"
 import type {
   JoggerConnection,
   JoggerOrientation,
