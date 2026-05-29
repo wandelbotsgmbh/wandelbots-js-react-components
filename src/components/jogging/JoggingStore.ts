@@ -447,7 +447,7 @@ export class JoggingStore {
   }
 
   /**
-   * @deprecated Use {@link requestTcpChange} instead. This method now delegates
+   * @deprecated Use {@link JoggingStore.requestTcpChange} instead. This method now delegates
    * to `requestTcpChange` which properly communicates the TCP change to the server.
    */
   setSelectedTcpId(id: string): void {
