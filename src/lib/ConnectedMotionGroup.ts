@@ -6,7 +6,7 @@ import type {
   DHParameter,
   MotionGroupDescription,
   MotionGroupState,
-  NovaClient,
+  Nova,
   OperationMode,
   RobotControllerState,
   SafetyStateType,
@@ -37,27 +37,43 @@ const EMPTY_DH_PARAMETER: DHParameter = {
   reverse_rotation_direction: false,
 }
 
+export type ConnectedMotionGroupOptions = {
+  /** Cell id on the Nova instance. Defaults to "cell". */
+  cellId?: string
+}
+
 /**
  * Store representing the current state of a connected motion group.
  * API v2 version, not used yet in the components.
  */
 export class ConnectedMotionGroup {
-  static async connectMultiple(nova: NovaClient, motionGroupIds: string[]) {
+  static async connectMultiple(
+    nova: Nova,
+    motionGroupIds: string[],
+    options: ConnectedMotionGroupOptions = {},
+  ) {
     return Promise.all(
       motionGroupIds.map((motionGroupId) =>
-        ConnectedMotionGroup.connect(nova, motionGroupId),
+        ConnectedMotionGroup.connect(nova, motionGroupId, options),
       ),
     )
   }
 
-  static async connect(nova: NovaClient, motionGroupId: string) {
+  static async connect(
+    nova: Nova,
+    motionGroupId: string,
+    options: ConnectedMotionGroupOptions = {},
+  ) {
+    const cellId = options.cellId ?? "cell"
     const [_motionGroupIndex, controllerId] = motionGroupId.split("@") as [
       string,
       string,
     ]
 
-    const controller =
-      await nova.api.controller.getCurrentRobotControllerState(controllerId)
+    const controller = await nova.api.controller.getCurrentRobotControllerState(
+      cellId,
+      controllerId,
+    )
     const motionGroup = controller?.motion_groups.find(
       (mg) => mg.motion_group === motionGroupId,
     )
@@ -68,7 +84,7 @@ export class ConnectedMotionGroup {
     }
 
     const motionStateSocket = nova.openReconnectingWebsocket(
-      `/controllers/${controllerId}/motion-groups/${motionGroupId}/state-stream`,
+      `/cells/${cellId}/controllers/${controllerId}/motion-groups/${motionGroupId}/state-stream`,
     )
 
     // Wait for the first message to get the initial state
@@ -89,6 +105,7 @@ export class ConnectedMotionGroup {
 
     // Check if robot is virtual or physical
     const config = await nova.api.controller.getRobotController(
+      cellId,
       controller.controller,
     )
     const isVirtual = config.configuration.kind === "VirtualController"
@@ -96,6 +113,7 @@ export class ConnectedMotionGroup {
     // If there's a configured mounting, we need it to show the right
     // position of the robot model
     const description = await nova.api.motionGroup.getMotionGroupDescription(
+      cellId,
       controllerId,
       motionGroup.motion_group,
     )
@@ -113,7 +131,7 @@ export class ConnectedMotionGroup {
 
     // Open the websocket to monitor controller state for e.g. e-stop
     const controllerStateSocket = nova.openReconnectingWebsocket(
-      `/controllers/${controller.controller}/state-stream?response_rate=1000`,
+      `/cells/${cellId}/controllers/${controller.controller}/state-stream?response_rate=1000`,
     )
 
     // Wait for the first message to get the initial state
@@ -134,6 +152,7 @@ export class ConnectedMotionGroup {
 
     return new ConnectedMotionGroup(
       nova,
+      cellId,
       controller,
       motionGroup,
       initialMotionState,
@@ -167,7 +186,8 @@ export class ConnectedMotionGroup {
     "inactive"
 
   constructor(
-    readonly nova: NovaClient,
+    readonly nova: Nova,
+    readonly cellId: string,
     readonly controller: RobotControllerState,
     readonly motionGroup: MotionGroupState,
     readonly initialMotionState: MotionGroupState,
@@ -388,6 +408,7 @@ export class ConnectedMotionGroup {
 
     try {
       await this.nova.api.controller.setDefaultMode(
+        this.cellId,
         this.controllerId,
         "ROBOT_SYSTEM_MODE_MONITOR",
       )
@@ -415,6 +436,7 @@ export class ConnectedMotionGroup {
 
     try {
       await this.nova.api.controller.setDefaultMode(
+        this.cellId,
         this.controllerId,
         "ROBOT_SYSTEM_MODE_CONTROL",
       )

@@ -1,13 +1,13 @@
 import {
-  type AutoReconnectingWebsocket,
   tryParseJson,
   XYZ_TO_VECTOR,
+  type AutoReconnectingWebsocket,
 } from "@wandelbots/nova-js"
 import {
   JointTypeEnum,
   type InitializeMovementResponse,
   type MotionCommand,
-  type NovaClient,
+  type Nova,
   type Pose,
   type StartMovementResponse,
 } from "@wandelbots/nova-js/v2"
@@ -41,6 +41,9 @@ export type JoggerConnectionOptions = {
 
   // If set to "tool", jogging TcpVelocityRequest will use `use_tool_coordinate_system` option
   orientation?: JoggerOrientation
+
+  /** Cell id on the Nova instance. Defaults to "cell". */
+  cellId?: string
 }
 
 // Three modes are supported:
@@ -88,12 +91,18 @@ export class JoggerConnection {
    * @returns Promise resolving to initialized JoggerConnection instance
    */
   static async open(
-    nova: NovaClient,
+    nova: Nova,
     motionGroupId: string,
     options: JoggerConnectionOptions = {},
   ) {
     // Get matching motion stream
-    const motionStream = await MotionStreamConnection.open(nova, motionGroupId)
+    const motionStream = await MotionStreamConnection.open(
+      nova,
+      motionGroupId,
+      {
+        cellId: options.cellId,
+      },
+    )
 
     // Initialize jogger with options
     const jogger = new JoggerConnection(motionStream, options)
@@ -167,6 +176,10 @@ export class JoggerConnection {
 
   get nova() {
     return this.motionStream.nova
+  }
+
+  get cellId() {
+    return this.motionStream.cellId
   }
 
   get numJoints() {
@@ -255,7 +268,7 @@ export class JoggerConnection {
       }, this.timeout)
 
       this.joggingSocket = this.nova.openReconnectingWebsocket(
-        `/controllers/${this.motionStream.controllerId}/execution/jogging`,
+        `/cells/${this.cellId}/controllers/${this.motionStream.controllerId}/execution/jogging`,
       )
       this.joggingSocket.addEventListener("message", (ev: MessageEvent) => {
         const data = tryParseJson(ev.data)
@@ -542,6 +555,7 @@ export class JoggerConnection {
     }
 
     const motionPlanRes = await this.nova.api.trajectoryPlanning.planTrajectory(
+      this.cellId,
       {
         motion_group_setup,
         start_joint_position: currentJoints,
@@ -563,7 +577,7 @@ export class JoggerConnection {
 
     // Execute the planned motion https://portal.wandelbots.io/docs/api/v2/ui/#/operations/executeTrajectory
     this.trajectorySocket = this.nova.openReconnectingWebsocket(
-      `/controllers/${this.motionStream.controllerId}/execution/trajectory`,
+      `/cells/${this.cellId}/controllers/${this.motionStream.controllerId}/execution/trajectory`,
     )
 
     const messageInitializeMovementResponse = (

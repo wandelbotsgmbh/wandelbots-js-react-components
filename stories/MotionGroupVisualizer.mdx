@@ -17,12 +17,12 @@ The differentiation is dependent on the `inverseSolver` and `dhParameters` varia
 Use it together with the `ConnectedMotionGroup` from this library:
 
 ```tsx
-import { NovaClient } from "@wandelbots/nova-js/v2"
+import { Nova } from "@wandelbots/nova-js/v2"
 import { ConnectedMotionGroup } from "@wandelbots/wandelbots-js-react-components/core"
 import { MotionGroupVisualizer } from "@wandelbots/wandelbots-js-react-components/3d"
 
 const instanceUrl = "https://your-nova-instance.com"
-const nova = new NovaClient({ instanceUrl })
+const nova = new Nova({ instanceUrl })
 const connectedMotionGroup = await ConnectedMotionGroup.connect(nova, "0@your-motion-group-id");
 
 const { inverse_solver } = await nova.api.motionGroupModels.getMotionGroupKinematicModel(connectedMotionGroup.modelFromController)

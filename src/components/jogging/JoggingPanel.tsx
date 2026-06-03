@@ -1,10 +1,10 @@
 import MoveIcon from "@mui/icons-material/OpenWith"
 import ShareIcon from "@mui/icons-material/Share"
-import type { SxProps } from "@mui/material/styles"
 import Stack from "@mui/material/Stack"
+import type { SxProps } from "@mui/material/styles"
 import Tab from "@mui/material/Tab"
 import Tabs from "@mui/material/Tabs"
-import { NovaClient } from "@wandelbots/nova-js/v2"
+import { Nova } from "@wandelbots/nova-js/v2"
 import { isString } from "lodash-es"
 import { runInAction } from "mobx"
 import { observer, useLocalObservable } from "mobx-react-lite"
@@ -21,10 +21,12 @@ import { JoggingStore } from "./JoggingStore"
 export type JoggingPanelTabId = "cartesian" | "joint"
 
 export type JoggingPanelProps = {
-  /** Either an existing NovaClient or the base url of a deployed Nova instance */
-  nova: NovaClient | string
+  /** Either an existing Nova client or the base url of a deployed Nova instance */
+  nova: Nova | string
   /** Id of the motion group to move e.g. 0@ur5e */
   motionGroupId: string
+  /** Cell id on the Nova instance. Defaults to "cell". */
+  cellId?: string
   /** Callback with the jogging panel's state store for further customization/config */
   onSetup?: (store: JoggingStore) => void
   /** Any children will go at the bottom of the panel under the default contents */
@@ -46,7 +48,7 @@ export type JoggingPanelProps = {
 export const JoggingPanel = externalizeComponent(
   observer((props: JoggingPanelProps) => {
     const nova = isString(props.nova)
-      ? new NovaClient({ instanceUrl: props.nova })
+      ? new Nova({ instanceUrl: props.nova })
       : props.nova
 
     const state = useLocalObservable(() => ({
@@ -63,7 +65,13 @@ export const JoggingPanel = externalizeComponent(
       try {
         let joggingStore = props.store
         if (!joggingStore) {
-          const jogger = await JoggerConnection.open(nova, props.motionGroupId)
+          const jogger = await JoggerConnection.open(
+            nova,
+            props.motionGroupId,
+            {
+              cellId: props.cellId,
+            },
+          )
           joggingStore = await JoggingStore.loadFor(jogger)
         }
         runInAction(() => {
@@ -85,7 +93,7 @@ export const JoggingPanel = externalizeComponent(
         : () => {
             state.joggingStore?.dispose()
           }
-    }, [props.store, props.nova, props.motionGroupId])
+    }, [props.store, props.nova, props.motionGroupId, props.cellId])
 
     useEffect(() => {
       const store = state.joggingStore

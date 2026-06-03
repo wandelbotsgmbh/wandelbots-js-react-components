@@ -11,17 +11,17 @@ This guide helps you migrate to the latest version of the Wandelbots React Compo
 ### ConnectedMotionGroup
 
 - **Import from this library, not from nova-js**: `ConnectedMotionGroup` must now be imported from `@wandelbots/wandelbots-js-react-components/core` instead of `@wandelbots/nova-js`
-- **Initialization**: Use the static `connect` method with a NovaClient instance and motion group ID
+- **Initialization**: Use the static `connect` method with a `Nova` instance and motion group ID
 
 ```tsx
 // ❌ Old (don't use)
 import { ConnectedMotionGroup } from "@wandelbots/nova-js"
 
 // ✅ New (correct)
-import { NovaClient } from "@wandelbots/nova-js/v2"
+import { Nova } from "@wandelbots/nova-js/v2"
 import { ConnectedMotionGroup } from "@wandelbots/wandelbots-js-react-components/core"
 
-const nova = new NovaClient({ instanceUrl: "https://your-nova-instance.com" })
+const nova = new Nova({ instanceUrl: "https://your-nova-instance.com" })
 const connectedMotionGroup = await ConnectedMotionGroup.connect(nova, "0@your-motion-group-id")
 ```
 
@@ -36,11 +36,11 @@ import { NovaClient } from "@wandelbots/nova-js/v2"
 
 ### Component Props
 
-- **NovaClient or string**: Many components now accept either a `NovaClient` instance or a URL string for the `nova` prop
+- **Nova or string**: Many components now accept either a `Nova` instance or a URL string for the `nova` prop
 - **connectedMotionGroup prop**: Components that work with robots now expect a `ConnectedMotionGroup` instance
 
 ```tsx
-// ✅ Option 1: Pass NovaClient instance
+// ✅ Option 1: Pass Nova instance
 <JoggingPanel nova={nova} motionGroupId="0@ur5e" />
 
 // ✅ Option 2: Pass URL string
@@ -94,11 +94,11 @@ Ensure components receive the correct props:
 
 ```tsx
 // Robot rendering components
-import { NovaClient } from "@wandelbots/nova-js/v2"
+import { Nova } from "@wandelbots/nova-js/v2"
 import { ConnectedMotionGroup } from "@wandelbots/wandelbots-js-react-components/core"
 import { RobotCard, Robot } from "@wandelbots/wandelbots-js-react-components/3d"
 
-const nova = new NovaClient({ instanceUrl: "https://your-instance.com" })
+const nova = new Nova({ instanceUrl: "https://your-instance.com" })
 const connectedMotionGroup = await ConnectedMotionGroup.connect(nova, "0@ur5e")
 
 // Use with 3D components
@@ -108,6 +108,30 @@ const connectedMotionGroup = await ConnectedMotionGroup.connect(nova, "0@ur5e")
 // Jogging components
 <JoggingPanel nova={nova} motionGroupId="0@ur5e" />
 ```
+
+## Breaking Changes from 5.x to 6.x (`Nova` replaces `NovaClient`)
+
+This library now uses the new `Nova` client from `@wandelbots/nova-js/v2`. The deprecated `NovaClient` baked in a cell id and exposed cell-scoped API methods; `Nova` is cell-agnostic and every cell-scoped API method now takes the cell id as its first argument.
+
+Components and helpers that previously accepted a `NovaClient` now accept a `Nova` instance (or a URL string) and an optional `cellId` (defaulting to `"cell"`).
+
+```tsx
+// Before
+import { NovaClient } from "@wandelbots/nova-js/v2"
+const nova = new NovaClient({ instanceUrl: "https://your-nova-instance.com" })
+<JoggingPanel nova={nova} motionGroupId="0@ur5e" />
+
+// After
+import { Nova } from "@wandelbots/nova-js/v2"
+const nova = new Nova({ instanceUrl: "https://your-nova-instance.com" })
+<JoggingPanel nova={nova} motionGroupId="0@ur5e" cellId="cell" />
+```
+
+Affected helpers (`cellId` accepted as an option):
+- `ConnectedMotionGroup.connect(nova, motionGroupId, { cellId })`
+- `ConnectedMotionGroup.connectMultiple(nova, motionGroupIds, { cellId })`
+- `MotionStreamConnection.open(nova, motionGroupId, { cellId })`
+- `JoggerConnection.open(nova, motionGroupId, { cellId, ... })`
 
 ## Breaking Changes from 4.x (API V1 & V2 both supported) to 5.x (API V2 only)
 

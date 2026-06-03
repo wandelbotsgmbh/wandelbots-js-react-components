@@ -1,6 +1,6 @@
 import { Canvas } from "@react-three/fiber"
 import type { StoryObj } from "@storybook/react-vite"
-import { NovaClient, type KinematicModel } from "@wandelbots/nova-js/v2"
+import { Nova, type KinematicModel } from "@wandelbots/nova-js/v2"
 import { useEffect, useState } from "react"
 import { expect, fn, waitFor } from "storybook/test"
 import {
@@ -29,7 +29,7 @@ function MotionGroupVisualizerScene(
 
   const instanceUrl =
     import.meta.env.WANDELAPI_BASE_URL || "https://mock.example.com"
-  const nova = new NovaClient({ instanceUrl })
+  const nova = new Nova({ instanceUrl })
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: pre-biome code
   useEffect(() => {

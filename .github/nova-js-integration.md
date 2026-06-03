@@ -4,14 +4,14 @@ This document explains how React components integrate with the `@wandelbots/nova
 
 ## Core Nova-JS Concepts
 
-### NovaClient
+### Nova
 
 The main client for communicating with Wandelbots Nova instances.
 
 ```typescript
-import { NovaClient } from "@wandelbots/nova-js/v2"
+import { Nova } from "@wandelbots/nova-js/v2"
 
-const nova = new NovaClient({
+const nova = new Nova({
   instanceUrl: "https://your-nova-instance.com",
   // Optional configuration
 })
@@ -35,17 +35,17 @@ const connectedMotionGroup = ConnectedMotionGroup.connect(nova, "0@ur5e")
 
 ### 1. Accepting Nova Client or URL
 
-Most components accept either a `NovaClient` instance or a URL string:
+Most components accept either a `Nova` instance or a URL string:
 
 ```typescript
 export type ComponentProps = {
-  nova: NovaClient | string
+  nova: Nova | string
   // other props...
 }
 
 // Inside component:
 const nova = isString(props.nova)
-  ? new NovaClient({ instanceUrl: props.nova })
+  ? new Nova({ instanceUrl: props.nova })
   : props.nova
 ```
 
@@ -60,7 +60,7 @@ const nova = isString(props.nova)
 Components that control or visualize robots use ConnectedMotionGroup:
 
 ```typescript
-import { NovaClient } from "@wandelbots/nova-js/v2"
+import { Nova } from "@wandelbots/nova-js/v2"
 import { ConnectedMotionGroup } from "@wandelbots/wandelbots-js-react-components/core"
 
 // JoggingPanel internally:
@@ -190,16 +190,16 @@ useEffect(() => {
 ### Connection Reuse
 
 ```typescript
-// Don't create multiple NovaClient instances
+// Don't create multiple Nova instances
 // ❌ Bad
 const Component1 = () => {
-  const nova = new NovaClient({ instanceUrl: url })
+  const nova = new Nova({ instanceUrl: url })
   // ...
 }
 
 // ✅ Good - Share client instance
 const App = () => {
-  const nova = useMemo(() => new NovaClient({ instanceUrl: url }), [url])
+  const nova = useMemo(() => new Nova({ instanceUrl: url }), [url])
   return (
     <NovaProvider value={nova}>
       <Component1 />
@@ -299,14 +299,14 @@ interface Pose {
 
 ## Testing with Nova-JS
 
-### Mock NovaClient
+### Mock Nova
 
 ```typescript
 const mockNova = {
   getMotionGroup: jest.fn().mockResolvedValue(mockMotionGroup),
   connectMotionGroup: jest.fn().mockReturnValue(mockConnectedMotionGroup),
   // ... other methods
-} as jest.Mocked<NovaClient>
+} as jest.Mocked<Nova>
 ```
 
 ### Mock ConnectedMotionGroup

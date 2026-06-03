@@ -1,6 +1,6 @@
 import { Canvas } from "@react-three/fiber"
 import type { StoryObj } from "@storybook/react-vite"
-import { NovaClient } from "@wandelbots/nova-js/v2"
+import { Nova } from "@wandelbots/nova-js/v2"
 import { useEffect, useState } from "react"
 import { expect, fn, waitFor } from "storybook/test"
 import { PresetEnvironment, Robot } from "../../src"
@@ -21,7 +21,7 @@ function RobotScene(
   const [connectedMotionGroup, setConnectedMotionGroup] =
     useState<ConnectedMotionGroup>()
 
-  const nova = new NovaClient({
+  const nova = new Nova({
     instanceUrl:
       import.meta.env.WANDELAPI_BASE_URL || "https://mock.example.com",
   })

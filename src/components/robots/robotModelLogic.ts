@@ -1,4 +1,4 @@
-import { NovaClient } from "@wandelbots/nova-js/v2"
+import { Nova } from "@wandelbots/nova-js/v2"
 import type { Object3D } from "three"
 import type { GLTF } from "three-stdlib"
 
@@ -55,7 +55,7 @@ export async function defaultGetModel(
   // Create the promise and cache it immediately to prevent duplicate calls
   const modelPromise = (async () => {
     const instanceUrl = instanceUrlProp || import.meta.env.WANDELAPI_BASE_URL
-    const nova = new NovaClient({ instanceUrl })
+    const nova = new Nova({ instanceUrl })
 
     // Configure axios to handle binary responses for GLB files
     // biome-ignore lint/suspicious/noExplicitAny: pre-biome code

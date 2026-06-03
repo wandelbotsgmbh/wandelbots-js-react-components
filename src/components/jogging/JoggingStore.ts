@@ -154,18 +154,20 @@ export class JoggingStore {
    * from the backend
    */
   static async loadFor(jogger: JoggerConnection) {
-    const { nova } = jogger
+    const { nova, cellId } = jogger
 
     // Find out what TCPs this motion group has (we need it for jogging)
     const [coordinatesystems, description] = await Promise.all([
       // Fetch coord systems so user can select between them
       nova.api.controller.listCoordinateSystems(
+        cellId,
         jogger.motionStream.controllerId,
         "ROTATION_VECTOR",
       ),
 
       // Same for TCPs and other info from description
       nova.api.motionGroup.getMotionGroupDescription(
+        cellId,
         jogger.motionStream.controllerId,
         jogger.motionGroupId,
       ),

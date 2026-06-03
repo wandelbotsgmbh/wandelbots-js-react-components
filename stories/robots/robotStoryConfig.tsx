@@ -1,6 +1,6 @@
 // sharedStoryConfig.tsx
 import type { Meta, StoryObj } from "@storybook/react-vite"
-import { NovaClient, type DHParameter } from "@wandelbots/nova-js/v2"
+import { Nova, type DHParameter } from "@wandelbots/nova-js/v2"
 import { useEffect } from "react"
 import { expect, fn, waitFor } from "storybook/test"
 import { SupportedRobot } from "../../src"
@@ -17,7 +17,7 @@ export async function getDHParams(
     instanceUrl !== "undefined" &&
     typeof instanceUrl === "string"
   ) {
-    const nova = new NovaClient({ instanceUrl })
+    const nova = new Nova({ instanceUrl })
 
     try {
       const apiResult =
@@ -213,7 +213,7 @@ export async function getModel(modelFromController: string): Promise<string> {
       instanceUrl !== "undefined" &&
       typeof instanceUrl === "string"
     ) {
-      const nova = new NovaClient({ instanceUrl })
+      const nova = new Nova({ instanceUrl })
 
       // Configure axios to handle binary responses for GLB files
       // biome-ignore lint/suspicious/noExplicitAny: accessing internal axios instance
