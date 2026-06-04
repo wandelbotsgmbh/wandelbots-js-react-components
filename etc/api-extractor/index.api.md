@@ -427,7 +427,7 @@ export const JoggingPanel: ((props: JoggingPanelProps) => JSX.Element) & {
 
 // @public (undocumented)
 export type JoggingPanelProps = {
-    nova: Nova | string;
+    nova: AnyNovaClient | string;
     motionGroupId: string;
     cellId?: string;
     onSetup?: (store: JoggingStore) => void;
