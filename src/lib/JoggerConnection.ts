@@ -7,13 +7,13 @@ import {
   JointTypeEnum,
   type InitializeMovementResponse,
   type MotionCommand,
-  type Nova,
   type Pose,
   type StartMovementResponse,
 } from "@wandelbots/nova-js/v2"
 import { when } from "mobx"
 import { Vector3 } from "three/src/math/Vector3.js"
 import { MotionStreamConnection } from "./MotionStreamConnection"
+import type { AnyNovaClient } from "./novaCompat"
 
 export type Vector3Simple = [number, number, number]
 
@@ -91,7 +91,7 @@ export class JoggerConnection {
    * @returns Promise resolving to initialized JoggerConnection instance
    */
   static async open(
-    nova: Nova,
+    nova: AnyNovaClient,
     motionGroupId: string,
     options: JoggerConnectionOptions = {},
   ) {

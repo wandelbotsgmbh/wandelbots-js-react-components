@@ -15,6 +15,7 @@ import {
   tcpMotionEqual,
   unwrapRotationVector,
 } from "./motionStateUpdate"
+import { type AnyNovaClient, asNovaInstance } from "./novaCompat"
 
 const MOTION_DELTA_THRESHOLD = 0.0001
 
@@ -28,10 +29,11 @@ export type MotionStreamConnectionOptions = {
 
 export class MotionStreamConnection {
   static async open(
-    nova: Nova,
+    novaClient: AnyNovaClient,
     motionGroupId: string,
     options: MotionStreamConnectionOptions = {},
   ) {
+    const nova = asNovaInstance(novaClient)
     const cellId = options.cellId ?? "cell"
     const [_motionGroupIndex, controllerId] = motionGroupId.split("@") as [
       string,

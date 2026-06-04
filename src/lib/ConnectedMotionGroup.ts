@@ -15,6 +15,7 @@ import { makeAutoObservable, runInAction } from "mobx"
 import * as THREE from "three"
 import type { Vector3Simple } from "./JoggerConnection"
 import { jointValuesEqual, tcpMotionEqual } from "./motionStateUpdate"
+import { asNovaInstance, type AnyNovaClient } from "./novaCompat"
 
 const MOTION_DELTA_THRESHOLD = 0.0001
 
@@ -48,7 +49,7 @@ export type ConnectedMotionGroupOptions = {
  */
 export class ConnectedMotionGroup {
   static async connectMultiple(
-    nova: Nova,
+    nova: AnyNovaClient,
     motionGroupIds: string[],
     options: ConnectedMotionGroupOptions = {},
   ) {
@@ -60,10 +61,11 @@ export class ConnectedMotionGroup {
   }
 
   static async connect(
-    nova: Nova,
+    novaClient: AnyNovaClient,
     motionGroupId: string,
     options: ConnectedMotionGroupOptions = {},
   ) {
+    const nova = asNovaInstance(novaClient)
     const cellId = options.cellId ?? "cell"
     const [_motionGroupIndex, controllerId] = motionGroupId.split("@") as [
       string,
