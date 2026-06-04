@@ -10,13 +10,13 @@ It can be used to quickly create a jogging panel to control a robot. It `automat
 
 ```tsx
 import { Nova } from "@wandelbots/nova-js/v2"
-import { ConnectedMotionGroup } from "@wandelbots/wandelbots-js-react-components/core"
 
-const connectedMotionGroup = ConnectedMotionGroup.connect(nova, motionGroupId)
+const nova = new Nova({ instanceUrl: "https://your-nova-instance.com" })
 
 <JoggingPanel
-  nova={wandelApp.nova}
-  motionGroupId={connectedMotionGroup.motionGroupId}
+  nova={nova}
+  motionGroupId="0@ur5e"
+  cellId="my-cell"
 />
 ```
 

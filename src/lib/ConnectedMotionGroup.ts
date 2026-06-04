@@ -154,7 +154,6 @@ export class ConnectedMotionGroup {
 
     return new ConnectedMotionGroup(
       nova,
-      cellId,
       controller,
       motionGroup,
       initialMotionState,
@@ -164,6 +163,7 @@ export class ConnectedMotionGroup {
       description,
       initialControllerState,
       controllerStateSocket,
+      cellId,
     )
   }
 
@@ -192,7 +192,6 @@ export class ConnectedMotionGroup {
 
   constructor(
     nova: AnyNovaClient,
-    readonly cellId: string,
     readonly controller: RobotControllerState,
     readonly motionGroup: MotionGroupState,
     readonly initialMotionState: MotionGroupState,
@@ -202,6 +201,7 @@ export class ConnectedMotionGroup {
     readonly description: MotionGroupDescription,
     readonly initialControllerState: RobotControllerState,
     readonly controllerStateSocket: AutoReconnectingWebsocket,
+    readonly cellId: string = "cell",
   ) {
     this.nova = asNovaInstance(nova)
     this.rapidlyChangingMotionState = initialMotionState
