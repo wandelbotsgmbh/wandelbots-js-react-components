@@ -190,7 +190,7 @@ useEffect(() => {
 ### Connection Reuse
 
 ```typescript
-// Don't create multiple Nova instances
+// Don't create multiple Nova clients
 // ❌ Bad
 const Component1 = () => {
   const nova = new Nova({ instanceUrl: url })
