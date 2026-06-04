@@ -123,7 +123,7 @@ export function CollisionSceneRenderer(input: CollisionSceneRendererProps): JSX.
 
 // @public
 export class ConnectedMotionGroup {
-    constructor(nova: AnyNovaClient, cellId: string, controller: RobotControllerState, motionGroup: MotionGroupState, initialMotionState: MotionGroupState, motionStateSocket: AutoReconnectingWebsocket, isVirtual: boolean, tcps: RobotTcpLike[], description: MotionGroupDescription, initialControllerState: RobotControllerState, controllerStateSocket: AutoReconnectingWebsocket);
+    constructor(nova: AnyNovaClient, controller: RobotControllerState, motionGroup: MotionGroupState, initialMotionState: MotionGroupState, motionStateSocket: AutoReconnectingWebsocket, isVirtual: boolean, tcps: RobotTcpLike[], description: MotionGroupDescription, initialControllerState: RobotControllerState, controllerStateSocket: AutoReconnectingWebsocket, cellId?: string);
     // (undocumented)
     activate(): Promise<void>;
     activationState: "inactive" | "activating" | "deactivating" | "active";

@@ -187,7 +187,7 @@ export class ConnectedMotionGroup {
   activationState: "inactive" | "activating" | "deactivating" | "active" =
     "inactive"
 
-  /** Normalized instance-level Nova client (see {@link asNovaInstance}) */
+  /** Normalized instance-level Nova client (see `asNovaInstance`) */
   readonly nova: Nova
 
   constructor(
