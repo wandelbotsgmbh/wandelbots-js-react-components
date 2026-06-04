@@ -1,1 +1,0 @@
-import{r as o,j as n}from"./iframe-BtF3oR4V.js";import{S as t}from"./SvgIcon-DDQQRVaT.js";function p(e,i){function r(a,m){return n.jsx(t,{"data-testid":void 0,ref:m,...a,children:e})}return r.muiName=t.muiName,o.memo(o.forwardRef(r))}export{p as c};
