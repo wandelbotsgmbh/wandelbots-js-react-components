@@ -20,8 +20,8 @@ importers:
         specifier: ^8.27.0
         version: 8.27.1(@emotion/react@11.14.0(@types/react@19.2.7)(react@19.2.3))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.7)(react@19.2.3))(@types/react@19.2.7)(react@19.2.3))(@mui/material@7.3.7(@emotion/react@11.14.0(@types/react@19.2.7)(react@19.2.3))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.7)(react@19.2.3))(@types/react@19.2.7)(react@19.2.3))(@types/react@19.2.7)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(@mui/system@7.3.7(@emotion/react@11.14.0(@types/react@19.2.7)(react@19.2.3))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.7)(react@19.2.3))(@types/react@19.2.7)(react@19.2.3))(@types/react@19.2.7)(react@19.2.3))(@types/react@19.2.7)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       '@wandelbots/nova-js':
-        specifier: 3.9.0-pr.280.3210f95
-        version: 3.9.0-pr.280.3210f95
+        specifier: 3.10.0-pr.295.cb733a7
+        version: 3.10.0-pr.295.cb733a7
       axios:
         specifier: ^1.15.0
         version: 1.15.0
@@ -2733,8 +2733,8 @@ packages:
   '@wandelbots/nova-api@26.4.0':
     resolution: {integrity: sha512-8xEP0JdUTZTvJpXPi9egeJ4z7AqqSkTpTaJrP82mbzxDckGT0jPpnX2cF7jN53oB/ziqE3BcthPgJiOKGjFRKg==}
 
-  '@wandelbots/nova-js@3.9.0-pr.280.3210f95':
-    resolution: {integrity: sha512-vt5Ve3JagedcObFgeLhpJ+70vGGnuG0MkrsXrhk9iYUUPkr2/mB1gYaG99w1T2egisU1akXHKNtNbbQMG45gNQ==}
+  '@wandelbots/nova-js@3.10.0-pr.295.cb733a7':
+    resolution: {integrity: sha512-IF4PNYlkHHrwUAOQh5Sk+f1SQ8dEf7lfPQNFp587bpvcAz2VcRt5QCGtXz8Z7GZEBQXZy/gZVpamJcbdtd7SUg==}
 
   '@webgpu/types@0.1.68':
     resolution: {integrity: sha512-3ab1B59Ojb6RwjOspYLsTpCzbNB3ZaamIAxBMmvnNkiDoLTZUOBXZ9p5nAYVEkQlDdf6qAZWi1pqj9+ypiqznA==}
@@ -9861,7 +9861,7 @@ snapshots:
       - debug
       - supports-color
 
-  '@wandelbots/nova-js@3.9.0-pr.280.3210f95':
+  '@wandelbots/nova-js@3.10.0-pr.295.cb733a7':
     dependencies:
       '@auth0/auth0-spa-js': 2.19.0
       '@types/three': 0.183.1
@@ -14498,13 +14498,14 @@ snapshots:
 
   wait-on@7.2.0:
     dependencies:
-      axios: 1.15.0
+      axios: 1.16.1
       joi: 17.13.3
       lodash: 4.17.23
       minimist: 1.2.8
       rxjs: 7.8.2
     transitivePeerDependencies:
       - debug
+      - supports-color
 
   wait-on@9.0.3:
     dependencies:
