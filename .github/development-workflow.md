@@ -216,7 +216,7 @@ pnpm test
 const mockNova = {
   getMotionGroup: jest.fn(),
   connectMotionGroup: jest.fn(),
-} as jest.Mocked<NovaClient>
+} as jest.Mocked<Nova>
 
 // Test component with mock
 render(
@@ -385,7 +385,7 @@ const MyComponent = observer(() => {
 
 ```typescript
 // Enable debug logging
-const nova = new NovaClient({
+const nova = new Nova({
   instanceUrl: url,
   debug: true,
 })

@@ -5,7 +5,7 @@ import {
 import type {
   MotionGroupDescription,
   MotionGroupState,
-  NovaClient,
+  Nova,
   RobotControllerState,
 } from "@wandelbots/nova-js/v2"
 import { makeAutoObservable, runInAction } from "mobx"
@@ -15,21 +15,35 @@ import {
   tcpMotionEqual,
   unwrapRotationVector,
 } from "./motionStateUpdate"
+import { type AnyNovaClient, asNovaInstance } from "./novaCompat"
 
 const MOTION_DELTA_THRESHOLD = 0.0001
 
 /**
  * Store representing the current state of a connected motion group.
  */
+export type MotionStreamConnectionOptions = {
+  /** Cell id on the Nova instance. Defaults to "cell". */
+  cellId?: string
+}
+
 export class MotionStreamConnection {
-  static async open(nova: NovaClient, motionGroupId: string) {
+  static async open(
+    novaClient: AnyNovaClient,
+    motionGroupId: string,
+    options: MotionStreamConnectionOptions = {},
+  ) {
+    const nova = asNovaInstance(novaClient)
+    const cellId = options.cellId ?? "cell"
     const [_motionGroupIndex, controllerId] = motionGroupId.split("@") as [
       string,
       string,
     ]
 
-    const controller =
-      await nova.api.controller.getCurrentRobotControllerState(controllerId)
+    const controller = await nova.api.controller.getCurrentRobotControllerState(
+      cellId,
+      controllerId,
+    )
     const motionGroup = controller?.motion_groups.find(
       (mg: MotionGroupState) => mg.motion_group === motionGroupId,
     )
@@ -40,7 +54,7 @@ export class MotionStreamConnection {
     }
 
     const motionStateSocket = nova.openReconnectingWebsocket(
-      `/controllers/${controllerId}/motion-groups/${motionGroupId}/state-stream`,
+      `/cells/${cellId}/controllers/${controllerId}/motion-groups/${motionGroupId}/state-stream`,
     )
 
     // Wait for the first message to get the initial state
@@ -61,6 +75,7 @@ export class MotionStreamConnection {
 
     // Get the motion group description for later usage in jogging
     const description = await nova.api.motionGroup.getMotionGroupDescription(
+      cellId,
       controllerId,
       motionGroup.motion_group,
     )
@@ -72,6 +87,7 @@ export class MotionStreamConnection {
       description,
       initialMotionState,
       motionStateSocket,
+      cellId,
     )
   }
 
@@ -79,14 +95,19 @@ export class MotionStreamConnection {
   // using animation frames
   rapidlyChangingMotionState: MotionGroupState
 
+  /** Normalized instance-level Nova client (see `asNovaInstance`) */
+  readonly nova: Nova
+
   constructor(
-    readonly nova: NovaClient,
+    nova: AnyNovaClient,
     readonly controller: RobotControllerState,
     readonly motionGroup: MotionGroupState,
     readonly description: MotionGroupDescription,
     readonly initialMotionState: MotionGroupState,
     readonly motionStateSocket: AutoReconnectingWebsocket,
+    readonly cellId: string = "cell",
   ) {
+    this.nova = asNovaInstance(nova)
     this.rapidlyChangingMotionState = initialMotionState
 
     motionStateSocket.addEventListener("message", (event) => {

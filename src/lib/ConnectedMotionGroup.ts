@@ -6,7 +6,7 @@ import type {
   DHParameter,
   MotionGroupDescription,
   MotionGroupState,
-  NovaClient,
+  Nova,
   OperationMode,
   RobotControllerState,
   SafetyStateType,
@@ -15,6 +15,7 @@ import { makeAutoObservable, runInAction } from "mobx"
 import * as THREE from "three"
 import type { Vector3Simple } from "./JoggerConnection"
 import { jointValuesEqual, tcpMotionEqual } from "./motionStateUpdate"
+import { asNovaInstance, type AnyNovaClient } from "./novaCompat"
 
 const MOTION_DELTA_THRESHOLD = 0.0001
 
@@ -37,27 +38,44 @@ const EMPTY_DH_PARAMETER: DHParameter = {
   reverse_rotation_direction: false,
 }
 
+export type ConnectedMotionGroupOptions = {
+  /** Cell id on the Nova instance. Defaults to "cell". */
+  cellId?: string
+}
+
 /**
  * Store representing the current state of a connected motion group.
  * API v2 version, not used yet in the components.
  */
 export class ConnectedMotionGroup {
-  static async connectMultiple(nova: NovaClient, motionGroupIds: string[]) {
+  static async connectMultiple(
+    nova: AnyNovaClient,
+    motionGroupIds: string[],
+    options: ConnectedMotionGroupOptions = {},
+  ) {
     return Promise.all(
       motionGroupIds.map((motionGroupId) =>
-        ConnectedMotionGroup.connect(nova, motionGroupId),
+        ConnectedMotionGroup.connect(nova, motionGroupId, options),
       ),
     )
   }
 
-  static async connect(nova: NovaClient, motionGroupId: string) {
+  static async connect(
+    novaClient: AnyNovaClient,
+    motionGroupId: string,
+    options: ConnectedMotionGroupOptions = {},
+  ) {
+    const nova = asNovaInstance(novaClient)
+    const cellId = options.cellId ?? "cell"
     const [_motionGroupIndex, controllerId] = motionGroupId.split("@") as [
       string,
       string,
     ]
 
-    const controller =
-      await nova.api.controller.getCurrentRobotControllerState(controllerId)
+    const controller = await nova.api.controller.getCurrentRobotControllerState(
+      cellId,
+      controllerId,
+    )
     const motionGroup = controller?.motion_groups.find(
       (mg) => mg.motion_group === motionGroupId,
     )
@@ -68,7 +86,7 @@ export class ConnectedMotionGroup {
     }
 
     const motionStateSocket = nova.openReconnectingWebsocket(
-      `/controllers/${controllerId}/motion-groups/${motionGroupId}/state-stream`,
+      `/cells/${cellId}/controllers/${controllerId}/motion-groups/${motionGroupId}/state-stream`,
     )
 
     // Wait for the first message to get the initial state
@@ -89,6 +107,7 @@ export class ConnectedMotionGroup {
 
     // Check if robot is virtual or physical
     const config = await nova.api.controller.getRobotController(
+      cellId,
       controller.controller,
     )
     const isVirtual = config.configuration.kind === "VirtualController"
@@ -96,6 +115,7 @@ export class ConnectedMotionGroup {
     // If there's a configured mounting, we need it to show the right
     // position of the robot model
     const description = await nova.api.motionGroup.getMotionGroupDescription(
+      cellId,
       controllerId,
       motionGroup.motion_group,
     )
@@ -113,7 +133,7 @@ export class ConnectedMotionGroup {
 
     // Open the websocket to monitor controller state for e.g. e-stop
     const controllerStateSocket = nova.openReconnectingWebsocket(
-      `/controllers/${controller.controller}/state-stream?response_rate=1000`,
+      `/cells/${cellId}/controllers/${controller.controller}/state-stream?response_rate=1000`,
     )
 
     // Wait for the first message to get the initial state
@@ -143,6 +163,7 @@ export class ConnectedMotionGroup {
       description,
       initialControllerState,
       controllerStateSocket,
+      cellId,
     )
   }
 
@@ -166,8 +187,11 @@ export class ConnectedMotionGroup {
   activationState: "inactive" | "activating" | "deactivating" | "active" =
     "inactive"
 
+  /** Normalized instance-level Nova client (see `asNovaInstance`) */
+  readonly nova: Nova
+
   constructor(
-    readonly nova: NovaClient,
+    nova: AnyNovaClient,
     readonly controller: RobotControllerState,
     readonly motionGroup: MotionGroupState,
     readonly initialMotionState: MotionGroupState,
@@ -177,7 +201,9 @@ export class ConnectedMotionGroup {
     readonly description: MotionGroupDescription,
     readonly initialControllerState: RobotControllerState,
     readonly controllerStateSocket: AutoReconnectingWebsocket,
+    readonly cellId: string = "cell",
   ) {
+    this.nova = asNovaInstance(nova)
     this.rapidlyChangingMotionState = initialMotionState
     this.controllerState = initialControllerState
 
@@ -388,6 +414,7 @@ export class ConnectedMotionGroup {
 
     try {
       await this.nova.api.controller.setDefaultMode(
+        this.cellId,
         this.controllerId,
         "ROBOT_SYSTEM_MODE_MONITOR",
       )
@@ -415,6 +442,7 @@ export class ConnectedMotionGroup {
 
     try {
       await this.nova.api.controller.setDefaultMode(
+        this.cellId,
         this.controllerId,
         "ROBOT_SYSTEM_MODE_CONTROL",
       )

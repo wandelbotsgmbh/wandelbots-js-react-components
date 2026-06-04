@@ -196,7 +196,7 @@ Styling system for consistent robotics applications.
 
 Components integrate with the Wandelbots Nova ecosystem:
 
-- **NovaClient Integration** - Components accept either `NovaClient` instances or URL strings
+- **NovaClient Integration** - Components accept either `Nova` instances or URL strings
 - **Real-time Updates** - WebSocket connections for live robot state updates
 - **Motion Group Management** - Direct integration with `ConnectedMotionGroup` objects
 - **State Synchronization** - Automatic state management with MobX reactivity

@@ -1,4 +1,4 @@
-import { NovaClient } from "@wandelbots/nova-js/v2"
+import { Nova } from "@wandelbots/nova-js/v2"
 import { readFile } from "node:fs/promises"
 import { dedent } from "ts-dedent"
 import { createUnplugin } from "unplugin"
@@ -29,7 +29,7 @@ export const generateRobotStories = async () => {
     const cellId = process.env.CELL_ID
 
     if (baseUrl) {
-      const nova = new NovaClient({ instanceUrl: baseUrl })
+      const nova = new Nova({ instanceUrl: baseUrl })
       modelNames = await nova.api.motionGroupModels.getMotionGroupModels()
     } else {
       console.warn(

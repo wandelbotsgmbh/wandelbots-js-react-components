@@ -20,7 +20,7 @@ This file provides essential context for AI assistants working with the Wandelbo
 
 ## Architecture Principles
 
-1. **Loose Coupling**: Components accept NovaClient or URL strings for flexibility
+1. **Loose Coupling**: Components accept Nova or URL strings for flexibility
 2. **Error Boundaries**: All components wrapped with `externalizeComponent`
 3. **Reactivity**: MobX observers for real-time robotics data
 4. **Type Safety**: Full TypeScript coverage with strict types
@@ -65,7 +65,7 @@ export const Component = externalizeComponent(
 
 ```typescript
 const nova = isString(props.nova)
-  ? new NovaClient({ instanceUrl: props.nova })
+  ? new Nova({ instanceUrl: props.nova })
   : props.nova
 ```
 

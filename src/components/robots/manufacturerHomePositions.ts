@@ -27,6 +27,7 @@ export const MANUFACTURER_HOME_CONFIGS: Record<Manufacturer, number[]> = {
     -Math.PI / 2,
     0.0,
   ],
+  [Manufacturer.Staubli]: [0.0, -Math.PI / 2, Math.PI / 2, 0.0, 0.0, 0.0, 0.0],
 }
 
 /**
@@ -51,6 +52,8 @@ export function extractManufacturer(
       return Manufacturer.Kuka
     case "UniversalRobots":
       return Manufacturer.Universalrobots
+    case "STAUBLI":
+      return Manufacturer.Staubli
     default:
       return null
   }

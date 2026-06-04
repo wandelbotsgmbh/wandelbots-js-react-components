@@ -9,10 +9,10 @@ import { Meta } from '@storybook/addon-docs/blocks';
 The library provides an easy to use way to access properties of a motion group.
 
 ```ts
-import { NovaClient } from "@wandelbots/nova-js/v2"
+import { Nova } from "@wandelbots/nova-js/v2"
 import { ConnectedMotionGroup } from "@wandelbots/wandelbots-js-react-components/core"
 
-const nova = new NovaClient({ instanceUrl: "nova-instance-url" })
+const nova = new Nova({ instanceUrl: "nova-instance-url" })
 const activeRobot = await ConnectedMotionGroup.connect(nova, "motion-group-id")
 ```
 
@@ -29,10 +29,10 @@ const newJoints = activeRobot.rapidlyChangingMotionState.joint_position
 Jogging in a robotics context generally refers to the manual movement of the robot via direct human input. The Wandelbots platform provides websocket-based jogging methods which can be used to build similar jogging interfaces to those found on teach pendants.
 
 ```ts
-import { NovaClient } from "@wandelbots/nova-js/v2"
+import { Nova } from "@wandelbots/nova-js/v2"
 import { JoggerConnection } from "@wandelbots/wandelbots-js-react-components/core"
 
-const nova = new NovaClient({ instanceUrl: "nova-instance-url" })
+const nova = new Nova({ instanceUrl: "nova-instance-url" })
 const jogger = await JoggerConnection.open(nova, `some-motion-group-id`) // or to set options
 // const jogger = await JoggerConnection.open(nova, `some-motion-group-id`), options)
 ```

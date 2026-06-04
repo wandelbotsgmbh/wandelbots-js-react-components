@@ -5,7 +5,7 @@ This file provides practical examples of how to use the React components with no
 ## Basic Setup
 
 ```typescript
-import { NovaClient } from "@wandelbots/nova-js/v2"
+import { Nova } from "@wandelbots/nova-js/v2"
 import {
   JoggingPanel,
   SafetyBar,
@@ -14,7 +14,7 @@ import {
 import { Robot } from "@wandelbots/wandelbots-js-react-components/3d"
 
 // Setup Nova client
-const nova = new NovaClient({ instanceUrl: "https://your-nova-instance.com" })
+const nova = new Nova({ instanceUrl: "https://your-nova-instance.com" })
 
 // Setup theme
 const theme = createNovaMuiTheme("dark")
@@ -25,10 +25,10 @@ const theme = createNovaMuiTheme("dark")
 ### Robot Jogging Interface
 
 ```typescript
-import { NovaClient } from "@wandelbots/nova-js/v2"
+import { Nova } from "@wandelbots/nova-js/v2"
 
 function MyRobotApp() {
-  const nova = new NovaClient({ instanceUrl: "https://your-nova-instance.com" })
+  const nova = new Nova({ instanceUrl: "https://your-nova-instance.com" })
 
   return (
     <JoggingInterface
@@ -51,7 +51,7 @@ function MyRobotApp() {
 
 ```typescript
 import { Canvas } from '@react-three/fiber'
-import { NovaClient } from "@wandelbots/nova-js/v2"
+import { Nova } from "@wandelbots/nova-js/v2"
 import { ConnectedMotionGroup } from "@wandelbots/wandelbots-js-react-components/core"
 import { Robot } from "@wandelbots/wandelbots-js-react-components/3d"
 
@@ -60,7 +60,7 @@ function Robot3D({ motionGroupId }: { motionGroupId: string }) {
 
   useEffect(() => {
     async function setup() {
-      const nova = new NovaClient({ instanceUrl: "https://your-nova-instance.com" })
+      const nova = new Nova({ instanceUrl: "https://your-nova-instance.com" })
       const connected = await ConnectedMotionGroup.connect(nova, "0@your-motion-group-id");
       setConnectedMotionGroup(connected)
     }
@@ -152,12 +152,12 @@ function VelocityControl() {
 ### Custom Jogging Store
 
 ```typescript
-import { NovaClient } from "@wandelbots/nova-js/v2"
+import { Nova } from "@wandelbots/nova-js/v2"
 import { JoggingStore } from '@wandelbots/wandelbots-js-react-components/core'
 
 function AdvancedJogging() {
   const store = useMemo(() => new JoggingStore(), [])
-  const nova = new NovaClient({ instanceUrl: "https://your-nova-instance.com" })
+  const nova = new Nova({ instanceUrl: "https://your-nova-instance.com" })
 
   useEffect(() => {
     // Custom configuration
@@ -284,8 +284,8 @@ import { JoggingInterface } from '../JoggingInterface'
 
 test('renders jogging interface', () => {
   const mockNova = {
-    // Mock NovaClient methods
-  } as NovaClient
+    // Mock Nova methods
+  } as Nova
 
   render(
     <JoggingInterface

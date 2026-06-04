@@ -1,4 +1,4 @@
-import { NovaClient } from "@wandelbots/nova-js/v2"
+import { Nova } from "@wandelbots/nova-js/v2"
 import { expect, test, vi } from "vitest"
 import { delay } from "../components/utils/errorHandling"
 import { JoggerConnection } from "./JoggerConnection"
@@ -12,22 +12,25 @@ const INSTANCE_URL = undefined // This could be read from ENV in future
 const MOCK = !INSTANCE_URL
 
 test("jog a robot somewhat", async () => {
-  const nova = new NovaClient({
+  const nova = new Nova({
     instanceUrl: MOCK ? "https://mock.example.com" : INSTANCE_URL,
   })
 
   // Find a virtual robot we can jog
-  const controllerNames = await nova.api.controller.listRobotControllers()
+  const controllerNames = await nova.api.controller.listRobotControllers("cell")
   const firstControllerName = controllerNames[0]
 
   if (!firstControllerName) {
     throw new Error("No robot controllers found on instance")
   }
 
-  const controllerConfig =
-    await nova.api.controller.getRobotController(firstControllerName)
+  const controllerConfig = await nova.api.controller.getRobotController(
+    "cell",
+    firstControllerName,
+  )
   const controllerState =
     await nova.api.controller.getCurrentRobotControllerState(
+      "cell",
       firstControllerName,
     )
   console.log("verify, got controller config and state", {

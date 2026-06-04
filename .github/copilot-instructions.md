@@ -15,7 +15,7 @@ This is a TypeScript React component library that:
 ## Key Architecture Patterns
 
 ### Component Structure
-- Components accept either a `NovaClient` instance or a string URL
+- Components accept either a `Nova` instance or a string URL
 - Components use MobX for state management with `observer` wrapper
 - Components are externalized using `externalizeComponent` wrapper
 - TypeScript interfaces define clear prop contracts
@@ -24,12 +24,12 @@ This is a TypeScript React component library that:
 Components integrate with nova-js through these key patterns:
 
 ```typescript
-// Accept either NovaClient instance or URL string
-nova: NovaClient | string
+// Accept either Nova instance or URL string
+nova: Nova | string
 
-// Convert string to NovaClient if needed
+// Convert string to Nova if needed
 const nova = isString(props.nova)
-  ? new NovaClient({ instanceUrl: props.nova })
+  ? new Nova({ instanceUrl: props.nova })
   : props.nova
 
 // Use ConnectedMotionGroup for robot state
@@ -74,7 +74,7 @@ General-purpose UI components:
 ### When Creating New Components
 
 1. **Props Interface**: Always define a clear TypeScript interface
-2. **Nova Integration**: Accept `NovaClient | string` when interfacing with robots
+2. **Nova Integration**: Accept `Nova | string` when interfacing with robots
 3. **Externalization**: Wrap with `externalizeComponent` for proper error boundaries
 4. **Observability**: Use `observer` wrapper for MobX reactivity
 5. **Theming**: Use MUI theme system and support custom theming
@@ -96,17 +96,17 @@ General-purpose UI components:
 ```typescript
 import { observer } from "mobx-react-lite"
 import { externalizeComponent } from "../../externalizeComponent"
-import type { NovaClient } from "@wandelbots/nova-js/v2"
+import type { Nova } from "@wandelbots/nova-js/v2"
 
 export type MyComponentProps = {
-  nova: NovaClient | string
+  nova: Nova | string
   // other props
 }
 
 export const MyComponent = externalizeComponent(
   observer((props: MyComponentProps) => {
     const nova = isString(props.nova)
-      ? new NovaClient({ instanceUrl: props.nova })
+      ? new Nova({ instanceUrl: props.nova })
       : props.nova
     
     // component implementation
@@ -147,10 +147,10 @@ stories/                 # Storybook stories
 
 ### Working with Motion Groups
 ```typescript
-import { NovaClient } from "@wandelbots/nova-js/v2"
+import { Nova } from "@wandelbots/nova-js/v2"
 import { ConnectedMotionGroup } from "@wandelbots/wandelbots-js-react-components/core"
 
-const nova = new NovaClient({ instanceUrl: "https://your-nova-instance.com" })
+const nova = new Nova({ instanceUrl: "https://your-nova-instance.com" })
 const connectedMotionGroup = await ConnectedMotionGroup.connect(nova, "0@your-motion-group-id");
 
 // Use in 3D robot components
