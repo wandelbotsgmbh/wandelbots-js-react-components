@@ -82,12 +82,12 @@ export class MotionStreamConnection {
 
     return new MotionStreamConnection(
       nova,
-      cellId,
       controller,
       motionGroup,
       description,
       initialMotionState,
       motionStateSocket,
+      cellId,
     )
   }
 
@@ -95,15 +95,19 @@ export class MotionStreamConnection {
   // using animation frames
   rapidlyChangingMotionState: MotionGroupState
 
+  /** Normalized instance-level Nova client (see `asNovaInstance`) */
+  readonly nova: Nova
+
   constructor(
-    readonly nova: Nova,
-    readonly cellId: string,
+    nova: AnyNovaClient,
     readonly controller: RobotControllerState,
     readonly motionGroup: MotionGroupState,
     readonly description: MotionGroupDescription,
     readonly initialMotionState: MotionGroupState,
     readonly motionStateSocket: AutoReconnectingWebsocket,
+    readonly cellId: string = "cell",
   ) {
+    this.nova = asNovaInstance(nova)
     this.rapidlyChangingMotionState = initialMotionState
 
     motionStateSocket.addEventListener("message", (event) => {
