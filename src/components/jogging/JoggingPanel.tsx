@@ -12,6 +12,7 @@ import { useEffect } from "react"
 import { useTranslation } from "react-i18next"
 import { externalizeComponent } from "../../externalizeComponent"
 import { JoggerConnection } from "../../lib/JoggerConnection"
+import type { AnyNovaClient } from "../../lib/novaCompat"
 import { LoadingCover } from "../LoadingCover"
 import { JoggingBlocked } from "./JoggingBlocked"
 import { JoggingCartesianTab } from "./JoggingCartesianTab"
@@ -22,7 +23,7 @@ export type JoggingPanelTabId = "cartesian" | "joint"
 
 export type JoggingPanelProps = {
   /** Either an existing Nova client or the base url of a deployed Nova instance */
-  nova: Nova | string
+  nova: AnyNovaClient | string
   /** Id of the motion group to move e.g. 0@ur5e */
   motionGroupId: string
   /** Cell id on the Nova instance. Defaults to "cell". */
