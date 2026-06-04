@@ -36,11 +36,14 @@ export function asNovaInstance(nova: AnyNovaClient): Nova {
   }
 
   const client = nova
+  const cellId = client.api.cellId
 
   // Wrap the cell-scoped API so that callers can pass a leading `cellId`
   // argument (as the instance-level API expects). The cell-scoped client
-  // already knows its cell, so we simply drop that argument before
-  // forwarding the call.
+  // already knows its cell, so we drop that argument before forwarding the
+  // call - but only when it's actually the cell id. Not every instance-level
+  // method takes a leading `cellId`, so we leave the arguments untouched when
+  // the first one doesn't match this client's cell.
   const api = new Proxy(client.api, {
     get(target, group) {
       const groupApi = Reflect.get(target, group)
@@ -54,8 +57,12 @@ export function asNovaInstance(nova: AnyNovaClient): Nova {
           if (typeof fn !== "function") {
             return fn
           }
-          return (_cellId: string, ...args: unknown[]) =>
-            fn.apply(groupTarget, args)
+          return (...args: unknown[]) => {
+            if (args.length > 0 && args[0] === cellId) {
+              return fn.apply(groupTarget, args.slice(1))
+            }
+            return fn.apply(groupTarget, args)
+          }
         },
       })
     },
