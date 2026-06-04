@@ -187,8 +187,11 @@ export class ConnectedMotionGroup {
   activationState: "inactive" | "activating" | "deactivating" | "active" =
     "inactive"
 
+  /** Normalized instance-level Nova client (see {@link asNovaInstance}) */
+  readonly nova: Nova
+
   constructor(
-    readonly nova: Nova,
+    nova: AnyNovaClient,
     readonly cellId: string,
     readonly controller: RobotControllerState,
     readonly motionGroup: MotionGroupState,
@@ -200,6 +203,7 @@ export class ConnectedMotionGroup {
     readonly initialControllerState: RobotControllerState,
     readonly controllerStateSocket: AutoReconnectingWebsocket,
   ) {
+    this.nova = asNovaInstance(nova)
     this.rapidlyChangingMotionState = initialMotionState
     this.controllerState = initialControllerState
 
