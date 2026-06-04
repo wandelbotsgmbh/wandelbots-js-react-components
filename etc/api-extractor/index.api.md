@@ -693,7 +693,7 @@ export type MotionGroupVisualizerProps = {
 
 // @public (undocumented)
 export class MotionStreamConnection {
-    constructor(nova: Nova, cellId: string, controller: RobotControllerState, motionGroup: MotionGroupState, description: MotionGroupDescription, initialMotionState: MotionGroupState, motionStateSocket: AutoReconnectingWebsocket);
+    constructor(nova: AnyNovaClient, controller: RobotControllerState, motionGroup: MotionGroupState, description: MotionGroupDescription, initialMotionState: MotionGroupState, motionStateSocket: AutoReconnectingWebsocket, cellId?: string);
     // (undocumented)
     readonly cellId: string;
     // (undocumented)
@@ -716,7 +716,6 @@ export class MotionStreamConnection {
     get motionGroupId(): string;
     // (undocumented)
     readonly motionStateSocket: AutoReconnectingWebsocket;
-    // (undocumented)
     readonly nova: Nova;
     // (undocumented)
     static open(novaClient: AnyNovaClient, motionGroupId: string, options?: MotionStreamConnectionOptions): Promise<MotionStreamConnection>;
