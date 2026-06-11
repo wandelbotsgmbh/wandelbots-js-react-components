@@ -5,6 +5,7 @@ import { useEffect, useRef } from "react"
 import type { Group, Object3D } from "three"
 import { useAutorun } from "../utils/hooks"
 import { ValueInterpolator } from "../utils/interpolation"
+import { useRenderBoost } from "../utils/useRenderBoost"
 import { collectJoints } from "./robotModelLogic"
 
 type RobotAnimatorProps = {
@@ -25,6 +26,9 @@ export default function RobotAnimator({
   const { invalidate } = useThree()
   const motionStateRef = useRef(rapidlyChangingMotionState)
   motionStateRef.current = rapidlyChangingMotionState
+
+  // Boost rendering for 2 seconds when motion group changes
+  useRenderBoost(rapidlyChangingMotionState.motion_group, 2000, 200)
 
   // Initialize interpolator
   // biome-ignore lint/correctness/useExhaustiveDependencies: pre-biome code
