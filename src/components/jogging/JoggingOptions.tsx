@@ -43,7 +43,6 @@ export const JoggingOptions = observer(
           onChange={(event) =>
             store.setSelectedCoordSystemId(event.target.value as string)
           }
-          disabled={store.isLocked}
         >
           {store.coordSystems.map((cs) => (
             <MenuItem key={cs.coordinate_system} value={cs.coordinate_system}>
@@ -73,7 +72,7 @@ export const JoggingOptions = observer(
                 console.error("Failed to change TCP:", err)
               })
           }}
-          disabled={store.isLocked || store.tcpChangeInProgress}
+          disabled={store.tcpChangeInProgress}
           endAdornment={
             store.tcpChangeInProgress ? (
               <InputAdornment position="end">
@@ -101,7 +100,6 @@ export const JoggingOptions = observer(
           onChange={(event) =>
             store.setSelectedOrientation(event.target.value as OrientationId)
           }
-          disabled={store.isLocked}
         >
           {ORIENTATION_IDS.map((orientationId) => (
             <MenuItem key={orientationId} value={orientationId}>
@@ -126,7 +124,6 @@ export const JoggingOptions = observer(
               event.target.value as IncrementOptionId,
             )
           }
-          disabled={store.isLocked}
         >
           <MenuItem key="continuous" value="continuous">
             {t("Jogging.Increment.Continuous.dd")}
