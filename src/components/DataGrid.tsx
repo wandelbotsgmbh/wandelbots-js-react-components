@@ -288,7 +288,8 @@ export const WandelbotsDataGrid = externalizeComponent(
                             "& .MuiInputBase-root": {
                               height: "32px",
                               borderRadius: "16px",
-                              backgroundColor: "#171927",
+                              backgroundColor:
+                                theme.palette.backgroundPaperElevation?.[2],
                               paddingLeft: "40px",
                               paddingRight:
                                 state.expanded && state.value !== ""
@@ -569,7 +570,7 @@ export const WandelbotsDataGrid = externalizeComponent(
                       left: "16px",
                       right: "16px",
                       bottom: 0,
-                      backgroundColor: "rgba(255, 255, 255, 0.08) !important",
+                      backgroundColor: `${theme.palette.action.hover} !important`,
                       borderRadius: "16px",
                       zIndex: 0,
                     },
@@ -577,7 +578,7 @@ export const WandelbotsDataGrid = externalizeComponent(
                       backgroundColor: "transparent !important",
                     },
                     "&:hover::before": {
-                      backgroundColor: "rgba(255, 255, 255, 0.12) !important",
+                      backgroundColor: `${theme.palette.divider} !important`,
                     },
                   },
                 }),

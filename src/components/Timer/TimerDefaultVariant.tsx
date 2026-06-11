@@ -59,7 +59,7 @@ export const TimerDefaultVariant = ({
             transition: "fill 0.5s ease-out",
           },
           "& .MuiGauge-referenceArc": {
-            fill: "#171927",
+            fill: theme.palette.backgroundPaperElevation?.[2],
             stroke: "transparent",
             strokeWidth: 0,
             transition:
@@ -84,7 +84,7 @@ export const TimerDefaultVariant = ({
           width: 225,
           height: 225,
           borderRadius: "50%",
-          backgroundColor: "#292B3F",
+          backgroundColor: theme.palette.backgroundPaperElevation?.[8],
           display: "flex",
           flexDirection: "column",
           alignItems: "center",

@@ -214,7 +214,7 @@ export const RobotCard = externalizeComponent(
             borderRadius: "18px",
             boxShadow: "none",
             backgroundColor:
-              theme.palette.backgroundPaperElevation?.[8] || "#2A2A3F",
+              theme.palette.backgroundPaperElevation?.[8] || "#292B3F",
             backgroundImage: "none", // Override any gradient from elevation
           }}
         >

@@ -159,9 +159,11 @@ const connectedMotionGroup = await ConnectedMotionGroup.connect(nova, "0@your-mo
 
 ### Theming Integration
 ```typescript
-import { createNovaMuiTheme } from '@wandelbots/wandelbots-js-react-components/core'
+import { createNovaTheme } from '@wandelbots/wandelbots-js-react-components/core'
 
-const theme = createNovaMuiTheme('dark') // or 'light'
+// Dark mode only — passing `palette: { mode: 'light' }` throws upstream
+// until Figma syncs a real light palette.
+const theme = createNovaTheme()
 ```
 
 ### Error Handling

@@ -1,17 +1,10 @@
-type NovaColorPaletteExtension = {
-  paletteExt?: {
-    primary?: {
-      hover?: string
-      selected?: string
-      focus?: string
-      focusVisible?: string
-      outlineBorder?: string
-    }
-    secondary?: {
-      tonal?: string
-    }
-  }
-}
+// MUI theme augmentation for react/-specific extensions.
+//
+// Side-effect import: pulls in Nova's `declare module "@mui/material/styles"`
+// (which adds `tertiary`, `backgroundPaperElevation`, and `paletteExt`).
+import "@wandelbots/design-tokens/mui"
+
+import type {} from "@mui/material/styles"
 
 export interface AxisControlComponentColors {
   color?: string
@@ -26,71 +19,35 @@ export interface AxisControlComponentColors {
   labelColor?: string
 }
 
-interface NovaComponentsExtension {
-  componentsExt?: {
-    JoggingPanel?: {
-      JoggingCartesian?: {
-        Axis?: {
-          X?: AxisControlComponentColors
-          Y?: AxisControlComponentColors
-          Z?: AxisControlComponentColors
-          CustomRotation?: AxisControlComponentColors
+// `componentsExt` is a react/-only extension slot for jogging-panel theming.
+// It deliberately lives here (not in `@wandelbots/design-tokens`) because
+// jogging/robotics concerns belong in this package per the Nova design-system
+// architecture rules.
+declare module "@mui/material/styles" {
+  interface Theme {
+    componentsExt?: {
+      JoggingPanel?: {
+        JoggingCartesian?: {
+          Axis?: {
+            X?: AxisControlComponentColors
+            Y?: AxisControlComponentColors
+            Z?: AxisControlComponentColors
+            CustomRotation?: AxisControlComponentColors
+          }
         }
-      }
-      JoggingJoint?: {
-        Joint?: {
-          arrowColor?: string
+        JoggingJoint?: {
+          Joint?: {
+            arrowColor?: string
+          }
         }
-      }
-      VelocitySlider?: {
-        sliderLegendColor?: string
+        VelocitySlider?: {
+          sliderLegendColor?: string
+        }
       }
     }
   }
-}
 
-interface BackgroundPaperElevation {
-  0?: string
-  1?: string
-  2?: string
-  3?: string
-  4?: string
-  5?: string
-  6?: string
-  7?: string
-  8?: string
-  9?: string
-  10?: string
-  11?: string
-  12?: string
-  13?: string
-  14?: string
-  15?: string
-  16?: string
-  17?: string
-  18?: string
-  19?: string
-  20?: string
-  21?: string
-  22?: string
-  23?: string
-  24?: string
-}
-
-declare module "@mui/material/styles" {
-  interface Palette {
-    tertiary: Palette["primary"]
-    backgroundPaperElevation?: BackgroundPaperElevation
+  interface ThemeOptions {
+    componentsExt?: Theme["componentsExt"]
   }
-
-  interface PaletteOptions {
-    tertiary?: PaletteOptions["primary"]
-    backgroundPaperElevation?: BackgroundPaperElevation
-  }
-
-  interface Theme extends NovaComponentsExtension, NovaColorPaletteExtension {}
-
-  interface ThemeOptions
-    extends NovaComponentsExtension,
-      NovaColorPaletteExtension {}
 }

@@ -86,7 +86,7 @@ const store = useLocalObservable(() => new ComponentStore())
 ## Integration Points
 
 - **Nova-JS**: Robotics API client integration
-- **MUI Theme**: Custom theming with `createNovaMuiTheme`
+- **MUI Theme**: Custom theming with `createNovaTheme`
 - **React Three Fiber**: 3D robotics visualization
 - **i18next**: Multi-language support
 

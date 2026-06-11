@@ -9,15 +9,15 @@ import { Nova } from "@wandelbots/nova-js/v2"
 import {
   JoggingPanel,
   SafetyBar,
-  createNovaMuiTheme,
+  createNovaTheme,
 } from "@wandelbots/wandelbots-js-react-components/core"
 import { Robot } from "@wandelbots/wandelbots-js-react-components/3d"
 
 // Setup Nova client
 const nova = new Nova({ instanceUrl: "https://your-nova-instance.com" })
 
-// Setup theme
-const theme = createNovaMuiTheme("dark")
+// Setup theme (dark mode is currently the only supported palette)
+const theme = createNovaTheme()
 ```
 
 ## Common Component Patterns
@@ -222,11 +222,11 @@ function RobotControlWithErrorHandling() {
 
 ```typescript
 import { ThemeProvider } from '@mui/material/styles'
-import { createNovaMuiTheme } from '@wandelbots/wandelbots-js-react-components/core'
+import { createNovaTheme } from '@wandelbots/wandelbots-js-react-components/core'
 
 function ThemedApp() {
-  const theme = createNovaMuiTheme('dark', {
-    // Custom theme overrides
+  const theme = createNovaTheme({
+    // Custom theme overrides — deep-merged into the Nova base theme
     palette: {
       primary: {
         main: '#your-brand-color',

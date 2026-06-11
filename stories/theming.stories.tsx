@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
-import { JoggingPanel, createNovaMuiTheme } from "../src"
+import { JoggingPanel, createNovaTheme } from "../src"
 import { Default as JoggingPanelStory } from "./JoggingPanel.stories"
 import { createTheme, ThemeProvider } from "@mui/material/styles"
 const meta: Meta<typeof JoggingPanel> = {
@@ -12,7 +12,7 @@ export const JoggingStoryExtendedTheme: StoryObj<typeof JoggingPanel> = {
   ...JoggingPanelStory,
   tags: ["!dev", "!autodocs"],
   render: (args) => {
-    const theme = createNovaMuiTheme({
+    const theme = createNovaTheme({
       palette: {
         primary: {
           main: "#ff0000",
