@@ -1,6 +1,13 @@
 import type { ThreeElements } from "@react-three/fiber"
 import type { DHParameter, MotionGroupState } from "@wandelbots/nova-js/v2"
-import { Suspense, useCallback, useEffect, useMemo, useState } from "react"
+import {
+  Suspense,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react"
 import { DHRobot } from "./DHRobot"
 
 import { ErrorBoundary } from "react-error-boundary"
@@ -8,7 +15,7 @@ import type * as THREE from "three"
 import { externalizeComponent } from "../../externalizeComponent"
 import ConsoleFilter from "../ConsoleFilter"
 import { GenericRobot } from "./GenericRobot"
-import RobotAnimator from "./RobotAnimator"
+import RobotAnimator, { type RobotAnimatorHandle } from "./RobotAnimator"
 import { applyGhostStyle, removeGhostStyle } from "./ghostStyle"
 import { defaultGetModel } from "./robotModelLogic"
 
@@ -44,10 +51,20 @@ export const SupportedRobot = externalizeComponent(
     ...props
   }: SupportedRobotProps) => {
     const [robotGroup, setRobotGroup] = useState<THREE.Group | null>(null)
+    const robotAnimatorRef = useRef<RobotAnimatorHandle>(null)
 
     const setRobotRef = useCallback((instance: THREE.Group | null) => {
       setRobotGroup(instance)
     }, [])
+
+    // The robot model is loaded asynchronously, so its joint meshes mount
+    // into the scene only after RobotAnimator's group ref has already fired.
+    // Trigger a joint re-scan once the model is actually rendered so the
+    // streamed pose is applied instead of the model's default pose.
+    const handlePostModelRender = useCallback(() => {
+      robotAnimatorRef.current?.recollectJoints()
+      postModelRender?.()
+    }, [postModelRender])
 
     useEffect(() => {
       if (!robotGroup) return
@@ -88,12 +105,13 @@ export const SupportedRobot = externalizeComponent(
         <Suspense fallback={dhrobot}>
           <group ref={setRobotRef}>
             <RobotAnimator
+              ref={robotAnimatorRef}
               rapidlyChangingMotionState={rapidlyChangingMotionState}
               dhParameters={dhParameters}
             >
               <GenericRobot
                 modelURL={modelURL}
-                postModelRender={postModelRender}
+                postModelRender={handlePostModelRender}
                 flangeRef={flangeRef}
                 {...props}
               />
