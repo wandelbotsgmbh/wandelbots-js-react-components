@@ -18,7 +18,9 @@ vi.mock("../utils/interpolation", () => ({
 describe("RobotAnimator", () => {
   it("should export the component correctly", () => {
     expect(RobotAnimator).toBeDefined()
-    expect(typeof RobotAnimator).toBe("function")
+    // RobotAnimator is wrapped in forwardRef, which returns an object whose
+    // `render` is the component function.
+    expect(typeof RobotAnimator.render).toBe("function")
   })
 
   it("should handle props with different numbers of joints", () => {
