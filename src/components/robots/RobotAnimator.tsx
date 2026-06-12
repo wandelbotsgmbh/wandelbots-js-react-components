@@ -97,8 +97,9 @@ const RobotAnimator = forwardRef<RobotAnimatorHandle, RobotAnimatorProps>(
       invalidate()
     }
 
-    // biome-ignore lint/correctness/useExhaustiveDependencies: recollectJoints is a stable closure reading refs
-    useImperativeHandle(ref, () => ({ recollectJoints }), [])
+    // No deps array: re-expose the current closure each render so ref-triggered
+    // calls never apply rotation using stale dhParameters / onRotationChanged props.
+    useImperativeHandle(ref, () => ({ recollectJoints }))
 
     function setRotation() {
       const updatedJointValues =
