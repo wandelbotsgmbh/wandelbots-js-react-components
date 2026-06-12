@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef } from "react"
 /**
  * Hook to temporarily boost render frequency when needed.
  * Useful when a new motion group appears or during critical animations.
- * 
+ *
  * @param trigger - Value that triggers the render boost when changed (pass null for manual control only)
  * @param duration - How long to boost rendering (ms), default 2000ms
  * @param interval - Render interval during boost (ms), default 200ms
