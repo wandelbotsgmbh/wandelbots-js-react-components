@@ -31,6 +31,12 @@ function LoadedRobotModel({
   postModelRender?: () => void
 } & ThreeElements["group"]) {
   const gltfResult = useGLTF(url)
+  console.log(
+    "%c[GenericRobot]",
+    "color:#34c759;font-weight:bold",
+    "LoadedRobotModel rendered (model resolved & gltf loaded)",
+    { url },
+  )
   const parsed = parseRobotModel(gltfResult, "robot.glb")
   const gltf = parsed.gltf
 
@@ -123,6 +129,11 @@ export function GenericRobot({
 
   // Don't render until we have a resolved URL
   if (!resolvedURL) {
+    console.log(
+      "%c[GenericRobot]",
+      "color:#34c759;font-weight:bold",
+      "render -> resolvedURL is null, returning null (no children yet)",
+    )
     return null // Loading state
   }
 

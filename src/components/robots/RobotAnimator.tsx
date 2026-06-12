@@ -27,6 +27,22 @@ export default function RobotAnimator({
   const motionStateRef = useRef(rapidlyChangingMotionState)
   motionStateRef.current = rapidlyChangingMotionState
 
+  const mgId = rapidlyChangingMotionState.motion_group
+  const LOG = (msg: string, ...args: unknown[]) =>
+    console.log(
+      `%c[RobotAnimator:${mgId}]`,
+      "color:#0a84ff;font-weight:bold",
+      msg,
+      ...args,
+    )
+
+  LOG("render", {
+    motion_group: rapidlyChangingMotionState.motion_group,
+    joint_position: rapidlyChangingMotionState.joint_position,
+    jointObjectsCount: jointObjects.current.length,
+    hasInterpolator: !!interpolatorRef.current,
+  })
+
   // Boost rendering for 2 seconds when motion group changes
   useRenderBoost(rapidlyChangingMotionState.motion_group, 2000, 200)
 
@@ -37,6 +53,10 @@ export default function RobotAnimator({
       (item) => item !== undefined,
     )
 
+    LOG("INIT interpolator effect (deps:[])", {
+      initialJointValues,
+    })
+
     interpolatorRef.current = new ValueInterpolator(initialJointValues, {
       tension: 120, // Controls spring stiffness - higher values create faster, more responsive motion
       friction: 20, // Controls damping - higher values reduce oscillation and create smoother settling
@@ -44,15 +64,28 @@ export default function RobotAnimator({
     })
 
     return () => {
+      LOG("INIT interpolator effect CLEANUP (unmount/destroy)")
       interpolatorRef.current?.destroy()
     }
   }, [])
 
   // Animation loop that runs at the display's refresh rate
+  const frameLogCountRef = useRef(0)
   useFrame((state, delta) => {
     if (interpolatorRef.current) {
       const isComplete = interpolatorRef.current.update(delta)
       setRotation()
+
+      // Log only the first handful of frames to avoid flooding the console
+      if (frameLogCountRef.current < 8) {
+        frameLogCountRef.current++
+        LOG("useFrame", {
+          frame: frameLogCountRef.current,
+          isComplete,
+          jointObjectsCount: jointObjects.current.length,
+          currentValues: interpolatorRef.current.getCurrentValues(),
+        })
+      }
 
       // Trigger a re-render only if the animation is still running
       if (!isComplete) {
@@ -62,9 +95,20 @@ export default function RobotAnimator({
   })
 
   function setGroupRef(group: Group | null) {
-    if (!group) return
+    if (!group) {
+      LOG("setGroupRef(null) -> ref DETACHED")
+      return
+    }
 
     jointObjects.current = collectJoints(group)
+
+    LOG("setGroupRef(group) -> ref ATTACHED / joints collected", {
+      jointObjectsCount: jointObjects.current.length,
+      jointNames: jointObjects.current.map((o) => o.name),
+      hasInterpolator: !!interpolatorRef.current,
+      interpolatorCurrentValues: interpolatorRef.current?.getCurrentValues(),
+      latestStreamJointPosition: motionStateRef.current.joint_position,
+    })
 
     // Set initial position
     setRotation()
@@ -93,6 +137,11 @@ export default function RobotAnimator({
     const newJointValues = state.joint_position.filter(
       (item) => item !== undefined,
     )
+    LOG("applyMotionState -> setTarget", {
+      newJointValues,
+      hasInterpolator: !!interpolatorRef.current,
+      jointObjectsCount: jointObjects.current.length,
+    })
     interpolatorRef.current?.setTarget(newJointValues)
     invalidate()
   }
@@ -102,6 +151,11 @@ export default function RobotAnimator({
    * Reads motionStateRef.current which dereferences the observable's properties.
    */
   useAutorun(() => {
+    // Reading .joint_position here is what MobX tracks for reactivity.
+    const jp = motionStateRef.current.joint_position
+    LOG("AUTORUN fired (mobx tracked joint_position changed or first run)", {
+      joint_position: jp,
+    })
     applyMotionState(motionStateRef.current)
   })
 
@@ -112,6 +166,9 @@ export default function RobotAnimator({
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: false positive
   useEffect(() => {
+    LOG("PROP-CHANGE effect (deps:[rapidlyChangingMotionState]) fired", {
+      joint_position: rapidlyChangingMotionState.joint_position,
+    })
     applyMotionState(rapidlyChangingMotionState)
   }, [rapidlyChangingMotionState])
 
