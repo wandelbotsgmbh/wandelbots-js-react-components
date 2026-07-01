@@ -35,9 +35,13 @@ import { RobotTcp } from '@wandelbots/nova-js/v2';
 import type { SafetyStateType } from '@wandelbots/nova-js/v2';
 import Stack from '@mui/material/Stack';
 import { SxProps } from '@mui/material/styles';
+import type { TextFieldProps } from '@mui/material/TextField';
 import { Theme } from '@mui/material/styles';
 import { ThemeOptions } from '@mui/material/styles';
 import * as THREE from 'three';
+
+// @public (undocumented)
+export const AdornedTextField: (input: AdornedTextFieldProps) => JSX.Element;
 
 // @public
 export const AppHeader: ((props: AppHeaderProps) => JSX.Element) & {
