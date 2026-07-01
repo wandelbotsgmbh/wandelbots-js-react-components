@@ -1,4 +1,5 @@
 // Core components without heavy dependencies (Three.js, Monaco, MUI X)
+export * from "./components/AdornedTextField"
 export * from "./components/AppHeader"
 export * from "./components/CycleTimer"
 export * from "./components/DataGrid"
