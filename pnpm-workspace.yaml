@@ -8,6 +8,7 @@ useNodeVersion: 24.12.0
 minimumReleaseAge: 1440
 minimumReleaseAgeExclude:
   - "@wandelbots/nova-js"
+  - "@wandelbots/design-tokens"
 
 # Install deps if node_modules is out of date when running scripts
 verifyDepsBeforeRun: install

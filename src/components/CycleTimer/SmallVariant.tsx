@@ -162,7 +162,7 @@ export const SmallVariant = ({
           color: hasError
             ? theme.palette.error.light
             : currentState === "idle"
-              ? "rgba(255, 255, 255, 0.7)"
+              ? theme.palette.text.secondary
               : currentState === "measured"
                 ? showPulsatingText || pulsatingFinished
                   ? theme.palette.success.main

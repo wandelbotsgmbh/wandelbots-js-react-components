@@ -17,9 +17,9 @@ To make the components look exactly like they do in the storybook, pass the Wand
 
 <Source dark={true} code={`
 import { ThemeProvider } from "@mui/material";
-import { createNovaMuiTheme, JoggingPanel } from "@wandelbots/wandelbots-js-react-components/core"
+import { createNovaTheme, JoggingPanel } from "@wandelbots/wandelbots-js-react-components/core"
 
-const theme = createNovaMuiTheme()
+const theme = createNovaTheme()
 
 <ThemeProvider theme={theme}>
   <JoggingPanel ... />
@@ -35,9 +35,9 @@ with another theme using MUI [theme composition](https://mui.com/material-ui/cus
 
 <Source dark={true} code={`
 import { ThemeProvider } from "@mui/material";
-import { createNovaMuiTheme, JoggingPanel } from "@wandelbots/wandelbots-js-react-components/core"
+import { createNovaTheme, JoggingPanel } from "@wandelbots/wandelbots-js-react-components/core"
 
-const theme = createNovaMuiTheme({
+const theme = createNovaTheme({
   palette: {
     primary: {
       main: "#ff0000"

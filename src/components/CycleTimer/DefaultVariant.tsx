@@ -67,7 +67,7 @@ export const DefaultVariant = ({
             transition: "fill 0.5s ease-out",
           },
           "& .MuiGauge-referenceArc": {
-            fill: currentState === "idle" ? "#171927" : "#171927",
+            fill: theme.palette.backgroundPaperElevation?.[2],
             stroke: "transparent",
             strokeWidth: 0,
             transition:
@@ -92,7 +92,7 @@ export const DefaultVariant = ({
           width: 225,
           height: 225,
           borderRadius: "50%",
-          backgroundColor: "#292B3F",
+          backgroundColor: theme.palette.backgroundPaperElevation?.[8],
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
@@ -179,7 +179,7 @@ export const DefaultVariant = ({
                 position: "absolute",
                 fontSize: "12px",
                 fontWeight: 400,
-                color: "rgba(255, 255, 255, 0.7)",
+                color: theme.palette.text.secondary,
                 lineHeight: "166%",
                 letterSpacing: "0.17px",
                 textAlign: "center",
@@ -223,7 +223,7 @@ export const DefaultVariant = ({
                 position: "absolute",
                 fontSize: "40px",
                 fontWeight: 400,
-                color: "#FFFFFF",
+                color: theme.palette.text.primary,
                 lineHeight: "116.7%",
               }}
             >

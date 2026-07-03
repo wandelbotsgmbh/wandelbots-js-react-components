@@ -61,8 +61,8 @@ import type { SafetyStateType } from '@wandelbots/nova-js/v2';
 import Stack from '@mui/material/Stack';
 import { SxProps } from '@mui/material/styles';
 import type { TextFieldProps } from '@mui/material/TextField';
-import { Theme } from '@mui/material/styles';
-import { ThemeOptions } from '@mui/material/styles';
+import type { Theme } from '@mui/material/styles';
+import type { ThemeOptions } from '@mui/material/styles';
 import * as THREE from 'three';
 import type { ThreeElements } from '@react-three/fiber';
 import { default as WBLogoIcon } from './wbLogo.svg';
@@ -227,8 +227,11 @@ export const createInfoMessage: (message: string, id?: string) => LogMessage;
 // @public
 export const createLogMessage: (message: string, level: LogLevel, id?: string) => LogMessage;
 
+// @public @deprecated (undocumented)
+export function createNovaMuiTheme(opts?: ThemeOptions): Theme;
+
 // @public
-export function createNovaMuiTheme(opts: ThemeOptions): Theme;
+export function createNovaTheme(...overrides: ThemeOptions[]): Theme;
 
 // @public
 export const createWarningMessage: (message: string, id?: string) => LogMessage;

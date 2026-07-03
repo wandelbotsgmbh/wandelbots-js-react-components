@@ -1,7 +1,7 @@
 import { ThemeProvider } from "@mui/material/styles"
 import CssBaseline from "@mui/material/CssBaseline"
 import type { Preview } from "@storybook/react-vite"
-import { createNovaMuiTheme } from "../src"
+import { createNovaTheme } from "../src"
 import { DocsContainer } from "./DocsContainer"
 import "./global.css"
 
@@ -55,7 +55,7 @@ const preview: Preview = {
   decorators: [
     (Story) => {
       // Force dark theme for all components
-      const muiTheme = createNovaMuiTheme({
+      const muiTheme = createNovaTheme({
         palette: { mode: "dark" },
       })
 
