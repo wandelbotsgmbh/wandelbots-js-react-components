@@ -1,6 +1,5 @@
 import type { Pose } from "@wandelbots/nova-js/v2"
-import { Quaternion } from "three/src/math/Quaternion.js"
-import { Vector3 } from "three/src/math/Vector3.js"
+import { Quaternion, Vector3 } from "three"
 import { describe, expect, test } from "vitest"
 import {
   computeIncrementalTargetPose,

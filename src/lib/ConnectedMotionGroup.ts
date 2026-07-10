@@ -12,10 +12,10 @@ import type {
   SafetyStateType,
 } from "@wandelbots/nova-js/v2"
 import { makeAutoObservable, runInAction } from "mobx"
-import * as THREE from "three"
 import type { Vector3Simple } from "./JoggerConnection"
 import { jointValuesEqual, tcpMotionEqual } from "./motionStateUpdate"
 import { asNovaInstance, type AnyNovaClient } from "./novaCompat"
+import { quaternionFromRotationVector } from "./rotationVector"
 
 const MOTION_DELTA_THRESHOLD = 0.0001
 
@@ -338,16 +338,9 @@ export class ConnectedMotionGroup {
 
   /** Gets the robot mounting position rotation in 3D viz coordinates */
   get mountingQuaternion() {
-    const rotationVector = new THREE.Vector3(
-      this.description.mounting?.orientation?.[0] || 0,
-      this.description.mounting?.orientation?.[1] || 0,
-      this.description.mounting?.orientation?.[2] || 0,
+    return quaternionFromRotationVector(
+      this.description.mounting?.orientation ?? [],
     )
-
-    const magnitude = rotationVector.length()
-    const axis = rotationVector.normalize()
-
-    return new THREE.Quaternion().setFromAxisAngle(axis, magnitude)
   }
 
   /**

@@ -1,6 +1,7 @@
 import type { CoordinateSystem } from "@wandelbots/nova-js/v2"
 import type { ReactNode } from "react"
 import { Quaternion, Vector3 } from "three"
+import { quaternionFromRotationVector } from "../../lib/rotationVector"
 
 /**
  * Applies a API coordinate system transformation to
@@ -37,14 +38,9 @@ export const CoordinateSystemTransform = ({
       )
     }
     // Default to ROTATION_VECTOR
-    const rotationVector = new Vector3(
-      coordinateSystem?.orientation?.[0] ?? 0,
-      coordinateSystem?.orientation?.[1] ?? 0,
-      coordinateSystem?.orientation?.[2] ?? 0,
+    quaternion = quaternionFromRotationVector(
+      coordinateSystem?.orientation ?? [],
     )
-    const magnitude = rotationVector.length()
-    const axis = rotationVector.normalize()
-    quaternion = new Quaternion().setFromAxisAngle(axis, magnitude)
   }
 
   return (

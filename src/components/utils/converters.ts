@@ -1,5 +1,6 @@
 import type { DHParameter } from "@wandelbots/nova-js/v2"
 import * as THREE from "three"
+import { quaternionFromRotationVector } from "../../lib/rotationVector"
 
 export interface CoplanarityResult {
   isCoplanar: boolean
@@ -33,13 +34,11 @@ export function tryStringifyJson(json: unknown): string | undefined {
 export function orientationToQuaternion(
   orientation: THREE.Vector3,
 ): THREE.Quaternion {
-  const angle = orientation.length()
-  const quaternion = new THREE.Quaternion()
-  if (angle > 1e-6) {
-    const axis = orientation.clone().normalize()
-    quaternion.setFromAxisAngle(axis, angle)
-  }
-  return quaternion
+  return quaternionFromRotationVector([
+    orientation.x,
+    orientation.y,
+    orientation.z,
+  ])
 }
 
 export function dhParametersToPlaneSize(dhParameters: DHParameter[]) {
