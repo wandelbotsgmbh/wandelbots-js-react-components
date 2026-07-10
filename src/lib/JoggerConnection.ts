@@ -11,7 +11,7 @@ import {
   type StartMovementResponse,
 } from "@wandelbots/nova-js/v2"
 import { when } from "mobx"
-import { Vector3 } from "three/src/math/Vector3.js"
+import { computeIncrementalTargetPose } from "./incrementalCartesianMotion"
 import { MotionStreamConnection } from "./MotionStreamConnection"
 import type { AnyNovaClient } from "./novaCompat"
 
@@ -407,7 +407,6 @@ export class JoggerConnection {
   async runIncrementalCartesianMotion({
     currentTcpPose,
     currentJoints,
-    // coordSystemId,
     velocityInRelevantUnits,
     axis,
     direction,
@@ -415,7 +414,6 @@ export class JoggerConnection {
   }: {
     currentTcpPose: Pose
     currentJoints: Vector3Simple
-    coordSystemId: string
     velocityInRelevantUnits: number
     axis: "x" | "y" | "z"
     direction: "-" | "+"
@@ -437,103 +435,30 @@ export class JoggerConnection {
       )
     }
 
-    if (motion.type === "translate") {
-      if (!currentTcpPose.position) {
-        throw new Error(
-          "Current pose has no position, cannot perform translation",
-        )
-      }
+    // Resolve the absolute target pose to plan towards. The axis is interpreted
+    // relative to the tool when the jogger is in tool orientation, matching the
+    // `use_tool_coordinate_system` flag used for continuous jogging.
+    const targetPose = computeIncrementalTargetPose({
+      currentTcpPose,
+      axis,
+      direction,
+      motion,
+      useToolCoordinateSystem: this.orientation === "tool",
+    })
 
-      const targetTcpPosition = [...currentTcpPose.position]
-      targetTcpPosition[XYZ_TO_VECTOR[axis]] +=
-        motion.distanceMm * (direction === "-" ? -1 : 1)
-
-      commands.push({
-        limits_override: {
-          tcp_velocity_limit: velocityInRelevantUnits,
+    commands.push({
+      limits_override:
+        motion.type === "translate"
+          ? { tcp_velocity_limit: velocityInRelevantUnits }
+          : { tcp_orientation_velocity_limit: velocityInRelevantUnits },
+      path: {
+        path_definition_name: "PathLine",
+        target_pose: {
+          position: targetPose.position,
+          orientation: targetPose.orientation,
         },
-        path: {
-          path_definition_name: "PathLine",
-          target_pose: {
-            position: targetTcpPosition,
-            orientation: currentTcpPose.orientation,
-          },
-        },
-      })
-    } else if (motion.type === "rotate") {
-      // Concatenate rotations expressed by rotation vectors
-      // Equations taken from https://physics.stackexchange.com/a/287819
-
-      if (!currentTcpPose.orientation) {
-        throw new Error(
-          "Current pose has no orientation, cannot perform rotation",
-        )
-      }
-
-      // Compute axis and angle of current rotation vector
-      const currentRotationVector = new Vector3(
-        currentTcpPose.orientation[0],
-        currentTcpPose.orientation[1],
-        currentTcpPose.orientation[2],
-      )
-
-      const currentRotationRad = currentRotationVector.length()
-      const currentRotationDirection = currentRotationVector.clone().normalize()
-
-      // Compute axis and angle of difference rotation vector
-      const differenceRotationRad =
-        motion.distanceRads * (direction === "-" ? -1 : 1)
-
-      const differenceRotationDirection = new Vector3(0.0, 0.0, 0.0)
-      differenceRotationDirection[axis] = 1.0
-
-      // Some abbreviations to make the following equations more readable
-      const f1 =
-        Math.cos(0.5 * differenceRotationRad) *
-        Math.cos(0.5 * currentRotationRad)
-      const f2 =
-        Math.sin(0.5 * differenceRotationRad) *
-        Math.sin(0.5 * currentRotationRad)
-      const f3 =
-        Math.sin(0.5 * differenceRotationRad) *
-        Math.cos(0.5 * currentRotationRad)
-      const f4 =
-        Math.cos(0.5 * differenceRotationRad) *
-        Math.sin(0.5 * currentRotationRad)
-
-      const dotProduct = differenceRotationDirection.dot(
-        currentRotationDirection,
-      )
-
-      const crossProduct = differenceRotationDirection
-        .clone()
-        .cross(currentRotationDirection)
-
-      // Compute angle of concatenated rotation
-      const newRotationRad = 2.0 * Math.acos(f1 - f2 * dotProduct)
-
-      // Compute rotation vector of concatenated rotation
-      const f5 = newRotationRad / Math.sin(0.5 * newRotationRad)
-
-      const targetTcpOrientation = new Vector3()
-        .addScaledVector(crossProduct, f2)
-        .addScaledVector(differenceRotationDirection, f3)
-        .addScaledVector(currentRotationDirection, f4)
-        .multiplyScalar(f5)
-
-      commands.push({
-        limits_override: {
-          tcp_orientation_velocity_limit: velocityInRelevantUnits,
-        },
-        path: {
-          path_definition_name: "PathLine",
-          target_pose: {
-            position: currentTcpPose.position,
-            orientation: [...targetTcpOrientation],
-          },
-        },
-      })
-    }
+      },
+    })
 
     // Plan the motion https://portal.wandelbots.io/docs/api/v2/ui/#/operations/planTrajectory
     const description = this.motionStream.description

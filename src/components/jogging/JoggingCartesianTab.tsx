@@ -73,7 +73,6 @@ export const JoggingCartesianTab = observer(
           await store.jogger.runIncrementalCartesianMotion({
             currentTcpPose: tcpPose,
             currentJoints: jointPosition,
-            coordSystemId: store.activeCoordSystemId,
             velocityInRelevantUnits:
               store.selectedCartesianMotionType === "translate"
                 ? store.translationVelocityMmPerSec

@@ -461,11 +461,12 @@ describe("JoggingPanel", () => {
       expect(store.activeDiscreteIncrement?.mm).toBe(1)
     })
 
-    it("disables discrete increment when in tool orientation", () => {
+    it("keeps discrete increment active in tool orientation", () => {
       const store = createUr5eStore()
       store.setSelectedIncrementId("1")
       store.setSelectedOrientation("tool")
-      expect(store.activeDiscreteIncrement).toBeUndefined()
+      expect(store.activeDiscreteIncrement).toBeDefined()
+      expect(store.activeDiscreteIncrement?.mm).toBe(1)
     })
   })
 

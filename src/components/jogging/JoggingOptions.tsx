@@ -129,13 +129,11 @@ export const JoggingOptions = observer(
             {t("Jogging.Increment.Continuous.dd")}
           </MenuItem>
 
-          {store.selectedOrientation === "tool"
-            ? null
-            : store.discreteIncrementOptions.map((inc) => (
-                <MenuItem key={inc.id} value={inc.id}>
-                  {useDegree ? `${inc.degrees}°` : `${inc.mm}mm`}
-                </MenuItem>
-              ))}
+          {store.discreteIncrementOptions.map((inc) => (
+            <MenuItem key={inc.id} value={inc.id}>
+              {useDegree ? `${inc.degrees}°` : `${inc.mm}mm`}
+            </MenuItem>
+          ))}
         </AdornedSelect>,
       )
     }

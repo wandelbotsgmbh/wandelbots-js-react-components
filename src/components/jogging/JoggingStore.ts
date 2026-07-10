@@ -407,9 +407,9 @@ export class JoggingStore {
   }
 
   get activeDiscreteIncrement() {
-    return this.selectedOrientation === "tool"
-      ? undefined
-      : discreteIncrementOptions.find((d) => d.id === this.selectedIncrementId)
+    return discreteIncrementOptions.find(
+      (d) => d.id === this.selectedIncrementId,
+    )
   }
 
   /** The selected rotation velocity converted to radians per second */
