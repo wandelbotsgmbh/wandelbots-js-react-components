@@ -12,7 +12,7 @@ The component library comes with a Wandelbots theme for Material UI which is the
 If you like, you can use it in your own app to give the components a similar look.
 The theme is accessed by calling `createNovaTheme`, and can be [customized](?path=/docs/theming-theming-components--docs) as needed.
 
-The theme currently supports **dark mode only**. Passing `palette: { mode: "light" }` is not supported yet (it throws upstream).
+The theme currently supports **dark mode only**. Passing `palette: { mode: "light" }` is silently ignored (with a console warning) — light tokens are not yet available from Figma.
 
 > **Migration note:** `createNovaMuiTheme` is deprecated. Rename to `createNovaTheme` — it accepts
 > the same options (now variadic: pass multiple `ThemeOptions` objects to deep-merge in order).
