@@ -170,7 +170,23 @@ const reactOverrides: ThemeOptions = {
  * Figma synchronises a real light palette.
  */
 export function createNovaTheme(...overrides: ThemeOptions[]): Theme {
-  return createUpstreamNovaTheme(reactOverrides, ...overrides)
+  // Strip palette.mode from overrides — upstream throws on "light".
+  // Warn consumers but don't crash to preserve backward compatibility.
+  const sanitized = overrides.map((opts) => {
+    if (opts?.palette?.mode) {
+      if (opts.palette.mode === "light") {
+        console.warn(
+          "[createNovaTheme] palette.mode 'light' is not supported — " +
+            "light tokens are not yet available. Falling back to dark mode. " +
+            "Remove palette.mode from your theme options to silence this warning.",
+        )
+      }
+      const { mode: _, ...restPalette } = opts.palette
+      return { ...opts, palette: restPalette }
+    }
+    return opts
+  })
+  return createUpstreamNovaTheme(reactOverrides, ...sanitized)
 }
 
 /**
