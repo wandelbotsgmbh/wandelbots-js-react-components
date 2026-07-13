@@ -77,23 +77,23 @@ const reactOverrides: ThemeOptions = {
         },
         filterForm: {
           "& .MuiInputBase-root": {
-            borderRadius: `${RadiusSm}px !important`,
+            borderRadius: `${RadiusSm} !important`,
             "& fieldset": {
-              borderRadius: `${RadiusSm}px !important`,
+              borderRadius: `${RadiusSm} !important`,
             },
             "& .MuiOutlinedInput-notchedOutline": {
-              borderRadius: `${RadiusSm}px !important`,
+              borderRadius: `${RadiusSm} !important`,
             },
           },
         },
         filterFormValueInput: {
           "& .MuiInputBase-root": {
-            borderRadius: `${RadiusSm}px !important`,
+            borderRadius: `${RadiusSm} !important`,
             "& fieldset": {
-              borderRadius: `${RadiusSm}px !important`,
+              borderRadius: `${RadiusSm} !important`,
             },
             "& .MuiOutlinedInput-notchedOutline": {
-              borderRadius: `${RadiusSm}px !important`,
+              borderRadius: `${RadiusSm} !important`,
             },
           },
         },
@@ -165,12 +165,27 @@ const reactOverrides: ThemeOptions = {
  * deep-merged in order via MUI's `createTheme`.
  *
  * Light mode is not currently supported. Passing `palette: { mode: "light" }`
- * will throw upstream. Browser-preference autodetection was removed when the
- * upstream theme dropped its light-mode stub. It can be re-introduced once
- * Figma synchronises a real light palette.
+ * is silently ignored (with a console warning) to preserve backward
+ * compatibility. `palette: { mode: "dark" }` is passed through unchanged.
+ * Once Figma synchronises a real light palette, light mode support will be
+ * re-introduced.
  */
 export function createNovaTheme(...overrides: ThemeOptions[]): Theme {
-  return createUpstreamNovaTheme(reactOverrides, ...overrides)
+  // Strip palette.mode only when "light" — upstream throws on it.
+  // Warn consumers but don't crash to preserve backward compatibility.
+  const sanitized = overrides.map((opts) => {
+    if (opts?.palette?.mode === "light") {
+      console.warn(
+        "[createNovaTheme] palette.mode 'light' is not supported — " +
+          "light tokens are not yet available. Falling back to dark mode. " +
+          "Remove palette.mode from your theme options to silence this warning.",
+      )
+      const { mode: _, ...restPalette } = opts.palette
+      return { ...opts, palette: restPalette }
+    }
+    return opts
+  })
+  return createUpstreamNovaTheme(reactOverrides, ...sanitized)
 }
 
 /**

@@ -1,8 +1,8 @@
 // MUI theme augmentation for react/-specific extensions.
 //
-// Side-effect import: pulls in Nova's `declare module "@mui/material/styles"`
+// Type-only import: pulls in Nova's `declare module "@mui/material/styles"`
 // (which adds `tertiary`, `backgroundPaperElevation`, and `paletteExt`).
-import "@wandelbots/design-tokens/mui"
+import type {} from "@wandelbots/design-tokens/mui"
 
 import type {} from "@mui/material/styles"
 
