@@ -2,7 +2,7 @@
 //
 // Type-only import: pulls in Nova's `declare module "@mui/material/styles"`
 // (which adds `tertiary`, `backgroundPaperElevation`, and `paletteExt`).
-import type {} from "@wandelbots/design-tokens/mui"
+import type {} from "@wandelbots/mui"
 
 import type {} from "@mui/material/styles"
 

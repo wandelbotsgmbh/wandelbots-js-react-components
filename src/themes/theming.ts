@@ -1,6 +1,6 @@
 "use client"
 
-import { createNovaMuiTheme as createUpstreamNovaTheme } from "@wandelbots/design-tokens/mui"
+import { createNovaMuiTheme as createUpstreamNovaTheme } from "@wandelbots/mui"
 import { RadiusSm } from "@wandelbots/design-tokens"
 import type { Theme, ThemeOptions } from "@mui/material/styles"
 // Side-effect import: registers `MuiDataGrid` on MUI's `Components` interface
@@ -14,12 +14,12 @@ const onDark = "rgba(255, 255, 255, 1)"
 
 /**
  * react/-package-specific overrides layered on top of the canonical Nova
- * theme from `@wandelbots/design-tokens`.
+ * theme from `@wandelbots/mui`.
  *
  * Palette + typography + shape + the common component overrides
- * (MuiButton, MuiTab, MuiTabs, MuiToggleButton/Group, MuiSelect, MuiDrawer,
- *  MuiFab, MuiDialog, MuiCssBaseline scrollbars) live upstream — see
- * `@wandelbots/design-tokens/mui/theme.js`.
+ * (MuiButton, MuiTab, MuiTabs, MuiToggleButton/Group, MuiAutocomplete,
+ *  MuiSelect, MuiTooltip, MuiDrawer, MuiFab, MuiDialog, MuiCssBaseline
+ *  scrollbars) live upstream — see `@wandelbots/mui`.
  */
 const reactOverrides: ThemeOptions = {
   components: {
@@ -159,7 +159,7 @@ const reactOverrides: ThemeOptions = {
  * Create the default Wandelbots Nova Material UI theme for use with
  * `@wandelbots/wandelbots-js-react-components`. Layers DataGrid +
  * JoggingPanel-defaults on top of the canonical Nova theme from
- * `@wandelbots/design-tokens`.
+ * `@wandelbots/mui`.
  *
  * Pass any number of `ThemeOptions` objects to override defaults. Each is
  * deep-merged in order via MUI's `createTheme`.
@@ -190,8 +190,8 @@ export function createNovaTheme(...overrides: ThemeOptions[]): Theme {
 
 /**
  * @deprecated Use {@link createNovaTheme} instead. This name shadows the
- * upstream `createNovaMuiTheme` from `@wandelbots/design-tokens/mui` (which
- * has a different, variadic signature) and is therefore confusing.
+ * upstream `createNovaMuiTheme` from `@wandelbots/mui` (which has a
+ * different, variadic signature) and is therefore confusing.
  */
 export function createNovaMuiTheme(opts: ThemeOptions = {}): Theme {
   return createNovaTheme(opts)
