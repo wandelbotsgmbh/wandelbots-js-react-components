@@ -1,134 +1,74 @@
 import type { Meta, StoryObj } from "@storybook/react"
-import type { ComponentType } from "react"
-import {
-  ControllerTypePhysicalIcon,
-  ControllerTypeVirtualIcon,
-  OperationModeAutomaticIcon,
-  OperationModeErrorIcon,
-  OperationModeManualIcon,
-  SafetyStateErrorIcon,
-  SafetyStateEstopIcon,
-  SafetyStateManualActionRequiredIcon,
-  SafetyStateNormalIcon,
-  SafetyStateStopIcon,
-} from "../src/SafetyBar/icons"
-import {
-  AxisXIcon,
-  AxisYIcon,
-  AxisZIcon,
-  HomeIcon,
-  JogMinusIcon,
-  JogPlusIcon,
-  JoggingIcon,
-  OrientationCoordSystemIcon,
-  OrientationToolIcon,
-  RobotIcon,
-  RotationIcon,
-} from "../src/icons/index"
 
-const icons: Record<string, ComponentType<{ style?: React.CSSProperties }>> = {
-  AxisXIcon,
-  AxisYIcon,
-  AxisZIcon,
-  HomeIcon,
-  JogMinusIcon,
-  JogPlusIcon,
-  JoggingIcon,
-  OrientationCoordSystemIcon,
-  OrientationToolIcon,
-  RobotIcon,
-  RotationIcon,
-  ControllerTypePhysicalIcon,
-  ControllerTypeVirtualIcon,
-  OperationModeAutomaticIcon,
-  OperationModeErrorIcon,
-  OperationModeManualIcon,
-  SafetyStateErrorIcon,
-  SafetyStateEstopIcon,
-  SafetyStateManualActionRequiredIcon,
-  SafetyStateNormalIcon,
-  SafetyStateStopIcon,
-}
+const ICONS_PACKAGE_URL = "https://www.npmjs.com/package/@wandelbots/icons"
+const DESIGN_SYSTEM_ICONS_URL =
+  "https://wandelbotsgmbh.github.io/nova-design-system/#icons"
 
-const IconGallery = () => (
-  <>
-    <style>{`.icon-gallery svg, .icon-gallery path { fill: #FFFFFF !important; }`}</style>
-    <div
-      className="icon-gallery"
+const IconsMoved = () => (
+  <div
+    style={{
+      background: "#020617",
+      border: "1px solid rgba(142, 86, 252, 0.24)",
+      borderRadius: 12,
+      color: "rgba(255, 255, 255, 0.8)",
+      display: "flex",
+      flexDirection: "column",
+      gap: 12,
+      padding: 24,
+    }}
+  >
+    <h2 style={{ color: "#FFFFFF", margin: 0 }}>Icons have moved</h2>
+    <p style={{ margin: 0 }}>
+      The <code>/wb-icons</code> entry point has been removed from this library.
+      Icons now live in the dedicated{" "}
+      <a href={ICONS_PACKAGE_URL} style={{ color: "#B18CFF" }}>
+        @wandelbots/icons
+      </a>{" "}
+      package.
+    </p>
+    <pre
       style={{
-        display: "grid",
-        gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))",
-        gap: 16,
-        background: "#020617",
-        padding: 24,
-        borderRadius: 12,
+        background: "rgba(142, 86, 252, 0.06)",
+        borderRadius: 8,
+        margin: 0,
+        padding: 12,
       }}
     >
-      {Object.entries(icons).map(([name, Icon]) => (
-        <div
-          key={name}
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: 8,
-            padding: 12,
-            borderRadius: 8,
-            border: "1px solid rgba(142, 86, 252, 0.24)",
-            background: "rgba(142, 86, 252, 0.06)",
-            minHeight: 80,
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              width: 32,
-              height: 32,
-            }}
-          >
-            <Icon style={{ fontSize: 32 }} />
-          </div>
-          <span
-            style={{
-              fontSize: 11,
-              textAlign: "center",
-              wordBreak: "break-all",
-              color: "rgba(255, 255, 255, 0.7)",
-            }}
-          >
-            {name}
-          </span>
-        </div>
-      ))}
-    </div>
-  </>
+      <code>
+        {
+          'import { Home } from "@wandelbots/icons/Home"\nimport { Robot } from "@wandelbots/icons/Robot"'
+        }
+      </code>
+    </pre>
+    <p style={{ margin: 0 }}>
+      Browse the full icon set in the{" "}
+      <a href={DESIGN_SYSTEM_ICONS_URL} style={{ color: "#B18CFF" }}>
+        Nova Design System icon gallery
+      </a>
+      .
+    </p>
+  </div>
 )
 
 const meta: Meta = {
   title: "Components/Icons",
-  component: IconGallery,
+  component: IconsMoved,
   tags: ["!dev"],
   parameters: {
     layout: "padded",
     docs: {
       description: {
         component: [
-          "Custom SVG icon components for robotics UI. Import from the `/wb-icons` entry point:",
+          "The `/wb-icons` entry point has been removed. Use the dedicated [`@wandelbots/icons`](https://www.npmjs.com/package/@wandelbots/icons) package instead. Each icon is imported from its own subpath — there is no bulk export:",
           "",
           "```tsx",
-          'import { RobotIcon, HomeIcon } from "@wandelbots/wandelbots-js-react-components/wb-icons"',
+          'import { Home } from "@wandelbots/icons/Home"',
+          'import { Robot } from "@wandelbots/icons/Robot"',
           "```",
           "",
-          "Usage in JSX:",
+          "Browse the full icon set at https://wandelbotsgmbh.github.io/nova-design-system/#icons",
           "",
-          "```tsx",
-          "<RobotIcon style={{ fontSize: 24 }} />",
-          "```",
-          "",
-          "These are plain SVG React components. For standard UI icons (arrows, chevrons, info, etc.), use `@mui/icons-material` directly.",
+          "For standard UI icons (arrows, chevrons, info, etc.), use `@mui/icons-material` directly.",
         ].join("\n"),
       },
     },

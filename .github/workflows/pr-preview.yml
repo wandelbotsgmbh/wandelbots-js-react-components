@@ -19,6 +19,8 @@ on:
 permissions:
   contents: write
   pull-requests: write
+  # `wait-for-pages-deployment` polls the /pages/builds API.
+  pages: read
 
 
 # Only run one deployment workflow at a time across all PRs, 
@@ -48,7 +50,9 @@ jobs:
       - name: Deploy PR preview
         uses: rossjrw/pr-preview-action@v1
         with:
-          wait-for-pages-deployment: true
+          # Only works when Pages is served from a branch; the "GitHub Actions"
+          # Pages source produces no /pages/builds entries, so the wait times out.
+          wait-for-pages-deployment: false
           source-dir: storybook-static
           preview-branch: gh-pages
           umbrella-dir: pr-preview

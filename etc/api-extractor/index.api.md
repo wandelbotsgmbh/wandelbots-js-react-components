@@ -6,15 +6,10 @@
 
 import { AutoReconnectingWebsocket } from '@wandelbots/nova-js';
 import { autorun } from 'mobx';
-import { default as AxisXIcon } from './axis-x.svg';
-import { default as AxisYIcon } from './axis-y.svg';
-import { default as AxisZIcon } from './axis-z.svg';
 import Box from '@mui/material/Box';
 import { Collider } from '@wandelbots/nova-js/v2';
 import type { CollisionSetup } from '@wandelbots/nova-js/v2';
 import type { ComponentType } from 'react';
-import { default as ControllerTypePhysicalIcon } from './controller-type-physical.svg';
-import { default as ControllerTypeVirtualIcon } from './controller-type-virtual.svg';
 import { CoordinateSystem } from '@wandelbots/nova-js/v2';
 import { DataGridProps } from '@mui/x-data-grid';
 import type { DHParameter } from '@wandelbots/nova-js/v2';
@@ -24,12 +19,8 @@ import { FabProps } from '@mui/material/Fab';
 import { GridColDef } from '@mui/x-data-grid';
 import { GridRowParams } from '@mui/x-data-grid';
 import type { Group } from 'three';
-import { default as HomeIcon } from './home.svg';
 import type { i18n as i18n_2 } from 'i18next';
 import { IReactionDisposer } from 'mobx';
-import { default as JoggingIcon } from './jogging.svg';
-import { default as JogMinusIcon } from './jog-minus.svg';
-import { default as JogPlusIcon } from './jog-plus.svg';
 import { JointTypeEnum } from '@wandelbots/nova-js/v2';
 import { JSX } from 'react/jsx-runtime';
 import { Manufacturer } from '@wandelbots/nova-js/v2';
@@ -38,25 +29,13 @@ import type { MotionGroupState } from '@wandelbots/nova-js/v2';
 import { Nova } from '@wandelbots/nova-js/v2';
 import type { NovaClient } from '@wandelbots/nova-js/v2';
 import type { OperationMode } from '@wandelbots/nova-js/v2';
-import { default as OperationModeAutomaticIcon } from './operation-mode-automatic.svg';
-import { default as OperationModeErrorIcon } from './operation-mode-error.svg';
-import { default as OperationModeManualIcon } from './operation-mode-manual.svg';
-import { default as OrientationCoordSystemIcon } from './orientation-coord-system.svg';
-import { default as OrientationToolIcon } from './orientation-tool.svg';
 import type { PopoverOrigin } from '@mui/material/Popover';
 import { Pose } from '@wandelbots/nova-js/v2';
 import { default as React_2 } from 'react';
 import { reaction } from 'mobx';
 import { ReactNode } from 'react';
 import type { RobotControllerState } from '@wandelbots/nova-js/v2';
-import { default as RobotIcon } from './robot.svg';
 import { RobotTcp } from '@wandelbots/nova-js/v2';
-import { default as RotationIcon } from './rotation.svg';
-import { default as SafetyStateErrorIcon } from './safety-state-error.svg';
-import { default as SafetyStateEstopIcon } from './safety-state-estop.svg';
-import { default as SafetyStateManualActionRequiredIcon } from './safety-state-manual-action-required.svg';
-import { default as SafetyStateNormalIcon } from './safety-state-normal.svg';
-import { default as SafetyStateStopIcon } from './safety-state-stop.svg';
 import type { SafetyStateType } from '@wandelbots/nova-js/v2';
 import Stack from '@mui/material/Stack';
 import { SxProps } from '@mui/material/styles';
@@ -65,7 +44,6 @@ import type { Theme } from '@mui/material/styles';
 import type { ThemeOptions } from '@mui/material/styles';
 import * as THREE from 'three';
 import type { ThreeElements } from '@react-three/fiber';
-import { default as WBLogoIcon } from './wbLogo.svg';
 
 // @public (undocumented)
 export const AdornedTextField: (input: AdornedTextFieldProps) => JSX.Element;
@@ -115,12 +93,6 @@ export interface AxisControlComponentColors {
     // (undocumented)
     labelColor?: string;
 }
-
-export { AxisXIcon }
-
-export { AxisYIcon }
-
-export { AxisZIcon }
 
 // @public (undocumented)
 export function CollisionSceneRenderer(input: CollisionSceneRendererProps): JSX.Element;
@@ -211,10 +183,6 @@ export type ConnectedMotionGroupOptions = {
     cellId?: string;
 };
 
-export { ControllerTypePhysicalIcon }
-
-export { ControllerTypeVirtualIcon }
-
 // @public
 export const createDebugMessage: (message: string, id?: string) => LogMessage;
 
@@ -297,8 +265,6 @@ export function extractManufacturer(modelFromController: string): Manufacturer |
 
 // @public
 export function getDefaultHomeConfig(modelFromController: string, defaultJointConfig?: number[]): number[] | null;
-
-export { HomeIcon }
 
 // @public (undocumented)
 export const i18n: i18n_2;
@@ -419,8 +385,6 @@ export type JoggerOrientation = "coordsys" | "tool";
 export const JoggingCartesianAxisControl: ((input: JoggingCartesianAxisControlProps) => JSX.Element) & {
     displayName: string;
 };
-
-export { JoggingIcon }
 
 // @public
 export const JoggingJointValueControl: ((input: JoggingJointValueControlProps) => JSX.Element) & {
@@ -593,10 +557,6 @@ export class JoggingStore {
     withMotionLock(fn: () => Promise<void>): Promise<void>;
 }
 
-export { JogMinusIcon }
-
-export { JogPlusIcon }
-
 // @public (undocumented)
 export function jointValuesEqual(oldJointValues: number[], newJointValues: number[], changeDeltaThreshold: number): boolean;
 
@@ -743,16 +703,6 @@ export type NoMotionGroupModalProps = {
     baseUrl: string;
 };
 
-export { OperationModeAutomaticIcon }
-
-export { OperationModeErrorIcon }
-
-export { OperationModeManualIcon }
-
-export { OrientationCoordSystemIcon }
-
-export { OrientationToolIcon }
-
 // @public (undocumented)
 export const PoseCartesianValues: ((input: PoseCartesianValuesProps) => JSX.Element) & {
     displayName: string;
@@ -869,8 +819,6 @@ export interface RobotCardProps {
     safetyState: SafetyStateType;
 }
 
-export { RobotIcon }
-
 // @public
 export const RobotListItem: ((input: RobotListItemProps) => JSX.Element) & {
     displayName: string;
@@ -925,8 +873,6 @@ export type RobotTcpLike = {
     orientation: Vector3Simple;
 };
 
-export { RotationIcon }
-
 // @public (undocumented)
 export const SafetyBar: ((input: SafetyBarProps) => JSX.Element) & {
     displayName: string;
@@ -949,16 +895,6 @@ export interface SafetyBarProps {
     // (undocumented)
     transformOrigin?: PopoverOrigin;
 }
-
-export { SafetyStateErrorIcon }
-
-export { SafetyStateEstopIcon }
-
-export { SafetyStateManualActionRequiredIcon }
-
-export { SafetyStateNormalIcon }
-
-export { SafetyStateStopIcon }
 
 // @public (undocumented)
 export function SafetyZonesRenderer(input: SafetyZonesRendererProps): JSX.Element;
@@ -1138,8 +1074,6 @@ export interface WandelbotsDataGridProps<T = Record<string, unknown>> {
     sx?: React.ComponentProps<typeof Box>["sx"];
     title?: string;
 }
-
-export { WBLogoIcon }
 
 // (No @packageDocumentation comment for this package)
 
