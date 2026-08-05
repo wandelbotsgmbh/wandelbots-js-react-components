@@ -27,11 +27,6 @@
       "import": "./dist/3d.js",
       "require": "./dist/3d.cjs"
     },
-    "./wb-icons": {
-      "types": "./dist/wb-icons.d.ts",
-      "import": "./dist/wb-icons.js",
-      "require": "./dist/wb-icons.cjs"
-    },
     "./package.json": "./package.json",
     "./*": {
       "types": "./dist/*/index.d.ts",

@@ -67,7 +67,7 @@ export default defineConfig({
     copyPublicDir: false,
     lib: {
       // Multiple entry points for modular exports. The aggregate entries
-      // (index/core/3d/wb-icons) are a non-breaking convenience; each
+      // (index/core/3d) are a non-breaking convenience; each
       // component file is also emitted as its own entry so consumers can
       // deep-import it via the `./components/*` subpath export in
       // package.json. Shared code is hoisted into `dist/chunks/` by

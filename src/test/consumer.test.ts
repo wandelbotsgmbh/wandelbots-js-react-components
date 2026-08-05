@@ -86,11 +86,6 @@ describe("package exports — aggregate entries", () => {
     { spec: pkgName, esm: "dist/index.js", cjs: "dist/index.cjs" },
     { spec: `${pkgName}/core`, esm: "dist/core.js", cjs: "dist/core.cjs" },
     { spec: `${pkgName}/3d`, esm: "dist/3d.js", cjs: "dist/3d.cjs" },
-    {
-      spec: `${pkgName}/wb-icons`,
-      esm: "dist/wb-icons.js",
-      cjs: "dist/wb-icons.cjs",
-    },
   ]
 
   it.each(entries)("$spec resolves ESM, CJS, and types", ({

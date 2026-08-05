@@ -33,16 +33,14 @@ For 3D-enabled components, use `/3d`:
 import { Robot, RobotCard } from "@wandelbots/wandelbots-js-react-components/3d"
 ```
 
-For SVG icon components (general UI icons and safety bar icons), use `/wb-icons`:
+For icons, use the dedicated [`@wandelbots/icons`](https://www.npmjs.com/package/@wandelbots/icons) package (the `/wb-icons` entry point has been removed). Each icon is imported from its own subpath — there is no bulk export:
 
 ```typescript
-import {
-  RobotIcon,
-  HomeIcon,
-  ControllerTypeVirtualIcon,
-  SafetyStateNormalIcon,
-} from "@wandelbots/wandelbots-js-react-components/wb-icons"
+import { Home } from "@wandelbots/icons/Home"
+import { Robot } from "@wandelbots/icons/Robot"
 ```
+
+Browse the full icon set at https://wandelbotsgmbh.github.io/nova-design-system/#icons
 
 You can also import from the top-level package, but then you'll need to provide all optional dependencies:
 
@@ -58,7 +56,6 @@ pnpm add @wandelbots/wandelbots-js-react-components \
 
 - **`.`** (Main) — All components. Requires: React 18+, MUI v6/v7, @emotion/react, @emotion/styled, @mui/icons-material + all below.
 - **`/core`** — Base components (AppHeader, ProgramControl, SafetyBar, VelocitySlider, JoggingPanel, DataGrid, Timer, themes, i18n, etc.). Requires: React 18+, MUI v6/v7, @emotion/react, @emotion/styled, @mui/icons-material.
-- **`/wb-icons`** — SVG icon components (general UI icons, safety bar icons, jogging icons, axis icons). Requires: React 18+.
 - **`/3d`** — 3D visualization (Robot, RobotCard, CollisionSceneRenderer, SafetyZonesRenderer, TrajectoryRenderer). Requires: all from `/core` + three, @react-three/fiber, @react-three/drei, three-stdlib.
 
 ## 4.x to 5.x Migration Guide
