@@ -48,8 +48,7 @@ You can also import from the top-level package, but then you'll need to provide 
 pnpm add @wandelbots/wandelbots-js-react-components \
  react react-dom \
  @mui/material @mui/icons-material @emotion/react @emotion/styled \
- three @react-three/fiber @react-three/drei three-stdlib \
- @monaco-editor/react shiki @shikijs/monaco
+ three @react-three/fiber @react-three/drei three-stdlib
 ```
 
 **Available Entry Points:**
@@ -58,9 +57,9 @@ pnpm add @wandelbots/wandelbots-js-react-components \
 - **`/core`** — Base components (AppHeader, ProgramControl, SafetyBar, VelocitySlider, JoggingPanel, DataGrid, Timer, themes, i18n, etc.). Requires: React 18+, MUI v6/v7, @emotion/react, @emotion/styled, @mui/icons-material.
 - **`/3d`** — 3D visualization (Robot, RobotCard, CollisionSceneRenderer, SafetyZonesRenderer, TrajectoryRenderer). Requires: all from `/core` + three, @react-three/fiber, @react-three/drei, three-stdlib.
 
-## 4.x to 5.x Migration Guide
+## Migration & Breaking Changes
 
-See section in [Migration Guide](https://wandelbotsgmbh.github.io/wandelbots-js-react-components/?path=/docs/migration-guide--docs#breaking-changes-from-4x-api-v1--v2-both-supported-to-5x-api-v2-only) for assistance.
+Breaking changes for each major version are documented in the [GitHub Releases](https://github.com/wandelbotsgmbh/wandelbots-js-react-components/releases).
 
 ## 4.x Core Changes
 
@@ -83,10 +82,6 @@ interface DHParameter {
   'reverse_rotation_direction': boolean;
 }
 ```
-
-## 2.x to 3.x Migration Guide
-
-See section in [Migration Guide](https://wandelbotsgmbh.github.io/wandelbots-js-react-components/?path=/docs/migration-guide--docs) for assistance.
 
 ## Components
 
