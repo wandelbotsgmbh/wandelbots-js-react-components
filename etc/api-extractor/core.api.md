@@ -599,6 +599,17 @@ export type MotionGroupOption = {
     selectionId: string;
 };
 
+// @public
+export interface MotionInterpolator {
+    destroy?(): void;
+    getCurrentValues(): number[];
+    setTarget(values: number[]): void;
+    update(delta: number): boolean;
+}
+
+// @public
+export type MotionInterpolatorFactory = (initialValues: number[]) => MotionInterpolator;
+
 // @public (undocumented)
 export class MotionStreamConnection {
     constructor(nova: AnyNovaClient, controller: RobotControllerState, motionGroup: MotionGroupState, description: MotionGroupDescription, initialMotionState: MotionGroupState, motionStateSocket: AutoReconnectingWebsocket, cellId?: string);
@@ -876,7 +887,7 @@ export function useMounted(effect: EffectCallback): void;
 export function useReaction<T>(expression: Parameters<typeof reaction<T>>[0], effect: Parameters<typeof reaction<T>>[1], opts?: Parameters<typeof reaction<T>>[2]): void;
 
 // @public (undocumented)
-export class ValueInterpolator {
+export class ValueInterpolator implements MotionInterpolator {
     constructor(initialValues?: number[], options?: InterpolationOptions);
     destroy(): void;
     getCurrentValues(): number[];

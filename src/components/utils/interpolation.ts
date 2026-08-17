@@ -56,7 +56,42 @@ export interface InterpolationOptions {
   onComplete?: (values: number[]) => void
 }
 
-export class ValueInterpolator {
+/**
+ * Minimal contract a per-frame value interpolator must fulfil to drive robot
+ * joint animation. This is the seam the visualizer components animate against —
+ * {@link ValueInterpolator} is the default implementation, but consumers can
+ * supply their own strategy (no smoothing, a different spring, easing, a Kalman
+ * filter, …) via {@link MotionInterpolatorFactory}.
+ */
+export interface MotionInterpolator {
+  /** Set the new target values the interpolator should move towards. */
+  setTarget(values: number[]): void
+  /**
+   * Advance the interpolation by `delta` seconds and return `true` once the
+   * current values have settled at the target (so the caller can stop
+   * requesting frames until the next target arrives).
+   */
+  update(delta: number): boolean
+  /** Current interpolated values to apply to the scene this frame. */
+  getCurrentValues(): number[]
+  /** Optional cleanup hook invoked when the owning component unmounts. */
+  destroy?(): void
+}
+
+/**
+ * Produces a {@link MotionInterpolator} seeded with the robot's initial joint
+ * values. The visualizer calls this once per mount; return a fresh instance so
+ * each robot owns its own interpolation state.
+ *
+ * The factory is read once when the animator mounts, so pass a stable reference
+ * (module-level function or memoized) rather than an inline closure that changes
+ * every render.
+ */
+export type MotionInterpolatorFactory = (
+  initialValues: number[],
+) => MotionInterpolator
+
+export class ValueInterpolator implements MotionInterpolator {
   private currentValues: number[] = []
   private targetValues: number[] = []
   private previousTargetValues: number[] = []

@@ -4,6 +4,7 @@ import { Suspense, useCallback, useEffect, useState } from "react"
 import { ErrorBoundary } from "react-error-boundary"
 import type * as THREE from "three"
 import { externalizeComponent } from "../../externalizeComponent"
+import type { MotionInterpolatorFactory } from "../utils/interpolation"
 import ConsoleFilter from "../ConsoleFilter"
 import { DHLinearAxis } from "./DHLinearAxis"
 import { GenericRobot } from "./GenericRobot"
@@ -28,6 +29,13 @@ export type SupportedLinearAxisProps = {
   ) => Promise<string> | undefined
   postModelRender?: () => void
   transparentColor?: string
+  /**
+   * Strategy used to interpolate joint values towards each incoming motion
+   * state. Defaults to spring smoothing; provide a custom
+   * {@link MotionInterpolatorFactory} to tune the spring, follow the streamed
+   * pose exactly (no smoothing), or plug in any other behaviour.
+   */
+  createInterpolator?: MotionInterpolatorFactory
 } & ThreeElements["group"]
 
 export const SupportedLinearAxis = externalizeComponent(
@@ -40,6 +48,7 @@ export const SupportedLinearAxis = externalizeComponent(
     postModelRender,
     transparentColor,
     instanceUrl,
+    createInterpolator,
     ...props
   }: SupportedLinearAxisProps) => {
     const [robotGroup, setRobotGroup] = useState<THREE.Group | null>(null)
@@ -79,6 +88,7 @@ export const SupportedLinearAxis = externalizeComponent(
             <LinearAxisAnimator
               rapidlyChangingMotionState={rapidlyChangingMotionState}
               dhParameters={dhParameters}
+              createInterpolator={createInterpolator}
             >
               <GenericRobot
                 modelURL={(() => {

@@ -15,6 +15,7 @@ import type * as THREE from "three"
 import { externalizeComponent } from "../../externalizeComponent"
 import ConsoleFilter from "../ConsoleFilter"
 import { GenericRobot } from "./GenericRobot"
+import type { MotionInterpolatorFactory } from "../utils/interpolation"
 import RobotAnimator, { type RobotAnimatorHandle } from "./RobotAnimator"
 import { applyGhostStyle, removeGhostStyle } from "./ghostStyle"
 import { defaultGetModel } from "./robotModelLogic"
@@ -36,6 +37,13 @@ export type SupportedRobotProps = {
   ) => Promise<string> | undefined
   postModelRender?: () => void
   transparentColor?: string
+  /**
+   * Strategy used to interpolate joint values towards each incoming motion
+   * state. Defaults to spring smoothing; provide a custom
+   * {@link MotionInterpolatorFactory} to tune the spring, follow the streamed
+   * pose exactly (no smoothing), or plug in any other behaviour.
+   */
+  createInterpolator?: MotionInterpolatorFactory
 } & ThreeElements["group"]
 
 export const SupportedRobot = externalizeComponent(
@@ -48,6 +56,7 @@ export const SupportedRobot = externalizeComponent(
     postModelRender,
     transparentColor,
     instanceUrl,
+    createInterpolator,
     ...props
   }: SupportedRobotProps) => {
     const [robotGroup, setRobotGroup] = useState<THREE.Group | null>(null)
@@ -108,6 +117,7 @@ export const SupportedRobot = externalizeComponent(
               ref={robotAnimatorRef}
               rapidlyChangingMotionState={rapidlyChangingMotionState}
               dhParameters={dhParameters}
+              createInterpolator={createInterpolator}
             >
               <GenericRobot
                 modelURL={modelURL}

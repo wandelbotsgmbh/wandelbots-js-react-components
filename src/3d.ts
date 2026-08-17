@@ -16,3 +16,6 @@ export { defaultGetModel } from "./components/robots/robotModelLogic"
 export * from "./components/robots/SupportedLinearAxis"
 export * from "./components/robots/SupportedRobot"
 export * from "./components/robots/MotionGroupVisualizer"
+// Interpolation strategy types/classes referenced by the robot component props,
+// so the 3d entry point is self-contained for consumers customizing smoothing.
+export * from "./components/utils/interpolation"

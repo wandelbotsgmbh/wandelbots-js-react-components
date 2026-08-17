@@ -4,26 +4,44 @@ import type React from "react"
 import { useCallback, useEffect, useRef } from "react"
 import type { Group, Object3D } from "three"
 import { useAutorun } from "../utils/hooks"
-import { ValueInterpolator } from "../utils/interpolation"
+import {
+  type MotionInterpolator,
+  type MotionInterpolatorFactory,
+  ValueInterpolator,
+} from "../utils/interpolation"
 import { collectJoints } from "./robotModelLogic"
 
 type LinearAxisAnimatorProps = {
   rapidlyChangingMotionState: MotionGroupState
   dhParameters: DHParameter[]
   onTranslationChanged?: (joints: Object3D[], jointValues: number[]) => void
+  /**
+   * Strategy used to interpolate joint values towards each incoming motion
+   * state. Defaults to spring smoothing via {@link ValueInterpolator}. Provide a
+   * custom {@link MotionInterpolatorFactory} to tune the spring, follow the
+   * streamed pose exactly (no smoothing), or plug in any other behaviour.
+   */
+  createInterpolator?: MotionInterpolatorFactory
   children: React.ReactNode
 }
+
+const defaultCreateInterpolator: MotionInterpolatorFactory = (initialValues) =>
+  new ValueInterpolator(initialValues)
 
 export default function LinearAxisAnimator({
   rapidlyChangingMotionState,
   dhParameters,
   onTranslationChanged,
+  createInterpolator = defaultCreateInterpolator,
   children,
 }: LinearAxisAnimatorProps) {
   const jointValues = useRef<number[]>([])
   const jointObjects = useRef<Object3D[]>([])
-  const interpolatorRef = useRef<ValueInterpolator | null>(null)
+  const interpolatorRef = useRef<MotionInterpolator | null>(null)
   const { invalidate } = useThree()
+
+  // Read the factory once on mount (see MotionInterpolatorFactory docs).
+  const createInterpolatorRef = useRef(createInterpolator)
 
   // Initialize interpolator
   // biome-ignore lint/correctness/useExhaustiveDependencies: pre-biome code
@@ -32,14 +50,10 @@ export default function LinearAxisAnimator({
       (item) => item !== undefined,
     )
 
-    interpolatorRef.current = new ValueInterpolator(initialJointValues, {
-      tension: 120, // Controls spring stiffness - higher values create faster, more responsive motion
-      friction: 20, // Controls damping - higher values reduce oscillation and create smoother settling
-      threshold: 0.001,
-    })
+    interpolatorRef.current = createInterpolatorRef.current(initialJointValues)
 
     return () => {
-      interpolatorRef.current?.destroy()
+      interpolatorRef.current?.destroy?.()
     }
   }, [])
 

@@ -4,7 +4,11 @@ import type React from "react"
 import { forwardRef, useEffect, useImperativeHandle, useRef } from "react"
 import type { Group, Object3D } from "three"
 import { useAutorun } from "../utils/hooks"
-import { ValueInterpolator } from "../utils/interpolation"
+import {
+  type MotionInterpolator,
+  type MotionInterpolatorFactory,
+  ValueInterpolator,
+} from "../utils/interpolation"
 import { collectJoints } from "./robotModelLogic"
 
 export type RobotAnimatorHandle = {
@@ -21,20 +25,39 @@ type RobotAnimatorProps = {
   rapidlyChangingMotionState: MotionGroupState
   dhParameters: DHParameter[]
   onRotationChanged?: (joints: Object3D[], jointValues: number[]) => void
+  /**
+   * Strategy used to interpolate joint values towards each incoming motion
+   * state. Defaults to spring smoothing via {@link ValueInterpolator}. Provide a
+   * custom {@link MotionInterpolatorFactory} to tune the spring, follow the
+   * streamed pose exactly (no smoothing), or plug in any other behaviour.
+   */
+  createInterpolator?: MotionInterpolatorFactory
   children: React.ReactNode
 }
 
+const defaultCreateInterpolator: MotionInterpolatorFactory = (initialValues) =>
+  new ValueInterpolator(initialValues)
+
 const RobotAnimator = forwardRef<RobotAnimatorHandle, RobotAnimatorProps>(
   function RobotAnimator(
-    { rapidlyChangingMotionState, dhParameters, onRotationChanged, children },
+    {
+      rapidlyChangingMotionState,
+      dhParameters,
+      onRotationChanged,
+      createInterpolator = defaultCreateInterpolator,
+      children,
+    },
     ref,
   ) {
     const groupRef = useRef<Group | null>(null)
     const jointObjects = useRef<Object3D[]>([])
-    const interpolatorRef = useRef<ValueInterpolator | null>(null)
+    const interpolatorRef = useRef<MotionInterpolator | null>(null)
     const { invalidate } = useThree()
     const motionStateRef = useRef(rapidlyChangingMotionState)
     motionStateRef.current = rapidlyChangingMotionState
+
+    // Read the factory once on mount (see MotionInterpolatorFactory docs).
+    const createInterpolatorRef = useRef(createInterpolator)
 
     // Initialize interpolator
     // biome-ignore lint/correctness/useExhaustiveDependencies: pre-biome code
@@ -44,14 +67,11 @@ const RobotAnimator = forwardRef<RobotAnimatorHandle, RobotAnimatorProps>(
           (item) => item !== undefined,
         )
 
-      interpolatorRef.current = new ValueInterpolator(initialJointValues, {
-        tension: 120, // Controls spring stiffness - higher values create faster, more responsive motion
-        friction: 20, // Controls damping - higher values reduce oscillation and create smoother settling
-        threshold: 0.001,
-      })
+      interpolatorRef.current =
+        createInterpolatorRef.current(initialJointValues)
 
       return () => {
-        interpolatorRef.current?.destroy()
+        interpolatorRef.current?.destroy?.()
       }
     }, [])
 
