@@ -14,6 +14,7 @@ import { ErrorBoundary } from "react-error-boundary"
 import type * as THREE from "three"
 import { externalizeComponent } from "../../externalizeComponent"
 import ConsoleFilter from "../ConsoleFilter"
+import { useSmoothedMotionState } from "../utils/useSmoothedMotionState"
 import { GenericRobot } from "./GenericRobot"
 import RobotAnimator, { type RobotAnimatorHandle } from "./RobotAnimator"
 import { applyGhostStyle, removeGhostStyle } from "./ghostStyle"
@@ -38,7 +39,16 @@ export type SupportedRobotProps = {
   transparentColor?: string
 } & ThreeElements["group"]
 
-export const SupportedRobot = externalizeComponent(
+/**
+ * Renders the robot at exactly the pose it is given, frame by frame — no
+ * smoothing, so it tracks the streamed motion state with no lag or overshoot.
+ *
+ * Use this when the incoming stream is already the exact pose to display (e.g.
+ * scrubbing a planned trajectory). For spring-damped transitions, use
+ * {@link SupportedRobot}, or compose {@link useSmoothedMotionState} with this
+ * component yourself.
+ */
+export const SupportedRobotExact = externalizeComponent(
   ({
     rapidlyChangingMotionState,
     modelFromController,
@@ -120,6 +130,30 @@ export const SupportedRobot = externalizeComponent(
         </Suspense>
         <ConsoleFilter />
       </ErrorBoundary>
+    )
+  },
+)
+
+/**
+ * Robot visualizer with built-in spring smoothing of the joint stream.
+ *
+ * This is a thin wrapper that runs the incoming motion state through
+ * {@link useSmoothedMotionState} and renders {@link SupportedRobotExact}. It is
+ * the batteries-included default; drop down to `SupportedRobotExact` (optionally
+ * with your own {@link useSmoothedMotionState} configuration) when you need to
+ * control or disable smoothing.
+ */
+export const SupportedRobot = externalizeComponent(
+  ({ rapidlyChangingMotionState, ...props }: SupportedRobotProps) => {
+    const smoothedMotionState = useSmoothedMotionState(
+      rapidlyChangingMotionState,
+    )
+
+    return (
+      <SupportedRobotExact
+        rapidlyChangingMotionState={smoothedMotionState}
+        {...props}
+      />
     )
   },
 )

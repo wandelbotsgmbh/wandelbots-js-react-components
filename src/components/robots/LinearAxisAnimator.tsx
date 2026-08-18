@@ -1,10 +1,9 @@
-import { useFrame, useThree } from "@react-three/fiber"
+import { useThree } from "@react-three/fiber"
 import type { DHParameter, MotionGroupState } from "@wandelbots/nova-js/v2"
 import type React from "react"
-import { useCallback, useEffect, useRef } from "react"
+import { useEffect, useRef } from "react"
 import type { Group, Object3D } from "three"
 import { useAutorun } from "../utils/hooks"
-import { ValueInterpolator } from "../utils/interpolation"
 import { collectJoints } from "./robotModelLogic"
 
 type LinearAxisAnimatorProps = {
@@ -14,47 +13,28 @@ type LinearAxisAnimatorProps = {
   children: React.ReactNode
 }
 
+/**
+ * Applies the incoming motion state to the linear axis, as-is.
+ *
+ * This component performs no smoothing: it renders exactly the pose it is
+ * given. If damped/spring transitions are desired, run the motion state
+ * through {@link useSmoothedMotionState} before passing it here.
+ */
 export default function LinearAxisAnimator({
   rapidlyChangingMotionState,
   dhParameters,
   onTranslationChanged,
   children,
 }: LinearAxisAnimatorProps) {
-  const jointValues = useRef<number[]>([])
   const jointObjects = useRef<Object3D[]>([])
-  const interpolatorRef = useRef<ValueInterpolator | null>(null)
+  const jointValues = useRef<number[]>(
+    rapidlyChangingMotionState.joint_position.filter(
+      (value): value is number => value !== undefined,
+    ),
+  )
   const { invalidate } = useThree()
-
-  // Initialize interpolator
-  // biome-ignore lint/correctness/useExhaustiveDependencies: pre-biome code
-  useEffect(() => {
-    const initialJointValues = rapidlyChangingMotionState.joint_position.filter(
-      (item) => item !== undefined,
-    )
-
-    interpolatorRef.current = new ValueInterpolator(initialJointValues, {
-      tension: 120, // Controls spring stiffness - higher values create faster, more responsive motion
-      friction: 20, // Controls damping - higher values reduce oscillation and create smoother settling
-      threshold: 0.001,
-    })
-
-    return () => {
-      interpolatorRef.current?.destroy()
-    }
-  }, [])
-
-  // Animation loop that runs at the display's refresh rate
-  useFrame((state, delta) => {
-    if (interpolatorRef.current) {
-      const isComplete = interpolatorRef.current.update(delta)
-      setTranslation()
-
-      // Trigger a re-render only if the animation is still running
-      if (!isComplete) {
-        invalidate()
-      }
-    }
-  })
+  const motionStateRef = useRef(rapidlyChangingMotionState)
+  motionStateRef.current = rapidlyChangingMotionState
 
   function setGroupRef(group: Group | null) {
     if (!group) return
@@ -67,10 +47,10 @@ export default function LinearAxisAnimator({
   }
 
   function setTranslation() {
-    const updatedJointValues = interpolatorRef.current?.getCurrentValues() || []
+    const values = jointValues.current
 
     if (onTranslationChanged) {
-      onTranslationChanged(jointObjects.current, updatedJointValues)
+      onTranslationChanged(jointObjects.current, values)
     } else {
       // For linear axes, we apply translation instead of rotation
       for (const [index, object] of jointObjects.current.entries()) {
@@ -79,40 +59,34 @@ export default function LinearAxisAnimator({
 
         // Apply linear translation along Y axis
         // Convert from millimeters to meters
-        object.position.y =
-          (translationSign * (updatedJointValues[index] || 0)) / 1000
+        object.position.y = (translationSign * (values[index] || 0)) / 1000
       }
     }
   }
 
-  const updateJoints = useCallback(() => {
-    const newJointValues = rapidlyChangingMotionState.joint_position.filter(
-      (item) => item !== undefined,
+  // Single path for applying new joint values — works for both MobX and plain props
+  function applyMotionState(state: MotionGroupState) {
+    jointValues.current = state.joint_position.filter(
+      (value): value is number => value !== undefined,
     )
-
-    requestAnimationFrame(() => {
-      jointValues.current = newJointValues
-      interpolatorRef.current?.setTarget(newJointValues)
-    })
-  }, [rapidlyChangingMotionState])
+    setTranslation()
+    invalidate()
+  }
 
   /**
-   * Fire an update joints call on every motion state change.
-   * requestAnimationFrame used to avoid blocking main thread
-   */
-  // biome-ignore lint/correctness/useExhaustiveDependencies: pre-biome code
-  useEffect(() => {
-    updateJoints()
-  }, [rapidlyChangingMotionState, updateJoints])
-
-  /**
-   * As some consumer applications (eg. storybook) deliver
-   * mobx observable for rapidlyChangingMotionState, we need to
-   * register the watcher to get the newest value updates
+   * MobX path: autorun tracks observable reads inside the callback.
    */
   useAutorun(() => {
-    updateJoints()
+    applyMotionState(motionStateRef.current)
   })
+
+  /**
+   * Plain-prop path: catch reference changes not tracked by MobX.
+   */
+  // biome-ignore lint/correctness/useExhaustiveDependencies: false positive
+  useEffect(() => {
+    applyMotionState(rapidlyChangingMotionState)
+  }, [rapidlyChangingMotionState])
 
   return <group ref={setGroupRef}>{children}</group>
 }

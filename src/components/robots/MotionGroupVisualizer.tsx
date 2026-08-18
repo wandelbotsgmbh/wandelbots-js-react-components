@@ -3,18 +3,25 @@ import type React from "react"
 import { useEffect, useMemo, useState } from "react"
 
 import { externalizeComponent } from "../../externalizeComponent"
+import { useSmoothedMotionState } from "../utils/useSmoothedMotionState"
 import {
-  SupportedLinearAxis,
+  SupportedLinearAxisExact,
   type SupportedLinearAxisProps,
 } from "./SupportedLinearAxis"
-import { SupportedRobot, type SupportedRobotProps } from "./SupportedRobot"
+import { SupportedRobotExact, type SupportedRobotProps } from "./SupportedRobot"
 
 export type MotionGroupVisualizerProps = {
   instanceUrl: string
   inverseSolver?: string | null
 } & (SupportedRobotProps | SupportedLinearAxisProps)
 
-export const MotionGroupVisualizer: React.FC<MotionGroupVisualizerProps> =
+/**
+ * Picks the right visualizer for the motion group (robot, turntable or linear
+ * axis) and renders it at exactly the pose it is given — no smoothing.
+ *
+ * For spring-damped transitions, use {@link MotionGroupVisualizer}.
+ */
+export const MotionGroupVisualizerExact: React.FC<MotionGroupVisualizerProps> =
   externalizeComponent((props: MotionGroupVisualizerProps) => {
     const { inverseSolver, dhParameters, ...rest } = props
 
@@ -60,14 +67,36 @@ export const MotionGroupVisualizer: React.FC<MotionGroupVisualizerProps> =
     }, [inverseSolver])
 
     if (isRobot || isTurnTable) {
-      return <SupportedRobot dhParameters={dhParameters} {...rest} />
+      return <SupportedRobotExact dhParameters={dhParameters} {...rest} />
     }
 
     if (isLinearAxis) {
-      return <SupportedLinearAxis dhParameters={dhParameters} {...rest} />
+      return <SupportedLinearAxisExact dhParameters={dhParameters} {...rest} />
     }
 
     return null
+  })
+
+/**
+ * Motion group visualizer with built-in spring smoothing of the joint stream.
+ *
+ * Thin wrapper that runs the incoming motion state through
+ * {@link useSmoothedMotionState} and renders {@link MotionGroupVisualizerExact}.
+ * It is the batteries-included default; drop down to `MotionGroupVisualizerExact`
+ * when you need to control or disable smoothing.
+ */
+export const MotionGroupVisualizer: React.FC<MotionGroupVisualizerProps> =
+  externalizeComponent((props: MotionGroupVisualizerProps) => {
+    const smoothedMotionState = useSmoothedMotionState(
+      props.rapidlyChangingMotionState,
+    )
+
+    return (
+      <MotionGroupVisualizerExact
+        {...props}
+        rapidlyChangingMotionState={smoothedMotionState}
+      />
+    )
   })
 
 export default MotionGroupVisualizer

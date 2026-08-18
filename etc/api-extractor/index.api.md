@@ -649,8 +649,11 @@ export type MotionGroupOption = {
     selectionId: string;
 };
 
-// @public (undocumented)
+// @public
 export const MotionGroupVisualizer: React_2.FC<MotionGroupVisualizerProps>;
+
+// @public
+export const MotionGroupVisualizerExact: React_2.FC<MotionGroupVisualizerProps>;
 
 // @public (undocumented)
 export type MotionGroupVisualizerProps = {
@@ -908,8 +911,11 @@ export type SafetyZonesRendererProps = {
 // @public (undocumented)
 export const SelectableFab: (props: CodeFabProps) => JSX.Element;
 
-// @public (undocumented)
+// @public
 export const SupportedLinearAxis: (input: SupportedLinearAxisProps) => JSX.Element;
+
+// @public
+export const SupportedLinearAxisExact: (input: SupportedLinearAxisProps) => JSX.Element;
 
 // @public (undocumented)
 export type SupportedLinearAxisProps = {
@@ -923,8 +929,11 @@ export type SupportedLinearAxisProps = {
     transparentColor?: string;
 } & ThreeElements["group"];
 
-// @public (undocumented)
+// @public
 export const SupportedRobot: (input: SupportedRobotProps) => JSX.Element;
+
+// @public
+export const SupportedRobotExact: (input: SupportedRobotProps) => JSX.Element;
 
 // @public (undocumented)
 export type SupportedRobotProps = {
@@ -1024,6 +1033,9 @@ export function useMounted(effect: EffectCallback): void;
 
 // @public
 export function useReaction<T>(expression: Parameters<typeof reaction<T>>[0], effect: Parameters<typeof reaction<T>>[1], opts?: Parameters<typeof reaction<T>>[2]): void;
+
+// @public
+export function useSmoothedMotionState(motionState: MotionGroupState, options?: InterpolationOptions): MotionGroupState;
 
 // @public (undocumented)
 export class ValueInterpolator {

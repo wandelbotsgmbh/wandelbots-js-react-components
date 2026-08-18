@@ -875,6 +875,9 @@ export function useMounted(effect: EffectCallback): void;
 // @public
 export function useReaction<T>(expression: Parameters<typeof reaction<T>>[0], effect: Parameters<typeof reaction<T>>[1], opts?: Parameters<typeof reaction<T>>[2]): void;
 
+// @public
+export function useSmoothedMotionState(motionState: MotionGroupState, options?: InterpolationOptions): MotionGroupState;
+
 // @public (undocumented)
 export class ValueInterpolator {
     constructor(initialValues?: number[], options?: InterpolationOptions);
