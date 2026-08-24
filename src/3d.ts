@@ -16,3 +16,9 @@ export { defaultGetModel } from "./components/robots/robotModelLogic"
 export * from "./components/robots/SupportedLinearAxis"
 export * from "./components/robots/SupportedRobot"
 export * from "./components/robots/MotionGroupVisualizer"
+// Opt-in joint-stream smoothing to feed the (as-is) robot visualizer.
+export * from "./components/utils/useSmoothedMotionState"
+export {
+  type InterpolationOptions,
+  ValueInterpolator,
+} from "./components/utils/interpolation"

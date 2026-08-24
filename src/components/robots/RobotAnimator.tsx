@@ -1,10 +1,9 @@
-import { useFrame, useThree } from "@react-three/fiber"
+import { useThree } from "@react-three/fiber"
 import type { DHParameter, MotionGroupState } from "@wandelbots/nova-js/v2"
 import type React from "react"
 import { forwardRef, useEffect, useImperativeHandle, useRef } from "react"
 import type { Group, Object3D } from "three"
 import { useAutorun } from "../utils/hooks"
-import { ValueInterpolator } from "../utils/interpolation"
 import { collectJoints } from "./robotModelLogic"
 
 export type RobotAnimatorHandle = {
@@ -24,6 +23,13 @@ type RobotAnimatorProps = {
   children: React.ReactNode
 }
 
+/**
+ * Applies the incoming motion state to the robot's joints, as-is.
+ *
+ * This component performs no smoothing: it renders exactly the pose it is
+ * given. If damped/spring transitions are desired, run the motion state
+ * through {@link useSmoothedMotionState} before passing it here.
+ */
 const RobotAnimator = forwardRef<RobotAnimatorHandle, RobotAnimatorProps>(
   function RobotAnimator(
     { rapidlyChangingMotionState, dhParameters, onRotationChanged, children },
@@ -31,49 +37,14 @@ const RobotAnimator = forwardRef<RobotAnimatorHandle, RobotAnimatorProps>(
   ) {
     const groupRef = useRef<Group | null>(null)
     const jointObjects = useRef<Object3D[]>([])
-    const interpolatorRef = useRef<ValueInterpolator | null>(null)
+    const jointValues = useRef<number[]>(
+      rapidlyChangingMotionState.joint_position.filter(
+        (value): value is number => value !== undefined,
+      ),
+    )
     const { invalidate } = useThree()
     const motionStateRef = useRef(rapidlyChangingMotionState)
     motionStateRef.current = rapidlyChangingMotionState
-
-    // Initialize interpolator
-    // biome-ignore lint/correctness/useExhaustiveDependencies: pre-biome code
-    useEffect(() => {
-      const initialJointValues =
-        rapidlyChangingMotionState.joint_position.filter(
-          (item) => item !== undefined,
-        )
-
-      interpolatorRef.current = new ValueInterpolator(initialJointValues, {
-        tension: 120, // Controls spring stiffness - higher values create faster, more responsive motion
-        friction: 20, // Controls damping - higher values reduce oscillation and create smoother settling
-        threshold: 0.001,
-      })
-
-      return () => {
-        interpolatorRef.current?.destroy()
-      }
-    }, [])
-
-    // Animation loop that runs at the display's refresh rate
-    useFrame((_state, delta) => {
-      if (!interpolatorRef.current) return
-
-      // Safety net: if the model mounted its meshes after our group ref
-      // already fired (the common async case), the joints won't have been
-      // collected yet. Re-scan while we have a group but no joints.
-      if (jointObjects.current.length === 0 && groupRef.current) {
-        recollectJoints()
-      }
-
-      const isComplete = interpolatorRef.current.update(delta)
-      setRotation()
-
-      // Trigger a re-render only if the animation is still running
-      if (!isComplete) {
-        invalidate()
-      }
-    })
 
     function setGroupRef(group: Group | null) {
       groupRef.current = group
@@ -102,11 +73,10 @@ const RobotAnimator = forwardRef<RobotAnimatorHandle, RobotAnimatorProps>(
     useImperativeHandle(ref, () => ({ recollectJoints }))
 
     function setRotation() {
-      const updatedJointValues =
-        interpolatorRef.current?.getCurrentValues() || []
+      const values = jointValues.current
 
       if (onRotationChanged) {
-        onRotationChanged(jointObjects.current, updatedJointValues)
+        onRotationChanged(jointObjects.current, values)
       } else {
         for (const [index, object] of jointObjects.current.entries()) {
           const dhParam = dhParameters[index]
@@ -114,17 +84,17 @@ const RobotAnimator = forwardRef<RobotAnimatorHandle, RobotAnimatorProps>(
           const rotationSign = dhParam.reverse_rotation_direction ? -1 : 1
 
           object.rotation.y =
-            rotationSign * (updatedJointValues[index] || 0) + rotationOffset
+            rotationSign * (values[index] || 0) + rotationOffset
         }
       }
     }
 
-    // Single path for feeding new joint targets — works for both MobX and plain props
+    // Single path for applying new joint values — works for both MobX and plain props
     function applyMotionState(state: MotionGroupState) {
-      const newJointValues = state.joint_position.filter(
-        (item) => item !== undefined,
+      jointValues.current = state.joint_position.filter(
+        (value): value is number => value !== undefined,
       )
-      interpolatorRef.current?.setTarget(newJointValues)
+      setRotation()
       invalidate()
     }
 
@@ -138,7 +108,7 @@ const RobotAnimator = forwardRef<RobotAnimatorHandle, RobotAnimatorProps>(
 
     /**
      * Plain-prop path: catch reference changes not tracked by MobX.
-     * Calling setTarget with the same values is idempotent and cheap.
+     * Re-applying the same values is idempotent and cheap.
      */
     // biome-ignore lint/correctness/useExhaustiveDependencies: false positive
     useEffect(() => {
