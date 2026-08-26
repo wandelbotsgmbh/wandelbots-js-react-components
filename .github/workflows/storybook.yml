@@ -1,7 +1,7 @@
-# Publishes Storybook for the protected branches (main, v2, v3) to the
-# `gh-pages` branch. Per-PR previews are handled separately by
-# `pr-preview.yml`, which deploys to `pr-preview/pr-<num>/`. The
-# `clean-exclude` list below ensures neither workflow wipes the other's output.
+# Publishes Storybook for `main` to the `gh-pages` branch. Per-PR previews are
+# handled separately by `pr-preview.yml`, which deploys to
+# `pr-preview/pr-<num>/`. The `clean-exclude` list below ensures neither
+# workflow wipes the other's output.
 #
 # NOTE: GitHub Pages must be configured to deploy from the `gh-pages` branch
 # (Settings → Pages → Source: Deploy from a branch → gh-pages / (root)).
@@ -12,8 +12,6 @@ on:
   push:
     branches:
       - main
-      - v2
-      - v3
   workflow_dispatch:
 
 permissions:
@@ -36,24 +34,12 @@ jobs:
       - name: Build Storybook
         run: pnpm run build-storybook
 
-      - name: Determine target folder
-        id: target
-        run: |
-          if [ "${{ github.ref_name }}" = "main" ]; then
-            echo "folder=." >> "$GITHUB_OUTPUT"
-          else
-            echo "folder=${{ github.ref_name }}" >> "$GITHUB_OUTPUT"
-          fi
-
       - name: Deploy to gh-pages
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           branch: gh-pages
           folder: storybook-static
-          target-folder: ${{ steps.target.outputs.folder }}
-          # Preserve other protected-branch deployments and all PR previews.
+          # Preserve all PR previews.
           clean-exclude: |
             pr-preview/
-            v2/
-            v3/
           commit-message: "docs(storybook): publish ${{ github.ref_name }} @ ${{ github.sha }}"
