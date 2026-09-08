@@ -252,6 +252,8 @@ export function defaultGetModel(modelFromController: string, instanceUrlProp?: s
 export type DHLinearAxisProps = {
     rapidlyChangingMotionState: MotionGroupState;
     dhParameters: Array<DHParameter>;
+    chainOffsetPosition?: [number, number, number];
+    chainOffsetQuaternion?: THREE.Quaternion;
 } & ThreeElements["group"];
 
 // @public (undocumented)
@@ -922,6 +924,8 @@ export type SupportedLinearAxisProps = {
     rapidlyChangingMotionState: MotionGroupState;
     modelFromController: string;
     dhParameters: DHParameter[];
+    chainOffsetPosition?: [number, number, number];
+    chainOffsetQuaternion?: THREE.Quaternion;
     flangeRef?: React.Ref<THREE.Group>;
     instanceUrl?: string;
     getModel?: (modelFromController: string, instanceUrl?: string) => Promise<string> | undefined;
@@ -940,6 +944,8 @@ export type SupportedRobotProps = {
     rapidlyChangingMotionState: MotionGroupState;
     modelFromController: string;
     dhParameters: DHParameter[];
+    chainOffsetPosition?: [number, number, number];
+    chainOffsetQuaternion?: THREE.Quaternion;
     flangeRef?: React.Ref<THREE.Group>;
     instanceUrl?: string;
     getModel?: (modelFromController: string, instanceUrl?: string) => Promise<string> | undefined;
