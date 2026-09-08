@@ -2,7 +2,7 @@ import { useThree } from "@react-three/fiber"
 import type { DHParameter, MotionGroupState } from "@wandelbots/nova-js/v2"
 import type React from "react"
 import { forwardRef, useEffect, useImperativeHandle, useRef } from "react"
-import type { Group, Object3D } from "three"
+import type { Group, Object3D, Quaternion } from "three"
 import { useAutorun } from "../utils/hooks"
 import { collectJoints } from "./robotModelLogic"
 
@@ -19,6 +19,8 @@ export type RobotAnimatorHandle = {
 type RobotAnimatorProps = {
   rapidlyChangingMotionState: MotionGroupState
   dhParameters: DHParameter[]
+  chainOffsetPosition?: [number, number, number]
+  chainOffsetQuaternion?: Quaternion
   onRotationChanged?: (joints: Object3D[], jointValues: number[]) => void
   children: React.ReactNode
 }
@@ -32,7 +34,14 @@ type RobotAnimatorProps = {
  */
 const RobotAnimator = forwardRef<RobotAnimatorHandle, RobotAnimatorProps>(
   function RobotAnimator(
-    { rapidlyChangingMotionState, dhParameters, onRotationChanged, children },
+    {
+      rapidlyChangingMotionState,
+      dhParameters,
+      chainOffsetPosition,
+      chainOffsetQuaternion,
+      onRotationChanged,
+      children,
+    },
     ref,
   ) {
     const groupRef = useRef<Group | null>(null)
@@ -115,7 +124,15 @@ const RobotAnimator = forwardRef<RobotAnimatorHandle, RobotAnimatorProps>(
       applyMotionState(rapidlyChangingMotionState)
     }, [rapidlyChangingMotionState])
 
-    return <group ref={setGroupRef}>{children}</group>
+    return (
+      <group
+        ref={setGroupRef}
+        position={chainOffsetPosition}
+        quaternion={chainOffsetQuaternion}
+      >
+        {children}
+      </group>
+    )
   },
 )
 

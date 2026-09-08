@@ -15,12 +15,16 @@ import { defaultGetModel } from "./robotModelLogic"
 export type DHLinearAxisProps = {
   rapidlyChangingMotionState: MotionGroupState
   dhParameters: Array<DHParameter>
+  chainOffsetPosition?: [number, number, number]
+  chainOffsetQuaternion?: THREE.Quaternion
 } & ThreeElements["group"]
 
 export type SupportedLinearAxisProps = {
   rapidlyChangingMotionState: MotionGroupState
   modelFromController: string
   dhParameters: DHParameter[]
+  chainOffsetPosition?: [number, number, number]
+  chainOffsetQuaternion?: THREE.Quaternion
   flangeRef?: React.Ref<THREE.Group>
   instanceUrl?: string
   getModel?: (
@@ -44,6 +48,8 @@ export const SupportedLinearAxisExact = externalizeComponent(
     rapidlyChangingMotionState,
     modelFromController,
     dhParameters,
+    chainOffsetPosition,
+    chainOffsetQuaternion,
     getModel = defaultGetModel,
     flangeRef,
     postModelRender,
@@ -88,6 +94,8 @@ export const SupportedLinearAxisExact = externalizeComponent(
             <LinearAxisAnimator
               rapidlyChangingMotionState={rapidlyChangingMotionState}
               dhParameters={dhParameters}
+              chainOffsetPosition={chainOffsetPosition}
+              chainOffsetQuaternion={chainOffsetQuaternion}
             >
               <GenericRobot
                 modelURL={(() => {

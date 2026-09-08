@@ -1,14 +1,16 @@
 import { useThree } from "@react-three/fiber"
 import type { DHParameter, MotionGroupState } from "@wandelbots/nova-js/v2"
 import type React from "react"
-import { useEffect, useRef } from "react"
-import type { Group, Object3D } from "three"
+import { useRef } from "react"
+import type { Group, Object3D, Quaternion } from "three"
 import { useAutorun } from "../utils/hooks"
 import { collectJoints } from "./robotModelLogic"
 
 type LinearAxisAnimatorProps = {
   rapidlyChangingMotionState: MotionGroupState
   dhParameters: DHParameter[]
+  chainOffsetPosition?: [number, number, number]
+  chainOffsetQuaternion?: Quaternion
   onTranslationChanged?: (joints: Object3D[], jointValues: number[]) => void
   children: React.ReactNode
 }
@@ -23,6 +25,8 @@ type LinearAxisAnimatorProps = {
 export default function LinearAxisAnimator({
   rapidlyChangingMotionState,
   dhParameters,
+  chainOffsetPosition,
+  chainOffsetQuaternion,
   onTranslationChanged,
   children,
 }: LinearAxisAnimatorProps) {
@@ -80,13 +84,13 @@ export default function LinearAxisAnimator({
     applyMotionState(motionStateRef.current)
   })
 
-  /**
-   * Plain-prop path: catch reference changes not tracked by MobX.
-   */
-  // biome-ignore lint/correctness/useExhaustiveDependencies: false positive
-  useEffect(() => {
-    applyMotionState(rapidlyChangingMotionState)
-  }, [rapidlyChangingMotionState])
-
-  return <group ref={setGroupRef}>{children}</group>
+  return (
+    <group
+      ref={setGroupRef}
+      position={chainOffsetPosition}
+      quaternion={chainOffsetQuaternion}
+    >
+      {children}
+    </group>
+  )
 }
