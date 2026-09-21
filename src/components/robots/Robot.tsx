@@ -36,6 +36,9 @@ export function Robot({
     return null
   }
 
+  const mountingPosition = connectedMotionGroup.mountingPosition
+  const mountingQuaternion = connectedMotionGroup.mountingQuaternion
+
   return (
     <SupportedRobot
       rapidlyChangingMotionState={
@@ -47,6 +50,8 @@ export function Robot({
       flangeRef={flangeRef}
       transparentColor={transparentColor}
       postModelRender={postModelRender}
+      chainOffsetPosition={mountingPosition}
+      chainOffsetQuaternion={mountingQuaternion}
       {...props}
     />
   )

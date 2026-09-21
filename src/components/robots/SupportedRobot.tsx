@@ -29,6 +29,8 @@ export type SupportedRobotProps = {
   rapidlyChangingMotionState: MotionGroupState
   modelFromController: string
   dhParameters: DHParameter[]
+  chainOffsetPosition?: [number, number, number]
+  chainOffsetQuaternion?: THREE.Quaternion
   flangeRef?: React.Ref<THREE.Group>
   instanceUrl?: string
   getModel?: (
@@ -53,6 +55,8 @@ export const SupportedRobotExact = externalizeComponent(
     rapidlyChangingMotionState,
     modelFromController,
     dhParameters,
+    chainOffsetPosition,
+    chainOffsetQuaternion,
     getModel = defaultGetModel,
     flangeRef,
     postModelRender,
@@ -118,6 +122,8 @@ export const SupportedRobotExact = externalizeComponent(
               ref={robotAnimatorRef}
               rapidlyChangingMotionState={rapidlyChangingMotionState}
               dhParameters={dhParameters}
+              chainOffsetPosition={chainOffsetPosition}
+              chainOffsetQuaternion={chainOffsetQuaternion}
             >
               <GenericRobot
                 modelURL={modelURL}

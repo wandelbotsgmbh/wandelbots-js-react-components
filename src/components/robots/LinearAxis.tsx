@@ -37,6 +37,9 @@ export function LinearAxis({
     return null
   }
 
+  const mountingPosition = connectedMotionGroup.mountingPosition
+  const mountingQuaternion = connectedMotionGroup.mountingQuaternion
+
   const modelFromController = connectedMotionGroup.modelFromController || ""
   const hasModel = modelFromController && getModel(modelFromController)
 
@@ -53,6 +56,8 @@ export function LinearAxis({
         flangeRef={flangeRef}
         transparentColor={transparentColor}
         postModelRender={postModelRender}
+        chainOffsetPosition={mountingPosition}
+        chainOffsetQuaternion={mountingQuaternion}
         {...props}
       />
     )
@@ -64,6 +69,8 @@ export function LinearAxis({
         connectedMotionGroup.rapidlyChangingMotionState
       }
       dhParameters={connectedMotionGroup.dhParameters}
+      chainOffsetPosition={mountingPosition}
+      chainOffsetQuaternion={mountingQuaternion}
       {...props}
     />
   )
