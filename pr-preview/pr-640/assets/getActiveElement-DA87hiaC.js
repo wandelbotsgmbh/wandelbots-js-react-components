@@ -1,0 +1,1 @@
+function i(o,e=166){let t;function n(...a){const c=()=>{o.apply(this,a)};clearTimeout(t),t=setTimeout(c,e)}return n.clear=()=>{clearTimeout(t)},n}function l(o){var t;let e=o.activeElement;for(;((t=e==null?void 0:e.shadowRoot)==null?void 0:t.activeElement)!=null;)e=e.shadowRoot.activeElement;return e}export{l as a,i as d};
