@@ -4,10 +4,10 @@ import { Line } from "@react-three/drei"
 import { useMemo } from "react"
 import * as THREE from "three"
 import {
-  type ChainOffset,
-  type DhParameter,
-  type JointLimit,
-  jointFrames,
+    type ChainOffset,
+    type DhParameter,
+    type JointLimit,
+    jointFrames,
 } from "./jointLimitFrames"
 
 export type { ChainOffset, DhParameter, JointLimit } from "./jointLimitFrames"

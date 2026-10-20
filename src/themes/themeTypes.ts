@@ -4,7 +4,7 @@
 // (which adds `tertiary`, `backgroundPaperElevation`, and `paletteExt`).
 import "@wandelbots/mui"
 
-import type {} from "@mui/material/styles"
+import type { } from "@mui/material/styles"
 
 export interface AxisControlComponentColors {
   color?: string

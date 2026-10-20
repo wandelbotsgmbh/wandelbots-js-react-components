@@ -17,11 +17,11 @@
  */
 import { execFileSync } from "node:child_process"
 import {
-  existsSync,
-  mkdirSync,
-  rmSync,
-  symlinkSync,
-  writeFileSync,
+    existsSync,
+    mkdirSync,
+    rmSync,
+    symlinkSync,
+    writeFileSync,
 } from "node:fs"
 import { createRequire } from "node:module"
 import { dirname, resolve } from "node:path"
