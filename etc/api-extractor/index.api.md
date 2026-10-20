@@ -95,6 +95,12 @@ export interface AxisControlComponentColors {
 }
 
 // @public (undocumented)
+export type ChainOffset = {
+    position?: number[] | null;
+    orientation?: number[] | null;
+};
+
+// @public (undocumented)
 export function CollisionSceneRenderer(input: CollisionSceneRendererProps): JSX.Element;
 
 // @public
@@ -255,6 +261,16 @@ export type DHLinearAxisProps = {
     chainOffsetPosition?: [number, number, number];
     chainOffsetQuaternion?: THREE.Quaternion;
 } & ThreeElements["group"];
+
+// @public (undocumented)
+export type DhParameter = {
+    alpha?: number | null;
+    theta?: number | null;
+    a?: number | null;
+    d?: number | null;
+    reverse_rotation_direction?: boolean | null;
+    type?: string | null;
+};
 
 // @public (undocumented)
 export type DHRobotProps = {
@@ -558,6 +574,25 @@ export class JoggingStore {
     velocityInDisplayUnits(useDegree: boolean): number;
     withMotionLock(fn: () => Promise<void>): Promise<void>;
 }
+
+// @public
+export type JointLimit = {
+    negative: number;
+    positive: number;
+};
+
+// @public
+export function JointLimits(input: JointLimitsProps): JSX.Element;
+
+// @public (undocumented)
+export type JointLimitsProps = {
+    dhParameters: DhParameter[];
+    chainOffset?: ChainOffset | null;
+    limits: (JointLimit | null)[];
+    jointPositions?: number[];
+    size?: number;
+    highlightedJoint?: number | null;
+};
 
 // @public (undocumented)
 export function jointValuesEqual(oldJointValues: number[], newJointValues: number[], changeDeltaThreshold: number): boolean;

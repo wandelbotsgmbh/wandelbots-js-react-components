@@ -31,6 +31,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest"
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "../..")
 const distDir = resolve(repoRoot, "dist")
 const pkgName = "@wandelbots/wandelbots-js-react-components"
+const tscPath = createRequire(import.meta.url).resolve("typescript/bin/tsc")
 
 // Create a scratch directory outside the repo with a node_modules symlink
 // pointing at the repo, so the Node resolver treats us as if we were
@@ -103,6 +104,42 @@ describe("package exports — aggregate entries", () => {
   })
 })
 
+describe("theme augmentation declarations", () => {
+  it.each([
+    pkgName,
+    `${pkgName}/core`,
+  ])("%s exposes the upstream MUI extensions", (spec) => {
+    const fixture = resolve(sandbox, "theme-consumer.ts")
+    writeFileSync(
+      fixture,
+      `import { createNovaTheme } from ${JSON.stringify(spec)}\n` +
+        "const theme = createNovaTheme()\n" +
+        "const elevation: string | undefined = theme.palette.backgroundPaperElevation?.[2]\n" +
+        "const tonal: string | undefined = theme.paletteExt?.secondary?.tonal\n" +
+        "const tertiary: string = theme.palette.tertiary.main\n",
+    )
+    execFileSync(
+      process.execPath,
+      [
+        tscPath,
+        fixture,
+        "--target",
+        "es2020",
+        "--module",
+        "preserve",
+        "--moduleResolution",
+        "bundler",
+        "--jsx",
+        "react-jsx",
+        "--strict",
+        "--skipLibCheck",
+        "--noEmit",
+      ],
+      { cwd: sandbox, encoding: "utf8", stdio: "pipe" },
+    )
+  }, 120_000)
+})
+
 describe("package exports — deep component imports", () => {
   // Explicit MUI-style entries. Each public component lives in its own
   // directory under `src/` with an `index.ts` barrel and is exposed at
@@ -141,6 +178,11 @@ describe("MUI-style default + named exports", () => {
 })
 
 describe("aggregate barrel preserves named exports", () => {
+  it("3d entry exports JointLimits", async () => {
+    const threeD = await import(`${pkgName}/3d`)
+    expect(typeof threeD.JointLimits).toBe("function")
+  }, 120_000)
+
   // Vite transforms the full `core` aggregate on first import, which can
   // take several seconds when the test worker is busy. Use a generous
   // timeout so this doesn't flake on slower CI machines.
