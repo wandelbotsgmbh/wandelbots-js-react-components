@@ -14,5 +14,4 @@ storybook-static
 .env.local
 kubeconfig.yml
 instanceProviderConfig.json
-AGENTS.md
 CLAUDE.md
