@@ -95,12 +95,6 @@ export interface AxisControlComponentColors {
 }
 
 // @public (undocumented)
-export type ChainOffset = {
-    position?: number[] | null;
-    orientation?: number[] | null;
-};
-
-// @public (undocumented)
 export function CollisionSceneRenderer(input: CollisionSceneRendererProps): JSX.Element;
 
 // @public
@@ -263,16 +257,6 @@ export type DHLinearAxisProps = {
 } & ThreeElements["group"];
 
 // @public (undocumented)
-export type DhParameter = {
-    alpha?: number | null;
-    theta?: number | null;
-    a?: number | null;
-    d?: number | null;
-    reverse_rotation_direction?: boolean | null;
-    type?: string | null;
-};
-
-// @public (undocumented)
 export type DHRobotProps = {
     rapidlyChangingMotionState: MotionGroupState;
     dhParameters: Array<DHParameter>;
@@ -283,6 +267,28 @@ export function extractManufacturer(modelFromController: string): Manufacturer |
 
 // @public
 export function getDefaultHomeConfig(modelFromController: string, defaultJointConfig?: number[]): number[] | null;
+
+// @public (undocumented)
+export type GizmoChainOffset = {
+    position?: number[] | null;
+    orientation?: number[] | null;
+};
+
+// @public (undocumented)
+export type GizmoDhParameter = {
+    alpha?: number | null;
+    theta?: number | null;
+    a?: number | null;
+    d?: number | null;
+    reverse_rotation_direction?: boolean | null;
+    type?: string | null;
+};
+
+// @public
+export type GizmoJointLimit = {
+    negative: number;
+    positive: number;
+};
 
 // @public (undocumented)
 export const i18n: i18n_2;
@@ -576,19 +582,13 @@ export class JoggingStore {
 }
 
 // @public
-export type JointLimit = {
-    negative: number;
-    positive: number;
-};
-
-// @public
-export function JointLimits(input: JointLimitsProps): JSX.Element;
+export function JointLimitGizmo(input: JointLimitGizmoProps): JSX.Element;
 
 // @public (undocumented)
-export type JointLimitsProps = {
-    dhParameters: DhParameter[];
-    chainOffset?: ChainOffset | null;
-    limits: (JointLimit | null)[];
+export type JointLimitGizmoProps = {
+    dhParameters: GizmoDhParameter[];
+    chainOffset?: GizmoChainOffset | null;
+    limits: (GizmoJointLimit | null)[];
     jointPositions?: number[];
     size?: number;
     highlightedJoint?: number | null;

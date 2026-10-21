@@ -4,18 +4,22 @@ import { Line } from "@react-three/drei"
 import { useMemo } from "react"
 import * as THREE from "three"
 import {
-  type ChainOffset,
-  type DhParameter,
-  type JointLimit,
+  type GizmoChainOffset,
+  type GizmoDhParameter,
+  type GizmoJointLimit,
   jointFrames,
 } from "./jointLimitFrames"
 
-export type { ChainOffset, DhParameter, JointLimit } from "./jointLimitFrames"
+export type {
+  GizmoChainOffset,
+  GizmoDhParameter,
+  GizmoJointLimit,
+} from "./jointLimitFrames"
 
-export type JointLimitsProps = {
-  dhParameters: DhParameter[]
-  chainOffset?: ChainOffset | null
-  limits: (JointLimit | null)[]
+export type JointLimitGizmoProps = {
+  dhParameters: GizmoDhParameter[]
+  chainOffset?: GizmoChainOffset | null
+  limits: (GizmoJointLimit | null)[]
   /** Radians for revolute joints; millimetres for prismatic joints. */
   jointPositions?: number[]
   size?: number
@@ -110,13 +114,13 @@ function shortenEnd(points: THREE.Vector3[], length: number): THREE.Vector3[] {
 }
 
 function revoluteRange(
-  frame: THREE.Matrix4,
-  limit: JointLimit,
+  negative: number,
+  positive: number,
   sign: number,
   radius: number,
 ): THREE.Vector3[] {
-  const start = sign * limit.negative
-  const end = sign * limit.positive
+  const start = sign * negative
+  const end = sign * positive
   const span = Math.abs(end - start)
   const segments = Math.max(
     2,
@@ -130,8 +134,70 @@ function revoluteRange(
       Math.cos(angle) * spiralRadius,
       Math.sin(angle) * spiralRadius,
       0,
-    ).applyMatrix4(frame)
+    )
   })
+}
+
+/**
+ * Builds every marker point in the joint's own local frame (identity origin,
+ * local Z = joint axis). None of this depends on `frame` — the joint's live
+ * position in the chain — so it stays referentially stable while a stream of
+ * `jointPositions` updates only the wrapping group's transform below. That
+ * keeps drei's `<Line>` (which rebuilds its `LineGeometry` whenever its
+ * `points` array reference changes) from reallocating line geometry on every
+ * incoming pose.
+ */
+function useLocalMarkerGeometry(
+  dh: GizmoDhParameter,
+  limit: GizmoJointLimit,
+  size: number,
+  arrow: number,
+) {
+  const theta = dh.theta ?? 0
+  const d = dh.d ?? 0
+  const prismatic = dh.type === "PRISMATIC_JOINT"
+  const sign = dh.reverse_rotation_direction ? -1 : 1
+  const { negative, positive } = limit
+
+  return useMemo(() => {
+    const markerFrame = new THREE.Matrix4()
+      .makeRotationZ(theta)
+      .multiply(
+        new THREE.Matrix4().makeTranslation(0, 0, prismatic ? d / 1000 : 0),
+      )
+    const point = (x: number, y: number, z: number) =>
+      new THREE.Vector3(x, y, z).applyMatrix4(markerFrame)
+    const origin = new THREE.Vector3().applyMatrix4(markerFrame)
+    const axisTip = point(0, 0, size)
+    const range = (
+      prismatic
+        ? [
+            point(size * 0.25, 0, (sign * negative) / 1000),
+            point(size * 0.25, 0, (sign * positive) / 1000),
+          ]
+        : revoluteRange(negative, positive, sign, size * 0.6)
+    ).map((p) => (prismatic ? p : p.applyMatrix4(markerFrame)))
+    const rest = prismatic ? point(size * 0.25, 0, 0) : point(size * 0.6, 0, 0)
+    const rangeLength = range
+      .slice(1)
+      .reduce((total, p, index) => total + p.distanceTo(range[index]), 0)
+    const limitArrow = Math.min(arrow, rangeLength / 3)
+    const shortened = shortenEnd(
+      shortenEnd(range, limitArrow).reverse(),
+      limitArrow,
+    ).reverse()
+
+    return {
+      axisPoints: [origin, axisTip],
+      axisTip,
+      origin,
+      restPoints: [origin, rest],
+      range,
+      limitPoints: shortened,
+      rangeStart: shortened[0],
+      rangeEnd: shortened[shortened.length - 1],
+    }
+  }, [theta, d, prismatic, sign, size, negative, positive, arrow])
 }
 
 function JointLimitMarker({
@@ -142,53 +208,41 @@ function JointLimitMarker({
   emphasis,
 }: {
   frame: THREE.Matrix4
-  dh: DhParameter
-  limit: JointLimit
+  dh: GizmoDhParameter
+  limit: GizmoJointLimit
   size: number
   emphasis: Emphasis
 }) {
-  const sign = dh.reverse_rotation_direction ? -1 : 1
-  const prismatic = dh.type === "PRISMATIC_JOINT"
-  const markerFrame = frame
-    .clone()
-    .multiply(new THREE.Matrix4().makeRotationZ(dh.theta ?? 0))
-    .multiply(
-      new THREE.Matrix4().makeTranslation(
-        0,
-        0,
-        prismatic ? (dh.d ?? 0) / 1000 : 0,
-      ),
-    )
-  const origin = new THREE.Vector3().applyMatrix4(markerFrame)
-  const local = (x: number, y: number, z: number) =>
-    new THREE.Vector3(x, y, z).applyMatrix4(markerFrame)
-  const axisTip = local(0, 0, size)
   const scale = emphasis === "highlighted" ? HIGHLIGHT_SCALE : 1
   const opacity = emphasis === "dimmed" ? DIMMED_OPACITY : 1
   const arrow = size * 0.2 * (emphasis === "highlighted" ? 1.4 : 1)
   const lineWidth = 2 * scale
-  const range = prismatic
-    ? [
-        local(size * 0.25, 0, (sign * limit.negative) / 1000),
-        local(size * 0.25, 0, (sign * limit.positive) / 1000),
-      ]
-    : revoluteRange(markerFrame, limit, sign, size * 0.6)
-  const rest = prismatic ? local(size * 0.25, 0, 0) : local(size * 0.6, 0, 0)
-  const rangeLength = range
-    .slice(1)
-    .reduce((total, point, index) => total + point.distanceTo(range[index]), 0)
-  const limitArrow = Math.min(arrow, rangeLength / 3)
-  const shortened = shortenEnd(
-    shortenEnd(range, limitArrow).reverse(),
-    limitArrow,
-  ).reverse()
-  const rangeStart = shortened[0]
-  const rangeEnd = shortened[shortened.length - 1]
+
+  const {
+    axisPoints,
+    axisTip,
+    origin,
+    restPoints,
+    range,
+    limitPoints,
+    rangeStart,
+    rangeEnd,
+  } = useLocalMarkerGeometry(dh, limit, size, arrow)
+
+  // The joint's live position in the chain: this is the only thing that
+  // changes on every incoming pose, so it's kept out of the memoized
+  // geometry above and applied to the wrapping group instead.
+  const { position, quaternion } = useMemo(() => {
+    const position = new THREE.Vector3()
+    const quaternion = new THREE.Quaternion()
+    frame.decompose(position, quaternion, new THREE.Vector3())
+    return { position, quaternion }
+  }, [frame])
 
   return (
-    <group>
+    <group position={position} quaternion={quaternion}>
       <Polyline
-        points={[origin, axisTip]}
+        points={axisPoints}
         color={AXIS_COLOR}
         width={lineWidth}
         opacity={opacity}
@@ -201,13 +255,13 @@ function JointLimitMarker({
         opacity={opacity}
       />
       <Polyline
-        points={[origin, rest]}
+        points={restPoints}
         color={REST_COLOR}
         width={1.5 * scale}
         opacity={opacity}
       />
       <Polyline
-        points={shortened}
+        points={limitPoints}
         color={LIMIT_COLOR}
         width={lineWidth}
         opacity={opacity}
@@ -230,15 +284,32 @@ function JointLimitMarker({
   )
 }
 
-/** Draws joint axes and position ranges in NOVA's Z-up frame, in metres. */
-export function JointLimits({
+/**
+ * Draws joint axes and position ranges in NOVA's Z-up frame (joint axis =
+ * local Z), in metres.
+ *
+ * This library's robot visualizers ({@link SupportedRobot}, {@link Robot},
+ * the DH fallback renderer) place robots in three.js's Y-up world and rotate
+ * each joint about local Y. To overlay this gizmo on one of them, wrap it in
+ * a group that rotates Z onto Y, e.g.:
+ *
+ * ```tsx
+ * <group rotation={[-Math.PI / 2, 0, 0]}>
+ *   <JointLimitGizmo dhParameters={dhParameters} limits={limits} jointPositions={jointPositions} />
+ * </group>
+ * ```
+ *
+ * using the same `dhParameters`/`chainOffset`/`jointPositions` passed to the
+ * robot so the markers line up with its joints.
+ */
+export function JointLimitGizmo({
   dhParameters,
   chainOffset = null,
   limits,
   jointPositions,
   size = 0.15,
   highlightedJoint = null,
-}: JointLimitsProps) {
+}: JointLimitGizmoProps) {
   const frames = useMemo(
     () => jointFrames(dhParameters, chainOffset, jointPositions),
     [dhParameters, chainOffset, jointPositions],
@@ -247,7 +318,16 @@ export function JointLimits({
     <group>
       {frames.map((frame, index) => {
         const limit = limits[index]
-        if (!limit || !(limit.negative < limit.positive)) return null
+        // Joints are never actually unbounded, but guard against
+        // non-finite limits anyway: an infinite span would otherwise blow
+        // up the arc segment count in revoluteRange.
+        if (
+          !limit ||
+          !Number.isFinite(limit.negative) ||
+          !Number.isFinite(limit.positive) ||
+          !(limit.negative < limit.positive)
+        )
+          return null
         return (
           <JointLimitMarker
             // biome-ignore lint/suspicious/noArrayIndexKey: joints are addressed by index

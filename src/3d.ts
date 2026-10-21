@@ -1,12 +1,12 @@
 // 3D viewport and Three.js-based components
 export { default as CollisionSceneRenderer } from "./components/3d-viewport/collider/CollisionSceneRenderer"
 export {
-  JointLimits,
-  type ChainOffset,
-  type DhParameter,
-  type JointLimit,
-  type JointLimitsProps,
-} from "./components/3d-viewport/JointLimits"
+  JointLimitGizmo,
+  type GizmoChainOffset,
+  type GizmoDhParameter,
+  type GizmoJointLimit,
+  type JointLimitGizmoProps,
+} from "./components/3d-viewport/JointLimitGizmo"
 export * from "./components/3d-viewport/PresetEnvironment"
 export * from "./components/3d-viewport/SafetyZonesRenderer"
 export * from "./components/3d-viewport/TrajectoryRenderer"

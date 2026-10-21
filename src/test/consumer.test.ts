@@ -178,9 +178,9 @@ describe("MUI-style default + named exports", () => {
 })
 
 describe("aggregate barrel preserves named exports", () => {
-  it("3d entry exports JointLimits", async () => {
+  it("3d entry exports JointLimitGizmo", async () => {
     const threeD = await import(`${pkgName}/3d`)
-    expect(typeof threeD.JointLimits).toBe("function")
+    expect(typeof threeD.JointLimitGizmo).toBe("function")
   }, 120_000)
 
   // Vite transforms the full `core` aggregate on first import, which can
