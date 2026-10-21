@@ -86,7 +86,10 @@ export const UnboundedLimits = {
     // Real controllers never report an unbounded limit, but the gizmo
     // guards against one anyway instead of crashing with a `RangeError`.
     limits: [
-      { negative: Number.NEGATIVE_INFINITY, positive: Number.POSITIVE_INFINITY },
+      {
+        negative: Number.NEGATIVE_INFINITY,
+        positive: Number.POSITIVE_INFINITY,
+      },
       Interactive.args.limits[1],
       Interactive.args.limits[2],
     ],
