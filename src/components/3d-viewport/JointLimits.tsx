@@ -149,9 +149,19 @@ function JointLimitMarker({
 }) {
   const sign = dh.reverse_rotation_direction ? -1 : 1
   const prismatic = dh.type === "PRISMATIC_JOINT"
-  const origin = new THREE.Vector3().applyMatrix4(frame)
+  const markerFrame = frame
+    .clone()
+    .multiply(new THREE.Matrix4().makeRotationZ(dh.theta ?? 0))
+    .multiply(
+      new THREE.Matrix4().makeTranslation(
+        0,
+        0,
+        prismatic ? (dh.d ?? 0) / 1000 : 0,
+      ),
+    )
+  const origin = new THREE.Vector3().applyMatrix4(markerFrame)
   const local = (x: number, y: number, z: number) =>
-    new THREE.Vector3(x, y, z).applyMatrix4(frame)
+    new THREE.Vector3(x, y, z).applyMatrix4(markerFrame)
   const axisTip = local(0, 0, size)
   const scale = emphasis === "highlighted" ? HIGHLIGHT_SCALE : 1
   const opacity = emphasis === "dimmed" ? DIMMED_OPACITY : 1
@@ -162,7 +172,7 @@ function JointLimitMarker({
         local(size * 0.25, 0, (sign * limit.negative) / 1000),
         local(size * 0.25, 0, (sign * limit.positive) / 1000),
       ]
-    : revoluteRange(frame, limit, sign, size * 0.6)
+    : revoluteRange(markerFrame, limit, sign, size * 0.6)
   const rest = prismatic ? local(size * 0.25, 0, 0) : local(size * 0.6, 0, 0)
   const rangeLength = range
     .slice(1)
