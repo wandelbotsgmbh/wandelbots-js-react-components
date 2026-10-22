@@ -4,10 +4,13 @@ import type { DHParameter } from "@wandelbots/nova-js/v2"
 import { useEffect } from "react"
 import { expect, fn, waitFor } from "storybook/test"
 import { JointLimitGizmo, PresetEnvironment, SupportedRobot } from "../src"
-import { revokeAllModelUrls } from "../src/components/robots/robotModelLogic"
 import { Setup } from "../src/Setup"
 import { OrbitControlsAround } from "./robots/OrbitControlsAround"
-import { getDHParams, getModel } from "./robots/robotStoryConfig"
+import {
+  getDHParams,
+  getModel,
+  revokeAllCachedModels,
+} from "./robots/robotStoryConfig"
 
 const meta = {
   title: "3D View/JointLimitGizmo",
@@ -122,7 +125,7 @@ function JointLimitGizmoOnRobotScene({
 }) {
   useEffect(() => {
     return () => {
-      revokeAllModelUrls()
+      revokeAllCachedModels()
     }
   }, [])
 

@@ -81,7 +81,7 @@ const modelCache = new Map<string, Promise<string>>()
  * Revoke all cached model URLs to prevent memory leaks.
  * Called when navigating between stories.
  */
-function revokeAllCachedModels() {
+export function revokeAllCachedModels() {
   modelCache.forEach(async (urlPromise) => {
     try {
       const url = await urlPromise
