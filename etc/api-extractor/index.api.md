@@ -23,6 +23,7 @@ import type { i18n as i18n_2 } from 'i18next';
 import { IReactionDisposer } from 'mobx';
 import { JointTypeEnum } from '@wandelbots/nova-js/v2';
 import { JSX } from 'react/jsx-runtime';
+import type { LimitRange } from '@wandelbots/nova-js/v2';
 import { Manufacturer } from '@wandelbots/nova-js/v2';
 import { MotionGroupDescription } from '@wandelbots/nova-js/v2';
 import type { MotionGroupState } from '@wandelbots/nova-js/v2';
@@ -267,6 +268,15 @@ export function extractManufacturer(modelFromController: string): Manufacturer |
 
 // @public
 export function getDefaultHomeConfig(modelFromController: string, defaultJointConfig?: number[]): number[] | null;
+
+// @public (undocumented)
+export type GizmoChainOffset = Pose;
+
+// @public (undocumented)
+export type GizmoDhParameter = DHParameter;
+
+// @public
+export type GizmoJointLimit = LimitRange;
 
 // @public (undocumented)
 export const i18n: i18n_2;
@@ -558,6 +568,19 @@ export class JoggingStore {
     velocityInDisplayUnits(useDegree: boolean): number;
     withMotionLock(fn: () => Promise<void>): Promise<void>;
 }
+
+// @public
+export function JointLimitGizmo(input: JointLimitGizmoProps): JSX.Element;
+
+// @public (undocumented)
+export type JointLimitGizmoProps = {
+    dhParameters: GizmoDhParameter[];
+    chainOffset?: GizmoChainOffset | null;
+    limits: (GizmoJointLimit | null)[];
+    jointPositions?: number[];
+    size?: number;
+    highlightedJoint?: number | null;
+};
 
 // @public (undocumented)
 export function jointValuesEqual(oldJointValues: number[], newJointValues: number[], changeDeltaThreshold: number): boolean;
