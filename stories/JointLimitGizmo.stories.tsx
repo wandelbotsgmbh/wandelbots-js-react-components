@@ -45,9 +45,9 @@ export const Interactive = {
       { d: 100, type: "PRISMATIC_JOINT" },
     ],
     limits: [
-      { lowerLimit: -Math.PI, upperLimit: Math.PI },
-      { lowerLimit: -2 * Math.PI, upperLimit: 2 * Math.PI },
-      { lowerLimit: -100, upperLimit: 300 },
+      { lower_limit: -Math.PI, upper_limit: Math.PI },
+      { lower_limit: -2 * Math.PI, upper_limit: 2 * Math.PI },
+      { lower_limit: -100, upper_limit: 300 },
     ],
     chainOffset: null,
     jointPositions: [Math.PI / 6, Math.PI / 4, 100],
@@ -87,8 +87,8 @@ export const UnboundedLimits = {
     // guards against one anyway instead of crashing with a `RangeError`.
     limits: [
       {
-        lowerLimit: Number.NEGATIVE_INFINITY,
-        upperLimit: Number.POSITIVE_INFINITY,
+        lower_limit: Number.NEGATIVE_INFINITY,
+        upper_limit: Number.POSITIVE_INFINITY,
       },
       Interactive.args.limits[1],
       Interactive.args.limits[2],
@@ -111,7 +111,7 @@ const UR5E_MODEL = "UniversalRobots_UR5e"
 const UR5E_JOINT_POSITIONS = [0.4, -0.9, 1.1, -0.6, 0.8, 0.3]
 // UR5e joints are all continuous revolute; this is an illustrative limit, not
 // the real controller limit.
-const UR5E_LIMIT = { lowerLimit: -2 * Math.PI, upperLimit: 2 * Math.PI }
+const UR5E_LIMIT = { lower_limit: -2 * Math.PI, upper_limit: 2 * Math.PI }
 
 function JointLimitGizmoOnRobotScene({
   dhParameters,

@@ -105,21 +105,21 @@ describe("jointFrames", () => {
     expectVector(origin(frames[2]), [0, -0.5, 0])
   })
 
-  it("accepts null DH fields, missing offsets, and partial positions", () => {
+  it("accepts missing DH fields, missing offsets, and partial positions", () => {
     const frames = jointFrames(
       [
         {
-          alpha: null,
-          theta: null,
-          a: null,
-          d: null,
-          type: null,
-          reverse_rotation_direction: null,
+          alpha: undefined,
+          theta: undefined,
+          a: undefined,
+          d: undefined,
+          type: undefined,
+          reverse_rotation_direction: undefined,
         },
         {},
         {},
       ],
-      { position: null, orientation: null },
+      { position: undefined, orientation: undefined },
       [Math.PI / 2],
     )
     expectVector(origin(frames[2]), [0, 0, 0])

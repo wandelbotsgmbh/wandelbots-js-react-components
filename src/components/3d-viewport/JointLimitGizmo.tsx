@@ -37,6 +37,27 @@ const HIGHLIGHT_SCALE = 2
 
 type Emphasis = "normal" | "highlighted" | "dimmed"
 
+/** A `GizmoJointLimit` narrowed to the finite, ordered range every marker needs. */
+type BoundedJointLimit = { lower_limit: number; upper_limit: number }
+
+function boundedLimit(
+  limit: GizmoJointLimit | null | undefined,
+): BoundedJointLimit | null {
+  const { lower_limit, upper_limit } = limit ?? {}
+  // Joints are never actually unbounded, but guard against non-finite
+  // limits anyway: an infinite span would otherwise blow up the arc segment
+  // count in revoluteRange.
+  if (
+    typeof lower_limit !== "number" ||
+    typeof upper_limit !== "number" ||
+    !Number.isFinite(lower_limit) ||
+    !Number.isFinite(upper_limit) ||
+    !(lower_limit < upper_limit)
+  )
+    return null
+  return { lower_limit, upper_limit }
+}
+
 function Arrowhead({
   base,
   direction,
@@ -149,7 +170,7 @@ function revoluteRange(
  */
 function useLocalMarkerGeometry(
   dh: GizmoDhParameter,
-  limit: GizmoJointLimit,
+  limit: BoundedJointLimit,
   size: number,
   arrow: number,
 ) {
@@ -157,7 +178,7 @@ function useLocalMarkerGeometry(
   const d = dh.d ?? 0
   const prismatic = dh.type === "PRISMATIC_JOINT"
   const sign = dh.reverse_rotation_direction ? -1 : 1
-  const { lowerLimit, upperLimit } = limit
+  const { lower_limit: lowerLimit, upper_limit: upperLimit } = limit
 
   return useMemo(() => {
     const markerFrame = new THREE.Matrix4()
@@ -209,7 +230,7 @@ function JointLimitMarker({
 }: {
   frame: THREE.Matrix4
   dh: GizmoDhParameter
-  limit: GizmoJointLimit
+  limit: BoundedJointLimit
   size: number
   emphasis: Emphasis
 }) {
@@ -317,17 +338,8 @@ export function JointLimitGizmo({
   return (
     <group>
       {frames.map((frame, index) => {
-        const limit = limits[index]
-        // Joints are never actually unbounded, but guard against
-        // non-finite limits anyway: an infinite span would otherwise blow
-        // up the arc segment count in revoluteRange.
-        if (
-          !limit ||
-          !Number.isFinite(limit.lowerLimit) ||
-          !Number.isFinite(limit.upperLimit) ||
-          !(limit.lowerLimit < limit.upperLimit)
-        )
-          return null
+        const limit = boundedLimit(limits[index])
+        if (!limit) return null
         return (
           <JointLimitMarker
             // biome-ignore lint/suspicious/noArrayIndexKey: joints are addressed by index

@@ -23,6 +23,7 @@ import type { i18n as i18n_2 } from 'i18next';
 import { IReactionDisposer } from 'mobx';
 import { JointTypeEnum } from '@wandelbots/nova-js/v2';
 import { JSX } from 'react/jsx-runtime';
+import type { LimitRange } from '@wandelbots/nova-js/v2';
 import { Manufacturer } from '@wandelbots/nova-js/v2';
 import { MotionGroupDescription } from '@wandelbots/nova-js/v2';
 import type { MotionGroupState } from '@wandelbots/nova-js/v2';
@@ -269,26 +270,13 @@ export function extractManufacturer(modelFromController: string): Manufacturer |
 export function getDefaultHomeConfig(modelFromController: string, defaultJointConfig?: number[]): number[] | null;
 
 // @public (undocumented)
-export type GizmoChainOffset = {
-    position?: number[] | null;
-    orientation?: number[] | null;
-};
+export type GizmoChainOffset = Pose;
 
 // @public (undocumented)
-export type GizmoDhParameter = {
-    alpha?: number | null;
-    theta?: number | null;
-    a?: number | null;
-    d?: number | null;
-    reverse_rotation_direction?: boolean | null;
-    type?: string | null;
-};
+export type GizmoDhParameter = DHParameter;
 
 // @public
-export type GizmoJointLimit = {
-    lowerLimit: number;
-    upperLimit: number;
-};
+export type GizmoJointLimit = LimitRange;
 
 // @public (undocumented)
 export const i18n: i18n_2;

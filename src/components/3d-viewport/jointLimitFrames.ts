@@ -1,24 +1,15 @@
+import type { DHParameter, LimitRange, Pose } from "@wandelbots/nova-js/v2"
 import { Matrix4, Quaternion, Vector3 } from "three"
 
-// Named distinctly from NOVA API's own `DHParameter`/`Pose`/`LimitRange` types
-// (which this gizmo intentionally doesn't depend on) to avoid same-looking,
-// differently-shaped types colliding in a consumer's autocomplete.
-export type GizmoDhParameter = {
-  alpha?: number | null
-  theta?: number | null
-  a?: number | null
-  d?: number | null
-  reverse_rotation_direction?: boolean | null
-  type?: string | null
-}
-
-export type GizmoChainOffset = {
-  position?: number[] | null
-  orientation?: number[] | null
-}
-
+// Aliased to NOVA API's own `DHParameter`/`Pose`/`LimitRange` types (so a
+// consumer can pass `dh_parameters`/`kinematic_chain_offset`/joint position
+// limits straight from a `MotionGroupDescription` with no conversion) but
+// exported under `Gizmo`-prefixed names: NOVA also exports its own
+// `JointLimits` type, which would otherwise collide with this gizmo's name.
+export type GizmoDhParameter = DHParameter
+export type GizmoChainOffset = Pose
 /** Radians for revolute joints; millimetres for prismatic joints. */
-export type GizmoJointLimit = { lowerLimit: number; upperLimit: number }
+export type GizmoJointLimit = LimitRange
 
 function chainOffsetMatrix(offset: GizmoChainOffset | null): Matrix4 {
   const position = offset?.position ?? []
