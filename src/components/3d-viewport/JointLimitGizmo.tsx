@@ -320,8 +320,12 @@ function JointLimitMarker({
  * </group>
  * ```
  *
- * using the same `dhParameters`/`chainOffset`/`jointPositions` passed to the
- * robot so the markers line up with its joints.
+ * Use the same `dhParameters` and displayed `jointPositions` as the robot.
+ * The example above assumes identity mounting. For a mounted robot, wrap
+ * this example in an outer group using the same mounting position (in metres)
+ * and quaternion passed to the robot, and leave the gizmo's `chainOffset` null.
+ * Passing that mounting pose as `chainOffset` here would also rotate it during
+ * the Z-to-Y conversion.
  */
 export function JointLimitGizmo({
   dhParameters,
