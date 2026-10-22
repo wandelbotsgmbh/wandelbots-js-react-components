@@ -18,7 +18,7 @@ export type GizmoChainOffset = {
 }
 
 /** Radians for revolute joints; millimetres for prismatic joints. */
-export type GizmoJointLimit = { negative: number; positive: number }
+export type GizmoJointLimit = { lowerLimit: number; upperLimit: number }
 
 function chainOffsetMatrix(offset: GizmoChainOffset | null): Matrix4 {
   const position = offset?.position ?? []

@@ -286,8 +286,8 @@ export type GizmoDhParameter = {
 
 // @public
 export type GizmoJointLimit = {
-    negative: number;
-    positive: number;
+    lowerLimit: number;
+    upperLimit: number;
 };
 
 // @public (undocumented)

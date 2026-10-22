@@ -114,13 +114,13 @@ function shortenEnd(points: THREE.Vector3[], length: number): THREE.Vector3[] {
 }
 
 function revoluteRange(
-  negative: number,
-  positive: number,
+  lowerLimit: number,
+  upperLimit: number,
   sign: number,
   radius: number,
 ): THREE.Vector3[] {
-  const start = sign * negative
-  const end = sign * positive
+  const start = sign * lowerLimit
+  const end = sign * upperLimit
   const span = Math.abs(end - start)
   const segments = Math.max(
     2,
@@ -157,7 +157,7 @@ function useLocalMarkerGeometry(
   const d = dh.d ?? 0
   const prismatic = dh.type === "PRISMATIC_JOINT"
   const sign = dh.reverse_rotation_direction ? -1 : 1
-  const { negative, positive } = limit
+  const { lowerLimit, upperLimit } = limit
 
   return useMemo(() => {
     const markerFrame = new THREE.Matrix4()
@@ -172,10 +172,10 @@ function useLocalMarkerGeometry(
     const range = (
       prismatic
         ? [
-            point(size * 0.25, 0, (sign * negative) / 1000),
-            point(size * 0.25, 0, (sign * positive) / 1000),
+            point(size * 0.25, 0, (sign * lowerLimit) / 1000),
+            point(size * 0.25, 0, (sign * upperLimit) / 1000),
           ]
-        : revoluteRange(negative, positive, sign, size * 0.6)
+        : revoluteRange(lowerLimit, upperLimit, sign, size * 0.6)
     ).map((p) => (prismatic ? p : p.applyMatrix4(markerFrame)))
     const rest = prismatic ? point(size * 0.25, 0, 0) : point(size * 0.6, 0, 0)
     const rangeLength = range
@@ -197,7 +197,7 @@ function useLocalMarkerGeometry(
       rangeStart: shortened[0],
       rangeEnd: shortened[shortened.length - 1],
     }
-  }, [theta, d, prismatic, sign, size, negative, positive, arrow])
+  }, [theta, d, prismatic, sign, size, lowerLimit, upperLimit, arrow])
 }
 
 function JointLimitMarker({
@@ -323,9 +323,9 @@ export function JointLimitGizmo({
         // up the arc segment count in revoluteRange.
         if (
           !limit ||
-          !Number.isFinite(limit.negative) ||
-          !Number.isFinite(limit.positive) ||
-          !(limit.negative < limit.positive)
+          !Number.isFinite(limit.lowerLimit) ||
+          !Number.isFinite(limit.upperLimit) ||
+          !(limit.lowerLimit < limit.upperLimit)
         )
           return null
         return (
