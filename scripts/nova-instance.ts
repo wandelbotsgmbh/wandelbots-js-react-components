@@ -102,6 +102,8 @@ async function create() {
 
   const attempts = 5
   for (let attempt = 1; attempt <= attempts; attempt++) {
+    let state: string
+    let refused = false
     try {
       const response = await fetch(`${env("PORTAL_API_URL")}/v1/instances`, {
         method: "POST",
@@ -127,12 +129,19 @@ async function create() {
         )
         return
       }
-      console.log(
-        `Attempt ${attempt}/${attempts}: HTTP ${response.status} ${JSON.stringify(body).slice(0, 300)}`,
-      )
+      state = `HTTP ${response.status} ${JSON.stringify(body).slice(0, 300)}`
+      // A client error, such as a missing license, does not go away with a retry
+      refused =
+        response.status >= 400 &&
+        response.status < 500 &&
+        response.status !== 429
     } catch (error) {
-      console.log(`Attempt ${attempt}/${attempts}: ${describe(error)}`)
+      state = describe(error)
     }
+    if (refused) {
+      throw new Error(`The portal refused to create an instance: ${state}`)
+    }
+    console.log(`Attempt ${attempt}/${attempts}: ${state}`)
     if (attempt < attempts) {
       await sleep(attempt * 5000)
     }
