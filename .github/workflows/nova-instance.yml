@@ -1,0 +1,56 @@
+name: nova-instance
+
+# Creates a NOVA cloud instance on the dev portal (portal.dev.wandelbots.io),
+# waits until it is ready, and deletes it again. This is the first step for
+# e2e tests against a real instance.
+#
+# The secret PORTAL_DEV_REFRESH_TOKEN is the refresh token of a test user of
+# the dev portal (wandel.testing+js-react-components-ci@wandelbots.com).
+
+on:
+  pull_request:
+    branches:
+      - main
+  # Temporary: runs the workflow on this branch before a PR exists.
+  push:
+    branches:
+      - ci/nova-dev-instance
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: nova-instance-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  instance:
+    name: NOVA instance
+    # Pull requests from forks get no secrets, so they cannot create an instance.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      PORTAL_AUTH_URL: https://auth.portal.dev.wandelbots.io/oauth/token
+      PORTAL_API_URL: https://api.portal.dev.wandelbots.io
+      # The public client ID of the dev portal login, as in @wandelbots/nova-js
+      PORTAL_CLIENT_ID: fLbJD0RLp5r2Dpucm5j8BjwMR6Hunfha
+    steps:
+      - uses: actions/checkout@v6
+      - id: node-version
+        run: echo "version=$(yq '.useNodeVersion' pnpm-workspace.yaml)" >> "$GITHUB_OUTPUT"
+      - uses: actions/setup-node@v6
+        with:
+          node-version: ${{ steps.node-version.outputs.version }}
+      - name: Create the instance
+        env:
+          PORTAL_REFRESH_TOKEN: ${{ secrets.PORTAL_DEV_REFRESH_TOKEN }}
+        run: node scripts/nova-instance.ts create
+      - name: Wait until the instance is ready
+        run: node scripts/nova-instance.ts wait
+      - name: Delete the instance
+        if: always()
+        env:
+          PORTAL_REFRESH_TOKEN: ${{ secrets.PORTAL_DEV_REFRESH_TOKEN }}
+        run: node scripts/nova-instance.ts delete
