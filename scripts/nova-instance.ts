@@ -1,7 +1,7 @@
 /**
- * Creates, checks and deletes a NOVA cloud instance on the dev portal for the
- * workflow nova-instance.yml. It uses the same portal API as the integration
- * tests of service-manager (test/scripts/portal_manager.py).
+ * Creates, checks and deletes a NOVA cloud instance on a portal of Wandelbots
+ * for the workflow nova-instance.yml. It uses the same portal API as the
+ * integration tests of service-manager (test/scripts/portal_manager.py).
  *
  * Commands:
  *   create – gets an access token and creates an instance
@@ -10,7 +10,7 @@
  *
  * Environment:
  *   PORTAL_AUTH_URL           – token endpoint of the portal login
- *   PORTAL_API_URL            – portal API, e.g. https://api.portal.dev.wandelbots.io
+ *   PORTAL_API_URL            – portal API, e.g. https://api.portal.stg.wandelbots.io
  *   PORTAL_CLIENT_ID          – public client ID of the portal login
  *   PORTAL_REFRESH_TOKEN      – refresh token of the CI test user (a secret)
  *   NOVA_INSTANCE_TTL_MINUTES – the portal deletes the instance after this time
