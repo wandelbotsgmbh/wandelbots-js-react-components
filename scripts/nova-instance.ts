@@ -91,6 +91,36 @@ async function getAccessToken(): Promise<string> {
   return body.access_token
 }
 
+/**
+ * Logs the licenses that the portal finds for the CI user, without the
+ * license keys. The portal answers "cannot list user licenses" both when the
+ * user has no license and when it cannot read the email of the token; this
+ * request tells the two apart.
+ */
+async function logLicenses(accessToken: string) {
+  try {
+    const response = await fetch(`${env("PORTAL_API_URL")}/v1/me/licenses`, {
+      headers: { authorization: `Bearer ${accessToken}` },
+    })
+    const body = await readJson(response)
+    if (!response.ok || !Array.isArray(body)) {
+      console.log(
+        `Licenses of the CI user: HTTP ${response.status} ${body.message ?? ""}`,
+      )
+      return
+    }
+    const licenses = body.map(
+      (license) =>
+        `${license.product_name} ${JSON.stringify(license.feature_limitations ?? {})}`,
+    )
+    console.log(
+      `Licenses of the CI user: ${licenses.length} (${licenses.join("; ")})`,
+    )
+  } catch (error) {
+    console.log(`Licenses of the CI user: ${describe(error)}`)
+  }
+}
+
 async function create() {
   const accessToken = await getAccessToken()
   exportVariable("NOVA_ACCESS_TOKEN", accessToken)
@@ -134,6 +164,7 @@ async function create() {
       state = describe(error)
     }
     if (refused) {
+      await logLicenses(accessToken)
       throw new Error(`The portal refused to create an instance: ${state}`)
     }
     console.log(`Attempt ${attempt}/${attempts}: ${state}`)
