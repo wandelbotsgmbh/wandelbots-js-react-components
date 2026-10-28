@@ -1,12 +1,14 @@
 name: nova-instance
 
-# Creates a NOVA cloud instance on the staging portal (portal.stg.wandelbots.io),
-# waits until it is ready, and deletes it again. This is the first step for
-# e2e tests against a real instance. The dev portal does not work here: its
-# API is only reachable in the company network, not from GitHub runners.
+# Creates a NOVA cloud instance on the portal (portal.wandelbots.io), waits
+# until it is ready, and deletes it again. This is the first step for e2e tests
+# against a real instance. Only the production portal is public: dev and
+# staging are private infrastructure, which a public repo must not use. So the
+# instance runs the newest released NOVA version, the same as customers have.
+# The NOVA Python SDK (wandelbots-nova) tests the same way.
 #
-# The secret PORTAL_STG_REFRESH_TOKEN is the refresh token of a test user of
-# the staging portal (wandel.testing+js-react-components-ci@wandelbots.com).
+# The secret PORTAL_PROD_REFRESH_TOKEN is the refresh token of a test user of
+# the portal (wandel.testing+js-react-components-ci@wandelbots.com).
 
 on:
   pull_request:
@@ -33,10 +35,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
-      PORTAL_AUTH_URL: https://auth.portal.stg.wandelbots.io/oauth/token
-      PORTAL_API_URL: https://api.portal.stg.wandelbots.io
-      # The public client ID of the staging portal login, as in @wandelbots/nova-js
-      PORTAL_CLIENT_ID: joVDeD9e786WzFNSGCqoVq7HNkWt5j6s
+      PORTAL_AUTH_URL: https://auth.portal.wandelbots.io/oauth/token
+      PORTAL_API_URL: https://api.portal.wandelbots.io
+      # The public client ID of the portal login, as in @wandelbots/nova-js
+      PORTAL_CLIENT_ID: J7WJUi38xVQdJAEBNRT9Xw1b0fXDb4J2
     steps:
       - uses: actions/checkout@v6
       - id: node-version
@@ -46,12 +48,12 @@ jobs:
           node-version: ${{ steps.node-version.outputs.version }}
       - name: Create the instance
         env:
-          PORTAL_REFRESH_TOKEN: ${{ secrets.PORTAL_STG_REFRESH_TOKEN }}
+          PORTAL_REFRESH_TOKEN: ${{ secrets.PORTAL_PROD_REFRESH_TOKEN }}
         run: node scripts/nova-instance.ts create
       - name: Wait until the instance is ready
         run: node scripts/nova-instance.ts wait
       - name: Delete the instance
         if: always()
         env:
-          PORTAL_REFRESH_TOKEN: ${{ secrets.PORTAL_STG_REFRESH_TOKEN }}
+          PORTAL_REFRESH_TOKEN: ${{ secrets.PORTAL_PROD_REFRESH_TOKEN }}
         run: node scripts/nova-instance.ts delete

@@ -1,7 +1,11 @@
 /**
- * Creates, checks and deletes a NOVA cloud instance on a portal of Wandelbots
- * for the workflow nova-instance.yml. It uses the same portal API as the
- * integration tests of service-manager (test/scripts/portal_manager.py).
+ * Creates, checks and deletes a NOVA cloud instance on the portal of
+ * Wandelbots for the workflow nova-instance.yml. It uses the same portal API
+ * as the integration tests of service-manager (test/scripts/portal_manager.py)
+ * and the CI of the NOVA Python SDK (wandelbots-nova).
+ *
+ * POST /v1/instances takes no lifetime, and the portal keeps an instance for
+ * a day or longer. So the workflow must always run `delete`.
  *
  * Commands:
  *   create – gets an access token and creates an instance
@@ -9,15 +13,12 @@
  *   delete – deletes the instance; does nothing when none was created
  *
  * Environment:
- *   PORTAL_AUTH_URL           – token endpoint of the portal login
- *   PORTAL_API_URL            – portal API, e.g. https://api.portal.stg.wandelbots.io
- *   PORTAL_CLIENT_ID          – public client ID of the portal login
- *   PORTAL_REFRESH_TOKEN      – refresh token of the CI test user (a secret)
- *   NOVA_INSTANCE_TTL_MINUTES – the portal deletes the instance after this time
- *                               (default 60), also when the job cannot do it
- *   GITHUB_ENV                – `create` writes NOVA_ACCESS_TOKEN,
- *                               NOVA_INSTANCE_ID and NOVA_INSTANCE_URL into it
- *                               for the next steps
+ *   PORTAL_AUTH_URL      – token endpoint of the portal login
+ *   PORTAL_API_URL       – portal API, e.g. https://api.portal.wandelbots.io
+ *   PORTAL_CLIENT_ID     – public client ID of the portal login
+ *   PORTAL_REFRESH_TOKEN – refresh token of the CI test user (a secret)
+ *   GITHUB_ENV           – `create` writes NOVA_ACCESS_TOKEN, NOVA_INSTANCE_ID
+ *                          and NOVA_INSTANCE_URL into it for the next steps
  */
 import { appendFileSync } from "node:fs"
 
@@ -98,7 +99,6 @@ async function create() {
   const sandboxName = GITHUB_RUN_ID
     ? `${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}`
     : "local"
-  const ttlMinutes = Number(process.env.NOVA_INSTANCE_TTL_MINUTES ?? 60)
 
   const attempts = 5
   for (let attempt = 1; attempt <= attempts; attempt++) {
@@ -112,10 +112,7 @@ async function create() {
           authorization: `Bearer ${accessToken}`,
           "content-type": "application/json",
         },
-        body: JSON.stringify({
-          sandbox_name: sandboxName,
-          ttl_minutes: ttlMinutes,
-        }),
+        body: JSON.stringify({ sandbox_name: sandboxName }),
       })
       const body = await readJson(response)
       if (body.host) {
@@ -124,9 +121,7 @@ async function create() {
       if (response.ok && body.instance_id && body.host) {
         exportVariable("NOVA_INSTANCE_ID", body.instance_id)
         exportVariable("NOVA_INSTANCE_URL", `https://${body.host}`)
-        console.log(
-          `Created the instance ${body.instance_id}. The portal deletes it after ${ttlMinutes} min.`,
-        )
+        console.log(`Created the instance ${body.instance_id}.`)
         return
       }
       state = `HTTP ${response.status} ${JSON.stringify(body).slice(0, 300)}`
