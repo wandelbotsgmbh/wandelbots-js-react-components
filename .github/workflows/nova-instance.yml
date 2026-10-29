@@ -1,0 +1,91 @@
+name: e2e
+
+# Creates a NOVA cloud instance on the portal (portal.wandelbots.io), waits
+# until it is ready, runs the e2e tests in e2e/ against it, and deletes it
+# again. Only the production portal is public: dev and staging are private
+# infrastructure, which a public repo must not use. So the instance runs the
+# newest released NOVA version, the same as customers have. The NOVA Python
+# SDK (wandelbots-nova) tests the same way.
+#
+# The secret PORTAL_PROD_REFRESH_TOKEN is the refresh token of a test user of
+# the portal (wandel.testing+js-react-components-ci@wandelbots.com).
+
+on:
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  # `create` checks whether the runs of older instances have ended
+  actions: read
+
+concurrency:
+  group: nova-instance-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  instance:
+    name: e2e tests
+    # Pull requests from forks and from Dependabot get no secrets of the
+    # repository, so they cannot create an instance.
+    if: >-
+      github.event_name != 'pull_request' ||
+      (github.event.pull_request.head.repo.full_name == github.repository &&
+      github.event.pull_request.user.login != 'dependabot[bot]')
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    env:
+      PORTAL_AUTH_URL: https://auth.portal.wandelbots.io/oauth/token
+      PORTAL_API_URL: https://api.portal.wandelbots.io
+      # The public client ID of the portal login, as in @wandelbots/nova-js
+      PORTAL_CLIENT_ID: J7WJUi38xVQdJAEBNRT9Xw1b0fXDb4J2
+    steps:
+      - uses: actions/checkout@v6
+      - id: node-version
+        run: echo "version=$(yq '.useNodeVersion' pnpm-workspace.yaml)" >> "$GITHUB_OUTPUT"
+      - uses: actions/setup-node@v6
+        with:
+          node-version: ${{ steps.node-version.outputs.version }}
+      - name: Create the instance
+        env:
+          PORTAL_REFRESH_TOKEN: ${{ secrets.PORTAL_PROD_REFRESH_TOKEN }}
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node scripts/nova-instance.ts create
+      # Installs the dependencies while the instance starts
+      - uses: ./.github/actions/setup-node
+      - name: Wait until the instance is ready
+        run: node scripts/nova-instance.ts wait
+      - name: Run the e2e tests
+        env:
+          # The output also goes into a file of the artifact
+          NO_COLOR: "1"
+        run: |
+          set -o pipefail
+          mkdir -p e2e-results
+          pnpm run test:e2e --reporter=default --reporter=junit --reporter=json \
+            --outputFile.junit=e2e-results/junit.xml \
+            --outputFile.json=e2e-results/results.json \
+            2>&1 | tee e2e-results/output.log
+      - name: Save the state of the instance
+        if: always()
+        run: node scripts/nova-instance.ts snapshot
+      - name: Delete the instance
+        if: always()
+        env:
+          PORTAL_REFRESH_TOKEN: ${{ secrets.PORTAL_PROD_REFRESH_TOKEN }}
+        run: node scripts/nova-instance.ts delete
+      # Replaces the access token in the files, which everybody can download
+      - name: Check the e2e results
+        id: report
+        if: always()
+        run: node scripts/nova-instance.ts report
+      - name: Upload the e2e results
+        if: always() && steps.report.outcome == 'success'
+        uses: actions/upload-artifact@v6
+        with:
+          name: e2e-results
+          path: e2e-results/
+          retention-days: 7
+          if-no-files-found: ignore
