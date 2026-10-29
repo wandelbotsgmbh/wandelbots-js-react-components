@@ -1,11 +1,11 @@
-name: nova-instance
+name: e2e
 
 # Creates a NOVA cloud instance on the portal (portal.wandelbots.io), waits
-# until it is ready, and deletes it again. This is the first step for e2e tests
-# against a real instance. Only the production portal is public: dev and
-# staging are private infrastructure, which a public repo must not use. So the
-# instance runs the newest released NOVA version, the same as customers have.
-# The NOVA Python SDK (wandelbots-nova) tests the same way.
+# until it is ready, runs the e2e tests in e2e/ against it, and deletes it
+# again. Only the production portal is public: dev and staging are private
+# infrastructure, which a public repo must not use. So the instance runs the
+# newest released NOVA version, the same as customers have. The NOVA Python
+# SDK (wandelbots-nova) tests the same way.
 #
 # The secret PORTAL_PROD_REFRESH_TOKEN is the refresh token of a test user of
 # the portal (wandel.testing+js-react-components-ci@wandelbots.com).
@@ -27,7 +27,7 @@ concurrency:
 
 jobs:
   instance:
-    name: NOVA instance
+    name: e2e tests
     # Pull requests from forks and from Dependabot get no secrets of the
     # repository, so they cannot create an instance.
     if: >-
@@ -53,8 +53,12 @@ jobs:
           PORTAL_REFRESH_TOKEN: ${{ secrets.PORTAL_PROD_REFRESH_TOKEN }}
           GITHUB_TOKEN: ${{ github.token }}
         run: node scripts/nova-instance.ts create
+      # Installs the dependencies while the instance starts
+      - uses: ./.github/actions/setup-node
       - name: Wait until the instance is ready
         run: node scripts/nova-instance.ts wait
+      - name: Run the e2e tests
+        run: pnpm run test:e2e
       - name: Delete the instance
         if: always()
         env:

@@ -26,4 +26,15 @@ export default defineWorkspace([
       include: ["src/test/consumer.test.ts"],
     },
   },
+  {
+    // e2e tests run against a real NOVA instance and are skipped without one
+    // (see e2e/jogging.test.ts). They use the WebSocket of Node.
+    test: {
+      name: "e2e",
+      environment: "node",
+      include: ["e2e/**/*.test.ts"],
+      testTimeout: 60_000,
+      hookTimeout: 180_000,
+    },
+  },
 ])
