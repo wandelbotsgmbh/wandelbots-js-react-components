@@ -258,6 +258,16 @@ WANDELAPI_BASE_URL=http://<instance-ip>
 CELL_ID=cell
 ```
 
+### e2e Tests
+
+The e2e tests in `e2e/` run against a real NOVA instance. For each pull request, the workflow `e2e` creates a NOVA cloud instance with the newest released NOVA version, runs the tests, and deletes the instance again. The results are in the artifact `e2e-results` of the run.
+
+To run them on your computer, reserve a test instance with `pnpm td` (see above), or set `NOVA_INSTANCE_URL` (and `NOVA_ACCESS_TOKEN` for a cloud instance). Then:
+
+```bash
+pnpm run test:e2e
+```
+
 ### Local Testing
 
 Build and test the package locally:
