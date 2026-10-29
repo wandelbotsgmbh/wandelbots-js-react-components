@@ -158,14 +158,24 @@ async function logLicenses(accessToken: string) {
 }
 
 /**
- * Deletes the instances of the CI user whose workflow run has ended. Such an
- * instance is left over when the delete step of its run did not run or
- * failed, and it uses one of the instances that the license allows.
- * Instances that no run of this repository created stay.
+ * Deletes the leftover instances of the CI user: the instances of workflow
+ * runs that have ended, and the instances of the current run. An instance is
+ * left over when the delete step of its run did not run or failed, and it
+ * uses one of the instances that the license allows. Before `create` has an
+ * instance, an instance of the current run is always a leftover: an earlier
+ * attempt of the run created it (a re-run keeps the run ID, and GitHub
+ * reports the run as in progress again), or an earlier try of `create` whose
+ * answer got lost. This expects that only one job of a run creates an
+ * instance. Instances that no run of this repository created stay.
  */
 async function deleteLeftovers(accessToken: string) {
-  const { GITHUB_API_URL, GITHUB_REPOSITORY, GITHUB_SERVER_URL, GITHUB_TOKEN } =
-    process.env
+  const {
+    GITHUB_API_URL,
+    GITHUB_REPOSITORY,
+    GITHUB_RUN_ID,
+    GITHUB_SERVER_URL,
+    GITHUB_TOKEN,
+  } = process.env
   if (!GITHUB_TOKEN) {
     return
   }
@@ -181,15 +191,18 @@ async function deleteLeftovers(accessToken: string) {
       if (!instance.sandbox_name?.startsWith(runs)) {
         continue
       }
-      const run = await fetch(
-        `${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}/actions/runs/${instance.sandbox_name.slice(runs.length)}`,
-        { headers: { authorization: `Bearer ${GITHUB_TOKEN}` } },
-      )
-      // HTTP 404: the run was deleted
-      const ended =
-        run.status === 404 || (await readJson(run)).status === "completed"
-      if (!ended) {
-        continue
+      const runId = instance.sandbox_name.slice(runs.length)
+      if (runId !== GITHUB_RUN_ID) {
+        const run = await fetch(
+          `${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}/actions/runs/${runId}`,
+          { headers: { authorization: `Bearer ${GITHUB_TOKEN}` } },
+        )
+        // HTTP 404: the run was deleted
+        const ended =
+          run.status === 404 || (await readJson(run)).status === "completed"
+        if (!ended) {
+          continue
+        }
       }
       const response = await fetch(
         `${portal}/v1/instances/${instance.instance_id}`,
@@ -197,8 +210,8 @@ async function deleteLeftovers(accessToken: string) {
       )
       console.log(
         response.ok
-          ? `Deleted the instance ${instance.instance_id} of the ended run ${instance.sandbox_name}.`
-          : `Could not delete the instance ${instance.instance_id} of the ended run ${instance.sandbox_name}: HTTP ${response.status}`,
+          ? `Deleted the leftover instance ${instance.instance_id} of the run ${instance.sandbox_name}.`
+          : `Could not delete the leftover instance ${instance.instance_id} of the run ${instance.sandbox_name}: HTTP ${response.status}`,
       )
     }
   } catch (error) {
@@ -244,6 +257,10 @@ async function create() {
       state = `HTTP ${response.status} ${JSON.stringify(body).slice(0, 300)}`
       if (response.status === 409) {
         // Another run of the CI user creates an instance at the same moment
+        pause = 10_000
+      } else if (String(body.message).includes("sandbox name already in use")) {
+        // The portal still has the leftover instance of this run that
+        // deleteLeftovers just deleted
         pause = 10_000
       } else if (String(body.message).includes("maximum number of")) {
         // All instances of the license are in use: wait until a run deletes its instance
