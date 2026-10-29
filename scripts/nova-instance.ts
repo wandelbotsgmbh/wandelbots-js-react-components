@@ -11,9 +11,18 @@
  * use.
  *
  * Commands:
- *   create – gets an access token and creates an instance
- *   wait   – waits until all services of the instance run and the cell exists
- *   delete – deletes the instance; does nothing when none was created
+ *   create   – gets an access token and creates an instance
+ *   wait     – waits until all services of the instance run and the cell exists
+ *   snapshot – saves the state of the instance in e2e-results/nova-instance.json
+ *   delete   – deletes the instance; does nothing when none was created
+ *   report   – prepares e2e-results/ for the artifact of the run: replaces the
+ *              access token and the host of the instance in its text files,
+ *              and writes the test results into the summary of the job
+ *
+ * The repository is public, so everybody can download the artifacts of its
+ * runs. GitHub hides secrets only in the log, not in artifacts: the workflow
+ * uploads e2e-results/ only after `report` succeeded. Do not put files there
+ * that `report` cannot check, such as traces with network requests.
  *
  * Environment:
  *   PORTAL_AUTH_URL      – token endpoint of the portal login
@@ -24,11 +33,31 @@
  *                          older instance has ended
  *   GITHUB_ENV           – `create` writes NOVA_ACCESS_TOKEN, NOVA_INSTANCE_ID
  *                          and NOVA_INSTANCE_URL into it for the next steps
+ *   GITHUB_STEP_SUMMARY  – `report` writes the test results into it
  */
-import { appendFileSync } from "node:fs"
+import {
+  appendFileSync,
+  existsSync,
+  mkdirSync,
+  readdirSync,
+  readFileSync,
+  statSync,
+  writeFileSync,
+} from "node:fs"
+import { join } from "node:path"
 
 type ServiceStatus = { service: string; status: { code: string } }
 type PortalInstance = { instance_id: string; sandbox_name?: string }
+/** A test in the JSON report of vitest */
+type TestResult = {
+  fullName: string
+  status: string
+  duration?: number | null
+  failureMessages?: string[]
+}
+
+/** The folder that the workflow uploads as the artifact e2e-results */
+const RESULTS_DIR = "e2e-results"
 
 const CREATE_TIMEOUT_MS = 10 * 60_000
 const READY_TIMEOUT_MS = 20 * 60_000
@@ -325,15 +354,153 @@ async function remove() {
   console.log(`Deleted the instance ${instanceId}.`)
 }
 
+/**
+ * Saves the state of the instance after the tests: the NOVA version, the
+ * services, the cells, and the configuration and state of each controller
+ * of the cell "cell".
+ */
+async function snapshot() {
+  if (!process.env.NOVA_INSTANCE_URL) {
+    console.log("No instance was created, so there is no state to save.")
+    return
+  }
+  const api = `${env("NOVA_INSTANCE_URL")}/api/v2`
+  const headers = { authorization: `Bearer ${env("NOVA_ACCESS_TOKEN")}` }
+  // Returns the answer, or the error as text, so that one failed request
+  // does not lose the others
+  const get = async (path: string): Promise<unknown> => {
+    try {
+      const response = await fetch(`${api}${path}`, {
+        headers,
+        signal: AbortSignal.timeout(10_000),
+      })
+      const text = await response.text()
+      if (!response.ok) {
+        return `HTTP ${response.status} ${text.slice(0, 300)}`
+      }
+      try {
+        return JSON.parse(text)
+      } catch {
+        return text
+      }
+    } catch (error) {
+      return describe(error)
+    }
+  }
+
+  const names = await get("/cells/cell/controllers")
+  const controllers: Record<string, unknown> = {}
+  for (const name of Array.isArray(names) ? names : []) {
+    controllers[name] = {
+      configuration: await get(`/cells/cell/controllers/${name}`),
+      state: await get(`/cells/cell/controllers/${name}/state`),
+    }
+  }
+  const state = {
+    version: await get("/system/version"),
+    services: await get("/system/status"),
+    cells: await get("/cells"),
+    controllers: Array.isArray(names) ? controllers : names,
+  }
+  mkdirSync(RESULTS_DIR, { recursive: true })
+  const file = join(RESULTS_DIR, "nova-instance.json")
+  writeFileSync(file, `${JSON.stringify(state, null, 2)}\n`)
+  console.log(`Saved the state of the instance in ${file}.`)
+}
+
+/**
+ * Prepares e2e-results/ for the artifact of the run: replaces the access
+ * token and the host of the instance in its text files, and writes the test
+ * results into the summary of the job.
+ */
+async function report() {
+  if (!existsSync(RESULTS_DIR)) {
+    console.log(`There is no folder ${RESULTS_DIR}, so there is nothing to do.`)
+    return
+  }
+  const replacements: [string, string][] = []
+  if (process.env.NOVA_ACCESS_TOKEN) {
+    replacements.push([process.env.NOVA_ACCESS_TOKEN, "***"])
+  }
+  if (process.env.NOVA_INSTANCE_URL) {
+    replacements.push([new URL(process.env.NOVA_INSTANCE_URL).host, "***"])
+  }
+  for (const name of readdirSync(RESULTS_DIR, { recursive: true })) {
+    const file = join(RESULTS_DIR, String(name))
+    if (!statSync(file).isFile()) {
+      continue
+    }
+    if (!/\.(json|xml|log|txt|md|html)$/.test(file)) {
+      throw new Error(`${file} is not a text file, so it cannot be checked`)
+    }
+    const text = readFileSync(file, "utf8")
+    let checked = text
+    for (const [secret, replacement] of replacements) {
+      checked = checked.split(secret).join(replacement)
+    }
+    if (checked !== text) {
+      writeFileSync(file, checked)
+      console.log(`Replaced the access token or the host in ${file}.`)
+    }
+  }
+  writeSummary()
+}
+
+/** Writes the results of the vitest JSON report into the summary of the job. */
+function writeSummary() {
+  const summaryFile = process.env.GITHUB_STEP_SUMMARY
+  const resultsFile = join(RESULTS_DIR, "results.json")
+  if (!summaryFile || !existsSync(resultsFile)) {
+    return
+  }
+  const results = JSON.parse(readFileSync(resultsFile, "utf8"))
+  const files: { message?: string; assertionResults: TestResult[] }[] =
+    results.testResults ?? []
+  const tests = files.flatMap((file) => file.assertionResults)
+  const instanceFile = join(RESULTS_DIR, "nova-instance.json")
+  const version = existsSync(instanceFile)
+    ? JSON.parse(readFileSync(instanceFile, "utf8")).version
+    : undefined
+  const cell = (text: string) => text.replaceAll("|", "\\|")
+  const errors = [
+    ...files.flatMap((file) => (file.message ? [file.message] : [])),
+    ...tests.flatMap((test) => test.failureMessages ?? []),
+  ]
+
+  const lines = [
+    `### e2e tests: ${results.numPassedTests} passed, ${results.numFailedTests} failed, ${results.numPendingTests} skipped`,
+    "",
+    ...(typeof version === "string" ? [`NOVA ${version}`, ""] : []),
+    "| Test | Result | Duration |",
+    "| --- | --- | --- |",
+    ...tests.map(
+      (test) =>
+        `| ${cell(test.fullName)} | ${test.status} | ${test.duration == null ? "" : `${(test.duration / 1000).toFixed(1)} s`} |`,
+    ),
+    "",
+    ...errors.flatMap((error) => [
+      "```",
+      error.split("\n").slice(0, 8).join("\n"),
+      "```",
+    ]),
+    `The artifact ${RESULTS_DIR} holds the output of the tests (output.log), junit.xml, results.json, and the state of the instance after the tests (nova-instance.json).`,
+  ]
+  appendFileSync(summaryFile, `${lines.join("\n")}\n`)
+}
+
 const commands: Record<string, () => Promise<void>> = {
   create,
   wait: waitUntilReady,
+  snapshot,
   delete: remove,
+  report,
 }
 
 const command = commands[process.argv[2] ?? ""]
 if (!command) {
-  console.error("Usage: node scripts/nova-instance.ts create|wait|delete")
+  console.error(
+    "Usage: node scripts/nova-instance.ts create|wait|snapshot|delete|report",
+  )
   process.exit(1)
 }
 try {

@@ -6,6 +6,7 @@ tsconfig.tsbuildinfo
 dist
 tmp
 storybook-static
+e2e-results
 
 # Local Netlify folder
 .netlify

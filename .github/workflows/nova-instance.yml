@@ -58,9 +58,34 @@ jobs:
       - name: Wait until the instance is ready
         run: node scripts/nova-instance.ts wait
       - name: Run the e2e tests
-        run: pnpm run test:e2e
+        env:
+          # The output also goes into a file of the artifact
+          NO_COLOR: "1"
+        run: |
+          set -o pipefail
+          mkdir -p e2e-results
+          pnpm run test:e2e --reporter=default --reporter=junit --reporter=json \
+            --outputFile.junit=e2e-results/junit.xml \
+            --outputFile.json=e2e-results/results.json \
+            2>&1 | tee e2e-results/output.log
+      - name: Save the state of the instance
+        if: always()
+        run: node scripts/nova-instance.ts snapshot
       - name: Delete the instance
         if: always()
         env:
           PORTAL_REFRESH_TOKEN: ${{ secrets.PORTAL_PROD_REFRESH_TOKEN }}
         run: node scripts/nova-instance.ts delete
+      # Replaces the access token in the files, which everybody can download
+      - name: Check the e2e results
+        id: report
+        if: always()
+        run: node scripts/nova-instance.ts report
+      - name: Upload the e2e results
+        if: always() && steps.report.outcome == 'success'
+        uses: actions/upload-artifact@v6
+        with:
+          name: e2e-results
+          path: e2e-results/
+          retention-days: 7
+          if-no-files-found: ignore
