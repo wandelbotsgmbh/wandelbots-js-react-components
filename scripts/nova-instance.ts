@@ -5,7 +5,10 @@
  * and the CI of the NOVA Python SDK (wandelbots-nova).
  *
  * POST /v1/instances takes no lifetime, and the portal keeps an instance for
- * a day or longer. So the workflow must always run `delete`.
+ * a day or longer. So the workflow must always run `delete`. Before it
+ * creates an instance, `create` also deletes the instances of earlier runs
+ * that have ended, and it waits while all instances of the license are in
+ * use.
  *
  * Commands:
  *   create – gets an access token and creates an instance
@@ -17,13 +20,17 @@
  *   PORTAL_API_URL       – portal API, e.g. https://api.portal.wandelbots.io
  *   PORTAL_CLIENT_ID     – public client ID of the portal login
  *   PORTAL_REFRESH_TOKEN – refresh token of the CI test user (a secret)
+ *   GITHUB_TOKEN         – optional: lets `create` check whether the run of an
+ *                          older instance has ended
  *   GITHUB_ENV           – `create` writes NOVA_ACCESS_TOKEN, NOVA_INSTANCE_ID
  *                          and NOVA_INSTANCE_URL into it for the next steps
  */
 import { appendFileSync } from "node:fs"
 
 type ServiceStatus = { service: string; status: { code: string } }
+type PortalInstance = { instance_id: string; sandbox_name?: string }
 
+const CREATE_TIMEOUT_MS = 10 * 60_000
 const READY_TIMEOUT_MS = 20 * 60_000
 const POLL_INTERVAL_MS = 15_000
 
@@ -121,6 +128,55 @@ async function logLicenses(accessToken: string) {
   }
 }
 
+/**
+ * Deletes the instances of the CI user whose workflow run has ended. Such an
+ * instance is left over when the delete step of its run did not run or
+ * failed, and it uses one of the instances that the license allows.
+ * Instances that no run of this repository created stay.
+ */
+async function deleteLeftovers(accessToken: string) {
+  const { GITHUB_API_URL, GITHUB_REPOSITORY, GITHUB_SERVER_URL, GITHUB_TOKEN } =
+    process.env
+  if (!GITHUB_TOKEN) {
+    return
+  }
+  const runs = `${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/`
+  const portal = env("PORTAL_API_URL")
+  const headers = { authorization: `Bearer ${accessToken}` }
+  try {
+    const list = await readJson(
+      await fetch(`${portal}/v1/instances`, { headers }),
+    )
+    const instances: PortalInstance[] = list.instances ?? []
+    for (const instance of instances) {
+      if (!instance.sandbox_name?.startsWith(runs)) {
+        continue
+      }
+      const run = await fetch(
+        `${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}/actions/runs/${instance.sandbox_name.slice(runs.length)}`,
+        { headers: { authorization: `Bearer ${GITHUB_TOKEN}` } },
+      )
+      // HTTP 404: the run was deleted
+      const ended =
+        run.status === 404 || (await readJson(run)).status === "completed"
+      if (!ended) {
+        continue
+      }
+      const response = await fetch(
+        `${portal}/v1/instances/${instance.instance_id}`,
+        { method: "DELETE", headers },
+      )
+      console.log(
+        response.ok
+          ? `Deleted the instance ${instance.instance_id} of the ended run ${instance.sandbox_name}.`
+          : `Could not delete the instance ${instance.instance_id} of the ended run ${instance.sandbox_name}: HTTP ${response.status}`,
+      )
+    }
+  } catch (error) {
+    console.log(`Could not check for old instances: ${describe(error)}`)
+  }
+}
+
 async function create() {
   const accessToken = await getAccessToken()
   exportVariable("NOVA_ACCESS_TOKEN", accessToken)
@@ -130,9 +186,11 @@ async function create() {
     ? `${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}`
     : "local"
 
-  const attempts = 5
-  for (let attempt = 1; attempt <= attempts; attempt++) {
+  const deadline = Date.now() + CREATE_TIMEOUT_MS
+  for (let attempt = 1; ; attempt++) {
+    await deleteLeftovers(accessToken)
     let state: string
+    let pause = Math.min(attempt * 5000, 30_000)
     let refused = false
     try {
       const response = await fetch(`${env("PORTAL_API_URL")}/v1/instances`, {
@@ -155,11 +213,19 @@ async function create() {
         return
       }
       state = `HTTP ${response.status} ${JSON.stringify(body).slice(0, 300)}`
-      // A client error, such as a missing license, does not go away with a retry
-      refused =
-        response.status >= 400 &&
-        response.status < 500 &&
-        response.status !== 429
+      if (response.status === 409) {
+        // Another run of the CI user creates an instance at the same moment
+        pause = 10_000
+      } else if (String(body.message).includes("maximum number of")) {
+        // All instances of the license are in use: wait until a run deletes its instance
+        pause = 60_000
+      } else {
+        // A client error, such as a missing license, does not go away with a retry
+        refused =
+          response.status >= 400 &&
+          response.status < 500 &&
+          response.status !== 429
+      }
     } catch (error) {
       state = describe(error)
     }
@@ -167,12 +233,12 @@ async function create() {
       await logLicenses(accessToken)
       throw new Error(`The portal refused to create an instance: ${state}`)
     }
-    console.log(`Attempt ${attempt}/${attempts}: ${state}`)
-    if (attempt < attempts) {
-      await sleep(attempt * 5000)
+    if (Date.now() + pause > deadline) {
+      throw new Error(`No instance after ${attempt} attempts: ${state}`)
     }
+    console.log(`Attempt ${attempt}: ${state}`)
+    await sleep(pause)
   }
-  throw new Error(`No instance after ${attempts} attempts`)
 }
 
 /** Calls `check` until it returns true; otherwise it returns the state for the log. */

@@ -14,14 +14,12 @@ on:
   pull_request:
     branches:
       - main
-  # Temporary: runs the workflow on this branch before a PR exists.
-  push:
-    branches:
-      - ci/nova-dev-instance
   workflow_dispatch:
 
 permissions:
   contents: read
+  # `create` checks whether the runs of older instances have ended
+  actions: read
 
 concurrency:
   group: nova-instance-${{ github.event.pull_request.number || github.ref }}
@@ -30,10 +28,14 @@ concurrency:
 jobs:
   instance:
     name: NOVA instance
-    # Pull requests from forks get no secrets, so they cannot create an instance.
-    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    # Pull requests from forks and from Dependabot get no secrets of the
+    # repository, so they cannot create an instance.
+    if: >-
+      github.event_name != 'pull_request' ||
+      (github.event.pull_request.head.repo.full_name == github.repository &&
+      github.event.pull_request.user.login != 'dependabot[bot]')
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 40
     env:
       PORTAL_AUTH_URL: https://auth.portal.wandelbots.io/oauth/token
       PORTAL_API_URL: https://api.portal.wandelbots.io
@@ -49,6 +51,7 @@ jobs:
       - name: Create the instance
         env:
           PORTAL_REFRESH_TOKEN: ${{ secrets.PORTAL_PROD_REFRESH_TOKEN }}
+          GITHUB_TOKEN: ${{ github.token }}
         run: node scripts/nova-instance.ts create
       - name: Wait until the instance is ready
         run: node scripts/nova-instance.ts wait
