@@ -5,17 +5,9 @@
 ```ts
 
 import { AutoReconnectingWebsocket } from '@wandelbots/nova-js';
-import { autorun } from 'mobx';
-import Box from '@mui/material/Box';
 import { Collider } from '@wandelbots/nova-js/v2';
-import type { ComponentType } from 'react';
 import { CoordinateSystem } from '@wandelbots/nova-js/v2';
-import { DataGridProps } from '@mui/x-data-grid';
 import { Dictionary } from 'lodash';
-import { EffectCallback } from 'react';
-import { FabProps } from '@mui/material/Fab';
-import { GridColDef } from '@mui/x-data-grid';
-import { GridRowParams } from '@mui/x-data-grid';
 import type { i18n as i18n_2 } from 'i18next';
 import { IReactionDisposer } from 'mobx';
 import { JointTypeEnum } from '@wandelbots/nova-js/v2';
@@ -28,20 +20,13 @@ import type { OperationMode } from '@wandelbots/nova-js/v2';
 import type { PopoverOrigin } from '@mui/material/Popover';
 import { Pose } from '@wandelbots/nova-js/v2';
 import { default as React_2 } from 'react';
-import { reaction } from 'mobx';
 import { ReactNode } from 'react';
 import type { RobotControllerState } from '@wandelbots/nova-js/v2';
 import { RobotTcp } from '@wandelbots/nova-js/v2';
 import type { SafetyStateType } from '@wandelbots/nova-js/v2';
 import Stack from '@mui/material/Stack';
 import { SxProps } from '@mui/material/styles';
-import type { TextFieldProps } from '@mui/material/TextField';
-import type { Theme } from '@mui/material/styles';
-import type { ThemeOptions } from '@mui/material/styles';
 import * as THREE from 'three';
-
-// @public (undocumented)
-export const AdornedTextField: (input: AdornedTextFieldProps) => JSX.Element;
 
 // @public
 export const AppHeader: ((props: AppHeaderProps) => JSX.Element) & {
@@ -171,65 +156,6 @@ export class ConnectedMotionGroup {
 export type ConnectedMotionGroupOptions = {
     cellId?: string;
 };
-
-// @public
-export const createDebugMessage: (message: string, id?: string) => LogMessage;
-
-// @public
-export const createErrorMessage: (message: string, id?: string) => LogMessage;
-
-// @public
-export const createInfoMessage: (message: string, id?: string) => LogMessage;
-
-// @public
-export const createLogMessage: (message: string, level: LogLevel, id?: string) => LogMessage;
-
-// @public @deprecated (undocumented)
-export function createNovaMuiTheme(opts?: ThemeOptions): Theme;
-
-// @public
-export function createNovaTheme(...overrides: ThemeOptions[]): Theme;
-
-// @public
-export const createWarningMessage: (message: string, id?: string) => LogMessage;
-
-// @public
-export const CycleTimer: ((input: CycleTimerProps) => JSX.Element) & {
-    displayName: string;
-};
-
-// @public (undocumented)
-export interface CycleTimerControls {
-    // (undocumented)
-    completeMeasuring: () => void;
-    // (undocumented)
-    isPaused: () => boolean;
-    // (undocumented)
-    pause: () => void;
-    // (undocumented)
-    resume: () => void;
-    // (undocumented)
-    setIdle: () => void;
-    // (undocumented)
-    startMeasuring: (elapsedSeconds?: number) => void;
-    // (undocumented)
-    startNewCycle: (maxTimeSeconds: number, elapsedSeconds?: number) => void;
-}
-
-// @public (undocumented)
-export interface CycleTimerProps {
-    autoStart?: boolean;
-    className?: string;
-    compact?: boolean;
-    hasError?: boolean;
-    onCycleComplete: (controls: CycleTimerControls) => void;
-    onCycleEnd?: () => void;
-    onMeasuringComplete?: () => void;
-    variant?: "default" | "small";
-}
-
-// @public (undocumented)
-export type CycleTimerState = "idle" | "measuring" | "measured" | "countdown" | "success";
 
 // @public (undocumented)
 export const i18n: i18n_2;
@@ -539,62 +465,6 @@ export const LoadingErrorMessage: (props: {
 }) => JSX.Element;
 
 // @public (undocumented)
-export type LogLevel = "info" | "error" | "warning" | "debug";
-
-// @public (undocumented)
-export type LogMessage = {
-    id: string;
-    timestamp: Date;
-    message: string;
-    level: LogLevel;
-};
-
-// @public
-export const LogPanel: ((props: LogPanelProps) => JSX.Element) & {
-    displayName: string;
-};
-
-// @public (undocumented)
-export type LogPanelProps = {
-    store?: LogStore;
-    height?: string | number;
-    sx?: SxProps;
-    onStoreReady?: (store: LogStore) => void;
-};
-
-// @public (undocumented)
-export class LogStore {
-    constructor();
-    // (undocumented)
-    addDebug: (message: string) => void;
-    // (undocumented)
-    addError: (message: string) => void;
-    // (undocumented)
-    addInfo: (message: string) => void;
-    // (undocumented)
-    addMessage: (message: string, level?: LogLevel) => void;
-    // (undocumented)
-    addWarning: (message: string) => void;
-    // (undocumented)
-    clearMessages: () => void;
-    // (undocumented)
-    messages: LogMessage[];
-}
-
-// @public
-export const LogViewer: ((props: LogViewerProps) => JSX.Element) & {
-    displayName: string;
-};
-
-// @public (undocumented)
-export type LogViewerProps = {
-    messages: LogMessage[];
-    onClear?: () => void;
-    height?: string | number;
-    sx?: SxProps;
-};
-
-// @public (undocumented)
 export type MotionGroupOption = {
     selectionId: string;
 };
@@ -645,122 +515,7 @@ export type NoMotionGroupModalProps = {
 };
 
 // @public (undocumented)
-export const PoseCartesianValues: ((input: PoseCartesianValuesProps) => JSX.Element) & {
-    displayName: string;
-};
-
-// @public (undocumented)
-export type PoseCartesianValuesProps = {
-    tcpPose: Pose;
-    showCopyButton?: boolean;
-};
-
-// @public (undocumented)
 export function poseEqual(oldTcp: Pose | undefined, newTcp: Pose | undefined, changeDeltaThreshold: number): boolean;
-
-// @public (undocumented)
-export const PoseJointValues: ((input: PoseJointValuesProps) => JSX.Element) & {
-    displayName: string;
-};
-
-// @public (undocumented)
-export type PoseJointValuesProps = {
-    joints: Array<number>;
-    showCopyButton?: boolean;
-};
-
-// @public
-export const ProgramControl: ((input: ProgramControlProps) => JSX.Element) & {
-    displayName: string;
-};
-
-// @public (undocumented)
-export interface ProgramControlProps {
-    className?: string;
-    onPause?: () => void;
-    onReset?: () => void;
-    onRun: () => void;
-    onStop: () => void;
-    requiresManualReset?: boolean;
-    state: ProgramState;
-    variant?: "with_pause" | "without_pause";
-}
-
-// @public (undocumented)
-export enum ProgramState {
-    // (undocumented)
-    COMPLETED = "completed",
-    // (undocumented)
-    ERROR = "error",
-    // (undocumented)
-    FAILED = "failed",
-    // (undocumented)
-    IDLE = "idle",
-    // (undocumented)
-    PAUSED = "paused",
-    // (undocumented)
-    PAUSING = "pausing",
-    // (undocumented)
-    PREPARING = "preparing",
-    // (undocumented)
-    RUNNING = "running",
-    // (undocumented)
-    STARTING = "starting",
-    // (undocumented)
-    STOPPED = "stopped",
-    // (undocumented)
-    STOPPING = "stopping"
-}
-
-// @public
-export const ProgramStateIndicator: ((input: ProgramStateIndicatorProps) => JSX.Element) & {
-    displayName: string;
-};
-
-// @public (undocumented)
-export interface ProgramStateIndicatorProps {
-    className?: string;
-    operationMode: OperationMode;
-    programState: ProgramState;
-    safetyState: SafetyStateType;
-}
-
-// @public
-export const RobotListItem: ((input: RobotListItemProps) => JSX.Element) & {
-    displayName: string;
-};
-
-// @public (undocumented)
-export interface RobotListItemProps {
-    className?: string;
-    PreconditionComponent?: ComponentType<{
-        setupState: RobotSetupReadinessState;
-    }> | null;
-    robotName: string;
-    robotType?: string;
-    setupState: RobotSetupReadinessState;
-}
-
-// @public
-export const RobotSetupReadinessIndicator: ((input: RobotSetupReadinessIndicatorProps) => JSX.Element) & {
-    displayName: string;
-};
-
-// @public (undocumented)
-export interface RobotSetupReadinessIndicatorProps {
-    className?: string;
-    setupState: RobotSetupReadinessState;
-}
-
-// @public
-export enum RobotSetupReadinessState {
-    CELL_OPEN = "CELL_OPEN",
-    E_STOP = "E_STOP",
-    MANUAL_MODE = "MANUAL_MODE",
-    PRECONDITION_NOT_FULFILLED = "PRECONDITION_NOT_FULFILLED",
-    READY = "READY",
-    ROBOT_DISCONNECTED = "ROBOT_DISCONNECTED"
-}
 
 // @public (undocumented)
 export type RobotTcpLike = {
@@ -794,86 +549,13 @@ export interface SafetyBarProps {
 }
 
 // @public (undocumented)
-export const SelectableFab: (props: CodeFabProps) => JSX.Element;
-
-// @public
-export const TabBar: ((props: TabBarProps) => JSX.Element) & {
-    displayName: string;
-};
-
-// @public (undocumented)
-export interface TabBarProps {
-    activeTab?: number;
-    defaultActiveTab?: number;
-    items: TabItem[];
-    onTabChange?: (index: number) => void;
-    ref?: React.Ref<HTMLDivElement>;
-    sx?: SxProps;
-}
-
-// @public (undocumented)
-export interface TabItem {
-    badge?: {
-        content: React.ReactNode;
-        color?: "default" | "primary" | "secondary" | "error" | "info" | "success" | "warning";
-        max?: number;
-        showZero?: boolean;
-    };
-    content: React.ReactNode;
-    icon?: React.ReactElement;
-    id: string;
-    label: string;
-}
-
-// @public (undocumented)
 export function tcpMotionEqual(oldMotionState: MotionGroupState, newMotionState: MotionGroupState, changeDeltaThreshold: number): boolean;
-
-// @public
-export const Timer: ((input: TimerProps) => JSX.Element) & {
-    displayName: string;
-};
-
-// @public (undocumented)
-export interface TimerControls {
-    // (undocumented)
-    isPaused: () => boolean;
-    // (undocumented)
-    pause: () => void;
-    // (undocumented)
-    reset: () => void;
-    // (undocumented)
-    resume: () => void;
-    // (undocumented)
-    start: (elapsedSeconds?: number) => void;
-}
-
-// @public (undocumented)
-export interface TimerProps {
-    autoStart?: boolean;
-    className?: string;
-    compact?: boolean;
-    hasError?: boolean;
-    onTimerReady: (controls: TimerControls) => void;
-    variant?: "default" | "small";
-}
 
 // @public (undocumented)
 export function unwrapRotationVector(newRotationVectorApi: Vector3Simple, currentRotationVectorApi: Vector3Simple): Vector3Simple;
 
 // @public
-export function useAnimationFrame(callback: () => void): void;
-
-// @public
-export function useAutorun(view: Parameters<typeof autorun>[0]): void;
-
-// @public
 export function useInterpolation(initialValues?: number[], options?: InterpolationOptions): [ValueInterpolator];
-
-// @public
-export function useMounted(effect: EffectCallback): void;
-
-// @public
-export function useReaction<T>(expression: Parameters<typeof reaction<T>>[0], effect: Parameters<typeof reaction<T>>[1], opts?: Parameters<typeof reaction<T>>[2]): void;
 
 // @public
 export function useSmoothedMotionState(motionState: MotionGroupState, options?: InterpolationOptions): MotionGroupState;
@@ -903,30 +585,6 @@ export const VelocitySlider: ((props: VelocitySliderProps) => JSX.Element) & {
 
 // @public (undocumented)
 export function VelocitySliderLabel(input: VelocitySliderLabelProps): JSX.Element;
-
-// @public (undocumented)
-export const WandelbotsDataGrid: (<T>(input: WandelbotsDataGridProps<T>) => JSX.Element) & {
-    displayName: string;
-};
-
-// @public (undocumented)
-export interface WandelbotsDataGridProps<T = Record<string, unknown>> {
-    columns: GridColDef[];
-    CustomToolbar?: React.ComponentType;
-    data: T[];
-    dataGridProps?: Partial<DataGridProps>;
-    getItemId?: (item: T) => string | number;
-    getRowData: (item: T) => Record<string, unknown> & {
-        id: string | number;
-    };
-    onRowClick?: (item: T, params: GridRowParams) => void;
-    searchPlaceholder?: string;
-    selectedItem?: T | null;
-    selectFirstByDefault?: boolean;
-    showCount?: boolean;
-    sx?: React.ComponentProps<typeof Box>["sx"];
-    title?: string;
-}
 
 // (No @packageDocumentation comment for this package)
 

@@ -7,8 +7,8 @@
  *   1. Every public subpath resolves via Node's `exports` resolver to a file
  *      that actually exists on disk (ESM, CJS, and .d.ts).
  *   2. The wildcard subpath export lets consumers deep-import any module
- *      under src/ (including folder-based ones like Timer/CycleTimer that
- *      have a sibling barrel).
+ *      under src/ (including folder-based ones like SafetyBar that have an
+ *      index barrel).
  *   3. Named exports remain importable AND the MUI-style default export is
  *      also available and identical to the named one for primary components.
  *
@@ -112,8 +112,10 @@ describe("theme augmentation declarations", () => {
     const fixture = resolve(sandbox, "theme-consumer.ts")
     writeFileSync(
       fixture,
-      `import { createNovaTheme } from ${JSON.stringify(spec)}\n` +
-        "const theme = createNovaTheme()\n" +
+      'import type { Theme } from "@mui/material/styles"\n' +
+        `import { JoggingPanel } from ${JSON.stringify(spec)}\n` +
+        "const panel: unknown = JoggingPanel\n" +
+        "declare const theme: Theme\n" +
         "const elevation: string | undefined = theme.palette.backgroundPaperElevation?.[2]\n" +
         "const tonal: string | undefined = theme.paletteExt?.secondary?.tonal\n" +
         "const tertiary: string = theme.palette.tertiary.main\n",

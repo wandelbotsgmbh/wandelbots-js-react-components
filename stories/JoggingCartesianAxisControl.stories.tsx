@@ -3,6 +3,7 @@ import Typography from "@mui/material/Typography"
 import type { Meta, StoryObj } from "@storybook/react-vite"
 import { useRef } from "react"
 import { JoggingCartesianAxisControl } from "../src"
+import { cartesianAxisColors } from "../src/components/jogging/joggingColors"
 import { useAnimationFrame } from "../src/components/utils/hooks"
 import XAxisIcon from "../src/icons/axis-x.svg"
 
@@ -22,7 +23,7 @@ const meta: Meta<typeof JoggingCartesianAxisControl> = {
     const joggingValueRef = useRef(0)
 
     const theme = useTheme()
-    const colors = theme.componentsExt?.JoggingPanel?.JoggingCartesian?.Axis?.X
+    const colors = cartesianAxisColors.X
 
     useAnimationFrame(() => {
       if (joggingDirRef.current === "+") {

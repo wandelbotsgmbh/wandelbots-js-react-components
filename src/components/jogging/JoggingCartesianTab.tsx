@@ -1,4 +1,4 @@
-import { useTheme, type Theme } from "@mui/material/styles"
+import { useTheme } from "@mui/material/styles"
 import Divider from "@mui/material/Divider"
 import Stack from "@mui/material/Stack"
 import ToggleButton from "@mui/material/ToggleButton"
@@ -16,6 +16,7 @@ import ZAxisIcon from "../../icons/axis-z.svg"
 import RotationIcon from "../../icons/rotation.svg"
 import type { Vector3Simple } from "../../lib/JoggerConnection"
 import { JoggingCartesianAxisControl } from "./JoggingCartesianAxisControl"
+import { cartesianAxisColors } from "./joggingColors"
 import { JoggingJointLimitDetector } from "./JoggingJointLimitDetector"
 import { JoggingOptions } from "./JoggingOptions"
 import type {
@@ -132,38 +133,21 @@ export const JoggingCartesianTab = observer(
       await store.deactivate()
     }
 
-    function getAxisColors(
-      axisId: "X" | "Y" | "Z",
-      motionType: "translate" | "rotate",
-      theme: Theme,
-    ) {
-      const axisColors =
-        theme.componentsExt?.JoggingPanel?.JoggingCartesian?.Axis
-
-      if (!axisColors) return undefined
-
-      if (motionType === "translate") {
-        return axisColors[axisId]
-      }
-
-      return axisColors.CustomRotation ?? axisColors[axisId]
-    }
-
     const axisList = [
       {
         id: "x",
         icon: <XAxisIcon />,
-        colors: getAxisColors("X", store.selectedCartesianMotionType, theme),
+        colors: cartesianAxisColors.X,
       },
       {
         id: "y",
         icon: <YAxisIcon />,
-        colors: getAxisColors("Y", store.selectedCartesianMotionType, theme),
+        colors: cartesianAxisColors.Y,
       },
       {
         id: "z",
         icon: <ZAxisIcon />,
-        colors: getAxisColors("Z", store.selectedCartesianMotionType, theme),
+        colors: cartesianAxisColors.Z,
       },
     ] as const
 

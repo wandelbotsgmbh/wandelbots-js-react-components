@@ -6,6 +6,7 @@ import isNumber from "lodash-es/isNumber.js"
 import { observer } from "mobx-react-lite"
 import type { ReactNode } from "react"
 import { useTranslation } from "react-i18next"
+import { velocitySliderLegendColor } from "./jogging/joggingColors"
 import type { JoggingStore } from "./jogging/JoggingStore"
 
 type VelocitySliderProps = {
@@ -21,7 +22,6 @@ type VelocitySliderProps = {
 
 /** A slider for controlling the movement velocity of a robot */
 export const VelocitySlider = observer((props: VelocitySliderProps) => {
-  const theme = useTheme()
   const { store } = props
   const { t } = useTranslation()
 
@@ -42,9 +42,7 @@ export const VelocitySlider = observer((props: VelocitySliderProps) => {
       {store.showVelocityLegend && (
         <Typography
           sx={{
-            color:
-              theme.componentsExt?.JoggingPanel?.VelocitySlider
-                ?.sliderLegendColor,
+            color: velocitySliderLegendColor,
             fontSize: "14px",
           }}
         >

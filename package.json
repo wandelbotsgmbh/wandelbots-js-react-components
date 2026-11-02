@@ -103,6 +103,7 @@
     "@types/three": "^0.182.0",
     "@vitejs/plugin-react": "^4.3.4",
     "add": "^2.0.6",
+    "dotenv": "^17.2.3",
     "glob": "^13.0.0",
     "http-server": "^14.1.1",
     "husky": "^9.1.7",
@@ -132,6 +133,7 @@
     "tsx": "^4.21.0",
     "typescript": "^5.8.2",
     "unplugin": "^1.15.0",
+    "username": "^7.0.0",
     "vite": "^6.2.0",
     "vite-plugin-svgr": "^4.3.0",
     "vitest": "^3.0.7",
@@ -167,20 +169,16 @@
     }
   },
   "dependencies": {
-    "@mui/x-charts": "^8.27.0",
-    "@mui/x-data-grid": "^8.27.0",
     "@wandelbots/design-tokens": "^2.0.0",
     "@wandelbots/mui": "^1.0.1",
     "@wandelbots/nova-js": "3.10.0-pr.295.cb733a7",
     "axios": "^1.15.0",
-    "dotenv": "^17.2.3",
     "i18next-browser-languagedetector": "^8.2.0",
     "lodash-es": "^4.17.21",
     "mobx": "^6.13.6",
     "mobx-react-lite": "^4.1.0",
     "react-error-boundary": "^6.0.3",
-    "react-i18next": "^16.5.2",
-    "username": "^7.0.0"
+    "react-i18next": "^16.5.2"
   },
   "pnpm": {
     "overrides": {

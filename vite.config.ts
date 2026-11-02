@@ -51,7 +51,7 @@ const emitSvgDts = (): Plugin => ({
 // every source file under `src/components/` is emitted as an individual
 // entry so consumers can deep-import any component via the
 // `./components/*` wildcard subpath export in package.json. Other source
-// modules (helpers under `src/lib/`, `src/themes/`, etc.) are bundled
+// modules (helpers under `src/lib/`, etc.) are bundled
 // into the aggregates and intentionally not exposed as a public API.
 // The entry map itself lives in `scripts/entry-points.ts` so that
 // `scripts/api-extractor.ts` can iterate the same list.

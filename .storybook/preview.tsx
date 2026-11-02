@@ -1,7 +1,7 @@
 import { ThemeProvider } from "@mui/material/styles"
 import CssBaseline from "@mui/material/CssBaseline"
 import type { Preview } from "@storybook/react-vite"
-import { createNovaTheme } from "../src"
+import { createNovaMuiTheme } from "@wandelbots/mui"
 import { DocsContainer } from "./DocsContainer"
 import "./global.css"
 
@@ -33,7 +33,6 @@ const preview: Preview = {
           "Jogging",
           "Safety",
           "Components",
-          ["RobotCard", ["Stories", "Usage Docs"]],
           "Navigation",
           "*", // Everything else
         ],
@@ -55,7 +54,7 @@ const preview: Preview = {
   decorators: [
     (Story) => {
       // Force dark theme for all components
-      const muiTheme = createNovaTheme({
+      const muiTheme = createNovaMuiTheme({
         palette: { mode: "dark" },
       })
 
