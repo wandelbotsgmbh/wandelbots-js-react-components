@@ -15,6 +15,9 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "declaration": true,
+    // Members marked `@internal` (such as the library's own NOVA client) are
+    // not in the published types
+    "stripInternal": true,
     "verbatimModuleSyntax": true,
     // Stops vscode from sometimes deleting chunks of code accidentally
     "allowUnreachableCode": true

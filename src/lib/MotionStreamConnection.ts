@@ -15,7 +15,11 @@ import {
   tcpMotionEqual,
   unwrapRotationVector,
 } from "./motionStateUpdate"
-import { type AnyNovaClient, asNovaInstance } from "./novaCompat"
+import {
+  cellIdOf,
+  createNovaClient,
+  type NovaConnection,
+} from "./novaConnection"
 
 const MOTION_DELTA_THRESHOLD = 0.0001
 
@@ -29,12 +33,12 @@ export type MotionStreamConnectionOptions = {
 
 export class MotionStreamConnection {
   static async open(
-    novaClient: AnyNovaClient,
+    connection: NovaConnection,
     motionGroupId: string,
     options: MotionStreamConnectionOptions = {},
   ) {
-    const nova = asNovaInstance(novaClient)
-    const cellId = options.cellId ?? "cell"
+    const nova = createNovaClient(connection)
+    const cellId = options.cellId ?? cellIdOf(connection) ?? "cell"
     const [_motionGroupIndex, controllerId] = motionGroupId.split("@") as [
       string,
       string,
@@ -95,11 +99,14 @@ export class MotionStreamConnection {
   // using animation frames
   rapidlyChangingMotionState: MotionGroupState
 
-  /** Normalized instance-level Nova client (see `asNovaInstance`) */
+  /**
+   * The library's own NOVA client (see `createNovaClient`)
+   * @internal
+   */
   readonly nova: Nova
 
   constructor(
-    nova: AnyNovaClient,
+    connection: NovaConnection,
     readonly controller: RobotControllerState,
     readonly motionGroup: MotionGroupState,
     readonly description: MotionGroupDescription,
@@ -107,7 +114,7 @@ export class MotionStreamConnection {
     readonly motionStateSocket: AutoReconnectingWebsocket,
     readonly cellId: string = "cell",
   ) {
-    this.nova = asNovaInstance(nova)
+    this.nova = createNovaClient(connection)
     this.rapidlyChangingMotionState = initialMotionState
 
     motionStateSocket.addEventListener("message", (event) => {

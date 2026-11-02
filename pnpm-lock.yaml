@@ -16,27 +16,21 @@ importers:
       '@wandelbots/design-tokens':
         specifier: ^2.0.0
         version: 2.0.0
-      '@wandelbots/mui':
-        specifier: ^1.0.1
-        version: 1.0.1(@emotion/react@11.14.0(@types/react@19.2.7)(react@19.2.3))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.7)(react@19.2.3))(@types/react@19.2.7)(react@19.2.3))(@mui/icons-material@7.3.7(@mui/material@7.3.7(@emotion/react@11.14.0(@types/react@19.2.7)(react@19.2.3))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.7)(react@19.2.3))(@types/react@19.2.7)(react@19.2.3))(@types/react@19.2.7)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(@types/react@19.2.7)(react@19.2.3))(@mui/material@7.3.7(@emotion/react@11.14.0(@types/react@19.2.7)(react@19.2.3))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.7)(react@19.2.3))(@types/react@19.2.7)(react@19.2.3))(@types/react@19.2.7)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       '@wandelbots/nova-js':
-        specifier: 3.10.0-pr.295.cb733a7
-        version: 3.10.0-pr.295.cb733a7
+        specifier: 4.13.0
+        version: 4.13.0
       axios:
         specifier: ^1.15.0
         version: 1.18.0
+      i18next:
+        specifier: ^25.7.4
+        version: 25.8.0(typescript@5.9.3)
       i18next-browser-languagedetector:
         specifier: ^8.2.0
         version: 8.2.1
       lodash-es:
         specifier: ^4.17.21
         version: 4.18.1
-      mobx:
-        specifier: ^6.13.6
-        version: 6.15.0
-      mobx-react-lite:
-        specifier: ^4.1.0
-        version: 4.1.1(mobx@6.15.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       react-error-boundary:
         specifier: ^6.0.3
         version: 6.1.1(react@19.2.3)
@@ -122,6 +116,9 @@ importers:
       '@vitejs/plugin-react':
         specifier: ^4.3.4
         version: 4.7.0(vite@6.4.3(@types/node@25.0.3)(terser@5.44.1)(tsx@4.21.0))
+      '@wandelbots/mui':
+        specifier: ^2.0.1
+        version: 2.0.1(@emotion/react@11.14.0(@types/react@19.2.7)(react@19.2.3))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.7)(react@19.2.3))(@types/react@19.2.7)(react@19.2.3))(@mui/icons-material@7.3.7(@mui/material@7.3.7(@emotion/react@11.14.0(@types/react@19.2.7)(react@19.2.3))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.7)(react@19.2.3))(@types/react@19.2.7)(react@19.2.3))(@types/react@19.2.7)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(@types/react@19.2.7)(react@19.2.3))(@mui/material@7.3.7(@emotion/react@11.14.0(@types/react@19.2.7)(react@19.2.3))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.7)(react@19.2.3))(@types/react@19.2.7)(react@19.2.3))(@types/react@19.2.7)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       add:
         specifier: ^2.0.6
         version: 2.0.6
@@ -137,9 +134,6 @@ importers:
       husky:
         specifier: ^9.1.7
         version: 9.1.7
-      i18next:
-        specifier: ^25.7.4
-        version: 25.8.0(typescript@5.9.3)
       jest-simple-dot-reporter:
         specifier: ^1.0.5
         version: 1.0.5
@@ -149,6 +143,12 @@ importers:
       jsdom:
         specifier: ^27.4.0
         version: 27.4.0
+      mobx:
+        specifier: ^6.13.6
+        version: 6.15.0
+      mobx-react-lite:
+        specifier: ^4.1.0
+        version: 4.1.1(mobx@6.15.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       nodemon:
         specifier: ^3.1.9
         version: 3.1.11
@@ -260,11 +260,11 @@ packages:
   '@asamuzakjp/nwsapi@2.3.9':
     resolution: {integrity: sha512-n8GuYSrI9bF7FFZ/SjhwevlHc8xaVlb/7HmHelnc/PZXBD2ZR49NnN9sMMuDdEGPeeRQ5d0hqlSlEpgCX3Wl0Q==}
 
-  '@auth0/auth0-auth-js@1.11.0':
-    resolution: {integrity: sha512-hy5knYIPKECTLCPCZKolHsdOkjZhCAc59pga4Y3dp8q7E1uVSKYI7BUhzukNVykUshJRmcgPwOiBtsn2JjUo6w==}
+  '@auth0/auth0-auth-js@1.18.0':
+    resolution: {integrity: sha512-3O3fo2IdToP8x1ZlpQy9/hl37E7Xz1/+bFZR/nLwbmb+zXQT1UYFST1/YY0fqHnqHG2zxzJfBhZ/I0ACjKjY5g==}
 
-  '@auth0/auth0-spa-js@2.23.0':
-    resolution: {integrity: sha512-fRiPlTIMLahes6eXq5C4CF8zFi9vLxUtii8e7CESmzWBJGSa3jRrnjgQVAPSaox2x+CwzTFcJbt4mR+UiVMk1Q==}
+  '@auth0/auth0-spa-js@2.30.0':
+    resolution: {integrity: sha512-jqsVox2+TiBZf0Zh5h9iITh7W6a/WCGAMLuqniz+PTg2afVggbOBDmieo1zwOp8zQoY3RPguN4l5mvLDmxu7EQ==}
 
   '@babel/code-frame@7.29.0':
     resolution: {integrity: sha512-9NhCeYjq9+3uxgdtp20LSiJXJvN0FeCtNGpJxuMFZ1Kv3cWUNb6DOhJwUvcVCzKGR66cw4njwM6hrJLqgOwbcw==}
@@ -1869,6 +1869,20 @@ packages:
   '@napi-rs/wasm-runtime@0.2.12':
     resolution: {integrity: sha512-ZVWUcfwY4E/yPitQJl481FjFo3K22D6qF0DuFH6Y/nbnE11GY5uguDxZMGXPQ8WQ0128MXQD7TnfHyK4oWoIJQ==}
 
+  '@nats-io/jetstream@3.4.0':
+    resolution: {integrity: sha512-GzHQodNJ942+R5LRb8PuZ5ugVWVWMRiufxUYLLVWkXKfwDXYN+Owo0d7L/b9O7BPyrbYD7jQWAC6+ZVuXa9Gyw==}
+
+  '@nats-io/nats-core@3.4.0':
+    resolution: {integrity: sha512-QMDM86EUNm+wudlKC67HLar/KHHQUvJGLfb4jbahje3pUk3K9afeck9fwsxBZF0eUFox6T/TA6m/t+lQqf+QsQ==}
+
+  '@nats-io/nkeys@2.0.3':
+    resolution: {integrity: sha512-JVt56GuE6Z89KUkI4TXUbSI9fmIfAmk6PMPknijmuL72GcD+UgIomTcRWiNvvJKxA01sBbmIPStqJs5cMRBC3A==}
+    engines: {node: '>=18.0.0'}
+
+  '@nats-io/nuid@3.0.0':
+    resolution: {integrity: sha512-QbXZDrxmYlrn5AD06gYcUTmEHwxn96HBQMIk7XTjDlEcx6FPzVBBPjp4AMRh1lEv6B4iJ6Xb/Uz61JugPXFRQg==}
+    engines: {node: '>= 22.x'}
+
   '@octokit/auth-token@6.0.0':
     resolution: {integrity: sha512-P4YJBPdPSpWTQ1NU4XYdvHvXJJDxM6YwpS0FZHRgP7YFkdVxsWcpWGy/NVqlAA7PcPCnMacXlRm1y2PFZRWL/w==}
     engines: {node: '>= 20'}
@@ -2661,9 +2675,6 @@ packages:
   '@types/three@0.182.0':
     resolution: {integrity: sha512-WByN9V3Sbwbe2OkWuSGyoqQO8Du6yhYaXtXLoA5FkKTUJorZ+yOHBZ35zUUPQXlAKABZmbYp5oAqpA4RBjtJ/Q==}
 
-  '@types/three@0.183.1':
-    resolution: {integrity: sha512-f2Pu5Hrepfgavttdye3PsH5RWyY/AvdZQwIVhrc4uNtvF7nOWJacQKcoVJn0S4f0yYbmAE6AR+ve7xDcuYtMGw==}
-
   '@types/wait-on@5.3.4':
     resolution: {integrity: sha512-EBsPjFMrFlMbbUFf9D1Fp+PAB2TwmUn7a3YtHyD9RLuTIk1jDd8SxXVAoez2Ciy+8Jsceo2MYEYZzJ/DvorOKw==}
 
@@ -2844,8 +2855,16 @@ packages:
   '@wandelbots/design-tokens@2.0.0':
     resolution: {integrity: sha512-elSCqln8pUaWbM0DWu6GU7X0rH9FZaCx6+E56Fr2/EAJDq8zXpJlh8OIuc8J/uS4gIRicgDcu+9wkwYJrVlSng==}
 
-  '@wandelbots/mui@1.0.1':
-    resolution: {integrity: sha512-995abpzaqPQWBTPYNYaWPxnhia3whQlEGgGIu0bbz+aqYq462/DUbPajZr+IzggHS9aCDyvsOi7opo55QiYUjA==}
+  '@wandelbots/design-tokens@3.5.0':
+    resolution: {integrity: sha512-wJUKxFMZ2Nmd4qGVXXD/ez+fBFA6jv2+zFEbq/eqyIN8WkG5W8ArJ3z7I7tyBqeAiIiIK8RPdttwXNhOrBSMvA==}
+
+  '@wandelbots/icons@2.2.0':
+    resolution: {integrity: sha512-fpWQhEieH5OcV5T6ua8vSG7YBGAoTCoeR+8idNpjB+oTKmqeYLg/kdnCu8BK/hE4922JDjxtotyv+E3BzqmzGQ==}
+    peerDependencies:
+      react: '>=18'
+
+  '@wandelbots/mui@2.0.1':
+    resolution: {integrity: sha512-UZ9fROwcEPr0QAWLWTMVDEaqdPbiowNjqTKZXw3y91QJffzy+oBPalvur9C2nBsM4KhpBZx6IpZIv+s4x7Hmcg==}
     peerDependencies:
       '@emotion/react': ^11.11.1
       '@emotion/styled': ^11.11.0
@@ -2854,11 +2873,9 @@ packages:
       react: ^19
       react-dom: ^19
 
-  '@wandelbots/nova-api@26.4.0':
-    resolution: {integrity: sha512-8xEP0JdUTZTvJpXPi9egeJ4z7AqqSkTpTaJrP82mbzxDckGT0jPpnX2cF7jN53oB/ziqE3BcthPgJiOKGjFRKg==}
-
-  '@wandelbots/nova-js@3.10.0-pr.295.cb733a7':
-    resolution: {integrity: sha512-IF4PNYlkHHrwUAOQh5Sk+f1SQ8dEf7lfPQNFp587bpvcAz2VcRt5QCGtXz8Z7GZEBQXZy/gZVpamJcbdtd7SUg==}
+  '@wandelbots/nova-js@4.13.0':
+    resolution: {integrity: sha512-YneFduBF7sDE5nvGXOIUUHeKXWmzA4rb0v/MKQOmMsQpohXUn0GnPPCIvD2DGGbitLznWOqR1dV72kevoq5QOA==}
+    engines: {node: '>=22.12.0'}
 
   '@webgpu/types@0.1.68':
     resolution: {integrity: sha512-3ab1B59Ojb6RwjOspYLsTpCzbNB3ZaamIAxBMmvnNkiDoLTZUOBXZ9p5nAYVEkQlDdf6qAZWi1pqj9+ypiqznA==}
@@ -3003,6 +3020,9 @@ packages:
 
   axios@1.18.0:
     resolution: {integrity: sha512-E32NzpYKp++W7XRe52rHiXV2ehxmh3wbdgO7MHeFM+vqxLBYHzt0ElkiImtOBxtOmyp0yoC8C6uESVV84Y2/hw==}
+
+  axios@1.21.0:
+    resolution: {integrity: sha512-YCzXMB53Q9PZBsh7yN7wtapit4WepwcHS2fP8QhGsBxSz5YtgYobV7GGlWlAJi+RxfU77GQTQi2DSLUma42EYA==}
 
   b4a@1.8.1:
     resolution: {integrity: sha512-aiqre1Nr0B/6DgE2N5vwTc+2/oQZ4Wh1t4NznYY4E00y8LCt6NqdRv81so00oo27D8MVKTpUa/MwUUtBLXCoDw==}
@@ -5021,9 +5041,6 @@ packages:
   meshoptimizer@0.22.0:
     resolution: {integrity: sha512-IebiK79sqIy+E4EgOr+CAw+Ke8hAspXKzBd0JdgEmPHiAwmvEj2S4h1rfvo+o/BnfEYd/jAOg5IeeIjzlzSnDg==}
 
-  meshoptimizer@1.0.1:
-    resolution: {integrity: sha512-Vix+QlA1YYT3FwmBBZ+49cE5y/b+pRrcXKqGpS5ouh33d3lSp2PoTpCw19E0cKDFWalembrHnIaZetf27a+W2g==}
-
   micromatch@4.0.8:
     resolution: {integrity: sha512-PXwfBhYu0hBCPw8Dn0E+WDYb7af3dSLVWKi3HGv84IdF4TyFoC0ysxFd0Goxw7nSv4T/PzEJQxsYsEiFCKo2BA==}
     engines: {node: '>=8.6'}
@@ -5111,9 +5128,6 @@ packages:
 
   mobx@6.15.0:
     resolution: {integrity: sha512-UczzB+0nnwGotYSgllfARAqWCJ5e/skuV2K/l+Zyck/H6pJIhLXuBnz+6vn2i211o7DtbE78HQtsYEKICHGI+g==}
-
-  mobx@6.16.1:
-    resolution: {integrity: sha512-syNcDdX3KT+Jq3je6eGjBhuc24Z68td2VG0zNFqRswaE433D9SNH5VRy/xrGbJsUixfppLLccXhAW9JSf6n+SQ==}
 
   ms@2.1.3:
     resolution: {integrity: sha512-6FlzubTLZG3J2a/NVCAleEhjzq5oxgHyaCU9yYXvcLsvoVaHJq/s5xXI6/XXP6tz7R9xAOtHnSO/tXtF3WRTlA==}
@@ -6617,9 +6631,6 @@ packages:
   three@0.182.0:
     resolution: {integrity: sha512-GbHabT+Irv+ihI1/f5kIIsZ+Ef9Sl5A1Y7imvS5RQjWgtTPfPnZ43JmlYI7NtCRDK9zir20lQpfg8/9Yd02OvQ==}
 
-  three@0.183.2:
-    resolution: {integrity: sha512-di3BsL2FEQ1PA7Hcvn4fyJOlxRRgFYBpMTcyOgkwJIaDOdJMebEFPA+t98EvjuljDx4hNulAGwF6KIjtwI5jgQ==}
-
   through2@2.0.5:
     resolution: {integrity: sha512-/mrRod8xqpA+IHSLyGCQ2s8SPHiCDEeQJSep1jqLYeEUClOFG2Qsh+4FU6G9VeqpZnGW/Su8LQGc4YKni5rYSQ==}
 
@@ -6724,6 +6735,9 @@ packages:
   tunnel@0.0.6:
     resolution: {integrity: sha512-1h/Lnq9yajKY2PEbBadPXj3VxsDDu844OnaAo52UVmIzIvwwtBPIuNvkjuzBlTWpfJyUbG3ez0KSBibQkj4ojg==}
     engines: {node: '>=0.6.11 <=0.7.0 || >=0.7.3'}
+
+  tweetnacl@1.0.3:
+    resolution: {integrity: sha512-6rt+RN7aOi1nGMyC4Xa5DdYiukl2UWCbcJft7YhxReBGQD7OAM8Pbxw6YMo4r2diNEA8FEmu32YOn9rhaiE5yw==}
 
   type-detect@4.0.8:
     resolution: {integrity: sha512-0fr/mIH1dlO+x7TlcMy+bIDqKPsw/70tVyeHW787goQjhmqaZe10uwLujubK9q9Lg6Fiho1KUKDYz0Z7k7g5/g==}
@@ -7262,14 +7276,14 @@ snapshots:
 
   '@asamuzakjp/nwsapi@2.3.9': {}
 
-  '@auth0/auth0-auth-js@1.11.0':
+  '@auth0/auth0-auth-js@1.18.0':
     dependencies:
       jose: 6.1.3
       openid-client: 6.8.2
 
-  '@auth0/auth0-spa-js@2.23.0':
+  '@auth0/auth0-spa-js@2.30.0':
     dependencies:
-      '@auth0/auth0-auth-js': 1.11.0
+      '@auth0/auth0-auth-js': 1.18.0
       browser-tabs-lock: 1.3.0
       dpop: 2.1.1
       es-cookie: 1.3.2
@@ -8941,6 +8955,21 @@ snapshots:
       '@tybys/wasm-util': 0.10.1
     optional: true
 
+  '@nats-io/jetstream@3.4.0':
+    dependencies:
+      '@nats-io/nats-core': 3.4.0
+
+  '@nats-io/nats-core@3.4.0':
+    dependencies:
+      '@nats-io/nkeys': 2.0.3
+      '@nats-io/nuid': 3.0.0
+
+  '@nats-io/nkeys@2.0.3':
+    dependencies:
+      tweetnacl: 1.0.3
+
+  '@nats-io/nuid@3.0.0': {}
+
   '@octokit/auth-token@6.0.0': {}
 
   '@octokit/core@7.0.6':
@@ -9782,16 +9811,6 @@ snapshots:
       fflate: 0.8.2
       meshoptimizer: 0.22.0
 
-  '@types/three@0.183.1':
-    dependencies:
-      '@dimforge/rapier3d-compat': 0.12.0
-      '@tweenjs/tween.js': 23.1.3
-      '@types/stats.js': 0.17.4
-      '@types/webxr': 0.5.24
-      '@webgpu/types': 0.1.68
-      fflate: 0.8.2
-      meshoptimizer: 1.0.1
-
   '@types/wait-on@5.3.4':
     dependencies:
       '@types/node': 25.0.3
@@ -9954,33 +9973,31 @@ snapshots:
 
   '@wandelbots/design-tokens@2.0.0': {}
 
-  '@wandelbots/mui@1.0.1(@emotion/react@11.14.0(@types/react@19.2.7)(react@19.2.3))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.7)(react@19.2.3))(@types/react@19.2.7)(react@19.2.3))(@mui/icons-material@7.3.7(@mui/material@7.3.7(@emotion/react@11.14.0(@types/react@19.2.7)(react@19.2.3))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.7)(react@19.2.3))(@types/react@19.2.7)(react@19.2.3))(@types/react@19.2.7)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(@types/react@19.2.7)(react@19.2.3))(@mui/material@7.3.7(@emotion/react@11.14.0(@types/react@19.2.7)(react@19.2.3))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.7)(react@19.2.3))(@types/react@19.2.7)(react@19.2.3))(@types/react@19.2.7)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(react-dom@19.2.3(react@19.2.3))(react@19.2.3)':
+  '@wandelbots/design-tokens@3.5.0': {}
+
+  '@wandelbots/icons@2.2.0(react@19.2.3)':
+    dependencies:
+      react: 19.2.3
+
+  '@wandelbots/mui@2.0.1(@emotion/react@11.14.0(@types/react@19.2.7)(react@19.2.3))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.7)(react@19.2.3))(@types/react@19.2.7)(react@19.2.3))(@mui/icons-material@7.3.7(@mui/material@7.3.7(@emotion/react@11.14.0(@types/react@19.2.7)(react@19.2.3))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.7)(react@19.2.3))(@types/react@19.2.7)(react@19.2.3))(@types/react@19.2.7)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(@types/react@19.2.7)(react@19.2.3))(@mui/material@7.3.7(@emotion/react@11.14.0(@types/react@19.2.7)(react@19.2.3))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.7)(react@19.2.3))(@types/react@19.2.7)(react@19.2.3))(@types/react@19.2.7)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(react-dom@19.2.3(react@19.2.3))(react@19.2.3)':
     dependencies:
       '@emotion/react': 11.14.0(@types/react@19.2.7)(react@19.2.3)
       '@emotion/styled': 11.14.1(@emotion/react@11.14.0(@types/react@19.2.7)(react@19.2.3))(@types/react@19.2.7)(react@19.2.3)
       '@mui/icons-material': 7.3.7(@mui/material@7.3.7(@emotion/react@11.14.0(@types/react@19.2.7)(react@19.2.3))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.7)(react@19.2.3))(@types/react@19.2.7)(react@19.2.3))(@types/react@19.2.7)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(@types/react@19.2.7)(react@19.2.3)
       '@mui/material': 7.3.7(@emotion/react@11.14.0(@types/react@19.2.7)(react@19.2.3))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.7)(react@19.2.3))(@types/react@19.2.7)(react@19.2.3))(@types/react@19.2.7)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
-      '@wandelbots/design-tokens': 2.0.0
+      '@wandelbots/design-tokens': 3.5.0
+      '@wandelbots/icons': 2.2.0(react@19.2.3)
       react: 19.2.3
       react-dom: 19.2.3(react@19.2.3)
 
-  '@wandelbots/nova-api@26.4.0':
+  '@wandelbots/nova-js@4.13.0':
     dependencies:
-      axios: 1.18.0
-    transitivePeerDependencies:
-      - debug
-      - supports-color
-
-  '@wandelbots/nova-js@3.10.0-pr.295.cb733a7':
-    dependencies:
-      '@auth0/auth0-spa-js': 2.23.0
-      '@types/three': 0.183.1
-      '@wandelbots/nova-api': 26.4.0
-      axios: 1.18.0
-      mobx: 6.16.1
+      '@auth0/auth0-spa-js': 2.30.0
+      '@nats-io/jetstream': 3.4.0
+      '@nats-io/nats-core': 3.4.0
+      axios: 1.21.0
       path-to-regexp: 8.4.2
       reconnecting-websocket: 4.4.0
-      three: 0.183.2
     transitivePeerDependencies:
       - debug
       - supports-color
@@ -10109,6 +10126,16 @@ snapshots:
       possible-typed-array-names: 1.1.0
 
   axios@1.18.0:
+    dependencies:
+      follow-redirects: 1.16.0
+      form-data: 4.0.6
+      https-proxy-agent: 5.0.1
+      proxy-from-env: 2.1.0
+    transitivePeerDependencies:
+      - debug
+      - supports-color
+
+  axios@1.21.0:
     dependencies:
       follow-redirects: 1.16.0
       form-data: 4.0.6
@@ -12539,8 +12566,6 @@ snapshots:
 
   meshoptimizer@0.22.0: {}
 
-  meshoptimizer@1.0.1: {}
-
   micromatch@4.0.8:
     dependencies:
       braces: 3.0.3
@@ -12599,8 +12624,6 @@ snapshots:
       react-dom: 19.2.3(react@19.2.3)
 
   mobx@6.15.0: {}
-
-  mobx@6.16.1: {}
 
   ms@2.1.3: {}
 
@@ -14226,8 +14249,6 @@ snapshots:
 
   three@0.182.0: {}
 
-  three@0.183.2: {}
-
   through2@2.0.5:
     dependencies:
       readable-stream: 2.3.8
@@ -14324,6 +14345,8 @@ snapshots:
       - react
 
   tunnel@0.0.6: {}
+
+  tweetnacl@1.0.3: {}
 
   type-detect@4.0.8: {}
 

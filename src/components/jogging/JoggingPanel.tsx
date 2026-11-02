@@ -4,15 +4,13 @@ import Stack from "@mui/material/Stack"
 import type { SxProps } from "@mui/material/styles"
 import Tab from "@mui/material/Tab"
 import Tabs from "@mui/material/Tabs"
-import { Nova } from "@wandelbots/nova-js/v2"
-import { isString } from "lodash-es"
 import { runInAction } from "mobx"
 import { observer, useLocalObservable } from "mobx-react-lite"
 import { useEffect } from "react"
 import { useTranslation } from "react-i18next"
 import { externalizeComponent } from "../../externalizeComponent"
 import { JoggerConnection } from "../../lib/JoggerConnection"
-import type { AnyNovaClient } from "../../lib/novaCompat"
+import type { NovaConnection } from "../../lib/novaConnection"
 import { LoadingCover } from "../LoadingCover"
 import { JoggingBlocked } from "./JoggingBlocked"
 import { JoggingCartesianTab } from "./JoggingCartesianTab"
@@ -22,8 +20,11 @@ import { JoggingStore } from "./JoggingStore"
 export type JoggingPanelTabId = "cartesian" | "joint"
 
 export type JoggingPanelProps = {
-  /** Either an existing Nova client or the base url of a deployed Nova instance */
-  nova: AnyNovaClient | string
+  /**
+   * The base url of a deployed Nova instance, or a Nova client of the app.
+   * The panel reads only the url and the access token of the client.
+   */
+  nova: NovaConnection
   /** Id of the motion group to move e.g. 0@ur5e */
   motionGroupId: string
   /** Cell id on the Nova instance. Defaults to "cell". */
@@ -48,10 +49,6 @@ export type JoggingPanelProps = {
  */
 export const JoggingPanel = externalizeComponent(
   observer((props: JoggingPanelProps) => {
-    const nova = isString(props.nova)
-      ? new Nova({ instanceUrl: props.nova })
-      : props.nova
-
     const state = useLocalObservable(() => ({
       joggingStore: null as JoggingStore | null,
       loadingError: null as unknown | null,
@@ -67,7 +64,7 @@ export const JoggingPanel = externalizeComponent(
         let joggingStore = props.store
         if (!joggingStore) {
           const jogger = await JoggerConnection.open(
-            nova,
+            props.nova,
             props.motionGroupId,
             {
               cellId: props.cellId,

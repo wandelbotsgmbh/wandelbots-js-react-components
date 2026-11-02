@@ -14,8 +14,6 @@ import { JointTypeEnum } from '@wandelbots/nova-js/v2';
 import { JSX } from 'react/jsx-runtime';
 import { MotionGroupDescription } from '@wandelbots/nova-js/v2';
 import type { MotionGroupState } from '@wandelbots/nova-js/v2';
-import { Nova } from '@wandelbots/nova-js/v2';
-import type { NovaClient } from '@wandelbots/nova-js/v2';
 import type { OperationMode } from '@wandelbots/nova-js/v2';
 import type { PopoverOrigin } from '@mui/material/Popover';
 import { Pose } from '@wandelbots/nova-js/v2';
@@ -73,7 +71,7 @@ export interface AxisControlComponentColors {
 
 // @public
 export class ConnectedMotionGroup {
-    constructor(nova: AnyNovaClient, controller: RobotControllerState, motionGroup: MotionGroupState, initialMotionState: MotionGroupState, motionStateSocket: AutoReconnectingWebsocket, isVirtual: boolean, tcps: RobotTcpLike[], description: MotionGroupDescription, initialControllerState: RobotControllerState, controllerStateSocket: AutoReconnectingWebsocket, cellId?: string);
+    constructor(connection: NovaConnection, controller: RobotControllerState, motionGroup: MotionGroupState, initialMotionState: MotionGroupState, motionStateSocket: AutoReconnectingWebsocket, isVirtual: boolean, tcps: RobotTcpLike[], description: MotionGroupDescription, initialControllerState: RobotControllerState, controllerStateSocket: AutoReconnectingWebsocket, cellId?: string);
     // (undocumented)
     activate(): Promise<void>;
     activationState: "inactive" | "activating" | "deactivating" | "active";
@@ -81,11 +79,11 @@ export class ConnectedMotionGroup {
     // (undocumented)
     readonly cellId: string;
     // (undocumented)
-    static connect(novaClient: AnyNovaClient, motionGroupId: string, options?: ConnectedMotionGroupOptions): Promise<ConnectedMotionGroup>;
+    static connect(connection: NovaConnection, motionGroupId: string, options?: ConnectedMotionGroupOptions): Promise<ConnectedMotionGroup>;
     // (undocumented)
     connectedJoggingSocket: WebSocket | null;
     // (undocumented)
-    static connectMultiple(nova: AnyNovaClient, motionGroupIds: string[], options?: ConnectedMotionGroupOptions): Promise<ConnectedMotionGroup[]>;
+    static connectMultiple(connection: NovaConnection, motionGroupIds: string[], options?: ConnectedMotionGroupOptions): Promise<ConnectedMotionGroup[]>;
     // (undocumented)
     readonly controller: RobotControllerState;
     // (undocumented)
@@ -135,7 +133,6 @@ export class ConnectedMotionGroup {
     readonly motionStateSocket: AutoReconnectingWebsocket;
     get mountingPosition(): [number, number, number];
     get mountingQuaternion(): THREE.Quaternion;
-    readonly nova: Nova;
     // (undocumented)
     planData: any | null;
     // (undocumented)
@@ -199,14 +196,12 @@ export class JoggerConnection {
     // (undocumented)
     NO_TCP: string | undefined;
     // (undocumented)
-    get nova(): Nova;
-    // (undocumented)
     get numJoints(): number;
     // (undocumented)
     onBlocked?: () => void;
     // (undocumented)
     onError?: (err: unknown) => void;
-    static open(nova: AnyNovaClient, motionGroupId: string, options?: JoggerConnectionOptions): Promise<JoggerConnection>;
+    static open(connection: NovaConnection, motionGroupId: string, options?: JoggerConnectionOptions): Promise<JoggerConnection>;
     // (undocumented)
     readonly options: JoggerConnectionOptions | undefined;
     // (undocumented)
@@ -289,7 +284,7 @@ export const JoggingPanel: ((props: JoggingPanelProps) => JSX.Element) & {
 
 // @public (undocumented)
 export type JoggingPanelProps = {
-    nova: AnyNovaClient | string;
+    nova: NovaConnection;
     motionGroupId: string;
     cellId?: string;
     onSetup?: (store: JoggingStore) => void;
@@ -471,7 +466,7 @@ export type MotionGroupOption = {
 
 // @public (undocumented)
 export class MotionStreamConnection {
-    constructor(nova: AnyNovaClient, controller: RobotControllerState, motionGroup: MotionGroupState, description: MotionGroupDescription, initialMotionState: MotionGroupState, motionStateSocket: AutoReconnectingWebsocket, cellId?: string);
+    constructor(connection: NovaConnection, controller: RobotControllerState, motionGroup: MotionGroupState, description: MotionGroupDescription, initialMotionState: MotionGroupState, motionStateSocket: AutoReconnectingWebsocket, cellId?: string);
     // (undocumented)
     readonly cellId: string;
     // (undocumented)
@@ -494,9 +489,8 @@ export class MotionStreamConnection {
     get motionGroupId(): string;
     // (undocumented)
     readonly motionStateSocket: AutoReconnectingWebsocket;
-    readonly nova: Nova;
     // (undocumented)
-    static open(novaClient: AnyNovaClient, motionGroupId: string, options?: MotionStreamConnectionOptions): Promise<MotionStreamConnection>;
+    static open(connection: NovaConnection, motionGroupId: string, options?: MotionStreamConnectionOptions): Promise<MotionStreamConnection>;
     // (undocumented)
     rapidlyChangingMotionState: MotionGroupState;
 }
@@ -512,6 +506,16 @@ export function NoMotionGroupModal(input: NoMotionGroupModalProps): JSX.Element;
 // @public (undocumented)
 export type NoMotionGroupModalProps = {
     baseUrl: string;
+};
+
+// @public
+export type NovaConnection = string | {
+    readonly config: {
+        readonly instanceUrl: string;
+        readonly accessToken?: string;
+        readonly cellId?: string;
+    };
+    readonly accessToken?: string | null;
 };
 
 // @public (undocumented)

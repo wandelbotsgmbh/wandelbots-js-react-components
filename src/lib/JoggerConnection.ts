@@ -13,7 +13,7 @@ import {
 import { when } from "mobx"
 import { Vector3 } from "three/src/math/Vector3.js"
 import { MotionStreamConnection } from "./MotionStreamConnection"
-import type { AnyNovaClient } from "./novaCompat"
+import type { NovaConnection } from "./novaConnection"
 
 export type Vector3Simple = [number, number, number]
 
@@ -76,7 +76,7 @@ export class JoggerConnection {
   /**
    * Initialize the jogging connection using jogging endpoint or trajectory endpoint depending on the selected mode.
    *
-   * @param nova - The Nova client instance
+   * @param connection - The base URL of a NOVA instance, or a NOVA client of the app (see `NovaConnection`)
    * @param motionGroupId - The ID of the motion group to connect to
    * @param options - Configuration options for the jogger connection
    * @param options.mode - The jogging mode to initialize:
@@ -91,13 +91,13 @@ export class JoggerConnection {
    * @returns Promise resolving to initialized JoggerConnection instance
    */
   static async open(
-    nova: AnyNovaClient,
+    connection: NovaConnection,
     motionGroupId: string,
     options: JoggerConnectionOptions = {},
   ) {
     // Get matching motion stream
     const motionStream = await MotionStreamConnection.open(
-      nova,
+      connection,
       motionGroupId,
       {
         cellId: options.cellId,
@@ -174,6 +174,10 @@ export class JoggerConnection {
     return this.motionStream.motionGroupId
   }
 
+  /**
+   * The library's own NOVA client of the motion stream
+   * @internal
+   */
   get nova() {
     return this.motionStream.nova
   }

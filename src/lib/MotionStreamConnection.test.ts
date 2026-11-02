@@ -1,4 +1,4 @@
-import { Nova, NovaClient } from "@wandelbots/nova-js/v2"
+import { Nova } from "@wandelbots/nova-js/v2"
 import { expect, test } from "vitest"
 import { MotionStreamConnection } from "./MotionStreamConnection"
 
@@ -24,16 +24,19 @@ test("motion stream", async () => {
   )
 })
 
-// For backwards compatibility we still accept the deprecated cell-scoped
-// NovaClient in place of the instance-level Nova client.
-test("motion stream with deprecated NovaClient", async () => {
-  const novaClient = new NovaClient({
-    instanceUrl: "https://mock.example.com",
-  })
+// A client of another nova-js version (here: the shape of the cell-scoped
+// NovaClient of nova-js 3): the library connects with its own client
+test("motion stream with a client of another nova-js version", async () => {
+  const otherClient = {
+    config: { instanceUrl: "https://mock.example.com", cellId: "cell" },
+    accessToken: null,
+  }
 
   const motionStream = await MotionStreamConnection.open(
-    novaClient,
+    otherClient,
     "0@mock-ur5e",
   )
   expect(motionStream.joints.length).toBe(6)
+  expect(motionStream.nova).toBeInstanceOf(Nova)
+  expect(motionStream.nova).not.toBe(otherClient)
 })
