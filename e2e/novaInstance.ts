@@ -5,7 +5,7 @@ import { parse } from "dotenv"
  * The NOVA instance of the e2e tests: NOVA_INSTANCE_URL and
  * NOVA_ACCESS_TOKEN, which the workflow e2e sets. Without NOVA_INSTANCE_URL,
  * it uses WANDELAPI_BASE_URL from .env.local, which `pnpm td` writes for a
- * test instance (Storybook uses it too). A test instance needs no token.
+ * test instance (the playground uses it too). A test instance needs no token.
  */
 export function novaInstance(): {
   url?: string

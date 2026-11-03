@@ -101,9 +101,6 @@ export default defineConfig({
       ],
     },
   },
-  optimizeDeps: {
-    exclude: ["node_modules/.cache/storybook", "node_modules/.cache"],
-  },
   plugins: [
     react(),
     svgr({

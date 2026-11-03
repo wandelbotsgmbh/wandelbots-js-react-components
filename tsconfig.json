@@ -22,9 +22,6 @@
     // Stops vscode from sometimes deleting chunks of code accidentally
     "allowUnreachableCode": true
   },
-  "mdx": {
-    "checkMdx": true
-  },
   "include": ["src/"],
   "exclude": [
     "node_modules",

@@ -39,38 +39,9 @@ jobs:
           name: build-artifacts
           path: dist/
 
-  no-draco-models:
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-      - uses: ./.github/actions/setup-node
-      - name: Install gltf-transform
-        run: npm install -g @gltf-transform/cli
-      - name: Process GLB files
-        run: |
-          mkdir -p no-draco-models
-          for file in stories/robots/robotConfig/model/*.glb; do
-            if [ -f "$file" ]; then
-              filename=$(basename "$file")
-              echo "Processing $filename..."
-              # Remove Draco compression and convert to unlit
-              # Chain the transformations using pipes
-              gltf-transform dedup "$file" temp1.glb && \
-              gltf-transform unlit temp1.glb "no-draco-models/$filename"
-              rm temp1.glb
-            fi
-          done
-      - name: Upload uncompressed models
-        uses: actions/upload-artifact@v6
-        with:
-          name: no-draco-models
-          path: no-draco-models/
-
   build-and-release:
     runs-on: ubuntu-latest
-    needs: [build, no-draco-models]
+    needs: build
     env:
       HUSKY: 0
     if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
@@ -84,18 +55,6 @@ jobs:
         with:
           name: build-artifacts
           path: dist/
-      - name: Download uncompressed models
-        uses: actions/download-artifact@v7
-        with:
-          name: no-draco-models
-          path: no-draco-models/
-
-      - name: Prepare no-draco package
-        run: |
-          # Create release asset archive
-          cd no-draco-models
-          zip ../no-draco-models.zip *.glb
-          cd ..
       - uses: ./.github/actions/setup-node
       - name: Release
         env:
