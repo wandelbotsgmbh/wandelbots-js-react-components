@@ -197,8 +197,12 @@ export class ConnectedMotionGroup {
   activationState: "inactive" | "activating" | "deactivating" | "active" =
     "inactive"
 
-  /** The library's own NOVA client (see `createNovaClient`) */
-  private readonly nova: Nova
+  /**
+   * The library's own NOVA client (see `createNovaClient`), with the access
+   * token of the connection. Robot and LinearAxis load their model with it.
+   * @internal
+   */
+  readonly nova: Nova
 
   constructor(
     connection: NovaConnection,
@@ -478,6 +482,7 @@ export class ConnectedMotionGroup {
 
   dispose() {
     this.motionStateSocket.close()
+    this.controllerStateSocket.close()
     if (this.connectedJoggingSocket) this.connectedJoggingSocket.close()
   }
 

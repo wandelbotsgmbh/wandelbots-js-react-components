@@ -1,7 +1,11 @@
 import { Nova } from "@wandelbots/nova-js/v2"
-import { expect, test, vi } from "vitest"
+import { afterEach, beforeEach, describe, expect, test, vi } from "vitest"
 import { delay } from "../components/utils/errorHandling"
-import { JoggerConnection } from "./JoggerConnection"
+import {
+  JoggerConnection,
+  type JoggerConnectionOptions,
+} from "./JoggerConnection"
+import { MotionStreamConnection } from "./MotionStreamConnection"
 import { jointValuesEqual } from "./motionStateUpdate"
 
 // Notes:
@@ -122,4 +126,153 @@ test("jog a robot somewhat", async () => {
       timeout: 3000,
     },
   )
+})
+
+describe("the motion stream of a jogger", () => {
+  const nova = () => new Nova({ instanceUrl: "https://mock.example.com" })
+
+  test("dispose() closes the motion stream that open() opened", async () => {
+    const jogger = await JoggerConnection.open(nova(), "0@mock-ur5e")
+    const disposeStream = vi.spyOn(jogger.motionStream, "dispose")
+
+    await jogger.dispose()
+
+    expect(disposeStream).toHaveBeenCalled()
+  })
+
+  test("a change of the jogging mode keeps the motion stream open", async () => {
+    const jogger = await JoggerConnection.open(nova(), "0@mock-ur5e")
+    const disposeStream = vi.spyOn(jogger.motionStream, "dispose")
+
+    await jogger.setJoggingMode("jogging")
+    await jogger.setJoggingMode("off")
+
+    expect(disposeStream).not.toHaveBeenCalled()
+    await jogger.dispose()
+  })
+
+  test("a motion stream given to the constructor stays open", async () => {
+    const motionStream = await MotionStreamConnection.open(
+      nova(),
+      "0@mock-ur5e",
+    )
+    const disposeStream = vi.spyOn(motionStream, "dispose")
+    const jogger = new JoggerConnection(motionStream)
+
+    await jogger.dispose()
+
+    expect(disposeStream).not.toHaveBeenCalled()
+    motionStream.dispose()
+  })
+})
+
+/** A jogging websocket that answers only when the test says so */
+class FakeJoggingSocket extends EventTarget {
+  disposed = false
+  sendJson = vi.fn()
+
+  dispose() {
+    this.disposed = true
+  }
+
+  async closed() {}
+
+  receive(result: { kind: string; message?: string }) {
+    this.dispatchEvent(
+      new MessageEvent("message", { data: JSON.stringify({ result }) }),
+    )
+  }
+}
+
+/** A jogger whose jogging websockets are FakeJoggingSockets */
+function joggerWithFakeSockets(options?: JoggerConnectionOptions) {
+  const sockets: FakeJoggingSocket[] = []
+  const motionStream = {
+    nova: {
+      openReconnectingWebsocket: () => {
+        const socket = new FakeJoggingSocket()
+        sockets.push(socket)
+        return socket
+      },
+    },
+    cellId: "cell",
+    controllerId: "ur5e",
+    motionGroupId: "0@ur5e",
+    motionGroup: { tcp: "Flange" },
+    description: {},
+    joints: [0, 1, 2, 3, 4, 5].map((index) => ({ index })),
+    dispose: vi.fn(),
+  } as unknown as MotionStreamConnection
+  return { jogger: new JoggerConnection(motionStream, options), sockets }
+}
+
+describe("the initialization of the jogging websocket", () => {
+  beforeEach(() => {
+    vi.useFakeTimers()
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
+  test("resolves when NOVA confirms it", async () => {
+    const { jogger, sockets } = joggerWithFakeSockets()
+    const initialized = jogger.setJoggingMode("jogging")
+
+    sockets[0].receive({ kind: "INITIALIZE_RECEIVED" })
+
+    await expect(initialized).resolves.toBeUndefined()
+    expect(vi.getTimerCount()).toBe(0)
+  })
+
+  test("ends without an error and without a timer when the jogging stops before", async () => {
+    const { jogger } = joggerWithFakeSockets()
+    const initialized = jogger.setJoggingMode("jogging")
+
+    // The button was released before NOVA answered
+    await jogger.setJoggingMode("off")
+
+    expect(vi.getTimerCount()).toBe(0)
+    await expect(initialized).resolves.toBeUndefined()
+  })
+
+  test("ends when the jogger is disposed before", async () => {
+    const { jogger } = joggerWithFakeSockets()
+    const initialized = jogger.setJoggingMode("jogging")
+
+    await jogger.dispose()
+
+    expect(vi.getTimerCount()).toBe(0)
+    await expect(initialized).resolves.toBeUndefined()
+  })
+
+  test("rejects after the timeout in milliseconds", async () => {
+    const { jogger } = joggerWithFakeSockets({ timeout: 2000 })
+    const initialized = jogger.setJoggingMode("jogging")
+    const rejected = expect(initialized).rejects.toThrow(
+      "Jogging initialization timeout after 2000 ms",
+    )
+
+    vi.advanceTimersByTime(2000)
+
+    await rejected
+  })
+
+  test("ends once when the connection is blocked by another client", async () => {
+    const onBlocked = vi.fn()
+    const { jogger, sockets } = joggerWithFakeSockets()
+    jogger.onBlocked = onBlocked
+    const initialized = jogger.setJoggingMode("jogging")
+
+    sockets[0].receive({
+      kind: "MOTION_ERROR",
+      message:
+        "Movement request rejected. Another client is currently executing a 'Jogging' motion!",
+    })
+    vi.advanceTimersByTime(10_000)
+
+    await expect(initialized).resolves.toBeUndefined()
+    expect(onBlocked).toHaveBeenCalledTimes(1)
+    expect(sockets[0].disposed).toBe(true)
+  })
 })

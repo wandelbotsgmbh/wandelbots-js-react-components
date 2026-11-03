@@ -54,43 +54,65 @@ export const JoggingPanel = externalizeComponent(
       loadingError: null as unknown | null,
     }))
 
-    async function init() {
-      runInAction(() => {
-        state.loadingError = null
-        state.joggingStore = null
-      })
-
-      try {
-        let joggingStore = props.store
-        if (!joggingStore) {
-          const jogger = await JoggerConnection.open(
-            props.nova,
-            props.motionGroupId,
-            {
-              cellId: props.cellId,
-            },
-          )
-          joggingStore = await JoggingStore.loadFor(jogger)
-        }
-        runInAction(() => {
-          state.joggingStore = joggingStore
-        })
-        if (props.onSetup) {
-          props.onSetup(joggingStore)
-        }
-      } catch (err) {
-        state.loadingError = err
-      }
-    }
-
     // biome-ignore lint/correctness/useExhaustiveDependencies: pre-biome code
     useEffect(() => {
-      init()
-      return props.store
-        ? () => null
-        : () => {
-            state.joggingStore?.dispose()
+      // Set by the cleanup. A store that this effect opened is closed again,
+      // also when it opens after the cleanup (a fast unmount, or the second
+      // mount of React StrictMode). A store of `props.store` stays open.
+      let closed = false
+      let ownStore: JoggingStore | undefined
+
+      async function init() {
+        runInAction(() => {
+          state.loadingError = null
+          state.joggingStore = null
+        })
+
+        try {
+          let joggingStore = props.store
+          if (!joggingStore) {
+            const jogger = await JoggerConnection.open(
+              props.nova,
+              props.motionGroupId,
+              {
+                cellId: props.cellId,
+              },
+            )
+            if (closed) {
+              jogger.dispose()
+              return
+            }
+            try {
+              joggingStore = await JoggingStore.loadFor(jogger)
+            } catch (err) {
+              jogger.dispose()
+              throw err
+            }
+            ownStore = joggingStore
+            if (closed) {
+              joggingStore.dispose()
+              return
+            }
           }
+          runInAction(() => {
+            state.joggingStore = joggingStore
+          })
+          if (props.onSetup) {
+            props.onSetup(joggingStore)
+          }
+        } catch (err) {
+          if (closed) return
+          runInAction(() => {
+            state.loadingError = err
+          })
+        }
+      }
+
+      init()
+      return () => {
+        closed = true
+        ownStore?.dispose()
+      }
     }, [props.store, props.nova, props.motionGroupId, props.cellId])
 
     useEffect(() => {

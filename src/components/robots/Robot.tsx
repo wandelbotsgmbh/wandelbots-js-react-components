@@ -1,5 +1,5 @@
 import type { ThreeElements } from "@react-three/fiber"
-
+import { useCallback } from "react"
 import type { Group } from "three"
 import type { ConnectedMotionGroup } from "../../lib/ConnectedMotionGroup"
 import { defaultGetModel } from "./robotModelLogic"
@@ -19,19 +19,26 @@ export type RobotProps = {
  *
  * @param {RobotProps} props - The properties for the Robot component.
  * @param {ConnectedMotionGroup} props.connectedMotionGroup - The connected motion group containing motion state and parameters.
- * @param {Function} [props.getModel=defaultGetModel] - Optional function to get the model URL. Defaults to defaultGetModel.
+ * @param {Function} [props.getModel] - Optional function to get the model URL. Defaults to defaultGetModel with the connection of the connected motion group (its URL and access token).
  * @param {Object} props - Additional properties passed to the SupportedRobot component.
  *
  * @returns {JSX.Element} The rendered SupportedRobot component.
  */
 export function Robot({
   connectedMotionGroup,
-  getModel = defaultGetModel,
+  getModel,
   flangeRef,
   transparentColor,
   postModelRender,
   ...props
 }: RobotProps) {
+  // The model from the instance of the motion group, with the access token
+  // of its connection
+  const getModelOfConnection = useCallback(
+    (model: string) => defaultGetModel(model, connectedMotionGroup.nova),
+    [connectedMotionGroup],
+  )
+
   if (!connectedMotionGroup.dhParameters) {
     return null
   }
@@ -46,7 +53,7 @@ export function Robot({
       }
       modelFromController={connectedMotionGroup.modelFromController || ""}
       dhParameters={connectedMotionGroup.dhParameters}
-      getModel={getModel}
+      getModel={getModel ?? getModelOfConnection}
       flangeRef={flangeRef}
       transparentColor={transparentColor}
       postModelRender={postModelRender}

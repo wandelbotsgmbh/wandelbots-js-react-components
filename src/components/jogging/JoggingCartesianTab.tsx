@@ -9,6 +9,7 @@ import {
   XYZ_TO_VECTOR,
 } from "@wandelbots/nova-js"
 import { observer } from "mobx-react-lite"
+import { useRef } from "react"
 import { useTranslation } from "react-i18next"
 import XAxisIcon from "../../icons/axis-x.svg"
 import YAxisIcon from "../../icons/axis-y.svg"
@@ -45,6 +46,8 @@ export const JoggingCartesianTab = observer(
   }) => {
     const { t } = useTranslation()
     const theme = useTheme()
+    // Counts the presses of continuous jogging (see startCartesianJogging)
+    const jogPress = useRef(0)
 
     function onMotionTypeChange(
       _event: React.MouseEvent<HTMLElement>,
@@ -102,24 +105,36 @@ export const JoggingCartesianTab = observer(
     async function startCartesianJogging(opts: JoggingCartesianOpts) {
       if (store.isLocked) return
 
-      await store.activate()
+      const press = ++jogPress.current
+      try {
+        await store.activate()
 
-      if (store.activeDiscreteIncrement) {
-        return runIncrementalCartesianJog(opts, store.activeDiscreteIncrement)
-      }
+        // The button was released (or another one pressed) while the
+        // jogging websocket opened: this press moves nothing
+        if (press !== jogPress.current) return
 
-      if (opts.motionType === "translate") {
-        await store.jogger.translateTCP({
-          axis: opts.axis,
-          direction: opts.direction,
-          velocityMmPerSec: store.translationVelocityMmPerSec,
-        })
-      } else {
-        await store.jogger.rotateTCP({
-          axis: opts.axis,
-          direction: opts.direction,
-          velocityRadsPerSec: store.rotationVelocityRadsPerSec,
-        })
+        if (store.activeDiscreteIncrement) {
+          return await runIncrementalCartesianJog(
+            opts,
+            store.activeDiscreteIncrement,
+          )
+        }
+
+        if (opts.motionType === "translate") {
+          await store.jogger.translateTCP({
+            axis: opts.axis,
+            direction: opts.direction,
+            velocityMmPerSec: store.translationVelocityMmPerSec,
+          })
+        } else {
+          await store.jogger.rotateTCP({
+            axis: opts.axis,
+            direction: opts.direction,
+            velocityRadsPerSec: store.rotationVelocityRadsPerSec,
+          })
+        }
+      } catch (err) {
+        console.error("Jogging failed:", err)
       }
     }
 
@@ -130,6 +145,7 @@ export const JoggingCartesianTab = observer(
         return
       }
 
+      jogPress.current++
       await store.deactivate()
     }
 

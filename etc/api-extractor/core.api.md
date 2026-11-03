@@ -179,11 +179,9 @@ export class JoggerConnection {
     DEFAULT_ORIENTATION: JoggerOrientation;
     // (undocumented)
     DEFAULT_TCP: string | undefined;
-    // (undocumented)
     dispose(): Promise<void[]>;
     // (undocumented)
     getDefaultTcp(motionStream: MotionStreamConnection): string | undefined;
-    // (undocumented)
     initializeJoggingWebsocket(): Promise<void>;
     // (undocumented)
     joggingSocket: AutoReconnectingWebsocket | null;

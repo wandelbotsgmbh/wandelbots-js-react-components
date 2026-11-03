@@ -1,80 +1,50 @@
-import { Nova } from "@wandelbots/nova-js/v2"
 import type { Object3D } from "three"
 import type { GLTF } from "three-stdlib"
+import { createNovaClient, type NovaConnection } from "../../lib/novaConnection"
 
+/** The downloads of the models, by instance URL and model */
 const modelCache = new Map<string, Promise<string>>()
 
 /**
- * Revoke a cached model's object URL to prevent memory leaks.
- * Call this when a component unmounts or no longer needs the model.
+ * Downloads the GLB model of a motion group model from a NOVA instance and
+ * returns an object URL for it. Each model downloads once per instance; after
+ * a failed download, the next call downloads it again.
+ *
+ * @param modelFromController - The motion group model, e.g. `UniversalRobots_UR5e`
+ * @param connection - The NOVA instance: its base URL, or a NOVA client of the
+ *   app (see `NovaConnection`), which also gives the access token of a cloud
+ *   instance. `Robot` and `LinearAxis` pass the connection of their
+ *   `ConnectedMotionGroup`.
  */
-export async function revokeModelUrl(
-  modelFromController: string,
-): Promise<void> {
-  const urlPromise = modelCache.get(modelFromController)
-  if (!urlPromise) return
-
-  try {
-    const url = await urlPromise
-    URL.revokeObjectURL(url)
-  } catch (e) {
-    // Ignore errors - URL may already be revoked
-  }
-  modelCache.delete(modelFromController)
-}
-
-/**
- * Revoke all cached model object URLs and clear the cache.
- * Useful for cleanup on app teardown.
- */
-export async function revokeAllModelUrls(): Promise<void> {
-  const entries = Array.from(modelCache.entries())
-  await Promise.allSettled(
-    entries.map(async ([key, urlPromise]) => {
-      try {
-        const url = await urlPromise
-        URL.revokeObjectURL(url)
-      } catch (e) {
-        // Ignore errors
-      }
-    }),
-  )
-  modelCache.clear()
-}
-
 export async function defaultGetModel(
   modelFromController: string,
-  instanceUrlProp?: string,
+  connection?: NovaConnection,
 ): Promise<string> {
-  // Check cache first
-  if (modelCache.has(modelFromController)) {
-    // biome-ignore lint/style/noNonNullAssertion: pre-biome code
-    return modelCache.get(modelFromController)!
+  // WANDELAPI_BASE_URL is empty in the published package
+  const instance: NovaConnection | undefined =
+    connection || import.meta.env.WANDELAPI_BASE_URL
+  if (!instance) {
+    throw new Error(
+      `Cannot download the model "${modelFromController}": no NOVA instance. Give defaultGetModel the URL of the instance or a NOVA client, or give the component its instanceUrl or getModel.`,
+    )
   }
+
+  // Another instance (another NOVA version) can have another file for the
+  // same model
+  const cacheKey = `${instanceUrlOf(instance)} ${modelFromController}`
+  const cached = modelCache.get(cacheKey)
+  if (cached) return cached
 
   // Create the promise and cache it immediately to prevent duplicate calls
   const modelPromise = (async () => {
-    const instanceUrl = instanceUrlProp || import.meta.env.WANDELAPI_BASE_URL
-    const nova = new Nova({ instanceUrl })
-
-    // Configure axios to handle binary responses for GLB files
-    // biome-ignore lint/suspicious/noExplicitAny: pre-biome code
-    const apiInstance = nova.api.motionGroupModels as any
-    if (apiInstance.axios?.interceptors) {
-      // biome-ignore lint/suspicious/noExplicitAny: pre-biome code
-      apiInstance.axios.interceptors.request.use((config: any) => {
-        if (config.url?.includes("/glb")) {
-          config.responseType = "blob"
-        }
-        return config
-      })
-    }
+    const nova = createNovaClient(instance)
 
     try {
-      const file =
-        await nova.api.motionGroupModels.getMotionGroupGlbModel(
-          modelFromController,
-        )
+      // The GLB file is binary: download it as a Blob
+      const file = await nova.api.motionGroupModels.getMotionGroupGlbModel(
+        modelFromController,
+        { responseType: "blob" },
+      )
 
       // Create object URL from the file and return it
       const url = URL.createObjectURL(file)
@@ -85,9 +55,21 @@ export async function defaultGetModel(
     }
   })()
 
-  // Cache the promise
-  modelCache.set(modelFromController, modelPromise)
+  modelCache.set(cacheKey, modelPromise)
+  // A failed download leaves the cache, so that a later call (for example
+  // after a page change) downloads the model again
+  modelPromise.catch(() => {
+    if (modelCache.get(cacheKey) === modelPromise) {
+      modelCache.delete(cacheKey)
+    }
+  })
   return modelPromise
+}
+
+function instanceUrlOf(connection: NovaConnection): string {
+  return typeof connection === "string"
+    ? connection
+    : connection.config.instanceUrl
 }
 
 /**

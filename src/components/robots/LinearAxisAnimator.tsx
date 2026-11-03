@@ -1,10 +1,20 @@
 import { useThree } from "@react-three/fiber"
 import type { DHParameter, MotionGroupState } from "@wandelbots/nova-js/v2"
 import type React from "react"
-import { useRef } from "react"
+import { forwardRef, useImperativeHandle, useRef } from "react"
 import type { Group, Object3D, Quaternion } from "three"
 import { useAutorun } from "../utils/hooks"
 import { collectJoints } from "./robotModelLogic"
+
+export type LinearAxisAnimatorHandle = {
+  /**
+   * Re-scan the linear axis group for joints and re-apply the current
+   * position. Must be called whenever the (async-loaded) model mounts its
+   * meshes into the scene, since the group ref callback only fires when the
+   * outer group itself mounts — not when its children appear later.
+   */
+  recollectJoints: () => void
+}
 
 type LinearAxisAnimatorProps = {
   rapidlyChangingMotionState: MotionGroupState
@@ -22,14 +32,21 @@ type LinearAxisAnimatorProps = {
  * given. If damped/spring transitions are desired, run the motion state
  * through {@link useSmoothedMotionState} before passing it here.
  */
-export default function LinearAxisAnimator({
-  rapidlyChangingMotionState,
-  dhParameters,
-  chainOffsetPosition,
-  chainOffsetQuaternion,
-  onTranslationChanged,
-  children,
-}: LinearAxisAnimatorProps) {
+const LinearAxisAnimator = forwardRef<
+  LinearAxisAnimatorHandle,
+  LinearAxisAnimatorProps
+>(function LinearAxisAnimator(
+  {
+    rapidlyChangingMotionState,
+    dhParameters,
+    chainOffsetPosition,
+    chainOffsetQuaternion,
+    onTranslationChanged,
+    children,
+  },
+  ref,
+) {
+  const groupRef = useRef<Group | null>(null)
   const jointObjects = useRef<Object3D[]>([])
   const jointValues = useRef<number[]>(
     rapidlyChangingMotionState.joint_position.filter(
@@ -41,14 +58,30 @@ export default function LinearAxisAnimator({
   motionStateRef.current = rapidlyChangingMotionState
 
   function setGroupRef(group: Group | null) {
+    groupRef.current = group
     if (!group) return
 
-    jointObjects.current = collectJoints(group)
+    recollectJoints()
+  }
+
+  /**
+   * (Re)scan the linear axis group for joints and re-apply the current
+   * position. Safe to call repeatedly — exposed via the imperative handle so
+   * it can be triggered when the async model finishes mounting.
+   */
+  function recollectJoints() {
+    if (!groupRef.current) return
+
+    jointObjects.current = collectJoints(groupRef.current)
 
     // Set initial position
     setTranslation()
     invalidate()
   }
+
+  // No deps array: re-expose the current closure each render so ref-triggered
+  // calls never apply positions using stale dhParameters / props.
+  useImperativeHandle(ref, () => ({ recollectJoints }))
 
   function setTranslation() {
     const values = jointValues.current
@@ -93,4 +126,6 @@ export default function LinearAxisAnimator({
       {children}
     </group>
   )
-}
+})
+
+export default LinearAxisAnimator

@@ -1,17 +1,18 @@
-import { render, screen, within } from "@testing-library/react"
+import { fireEvent, render, screen, within } from "@testing-library/react"
 import type {
   CoordinateSystem,
   MotionGroupDescription,
   MotionGroupState,
   RobotTcp,
 } from "@wandelbots/nova-js/v2"
-import { JointTypeEnum } from "@wandelbots/nova-js/v2"
+import { JointTypeEnum, Nova } from "@wandelbots/nova-js/v2"
+import { StrictMode } from "react"
 import { I18nextProvider } from "react-i18next"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import { i18n } from "../../i18n/config"
 import type { JoggerConnection as JoggerConnectionType } from "../../lib/JoggerConnection"
 import { JoggerConnection } from "../../lib/JoggerConnection"
-import type { MotionStreamConnection } from "../../lib/MotionStreamConnection"
+import { MotionStreamConnection } from "../../lib/MotionStreamConnection"
 import {
   linearAxisDescription,
   linearAxisMotionGroupState,
@@ -22,6 +23,7 @@ import {
 } from "./__fixtures__/motionStreamMockData"
 import { JoggingCartesianTab } from "./JoggingCartesianTab"
 import { JoggingJointTab } from "./JoggingJointTab"
+import { JoggingPanel } from "./JoggingPanel"
 import { JoggingStore } from "./JoggingStore"
 import { StreamStateSection } from "./StreamStateSection"
 
@@ -693,6 +695,116 @@ describe("JoggingPanel", () => {
       const ms = createMockMotionStream(ur5eMotionGroupState, ur5eDescription)
       const jogger = new JoggerConnection(ms)
       expect(jogger.tcp).toBe("Flange")
+    })
+  })
+
+  // ---- Start and stop of jogging ----
+
+  describe("Start and stop of jogging", () => {
+    /** A store whose jogging websocket is initialized when the test says so */
+    function storeWithPendingInitialization() {
+      let initialize = () => {}
+      const initialized = new Promise<void>((resolve) => {
+        initialize = resolve
+      })
+      const jogger = createMockJogger(
+        createMockMotionStream(ur5eMotionGroupState, ur5eDescription),
+      )
+      // Before the store makes the jogger observable (its functions then
+      // call these mocks)
+      jogger.setJoggingMode = vi.fn(() => initialized)
+      const store = new JoggingStore(
+        jogger,
+        [{ coordinate_system: "world", name: "World" } as CoordinateSystem],
+        ur5eDescription,
+        [],
+        "some-solver",
+      )
+      return { store, jogger, initialize: () => initialize() }
+    }
+
+    function plusButtonOfX() {
+      const control = screen.getByTestId("jogging-cartesian-axis-control-x")
+      return within(control).getAllByRole("button")[1]
+    }
+
+    const nextTask = () => new Promise((resolve) => setTimeout(resolve, 0))
+
+    it("activate() waits until the jogging websocket is initialized", async () => {
+      const { store, initialize } = storeWithPendingInitialization()
+      let activated = false
+      const activation = store.activate().then(() => {
+        activated = true
+      })
+
+      await nextTask()
+      expect(activated).toBe(false)
+
+      initialize()
+      await activation
+      expect(activated).toBe(true)
+    })
+
+    it("a press that is released before the initialization moves nothing", async () => {
+      const { store, jogger, initialize } = storeWithPendingInitialization()
+      renderWithI18n(<JoggingCartesianTab store={store} />)
+
+      fireEvent.pointerDown(plusButtonOfX(), { button: 0 })
+      fireEvent.pointerUp(plusButtonOfX(), { button: 0 })
+      initialize()
+      await nextTask()
+
+      expect(jogger.translateTCP).not.toHaveBeenCalled()
+    })
+
+    it("a press that is held until the initialization moves the TCP", async () => {
+      const { store, jogger, initialize } = storeWithPendingInitialization()
+      renderWithI18n(<JoggingCartesianTab store={store} />)
+
+      fireEvent.pointerDown(plusButtonOfX(), { button: 0 })
+      await nextTask()
+      expect(jogger.translateTCP).not.toHaveBeenCalled()
+
+      initialize()
+      await nextTask()
+
+      expect(jogger.translateTCP).toHaveBeenCalledWith(
+        expect.objectContaining({ axis: "x", direction: "+" }),
+      )
+    })
+  })
+
+  // ---- Connections of the panel ----
+
+  describe("Connections", () => {
+    it("closes every motion stream that it opens, also in React StrictMode", async () => {
+      const open = vi.spyOn(MotionStreamConnection, "open")
+      const dispose = vi.spyOn(MotionStreamConnection.prototype, "dispose")
+      try {
+        const { unmount } = render(
+          <StrictMode>
+            <JoggingPanel
+              nova={new Nova({ instanceUrl: "https://mock.example.com" })}
+              motionGroupId="0@mock-ur5e"
+            />
+          </StrictMode>,
+        )
+        await screen.findByTestId("jogging-tabs")
+        unmount()
+
+        // StrictMode mounts the panel twice, so it opens two streams. A stream
+        // that opens after the unmount is closed, too.
+        await vi.waitFor(async () => {
+          const opened = await Promise.allSettled(
+            open.mock.results.map((result) => result.value),
+          )
+          expect(opened).toHaveLength(2)
+          expect(dispose).toHaveBeenCalledTimes(2)
+        })
+      } finally {
+        open.mockRestore()
+        dispose.mockRestore()
+      }
     })
   })
 })
