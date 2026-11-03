@@ -14,8 +14,11 @@ importers:
   .:
     dependencies:
       '@wandelbots/design-tokens':
-        specifier: ^2.0.0
-        version: 2.0.0
+        specifier: ^3.5.0
+        version: 3.5.0
+      '@wandelbots/icons':
+        specifier: ^2.2.0
+        version: 2.2.0(react@19.2.3)
       '@wandelbots/nova-js':
         specifier: 4.13.0
         version: 4.13.0
@@ -2851,9 +2854,6 @@ packages:
 
   '@vitest/utils@3.2.6':
     resolution: {integrity: sha512-lI23nIs4bnT3T8NIoh+vFaz5s2/DdP0Jgt2jxwgWljvwn82cLJtyi/If+fjFyoLMGIOz0U/fKvWE0d4jsNQEfg==}
-
-  '@wandelbots/design-tokens@2.0.0':
-    resolution: {integrity: sha512-elSCqln8pUaWbM0DWu6GU7X0rH9FZaCx6+E56Fr2/EAJDq8zXpJlh8OIuc8J/uS4gIRicgDcu+9wkwYJrVlSng==}
 
   '@wandelbots/design-tokens@3.5.0':
     resolution: {integrity: sha512-wJUKxFMZ2Nmd4qGVXXD/ez+fBFA6jv2+zFEbq/eqyIN8WkG5W8ArJ3z7I7tyBqeAiIiIK8RPdttwXNhOrBSMvA==}
@@ -9970,8 +9970,6 @@ snapshots:
       '@vitest/pretty-format': 3.2.6
       loupe: 3.2.1
       tinyrainbow: 2.0.0
-
-  '@wandelbots/design-tokens@2.0.0': {}
 
   '@wandelbots/design-tokens@3.5.0': {}
 

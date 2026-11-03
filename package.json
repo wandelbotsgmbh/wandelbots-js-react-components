@@ -174,7 +174,8 @@
     }
   },
   "dependencies": {
-    "@wandelbots/design-tokens": "^2.0.0",
+    "@wandelbots/design-tokens": "^3.5.0",
+    "@wandelbots/icons": "^2.2.0",
     "@wandelbots/nova-js": "4.13.0",
     "axios": "^1.15.0",
     "i18next": "^25.7.4",
