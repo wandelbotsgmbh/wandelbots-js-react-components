@@ -17,12 +17,19 @@
  *   delete   – deletes the instance; does nothing when none was created
  *   report   – prepares e2e-results/ for the artifact of the run: replaces the
  *              access token and the host of the instance in its text files,
- *              and writes the test results into the summary of the job
+ *              accepts the screenshots of the Playwright tests (PNG files in
+ *              e2e-results/screenshots/), refuses all other files that are
+ *              not text, and writes the results of the vitest and the
+ *              Playwright tests and the names of the screenshots into the
+ *              summary of the job
  *
  * The repository is public, so everybody can download the artifacts of its
  * runs. GitHub hides secrets only in the log, not in artifacts: the workflow
  * uploads e2e-results/ only after `report` succeeded. Do not put files there
- * that `report` cannot check, such as traces with network requests.
+ * that `report` cannot check, such as traces with network requests. The only
+ * exception are the screenshots: a picture cannot be checked for text, so the
+ * Playwright tests check before each screenshot that the page does not show
+ * the access token (e2e/playground/helpers.ts).
  *
  * Environment:
  *   PORTAL_AUTH_URL      – token endpoint of the portal login
@@ -55,9 +62,30 @@ type TestResult = {
   duration?: number | null
   failureMessages?: string[]
 }
+/** A file or a `describe` in the JSON report of Playwright */
+type PlaywrightSuite = {
+  title: string
+  specs?: {
+    title: string
+    tests: {
+      /** expected, unexpected, flaky (passed in a later try) or skipped */
+      status?: string
+      results: {
+        status: string
+        duration: number
+        errors?: { message?: string }[]
+      }[]
+    }[]
+  }[]
+  suites?: PlaywrightSuite[]
+}
+/** A row of a table of tests in the summary of the job */
+type SummaryRow = { title: string; status: string; durationMs?: number | null }
 
 /** The folder that the workflow uploads as the artifact e2e-results */
 const RESULTS_DIR = "e2e-results"
+/** The screenshots of the Playwright tests (e2e/playground/helpers.ts) */
+const SCREENSHOT_DIR = "screenshots"
 
 const CREATE_TIMEOUT_MS = 10 * 60_000
 const READY_TIMEOUT_MS = 20 * 60_000
@@ -427,8 +455,9 @@ async function snapshot() {
 
 /**
  * Prepares e2e-results/ for the artifact of the run: replaces the access
- * token and the host of the instance in its text files, and writes the test
- * results into the summary of the job.
+ * token and the host of the instance in its text files, accepts the
+ * screenshots, refuses all other files, and writes the test results into the
+ * summary of the job.
  */
 async function report() {
   if (!existsSync(RESULTS_DIR)) {
@@ -447,6 +476,12 @@ async function report() {
     if (!statSync(file).isFile()) {
       continue
     }
+    // The screenshots of the Playwright tests. A picture cannot be checked
+    // for text: the tests check before each screenshot that the page does
+    // not show the access token (e2e/playground/helpers.ts).
+    if (isScreenshot(String(name))) {
+      continue
+    }
     if (!/\.(json|xml|log|txt|md|html)$/.test(file)) {
       throw new Error(`${file} is not a text file, so it cannot be checked`)
     }
@@ -463,46 +498,169 @@ async function report() {
   writeSummary()
 }
 
-/** Writes the results of the vitest JSON report into the summary of the job. */
+/** A PNG file in e2e-results/screenshots/ (a path relative to e2e-results/) */
+function isScreenshot(name: string) {
+  const parts = name.split(/[/\\]/)
+  return (
+    parts.length === 2 &&
+    parts[0] === SCREENSHOT_DIR &&
+    parts[1].endsWith(".png")
+  )
+}
+
+/**
+ * Writes the results of the tests into the summary of the job: the vitest
+ * e2e tests (results.json), the Playwright tests of the playground
+ * (playwright-results.json), and the names of the screenshots.
+ */
 function writeSummary() {
   const summaryFile = process.env.GITHUB_STEP_SUMMARY
-  const resultsFile = join(RESULTS_DIR, "results.json")
-  if (!summaryFile || !existsSync(resultsFile)) {
+  if (!summaryFile) {
     return
+  }
+  const sections = [vitestSummary(), playwrightSummary(), screenshotSummary()]
+  if (sections.every((section) => section.length === 0)) {
+    return
+  }
+  const instanceFile = join(RESULTS_DIR, "nova-instance.json")
+  const version = existsSync(instanceFile)
+    ? JSON.parse(readFileSync(instanceFile, "utf8")).version
+    : undefined
+
+  const lines = [
+    typeof version === "string"
+      ? `### e2e tests on NOVA ${version}`
+      : "### e2e tests",
+    "",
+    ...sections.flat(),
+    `The artifact ${RESULTS_DIR} holds the output of the tests (output.log, playwright-output.log), their reports (junit.xml, results.json, playwright-junit.xml, playwright-results.json), the screenshots of the playground (${SCREENSHOT_DIR}/), the page of each failed Playwright test as text (playwright/), and the state of the instance after the tests (nova-instance.json).`,
+  ]
+  appendFileSync(summaryFile, `${lines.join("\n")}\n`)
+}
+
+/** The vitest e2e tests: their results and errors, or nothing without a report */
+function vitestSummary(): string[] {
+  const resultsFile = join(RESULTS_DIR, "results.json")
+  if (!existsSync(resultsFile)) {
+    return []
   }
   const results = JSON.parse(readFileSync(resultsFile, "utf8"))
   const files: { message?: string; assertionResults: TestResult[] }[] =
     results.testResults ?? []
   const tests = files.flatMap((file) => file.assertionResults)
-  const instanceFile = join(RESULTS_DIR, "nova-instance.json")
-  const version = existsSync(instanceFile)
-    ? JSON.parse(readFileSync(instanceFile, "utf8")).version
-    : undefined
-  const cell = (text: string) => text.replaceAll("|", "\\|")
-  const errors = [
-    ...files.flatMap((file) => (file.message ? [file.message] : [])),
-    ...tests.flatMap((test) => test.failureMessages ?? []),
-  ]
-
-  const lines = [
-    `### e2e tests: ${results.numPassedTests} passed, ${results.numFailedTests} failed, ${results.numPendingTests} skipped`,
+  return [
+    `**vitest** (the NOVA connections, without a browser): ${results.numPassedTests} passed, ${results.numFailedTests} failed, ${results.numPendingTests} skipped`,
     "",
-    ...(typeof version === "string" ? [`NOVA ${version}`, ""] : []),
+    ...testTable(
+      tests.map((test) => ({
+        title: test.fullName,
+        status: test.status,
+        durationMs: test.duration,
+      })),
+    ),
+    ...errorBlocks([
+      ...files.flatMap((file) => (file.message ? [file.message] : [])),
+      ...tests.flatMap((test) => test.failureMessages ?? []),
+    ]),
+  ]
+}
+
+/**
+ * The Playwright tests of the playground: their results and errors (also an
+ * error of the global setup), or nothing without a report
+ */
+function playwrightSummary(): string[] {
+  const resultsFile = join(RESULTS_DIR, "playwright-results.json")
+  if (!existsSync(resultsFile)) {
+    return []
+  }
+  const results = JSON.parse(readFileSync(resultsFile, "utf8"))
+  const rows: SummaryRow[] = []
+  const errors: string[] = (results.errors ?? []).map(
+    (error: { message?: string }) => error.message ?? "",
+  )
+  // The title of a test: its file, its `describe` blocks and its own title
+  const collect = (suite: PlaywrightSuite, path: string[]) => {
+    for (const spec of suite.specs ?? []) {
+      for (const test of spec.tests) {
+        // The last try (in CI, a failed test runs once more)
+        const result = test.results[test.results.length - 1]
+        rows.push({
+          title: [...path, spec.title].join(" › "),
+          status:
+            test.status === "flaky"
+              ? `flaky (passed in try ${test.results.length})`
+              : (result?.status ?? "not run"),
+          durationMs: result?.duration,
+        })
+        // The errors of every try, also of a test that passed later
+        for (const [index, tried] of test.results.entries()) {
+          for (const error of tried.errors ?? []) {
+            const prefix = test.results.length > 1 ? `try ${index + 1}: ` : ""
+            errors.push(`${prefix}${error.message ?? ""}`)
+          }
+        }
+      }
+    }
+    for (const child of suite.suites ?? []) {
+      collect(child, [...path, child.title])
+    }
+  }
+  for (const suite of results.suites ?? []) {
+    collect(suite, [suite.title])
+  }
+  const stats = results.stats ?? {}
+  return [
+    `**Playwright** (the playground in Chromium): ${stats.expected ?? 0} passed, ${stats.flaky ?? 0} flaky, ${stats.unexpected ?? 0} failed, ${stats.skipped ?? 0} skipped`,
+    "",
+    ...testTable(rows),
+    ...errorBlocks(errors),
+  ]
+}
+
+/** The names of the screenshots, or nothing when there are none */
+function screenshotSummary(): string[] {
+  const folder = join(RESULTS_DIR, SCREENSHOT_DIR)
+  const names = existsSync(folder)
+    ? readdirSync(folder)
+        .filter((name) => name.endsWith(".png"))
+        .sort()
+    : []
+  if (names.length === 0) {
+    return []
+  }
+  return [
+    `**Screenshots** in ${SCREENSHOT_DIR}/: ${names.map((name) => `\`${name}\``).join(", ")}`,
+    "",
+  ]
+}
+
+/** A Markdown table of tests */
+function testTable(rows: SummaryRow[]): string[] {
+  const cell = (text: string) => text.replaceAll("|", "\\|")
+  return [
     "| Test | Result | Duration |",
     "| --- | --- | --- |",
-    ...tests.map(
-      (test) =>
-        `| ${cell(test.fullName)} | ${test.status} | ${test.duration == null ? "" : `${(test.duration / 1000).toFixed(1)} s`} |`,
+    ...rows.map(
+      (row) =>
+        `| ${cell(row.title)} | ${row.status} | ${row.durationMs == null ? "" : `${(row.durationMs / 1000).toFixed(1)} s`} |`,
     ),
     "",
-    ...errors.flatMap((error) => [
-      "```",
-      error.split("\n").slice(0, 8).join("\n"),
-      "```",
-    ]),
-    `The artifact ${RESULTS_DIR} holds the output of the tests (output.log), junit.xml, results.json, and the state of the instance after the tests (nova-instance.json).`,
   ]
-  appendFileSync(summaryFile, `${lines.join("\n")}\n`)
+}
+
+/** The color codes of a terminal, which an error message can contain */
+// biome-ignore lint/suspicious/noControlCharactersInRegex: the codes start with ESC
+const COLOR_CODES = /\u001b\[[0-9;]*m/g
+
+/** The first lines of each error, without the color codes of a terminal */
+function errorBlocks(errors: string[]): string[] {
+  return errors.flatMap((error) => [
+    "```",
+    ...error.replace(COLOR_CODES, "").split("\n").slice(0, 8),
+    "```",
+    "",
+  ])
 }
 
 const commands: Record<string, () => Promise<void>> = {

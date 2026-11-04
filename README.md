@@ -260,13 +260,27 @@ CELL_ID=cell
 
 ### e2e Tests
 
-The e2e tests in `e2e/` run against a real NOVA instance. For each pull request, the workflow `e2e` creates a NOVA cloud instance with the newest released NOVA version, runs the tests, and deletes the instance again. The results are in the artifact `e2e-results` of the run.
+The e2e tests run against a real NOVA instance. There are two kinds:
 
-To run them on your computer, reserve a test instance with `pnpm td` (see above), or set `NOVA_INSTANCE_URL` (and `NOVA_ACCESS_TOKEN` for a cloud instance). Then:
+- The vitest tests in `e2e/` test the NOVA connections of the library (motion state, jogging), without a browser.
+- The Playwright tests in `e2e/playground/` test the playground app in Chromium. First they add a virtual robot with 2 safety zones and a stored collision setup to the cell. Then they open each page of the playground, jog the robot, check the values, the 3D view and the safety bar, and take screenshots. At the end, they remove the robot and the collision setup again.
+
+Both kinds use the same instance values:
+
+- `NOVA_INSTANCE_URL`, and `NOVA_ACCESS_TOKEN` for a cloud instance, or
+- `WANDELAPI_BASE_URL` in `.env.local`, which `pnpm td` writes for a test instance (see above).
+
+Without an instance, the tests fail. To run them on your computer:
 
 ```bash
-pnpm run test:e2e
+pnpm exec playwright install chromium  # once, for the Playwright tests
+pnpm run test:e2e                      # vitest
+pnpm run test:playground               # builds the playground, then runs Playwright
 ```
+
+The built playground (`playground/dist`) contains the URL and the access token of the instance, so `test:playground` builds it again each time. Never publish or upload it. The browser calls the instance through the server of the playground, which forwards `/api` to the instance, so a cloud instance works too (it does not allow requests from another origin). The results and the screenshots of the Playwright tests are in `e2e-results/`.
+
+For each pull request, the workflow `e2e` creates a NOVA cloud instance with the newest released NOVA version, runs both kinds of tests, and deletes the instance again. The results are in the artifact `e2e-results` of the run: the output and the reports of the tests, the screenshots of the playground (`screenshots/`), and the state of the instance after the tests. The summary of the job lists the tests and the screenshots.
 
 ### Local Testing
 

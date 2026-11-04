@@ -11,7 +11,16 @@ import {
   PresetEnvironment,
   Robot,
 } from "@wandelbots/wandelbots-js-react-components"
-import { type ReactNode, useCallback } from "react"
+import {
+  createContext,
+  type ReactNode,
+  useCallback,
+  useContext,
+  useState,
+} from "react"
+
+/** FitCamera calls it when a model is drawn (see Viewport) */
+const ModelDrawnContext = createContext(() => {})
 
 /** A 3D view that fills its parent, with the light of PresetEnvironment */
 export function Viewport({ children }: { children: ReactNode }) {
@@ -20,14 +29,26 @@ export function Viewport({ children }: { children: ReactNode }) {
     theme.palette.backgroundPaperElevation?.[11] ?? theme.palette.grey[700]
   const gridCenterColor =
     theme.palette.backgroundPaperElevation?.[16] ?? theme.palette.grey[500]
+  const [modelDrawn, setModelDrawn] = useState(false)
+  const onModelDrawn = useCallback(() => setModelDrawn(true), [])
 
+  // data-model-drawn turns "true" when the robot model is drawn (its
+  // postModelRender called `refit` of FitCamera). The e2e tests wait for it:
+  // the canvas itself does not tell when the model is there.
   return (
-    <Canvas shadows camera={{ position: [2, 1.5, 2], fov: 35 }}>
-      <color attach="background" args={[theme.palette.background.default]} />
-      <PresetEnvironment />
-      <gridHelper args={[10, 20, gridCenterColor, gridColor]} />
-      <OrbitControls makeDefault />
-      {children}
+    <Canvas
+      data-testid="viewport"
+      data-model-drawn={modelDrawn}
+      shadows
+      camera={{ position: [2, 1.5, 2], fov: 35 }}
+    >
+      <ModelDrawnContext.Provider value={onModelDrawn}>
+        <color attach="background" args={[theme.palette.background.default]} />
+        <PresetEnvironment />
+        <gridHelper args={[10, 20, gridCenterColor, gridColor]} />
+        <OrbitControls makeDefault />
+        {children}
+      </ModelDrawnContext.Provider>
     </Canvas>
   )
 }
@@ -35,6 +56,7 @@ export function Viewport({ children }: { children: ReactNode }) {
 /**
  * Fits the camera to its content when the content calls `refit`, for example
  * when a robot model has loaded. (A fit before that would fit an empty box.)
+ * `refit` also sets the marker data-model-drawn of the Viewport.
  */
 export function FitCamera({
   children,
@@ -51,10 +73,12 @@ export function FitCamera({
 
 function Refit({ children }: { children: (refit: () => void) => ReactNode }) {
   const bounds = useBounds()
+  const onModelDrawn = useContext(ModelDrawnContext)
   const refit = useCallback(() => {
     // biome-ignore lint/suspicious/noFocusedTests: fit() of drei's Bounds, not a test
     bounds.refresh().clip().fit()
-  }, [bounds])
+    onModelDrawn()
+  }, [bounds, onModelDrawn])
   return children(refit)
 }
 

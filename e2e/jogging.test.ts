@@ -53,7 +53,8 @@ describe("a virtual robot on a NOVA instance", () => {
           state.motion_groups.map((group) => group.motion_group),
         ).toContain(MOTION_GROUP)
       },
-      { timeout: 120_000, interval: 1000 },
+      // The first robot on a new cloud instance can need more than 2 minutes
+      { timeout: 240_000, interval: 1000 },
     )
   })
 

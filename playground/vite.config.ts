@@ -18,9 +18,19 @@ import { novaInstance } from "../e2e/novaInstance"
 //
 // The access token is written into the code that the browser loads, also in
 // the built files. Never publish or upload the built playground.
+//
+// The browser calls the instance through the dev or preview server: it
+// forwards /api, also the websockets, to the instance. A cloud instance does
+// not allow requests from another origin (CORS), and the browser talks only
+// to localhost, as an app on an instance talks only to its instance. When
+// the browser closes a websocket, the server can log "Error: write EPIPE":
+// this is harmless.
 
 const repoRoot = resolve(import.meta.dirname, "..")
 const instance = novaInstance()
+const proxy = instance.url
+  ? { "/api": { target: instance.url, changeOrigin: true, ws: true } }
+  : undefined
 
 export default defineConfig({
   root: import.meta.dirname,
@@ -56,8 +66,8 @@ export default defineConfig({
       include: "**/*.svg",
     }),
   ],
-  server: { port: 5180 },
-  preview: { port: 4180, strictPort: true },
+  server: { port: 5180, proxy },
+  preview: { port: 4180, strictPort: true, proxy },
   build: {
     outDir: "dist",
     // A developer tool on localhost: one large bundle is no problem
