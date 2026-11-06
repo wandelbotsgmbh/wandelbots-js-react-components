@@ -1,5 +1,4 @@
 .DS_Store
-.rollup.cache
 node_modules
 tsconfig.tsbuildinfo
 *.tgz
@@ -14,4 +13,3 @@ e2e-results
 .env.local
 kubeconfig.yml
 instanceProviderConfig.json
-CLAUDE.md

@@ -13,7 +13,7 @@ import {
 } from "@wandelbots/wandelbots-js-react-components"
 import { observer } from "mobx-react-lite"
 import { useMemo } from "react"
-import { useJoggingStore } from "../connections"
+import { startJogging, stopJogging, useJoggingStore } from "../connections"
 import {
   FitCamera,
   MotionGroupModel,
@@ -106,23 +106,6 @@ const MotionGroupJointLimits = observer(
 const JointControls = observer(({ store }: { store: JoggingStore }) => {
   const revolute = store.jointType === JointTypeEnum.RevoluteJoint
 
-  async function startJogging(joint: number, direction: "-" | "+") {
-    await store.jogger.setJoggingMode("jogging")
-    await store.jogger.rotateJoints({
-      joint,
-      direction,
-      velocityUnit: revolute ? "rad/s" : "mm/s",
-      velocityValue: revolute
-        ? store.rotationVelocityRadsPerSec
-        : store.translationVelocityMmPerSec,
-    })
-  }
-
-  async function stopJogging() {
-    await store.jogger.stop()
-    await store.deactivate()
-  }
-
   return (
     <Stack gap={3} sx={{ p: 3 }}>
       <Typography variant="body2" color="text.secondary">
@@ -163,8 +146,10 @@ const JointControls = observer(({ store }: { store: JoggingStore }) => {
                 store.jogger.motionStream.rapidlyChangingMotionState
                   .joint_position[index]
               }
-              startJogging={(direction) => startJogging(index, direction)}
-              stopJogging={stopJogging}
+              startJogging={(direction) =>
+                startJogging(store, { joint: index, direction })
+              }
+              stopJogging={() => stopJogging(store)}
             />
           </Stack>
         )

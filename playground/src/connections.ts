@@ -1,3 +1,4 @@
+import { JointTypeEnum } from "@wandelbots/nova-js/v2"
 import {
   ConnectedMotionGroup,
   JoggerConnection,
@@ -112,4 +113,66 @@ export function useJoggingStore(
     // Closes the jogger with its motion stream
     (store) => store.dispose(),
   )
+}
+
+/** What a jog button moves: a joint, or the TCP along an axis */
+export type JogCommand =
+  | { joint: number; direction: "-" | "+" }
+  | { axis: "x" | "y" | "z"; direction: "-" | "+" }
+
+/** The number of the last press per store (see startJogging) */
+const jogPresses = new WeakMap<JoggingStore, number>()
+
+function nextJogPress(store: JoggingStore) {
+  const press = (jogPresses.get(store) ?? 0) + 1
+  jogPresses.set(store, press)
+  return press
+}
+
+/**
+ * Jogs while a button is pressed, with the velocity of the store, as the
+ * tabs of JoggingPanel do: the jog command goes out only after NOVA has
+ * confirmed the jogging websocket (about 0.1 to 0.5 s). A press that ends
+ * before (stopJogging) moves nothing, and an error goes to the console
+ * instead of being uncaught.
+ */
+export async function startJogging(store: JoggingStore, command: JogCommand) {
+  const press = nextJogPress(store)
+  try {
+    // Not store.activate(): with an increment selected in JoggingPanel (saved
+    // in localStorage), it would open a trajectory instead of jogging
+    await store.jogger.setJoggingMode("jogging")
+
+    // The button was released (or another one pressed) while the jogging
+    // websocket opened: this press moves nothing
+    if (press !== jogPresses.get(store)) return
+
+    if ("joint" in command) {
+      // A prismatic joint (a linear axis) moves in mm/s
+      const revolute = store.jointType === JointTypeEnum.RevoluteJoint
+      await store.jogger.rotateJoints({
+        joint: command.joint,
+        direction: command.direction,
+        velocityUnit: revolute ? "rad/s" : "mm/s",
+        velocityValue: revolute
+          ? store.rotationVelocityRadsPerSec
+          : store.translationVelocityMmPerSec,
+      })
+    } else {
+      await store.jogger.translateTCP({
+        axis: command.axis,
+        direction: command.direction,
+        velocityMmPerSec: store.translationVelocityMmPerSec,
+      })
+    }
+  } catch (error) {
+    console.error("Jogging failed:", error)
+  }
+}
+
+/** Ends the press of startJogging: stops the motion and the jogging */
+export async function stopJogging(store: JoggingStore) {
+  nextJogPress(store)
+  await store.jogger.stop()
+  await store.deactivate()
 }

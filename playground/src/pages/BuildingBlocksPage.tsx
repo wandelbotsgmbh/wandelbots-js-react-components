@@ -31,7 +31,7 @@ import {
 } from "@wandelbots/wandelbots-js-react-components"
 import { observer } from "mobx-react-lite"
 import { type ReactNode, useState } from "react"
-import { useJoggingStore } from "../connections"
+import { startJogging, stopJogging, useJoggingStore } from "../connections"
 import type { PageProps } from "."
 
 /**
@@ -228,20 +228,6 @@ function AxisLabel({ children }: { children: ReactNode }) {
 }
 
 const CartesianAxisControls = observer(({ store }: { store: JoggingStore }) => {
-  async function startJogging(axis: "x" | "y" | "z", direction: "-" | "+") {
-    await store.jogger.setJoggingMode("jogging")
-    await store.jogger.translateTCP({
-      axis,
-      direction,
-      velocityMmPerSec: store.translationVelocityMmPerSec,
-    })
-  }
-
-  async function stopJogging() {
-    await store.jogger.stop()
-    await store.deactivate()
-  }
-
   // Without an inverse solver (a linear axis or a turntable), the TCP cannot
   // move along an axis: JoggingPanel then has no cartesian tab
   const disabled = store.isLocked || store.inverseSolver === null
@@ -262,8 +248,10 @@ const CartesianAxisControls = observer(({ store }: { store: JoggingStore }) => {
             colors={colors}
             label={<AxisLabel>{axis.toUpperCase()}</AxisLabel>}
             getDisplayedValue={() => tcpPosition(index)}
-            startJogging={(direction) => startJogging(axis, direction)}
-            stopJogging={stopJogging}
+            startJogging={(direction) =>
+              startJogging(store, { axis, direction })
+            }
+            stopJogging={() => stopJogging(store)}
             disabled={disabled}
           />
         ))}
@@ -296,23 +284,6 @@ const CartesianAxisControls = observer(({ store }: { store: JoggingStore }) => {
 const JointValueControls = observer(({ store }: { store: JoggingStore }) => {
   const revolute = store.jointType === JointTypeEnum.RevoluteJoint
 
-  async function startJogging(direction: "-" | "+") {
-    await store.jogger.setJoggingMode("jogging")
-    await store.jogger.rotateJoints({
-      joint: 0,
-      direction,
-      velocityUnit: revolute ? "rad/s" : "mm/s",
-      velocityValue: revolute
-        ? store.rotationVelocityRadsPerSec
-        : store.translationVelocityMmPerSec,
-    })
-  }
-
-  async function stopJogging() {
-    await store.jogger.stop()
-    await store.deactivate()
-  }
-
   function jointProps(index: number) {
     const limits =
       store.motionGroupDescription.operation_limits.auto_limits?.joints?.[index]
@@ -336,8 +307,10 @@ const JointValueControls = observer(({ store }: { store: JoggingStore }) => {
         </Typography>
         <JoggingJointValueControl
           {...jointProps(0)}
-          startJogging={startJogging}
-          stopJogging={stopJogging}
+          startJogging={(direction) =>
+            startJogging(store, { joint: 0, direction })
+          }
+          stopJogging={() => stopJogging(store)}
           disabled={store.isLocked}
         />
       </Stack>

@@ -100,8 +100,8 @@ describe("a virtual robot on a NOVA instance", () => {
         .toBeGreaterThan(start[0] + 0.05)
       expect(getJoints()[1]).toBeCloseTo(start[1])
     } finally {
+      // Also closes the motion stream that open() opened
       await jogger.dispose()
-      jogger.motionStream.dispose()
     }
   })
 })
