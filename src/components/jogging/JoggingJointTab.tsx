@@ -4,7 +4,7 @@ import Stack from "@mui/material/Stack"
 import Typography from "@mui/material/Typography"
 import { JointTypeEnum } from "@wandelbots/nova-js/v2"
 import { observer } from "mobx-react-lite"
-import type { ReactNode } from "react"
+import { type ReactNode, useRef } from "react"
 import { JoggingJointLimitDetector } from "./JoggingJointLimitDetector"
 import { JoggingJointValueControl } from "./JoggingJointValueControl"
 import type { JoggingStore } from "./JoggingStore"
@@ -14,24 +14,38 @@ import { StreamStateSection } from "./StreamStateSection"
 export const JoggingJointTab = observer(
   ({ store, children }: { store: JoggingStore; children?: ReactNode }) => {
     const theme = useTheme()
+    // Counts the jog presses (see startJointJogging)
+    const jogPress = useRef(0)
+
     async function startJointJogging(opts: {
       joint: number
       direction: "-" | "+"
     }) {
-      await store.activate()
-      await store.jogger.rotateJoints({
-        joint: opts.joint,
-        direction: opts.direction,
-        velocityUnit:
-          store.jointType === JointTypeEnum.PrismaticJoint ? "mm/s" : "rad/s",
-        velocityValue:
-          store.jointType === JointTypeEnum.PrismaticJoint
-            ? store.translationVelocityMmPerSec
-            : store.rotationVelocityRadsPerSec,
-      })
+      const press = ++jogPress.current
+      try {
+        await store.activate()
+
+        // The button was released (or another one pressed) while the
+        // jogging websocket opened: this press moves nothing
+        if (press !== jogPress.current) return
+
+        await store.jogger.rotateJoints({
+          joint: opts.joint,
+          direction: opts.direction,
+          velocityUnit:
+            store.jointType === JointTypeEnum.PrismaticJoint ? "mm/s" : "rad/s",
+          velocityValue:
+            store.jointType === JointTypeEnum.PrismaticJoint
+              ? store.translationVelocityMmPerSec
+              : store.rotationVelocityRadsPerSec,
+        })
+      } catch (err) {
+        console.error("Jogging failed:", err)
+      }
     }
 
     async function stopJointJogging() {
+      jogPress.current++
       await store.jogger.stop()
       await store.deactivate()
     }

@@ -1,11 +1,24 @@
 name: e2e
 
-# Creates a NOVA cloud instance on the portal (portal.wandelbots.io), waits
-# until it is ready, runs the e2e tests in e2e/ against it, and deletes it
-# again. Only the production portal is public: dev and staging are private
+# Creates a NOVA cloud instance on the portal (portal.wandelbots.io), runs two
+# kinds of e2e tests against it, and deletes it again:
+# - the vitest e2e tests in e2e/: the NOVA connections of the library,
+#   without a browser
+# - the Playwright tests in e2e/playground/: the playground app (playground/)
+#   in a headless Chromium on the runner, with screenshots
+# While NOVA starts, the job installs the dependencies and Chromium, and
+# builds the playground with the URL and the access token of the instance.
+#
+# Only the production portal is public: dev and staging are private
 # infrastructure, which a public repo must not use. So the instance runs the
 # newest released NOVA version, the same as customers have. The NOVA Python
 # SDK (wandelbots-nova) tests the same way.
+#
+# Everybody can download the artifact e2e-results (output, reports,
+# screenshots, the state of the instance). `report` replaces the access token
+# and the host of the instance in it before the upload. Never upload the
+# built playground (playground/dist contains the token) or Playwright traces
+# (they record the network requests with the token).
 #
 # The secret PORTAL_PROD_REFRESH_TOKEN is the refresh token of a test user of
 # the portal (wandel.testing+js-react-components-ci@wandelbots.com).
@@ -53,9 +66,16 @@ jobs:
           PORTAL_REFRESH_TOKEN: ${{ secrets.PORTAL_PROD_REFRESH_TOKEN }}
           GITHUB_TOKEN: ${{ github.token }}
         run: node scripts/nova-instance.ts create
-      # Installs the dependencies while the instance starts
+      # The next 3 steps run while the instance starts
       - uses: ./.github/actions/setup-node
+      - name: Install Chromium for Playwright
+        run: pnpm exec playwright install --with-deps chromium
+      # With NOVA_INSTANCE_URL and NOVA_ACCESS_TOKEN of `create`. The build
+      # contains the token: never upload playground/dist.
+      - name: Build the playground
+        run: pnpm run playground:build
       - name: Wait until the instance is ready
+        id: wait
         run: node scripts/nova-instance.ts wait
       - name: Run the e2e tests
         env:
@@ -68,6 +88,17 @@ jobs:
             --outputFile.junit=e2e-results/junit.xml \
             --outputFile.json=e2e-results/results.json \
             2>&1 | tee e2e-results/output.log
+      # Also when the vitest e2e tests failed, but only on a ready instance.
+      # The tests save their screenshots in e2e-results/screenshots/.
+      - name: Run the Playwright tests of the playground
+        if: ${{ !cancelled() && steps.wait.outcome == 'success' }}
+        env:
+          # The output also goes into a file of the artifact
+          NO_COLOR: "1"
+        run: |
+          set -o pipefail
+          mkdir -p e2e-results
+          pnpm exec playwright test 2>&1 | tee e2e-results/playwright-output.log
       - name: Save the state of the instance
         if: always()
         run: node scripts/nova-instance.ts snapshot
@@ -76,7 +107,8 @@ jobs:
         env:
           PORTAL_REFRESH_TOKEN: ${{ secrets.PORTAL_PROD_REFRESH_TOKEN }}
         run: node scripts/nova-instance.ts delete
-      # Replaces the access token in the files, which everybody can download
+      # Replaces the access token in the files, which everybody can download,
+      # and refuses files that it cannot check
       - name: Check the e2e results
         id: report
         if: always()

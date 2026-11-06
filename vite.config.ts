@@ -47,14 +47,11 @@ const emitSvgDts = (): Plugin => ({
   },
 })
 
-// Public entry points that get their own aggregate bundle. Additionally,
-// every source file under `src/components/` is emitted as an individual
-// entry so consumers can deep-import any component via the
-// `./components/*` wildcard subpath export in package.json. Other source
-// modules (helpers under `src/lib/`, `src/themes/`, etc.) are bundled
-// into the aggregates and intentionally not exposed as a public API.
-// The entry map itself lives in `scripts/entry-points.ts` so that
-// `scripts/api-extractor.ts` can iterate the same list.
+// The public entry points: the aggregates `.`, `/core` and `/3d`, and the
+// component entry `/SafetyBar`. Other source modules (the components, the
+// helpers under `src/lib/`) are bundled into them and are not a public API
+// of their own. The entry map lives in `scripts/entry-points.ts`, so that
+// `scripts/api-extractor.ts` uses the same list.
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -100,9 +97,6 @@ export default defineConfig({
         },
       ],
     },
-  },
-  optimizeDeps: {
-    exclude: ["node_modules/.cache/storybook", "node_modules/.cache"],
   },
   plugins: [
     react(),

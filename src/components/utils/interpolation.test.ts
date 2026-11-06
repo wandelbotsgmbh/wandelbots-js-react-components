@@ -1,4 +1,12 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  onTestFinished,
+  vi,
+} from "vitest"
 import { ValueInterpolator } from "./interpolation"
 
 describe("ValueInterpolator", () => {
@@ -267,6 +275,13 @@ describe("ValueInterpolator", () => {
   })
 
   it("should work correctly in RobotAnimator-like usage pattern", async () => {
+    // Fake timers: the test counts 20 timer calls of 16 ms in 500 ms, which
+    // must not depend on the speed of the machine (RB-3140)
+    vi.useFakeTimers()
+    onTestFinished(() => {
+      vi.useRealTimers()
+    })
+
     // Simulate the exact pattern used in RobotAnimator
     let frameUpdateCount = 0
     let onChangeCallCount = 0
@@ -302,7 +317,7 @@ describe("ValueInterpolator", () => {
     }, 50)
 
     // Wait for animation to complete
-    await new Promise((resolve) => setTimeout(resolve, 500)) // Slightly longer wait for spring settling
+    await vi.advanceTimersByTimeAsync(500) // Slightly longer wait for spring settling
 
     // Should have smooth updates, not conflicts
     expect(frameUpdateCount).toBeGreaterThanOrEqual(20)

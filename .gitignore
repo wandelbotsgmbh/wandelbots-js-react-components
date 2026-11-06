@@ -1,11 +1,9 @@
 .DS_Store
-.rollup.cache
 node_modules
 tsconfig.tsbuildinfo
 *.tgz
 dist
 tmp
-storybook-static
 e2e-results
 
 # Local Netlify folder
@@ -15,4 +13,3 @@ e2e-results
 .env.local
 kubeconfig.yml
 instanceProviderConfig.json
-CLAUDE.md

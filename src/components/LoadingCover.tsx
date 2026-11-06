@@ -1,6 +1,7 @@
+import Box from "@mui/material/Box"
 import CircularProgress from "@mui/material/CircularProgress"
 import Stack from "@mui/material/Stack"
-import { useTheme } from "@mui/material/styles"
+import Typography from "@mui/material/Typography"
 import { capitalize } from "@mui/material/utils"
 import { lowerFirst } from "lodash-es"
 import { useEffect, useState } from "react"
@@ -14,7 +15,6 @@ export const LoadingCover = (props: {
   const softTimeout = props.softTimeout || 3000
 
   const [showSlowLoadingMessage, setShowSlowLoadingMessage] = useState(false)
-  const theme = useTheme()
 
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -30,7 +30,7 @@ export const LoadingCover = (props: {
       height="100%"
       alignItems="center"
       justifyContent="center"
-      sx={{ color: theme.palette.text.primary }}
+      sx={{ color: "text.primary" }}
     >
       {props.error ? (
         <LoadingErrorMessage
@@ -39,17 +39,20 @@ export const LoadingCover = (props: {
         />
       ) : (
         <>
-          <CircularProgress sx={{ marginBottom: "24px" }} />
-          {!!props.message && <div>{props.message}</div>}
-          <Stack
+          <CircularProgress sx={{ mb: 3 }} />
+          {!!props.message && (
+            <Typography variant="body1">{props.message}</Typography>
+          )}
+          <Typography
+            variant="body2"
             sx={{
               visibility: showSlowLoadingMessage ? "visible" : "hidden",
-              marginTop: "1rem",
-              color: theme.palette.text.secondary,
+              mt: 2,
+              color: "text.secondary",
             }}
           >
             {"This is taking longer than expected..."}
-          </Stack>
+          </Typography>
         </>
       )}
     </Stack>
@@ -62,28 +65,37 @@ export const LoadingErrorMessage = (props: {
 }) => {
   const errorMessage = makeErrorMessage(props.error)
   const stack = props.error instanceof Error ? props.error.stack : null
-  const theme = useTheme()
 
   return (
     <Stack
       sx={{
         maxHeight: "100%",
         maxWidth: "min(100%, 800px)",
-        padding: 2,
+        p: 2,
         overflow: "auto",
-        color: theme.palette.error.main,
-        "& pre": {
-          whiteSpace: "pre-wrap",
-          wordBreak: "break-word",
-          paddingBottom: "3rem",
-        },
+        color: "error.main",
       }}
     >
-      {(props.loadingMessage
-        ? `Error while ${lowerFirst(capitalize(props.loadingMessage))} - `
-        : "") + errorMessage}
-      <br />
-      {stack && <pre>{stack}</pre>}
+      <Typography variant="body1">
+        {(props.loadingMessage
+          ? `Error while ${lowerFirst(capitalize(props.loadingMessage))} - `
+          : "") + errorMessage}
+      </Typography>
+      {stack && (
+        <Box
+          component="pre"
+          sx={{
+            typography: "body2",
+            fontFamily: "monospace",
+            whiteSpace: "pre-wrap",
+            wordBreak: "break-word",
+            mt: 2,
+            pb: 6,
+          }}
+        >
+          {stack}
+        </Box>
+      )}
     </Stack>
   )
 }

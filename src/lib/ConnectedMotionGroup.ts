@@ -15,7 +15,11 @@ import { makeAutoObservable, runInAction } from "mobx"
 import * as THREE from "three"
 import type { Vector3Simple } from "./JoggerConnection"
 import { jointValuesEqual, tcpMotionEqual } from "./motionStateUpdate"
-import { asNovaInstance, type AnyNovaClient } from "./novaCompat"
+import {
+  cellIdOf,
+  createNovaClient,
+  type NovaConnection,
+} from "./novaConnection"
 
 const MOTION_DELTA_THRESHOLD = 0.0001
 
@@ -49,24 +53,30 @@ export type ConnectedMotionGroupOptions = {
  */
 export class ConnectedMotionGroup {
   static async connectMultiple(
-    nova: AnyNovaClient,
+    connection: NovaConnection,
     motionGroupIds: string[],
     options: ConnectedMotionGroupOptions = {},
   ) {
+    // One client of the library for all motion groups
+    const nova = createNovaClient(connection)
+    const cellId = options.cellId ?? cellIdOf(connection)
     return Promise.all(
       motionGroupIds.map((motionGroupId) =>
-        ConnectedMotionGroup.connect(nova, motionGroupId, options),
+        ConnectedMotionGroup.connect(nova, motionGroupId, {
+          ...options,
+          cellId,
+        }),
       ),
     )
   }
 
   static async connect(
-    novaClient: AnyNovaClient,
+    connection: NovaConnection,
     motionGroupId: string,
     options: ConnectedMotionGroupOptions = {},
   ) {
-    const nova = asNovaInstance(novaClient)
-    const cellId = options.cellId ?? "cell"
+    const nova = createNovaClient(connection)
+    const cellId = options.cellId ?? cellIdOf(connection) ?? "cell"
     const [_motionGroupIndex, controllerId] = motionGroupId.split("@") as [
       string,
       string,
@@ -187,11 +197,15 @@ export class ConnectedMotionGroup {
   activationState: "inactive" | "activating" | "deactivating" | "active" =
     "inactive"
 
-  /** Normalized instance-level Nova client (see `asNovaInstance`) */
+  /**
+   * The library's own NOVA client (see `createNovaClient`), with the access
+   * token of the connection. Robot and LinearAxis load their model with it.
+   * @internal
+   */
   readonly nova: Nova
 
   constructor(
-    nova: AnyNovaClient,
+    connection: NovaConnection,
     readonly controller: RobotControllerState,
     readonly motionGroup: MotionGroupState,
     readonly initialMotionState: MotionGroupState,
@@ -203,7 +217,7 @@ export class ConnectedMotionGroup {
     readonly controllerStateSocket: AutoReconnectingWebsocket,
     readonly cellId: string = "cell",
   ) {
-    this.nova = asNovaInstance(nova)
+    this.nova = createNovaClient(connection)
     this.rapidlyChangingMotionState = initialMotionState
     this.controllerState = initialControllerState
 
@@ -468,6 +482,7 @@ export class ConnectedMotionGroup {
 
   dispose() {
     this.motionStateSocket.close()
+    this.controllerStateSocket.close()
     if (this.connectedJoggingSocket) this.connectedJoggingSocket.close()
   }
 

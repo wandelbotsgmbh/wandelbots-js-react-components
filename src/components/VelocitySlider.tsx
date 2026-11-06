@@ -6,6 +6,8 @@ import isNumber from "lodash-es/isNumber.js"
 import { observer } from "mobx-react-lite"
 import type { ReactNode } from "react"
 import { useTranslation } from "react-i18next"
+import { externalizeComponent } from "../externalizeComponent"
+import { velocitySliderLegendColor } from "./jogging/joggingColors"
 import type { JoggingStore } from "./jogging/JoggingStore"
 
 type VelocitySliderProps = {
@@ -20,62 +22,61 @@ type VelocitySliderProps = {
 }
 
 /** A slider for controlling the movement velocity of a robot */
-export const VelocitySlider = observer((props: VelocitySliderProps) => {
-  const theme = useTheme()
-  const { store } = props
-  const { t } = useTranslation()
+export const VelocitySlider = externalizeComponent(
+  observer((props: VelocitySliderProps) => {
+    const { store } = props
+    const { t } = useTranslation()
 
-  function onSliderChange(_event: Event, newVelocity: number | number[]) {
-    if (newVelocity === props.velocity || !isNumber(newVelocity)) return
+    function onSliderChange(_event: Event, newVelocity: number | number[]) {
+      if (newVelocity === props.velocity || !isNumber(newVelocity)) return
 
-    props.onVelocityChange(newVelocity, props.useDegree)
-  }
+      props.onVelocityChange(newVelocity, props.useDegree)
+    }
 
-  return (
-    <Stack
-      direction="row"
-      gap={2}
-      alignItems="center"
-      data-testid="velocity-slider"
-      aria-label="velocity-slider"
-    >
-      {store.showVelocityLegend && (
-        <Typography
+    return (
+      <Stack
+        direction="row"
+        gap={2}
+        alignItems="center"
+        data-testid="velocity-slider"
+        aria-label="velocity-slider"
+      >
+        {store.showVelocityLegend && (
+          <Typography
+            sx={{
+              color: velocitySliderLegendColor,
+              fontSize: "14px",
+            }}
+          >
+            {t("Jogging.Velocity.bt")}
+          </Typography>
+        )}
+        <Slider
+          value={props.velocity}
+          color="secondary"
+          onChange={onSliderChange}
+          min={props.min}
+          max={props.max}
+          aria-labelledby="input-slider"
+          disabled={props.disabled}
           sx={{
-            color:
-              theme.componentsExt?.JoggingPanel?.VelocitySlider
-                ?.sliderLegendColor,
-            fontSize: "14px",
+            "& .MuiSlider-valueLabelOpen": {
+              zIndex: 100,
+              backgroundColor: "transparent",
+              top: "0px",
+            },
           }}
-        >
-          {t("Jogging.Velocity.bt")}
-        </Typography>
-      )}
-      <Slider
-        value={props.velocity}
-        color="secondary"
-        onChange={onSliderChange}
-        min={props.min}
-        max={props.max}
-        aria-labelledby="input-slider"
-        disabled={props.disabled}
-        sx={{
-          "& .MuiSlider-valueLabelOpen": {
-            zIndex: 100,
-            backgroundColor: "transparent",
-            top: "0px",
-          },
-        }}
-      />
-      {store.showVelocitySliderLabel &&
-        (props.renderValue ? (
-          props.renderValue(props.velocity)
-        ) : (
-          <VelocitySliderLabel value={props.velocity.toString()} />
-        ))}
-    </Stack>
-  )
-})
+        />
+        {store.showVelocitySliderLabel &&
+          (props.renderValue ? (
+            props.renderValue(props.velocity)
+          ) : (
+            <VelocitySliderLabel value={props.velocity.toString()} />
+          ))}
+      </Stack>
+    )
+  }),
+)
 
 type VelocitySliderLabelProps = {
   value: string

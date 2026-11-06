@@ -1,16 +1,17 @@
-import { alpha, type SxProps } from "@mui/material/styles"
+import type { SxProps } from "@mui/material/styles"
 import AppBar from "@mui/material/AppBar"
 import Backdrop from "@mui/material/Backdrop"
 import Box from "@mui/material/Box"
-import IconButton from "@mui/material/IconButton"
 import Menu from "@mui/material/Menu"
 import MenuItem from "@mui/material/MenuItem"
 import Toolbar from "@mui/material/Toolbar"
 import Typography from "@mui/material/Typography"
+import { ZeroGravityComponentsBackdropFill } from "@wandelbots/design-tokens"
+import { ExpandMoreFilled } from "@wandelbots/icons/ExpandMoreFilled"
+import { RoundedIconButton } from "@wandelbots/mui"
 import { observer } from "mobx-react-lite"
 import { type MouseEvent, type ReactNode, useState } from "react"
 import { externalizeComponent } from "../externalizeComponent"
-import { DropdownArrowIcon } from "../icons/DropdownArrowIcon"
 
 export type AppItem = {
   /** Unique identifier for the app */
@@ -99,47 +100,21 @@ export const AppHeader = externalizeComponent(
 
             {/* App Name and Dropdown */}
             <Box sx={{ display: "flex", alignItems: "center", flexGrow: 1 }}>
-              <Typography
-                component="h1"
-                sx={{
-                  fontWeight: "bold",
-                  fontSize: "1rem",
-                }}
-              >
+              <Typography component="h1" variant="subtitle1">
                 {appName}
               </Typography>
 
               {/* Dropdown Button */}
               {apps.length > 0 && (
-                <IconButton
-                  color="inherit"
-                  aria-label="switch app"
+                <RoundedIconButton
+                  icon={<ExpandMoreFilled size={20} />}
+                  ariaLabel="switch app"
                   aria-controls="app-menu"
                   aria-haspopup="true"
                   onClick={handleMenuOpen}
                   disabled={disabled}
-                  sx={{
-                    ml: 1,
-                    width: 28,
-                    height: 28,
-                    borderRadius: "6px",
-                    padding: 0,
-                    backgroundColor: (theme) =>
-                      alpha(theme.palette.common.white, 0.1),
-                    opacity: 1,
-                    "&:hover": {
-                      backgroundColor: (theme) =>
-                        alpha(theme.palette.common.white, 0.16),
-                    },
-                    "& .MuiSvgIcon-root": {
-                      fontSize: "8px",
-                      width: "8px",
-                      height: "6px",
-                    },
-                  }}
-                >
-                  <DropdownArrowIcon />
-                </IconButton>
+                  sx={{ ml: 1 }}
+                />
               )}
             </Box>
           </Toolbar>
@@ -151,7 +126,7 @@ export const AppHeader = externalizeComponent(
           onClick={handleMenuClose}
           sx={{
             backdropFilter: "blur(4px)",
-            backgroundColor: "rgba(0, 0, 0, 0.3)",
+            backgroundColor: ZeroGravityComponentsBackdropFill,
             zIndex: (theme) => theme.zIndex.modal - 1,
           }}
         />

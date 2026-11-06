@@ -1,5 +1,5 @@
 /// <reference types="vitest" />
-import { defineWorkspace } from "vitest/config"
+import { configDefaults, defineWorkspace } from "vitest/config"
 
 export default defineWorkspace([
   {
@@ -33,9 +33,12 @@ export default defineWorkspace([
       name: "e2e",
       environment: "node",
       include: ["e2e/**/*.test.ts"],
+      // The Playwright tests of the playground (`pnpm run test:playground`)
+      exclude: [...configDefaults.exclude, "e2e/playground/**"],
       globalSetup: ["e2e/globalSetup.ts"],
       testTimeout: 60_000,
-      hookTimeout: 180_000,
+      // The start of the virtual robot in beforeAll (see e2e/jogging.test.ts)
+      hookTimeout: 300_000,
     },
   },
 ])
