@@ -21,5 +21,16 @@ export default defineConfig({
     setupFiles: ["./src/test/setup.ts"],
     globals: true,
     include: ["src/**/*.{test,spec}.{ts,tsx}"],
+    server: {
+      deps: {
+        // React Three Fiber and drei have no `exports` in their package.json,
+        // so Node would load their CommonJS build with a second copy of
+        // three.js. Vite loads their ES modules instead (`module` field).
+        inline: [/@react-three\//],
+      },
+    },
+  },
+  resolve: {
+    mainFields: ["module", "jsnext:main", "jsnext", "main"],
   },
 })

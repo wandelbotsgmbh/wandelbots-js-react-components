@@ -1,7 +1,7 @@
 import { useGLTF } from "@react-three/drei"
 import type { ThreeElements } from "@react-three/fiber"
 import type React from "react"
-import { useCallback, useEffect, useState } from "react"
+import { useEffect, useState } from "react"
 import type { Group, Mesh, Object3D } from "three"
 import { isFlange, parseRobotModel } from "./robotModelLogic"
 
@@ -9,7 +9,8 @@ export type RobotModelProps = {
   modelURL: string | Promise<string>
   /**
    * Called after a robot model has been loaded and
-   * rendered into the threejs scene
+   * rendered into the threejs scene, when the components above it
+   * (RobotAnimator, LinearAxisAnimator) have mounted
    */
   postModelRender?: () => void
   flangeRef?: React.Ref<Group>
@@ -34,14 +35,13 @@ function LoadedRobotModel({
   const parsed = parseRobotModel(gltfResult, "robot.glb")
   const gltf = parsed.gltf
 
-  const groupRef: React.RefCallback<Group> = useCallback(
-    (group) => {
-      if (group && postModelRender) {
-        postModelRender()
-      }
-    },
-    [postModelRender],
-  )
+  // After the commit, not in a ref callback: the refs of the components
+  // above (such as the animator, which poses the joints of the new model)
+  // attach only after the refs of their children
+  // biome-ignore lint/correctness/useExhaustiveDependencies: called again for a new model
+  useEffect(() => {
+    postModelRender?.()
+  }, [url, postModelRender])
 
   function renderNode(node: Object3D): React.ReactNode {
     try {
@@ -88,7 +88,7 @@ function LoadedRobotModel({
   }
 
   return (
-    <group {...props} dispose={null} ref={groupRef}>
+    <group {...props} dispose={null}>
       {renderNode(gltf.scene)}
     </group>
   )

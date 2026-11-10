@@ -16,3 +16,9 @@ verifyDepsBeforeRun: install
 
 # Support pnpm scripts on non-POSIX systems (e.g. Windows)
 shellEmulator: true
+
+# Versions of packages deep in the dependency tree
+# https://pnpm.io/settings#overrides
+overrides:
+  handlebars: ^4.7.9
+  "minimatch@<3.1.3": ^3.1.3

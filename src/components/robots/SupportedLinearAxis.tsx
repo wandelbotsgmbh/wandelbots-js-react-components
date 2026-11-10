@@ -1,6 +1,13 @@
 import type { ThreeElements } from "@react-three/fiber"
 import type { DHParameter, MotionGroupState } from "@wandelbots/nova-js/v2"
-import { Suspense, useCallback, useEffect, useState } from "react"
+import {
+  Suspense,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react"
 import { ErrorBoundary } from "react-error-boundary"
 import type * as THREE from "three"
 import { externalizeComponent } from "../../externalizeComponent"
@@ -8,7 +15,9 @@ import ConsoleFilter from "../ConsoleFilter"
 import { useSmoothedMotionState } from "../utils/useSmoothedMotionState"
 import { DHLinearAxis } from "./DHLinearAxis"
 import { GenericRobot } from "./GenericRobot"
-import LinearAxisAnimator from "./LinearAxisAnimator"
+import LinearAxisAnimator, {
+  type LinearAxisAnimatorHandle,
+} from "./LinearAxisAnimator"
 import { applyGhostStyle, removeGhostStyle } from "./ghostStyle"
 import { defaultGetModel } from "./robotModelLogic"
 
@@ -58,10 +67,20 @@ export const SupportedLinearAxisExact = externalizeComponent(
     ...props
   }: SupportedLinearAxisProps) => {
     const [robotGroup, setRobotGroup] = useState<THREE.Group | null>(null)
+    const linearAxisAnimatorRef = useRef<LinearAxisAnimatorHandle>(null)
 
     const setRobotRef = useCallback((instance: THREE.Group | null) => {
       setRobotGroup(instance)
     }, [])
+
+    // The model is loaded asynchronously, so its joint meshes mount into the
+    // scene only after LinearAxisAnimator's group ref has already fired.
+    // Trigger a joint re-scan once the model is actually rendered so the
+    // streamed position is applied instead of the model's default position.
+    const handlePostModelRender = useCallback(() => {
+      linearAxisAnimatorRef.current?.recollectJoints()
+      postModelRender?.()
+    }, [postModelRender])
 
     useEffect(() => {
       if (!robotGroup) return
@@ -72,6 +91,20 @@ export const SupportedLinearAxisExact = externalizeComponent(
         removeGhostStyle(robotGroup)
       }
     }, [robotGroup, transparentColor])
+
+    // One call of getModel per model, not one per render: after a failed
+    // download, each call of defaultGetModel starts a new download
+    const modelURL = useMemo(() => {
+      const result = getModel(modelFromController, instanceUrl)
+      if (!result) {
+        const mockBlob = new Blob([], { type: "model/gltf-binary" })
+        const mockFile = new File([mockBlob], `${modelFromController}.glb`, {
+          type: "model/gltf-binary",
+        })
+        return Promise.resolve(URL.createObjectURL(mockFile))
+      }
+      return result
+    }, [modelFromController, instanceUrl, getModel])
 
     const dhLinearAxis = (
       <DHLinearAxis
@@ -92,26 +125,15 @@ export const SupportedLinearAxisExact = externalizeComponent(
         <Suspense fallback={dhLinearAxis}>
           <group ref={setRobotRef}>
             <LinearAxisAnimator
+              ref={linearAxisAnimatorRef}
               rapidlyChangingMotionState={rapidlyChangingMotionState}
               dhParameters={dhParameters}
               chainOffsetPosition={chainOffsetPosition}
               chainOffsetQuaternion={chainOffsetQuaternion}
             >
               <GenericRobot
-                modelURL={(() => {
-                  const result = getModel(modelFromController, instanceUrl)
-                  if (!result) {
-                    const mockBlob = new Blob([], { type: "model/gltf-binary" })
-                    const mockFile = new File(
-                      [mockBlob],
-                      `${modelFromController}.glb`,
-                      { type: "model/gltf-binary" },
-                    )
-                    return Promise.resolve(URL.createObjectURL(mockFile))
-                  }
-                  return result
-                })()}
-                postModelRender={postModelRender}
+                modelURL={modelURL}
+                postModelRender={handlePostModelRender}
                 flangeRef={flangeRef}
                 {...props}
               />

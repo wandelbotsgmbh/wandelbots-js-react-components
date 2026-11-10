@@ -7,8 +7,8 @@ import React, { useEffect, useRef, useState, type ReactNode } from "react"
 import { externalizeComponent } from "../../externalizeComponent"
 import JogMinus from "../../icons/jog-minus.svg"
 import JogPlus from "../../icons/jog-plus.svg"
-import type { AxisControlComponentColors } from "../../themes/themeTypes"
 import { useAnimationFrame } from "../utils/hooks"
+import type { AxisControlComponentColors } from "./joggingColors"
 import type { JoggingDirection } from "./JoggingStore"
 
 type JoggingCartesianAxisControlProps = {

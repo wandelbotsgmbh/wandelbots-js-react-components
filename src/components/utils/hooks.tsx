@@ -1,4 +1,4 @@
-import { autorun, reaction } from "mobx"
+import { autorun } from "mobx"
 import { useEffect, type EffectCallback } from "react"
 
 /**
@@ -16,20 +16,6 @@ export function useMounted(effect: EffectCallback) {
 export function useAutorun(view: Parameters<typeof autorun>[0]) {
   useMounted(() => {
     return autorun(view)
-  })
-}
-
-/**
- * Initialize a mobx reaction watcher on component mount, and
- * clean it up when the component unmounts.
- */
-export function useReaction<T>(
-  expression: Parameters<typeof reaction<T>>[0],
-  effect: Parameters<typeof reaction<T>>[1],
-  opts?: Parameters<typeof reaction<T>>[2],
-) {
-  useMounted(() => {
-    return reaction(expression, effect, opts)
   })
 }
 

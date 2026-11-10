@@ -1,4 +1,4 @@
-import { useTheme, type Theme } from "@mui/material/styles"
+import { useTheme } from "@mui/material/styles"
 import Divider from "@mui/material/Divider"
 import Stack from "@mui/material/Stack"
 import ToggleButton from "@mui/material/ToggleButton"
@@ -9,6 +9,7 @@ import {
   XYZ_TO_VECTOR,
 } from "@wandelbots/nova-js"
 import { observer } from "mobx-react-lite"
+import { useRef } from "react"
 import { useTranslation } from "react-i18next"
 import XAxisIcon from "../../icons/axis-x.svg"
 import YAxisIcon from "../../icons/axis-y.svg"
@@ -16,6 +17,7 @@ import ZAxisIcon from "../../icons/axis-z.svg"
 import RotationIcon from "../../icons/rotation.svg"
 import type { Vector3Simple } from "../../lib/JoggerConnection"
 import { JoggingCartesianAxisControl } from "./JoggingCartesianAxisControl"
+import { cartesianAxisColors } from "./joggingColors"
 import { JoggingJointLimitDetector } from "./JoggingJointLimitDetector"
 import { JoggingOptions } from "./JoggingOptions"
 import type {
@@ -44,6 +46,8 @@ export const JoggingCartesianTab = observer(
   }) => {
     const { t } = useTranslation()
     const theme = useTheme()
+    // Counts the presses of continuous jogging (see startCartesianJogging)
+    const jogPress = useRef(0)
 
     function onMotionTypeChange(
       _event: React.MouseEvent<HTMLElement>,
@@ -101,24 +105,36 @@ export const JoggingCartesianTab = observer(
     async function startCartesianJogging(opts: JoggingCartesianOpts) {
       if (store.isLocked) return
 
-      await store.activate()
+      const press = ++jogPress.current
+      try {
+        await store.activate()
 
-      if (store.activeDiscreteIncrement) {
-        return runIncrementalCartesianJog(opts, store.activeDiscreteIncrement)
-      }
+        // The button was released (or another one pressed) while the
+        // jogging websocket opened: this press moves nothing
+        if (press !== jogPress.current) return
 
-      if (opts.motionType === "translate") {
-        await store.jogger.translateTCP({
-          axis: opts.axis,
-          direction: opts.direction,
-          velocityMmPerSec: store.translationVelocityMmPerSec,
-        })
-      } else {
-        await store.jogger.rotateTCP({
-          axis: opts.axis,
-          direction: opts.direction,
-          velocityRadsPerSec: store.rotationVelocityRadsPerSec,
-        })
+        if (store.activeDiscreteIncrement) {
+          return await runIncrementalCartesianJog(
+            opts,
+            store.activeDiscreteIncrement,
+          )
+        }
+
+        if (opts.motionType === "translate") {
+          await store.jogger.translateTCP({
+            axis: opts.axis,
+            direction: opts.direction,
+            velocityMmPerSec: store.translationVelocityMmPerSec,
+          })
+        } else {
+          await store.jogger.rotateTCP({
+            axis: opts.axis,
+            direction: opts.direction,
+            velocityRadsPerSec: store.rotationVelocityRadsPerSec,
+          })
+        }
+      } catch (err) {
+        console.error("Jogging failed:", err)
       }
     }
 
@@ -129,41 +145,25 @@ export const JoggingCartesianTab = observer(
         return
       }
 
+      jogPress.current++
       await store.deactivate()
-    }
-
-    function getAxisColors(
-      axisId: "X" | "Y" | "Z",
-      motionType: "translate" | "rotate",
-      theme: Theme,
-    ) {
-      const axisColors =
-        theme.componentsExt?.JoggingPanel?.JoggingCartesian?.Axis
-
-      if (!axisColors) return undefined
-
-      if (motionType === "translate") {
-        return axisColors[axisId]
-      }
-
-      return axisColors.CustomRotation ?? axisColors[axisId]
     }
 
     const axisList = [
       {
         id: "x",
         icon: <XAxisIcon />,
-        colors: getAxisColors("X", store.selectedCartesianMotionType, theme),
+        colors: cartesianAxisColors.X,
       },
       {
         id: "y",
         icon: <YAxisIcon />,
-        colors: getAxisColors("Y", store.selectedCartesianMotionType, theme),
+        colors: cartesianAxisColors.Y,
       },
       {
         id: "z",
         icon: <ZAxisIcon />,
-        colors: getAxisColors("Z", store.selectedCartesianMotionType, theme),
+        colors: cartesianAxisColors.Z,
       },
     ] as const
 

@@ -13,7 +13,7 @@ import {
 import { when } from "mobx"
 import { Vector3 } from "three/src/math/Vector3.js"
 import { MotionStreamConnection } from "./MotionStreamConnection"
-import type { AnyNovaClient } from "./novaCompat"
+import type { NovaConnection } from "./novaConnection"
 
 export type Vector3Simple = [number, number, number]
 
@@ -74,9 +74,19 @@ export class JoggerConnection {
   onBlocked?: () => void
 
   /**
+   * Whether the jogger opened its motion stream itself (in `open()`): then
+   * `dispose()` closes it too. A motion stream given to the constructor
+   * belongs to the caller.
+   */
+  private ownsMotionStream = false
+
+  /** Ends a jogging initialization that still waits for NOVA */
+  private endJoggingInit?: () => void
+
+  /**
    * Initialize the jogging connection using jogging endpoint or trajectory endpoint depending on the selected mode.
    *
-   * @param nova - The Nova client instance
+   * @param connection - The base URL of a NOVA instance, or a NOVA client of the app (see `NovaConnection`)
    * @param motionGroupId - The ID of the motion group to connect to
    * @param options - Configuration options for the jogger connection
    * @param options.mode - The jogging mode to initialize:
@@ -88,27 +98,35 @@ export class JoggerConnection {
    * //param options.coordinateSystem - Coordinate system for jogging commands (default: "world"). Please note: Currently not implemented
    * @param options.orientation - If set to "tool", jogging TcpVelocityRequest will use `use_tool_coordinate_system` option (default: "coordsys")
    * @param options.onError - Error handler for websocket errors
-   * @returns Promise resolving to initialized JoggerConnection instance
+   * @returns Promise resolving to initialized JoggerConnection instance. Its
+   *   `dispose()` also closes the motion stream that this function opens.
    */
   static async open(
-    nova: AnyNovaClient,
+    connection: NovaConnection,
     motionGroupId: string,
     options: JoggerConnectionOptions = {},
   ) {
     // Get matching motion stream
     const motionStream = await MotionStreamConnection.open(
-      nova,
+      connection,
       motionGroupId,
       {
         cellId: options.cellId,
       },
     )
 
-    // Initialize jogger with options
+    // Initialize jogger with options. It owns the motion stream.
     const jogger = new JoggerConnection(motionStream, options)
+    jogger.ownsMotionStream = true
 
     // Initialize the jogging websocket, if necessary (mode is "jogging")
-    await jogger.setJoggingMode(jogger.mode)
+    try {
+      await jogger.setJoggingMode(jogger.mode)
+    } catch (err) {
+      // Also closes the motion stream
+      jogger.dispose()
+      throw err
+    }
 
     // Return the initialized jogger
     return jogger
@@ -167,13 +185,17 @@ export class JoggerConnection {
       this.onError = options.onError
     }
 
-    this.setJoggingMode(this.mode, false)
+    return this.setJoggingMode(this.mode, false)
   }
 
   get motionGroupId() {
     return this.motionStream.motionGroupId
   }
 
+  /**
+   * The library's own NOVA client of the motion stream
+   * @internal
+   */
   get nova() {
     return this.motionStream.nova
   }
@@ -211,8 +233,24 @@ export class JoggerConnection {
     }
   }
 
-  // Dispose the jogger, closing all open websockets
+  /**
+   * Dispose the jogger, closing all open websockets: the jogging websockets,
+   * and the motion stream if the jogger opened it (in `open()`). A motion
+   * stream given to the constructor stays open: its caller closes it.
+   */
   async dispose() {
+    const closed = this.closeJoggingSockets()
+    if (this.ownsMotionStream) {
+      this.motionStream.dispose()
+    }
+    return closed
+  }
+
+  /** Closes the jogging and trajectory websockets */
+  private closeJoggingSockets() {
+    // An initialization that still waits has nothing to wait for any more
+    this.endJoggingInit?.()
+
     // Collect all initialized sockets
     const sockets = [this.joggingSocket, this.trajectorySocket].filter(
       (s) => s !== null,
@@ -241,7 +279,7 @@ export class JoggerConnection {
     }
 
     // Close any previous websocket connection
-    this.dispose()
+    this.closeJoggingSockets()
 
     // Set the new mode
     this.mode = mode
@@ -255,48 +293,81 @@ export class JoggerConnection {
     return
   }
 
-  // Initializes continuous jogging websocket, called by setJoggingMode("jogging")
+  /**
+   * Opens the continuous jogging websocket and initializes it; called by
+   * `setJoggingMode("jogging")`. The promise settles once:
+   * - it resolves when NOVA confirms the initialization (INITIALIZE_RECEIVED),
+   *   when the jogger closes the websocket before that (`setJoggingMode`,
+   *   `dispose`), or when an error message goes to `onBlocked` or `onError`;
+   * - it rejects on an error message without such a handler, and when NOVA
+   *   does not confirm the initialization within `timeout` milliseconds.
+   */
   async initializeJoggingWebsocket() {
-    // Wait for initialization with timeout
     return new Promise<void>((resolve, reject) => {
-      const connectionFailedTimeout = setTimeout(() => {
-        reject(
-          new Error(
-            `Jogging initialization timeout after ${this.timeout} seconds`,
-          ),
+      const socket = this.nova.openReconnectingWebsocket(
+        `/cells/${this.cellId}/controllers/${this.motionStream.controllerId}/execution/jogging`,
+      )
+      this.joggingSocket = socket
+
+      let settled = false
+      const timer = setTimeout(() => {
+        end(
+          new Error(`Jogging initialization timeout after ${this.timeout} ms`),
         )
       }, this.timeout)
 
-      this.joggingSocket = this.nova.openReconnectingWebsocket(
-        `/cells/${this.cellId}/controllers/${this.motionStream.controllerId}/execution/jogging`,
-      )
-      this.joggingSocket.addEventListener("message", (ev: MessageEvent) => {
+      // Ends the initialization once: clears the timer and settles the promise
+      const end = (error?: Error) => {
+        if (settled) return
+        settled = true
+        clearTimeout(timer)
+        socket.removeEventListener("close", onClose)
+        if (this.endJoggingInit === endWithoutError) {
+          this.endJoggingInit = undefined
+        }
+        if (error) {
+          reject(error)
+        } else {
+          resolve()
+        }
+      }
+      // For the jogger: it closes the websocket (setJoggingMode, dispose)
+      const endWithoutError = () => end()
+      // The websocket was disposed elsewhere
+      const onClose = () => {
+        if (socket.disposed) end()
+      }
+
+      this.endJoggingInit = endWithoutError
+      socket.addEventListener("close", onClose)
+
+      socket.addEventListener("message", (ev: MessageEvent) => {
         const data = tryParseJson(ev.data)
 
         if (data?.result?.kind === "INITIALIZE_RECEIVED") {
-          clearTimeout(connectionFailedTimeout)
-          resolve()
+          end()
           return
         }
 
         if (data?.result?.kind === "MOTION_ERROR") {
-          clearTimeout(connectionFailedTimeout)
           if (
             this.onBlocked &&
             data?.result?.message.includes(API_ERROR_CONNECTION_BLOCKED)
           ) {
-            this.joggingSocket?.dispose()
+            end()
+            socket.dispose()
             this.onBlocked()
             return
           } else if (this.onError) {
+            end()
             this.onError(ev.data)
           } else {
-            reject(new Error(ev.data))
+            end(new Error(ev.data))
           }
         }
       })
 
-      this.joggingSocket.sendJson({
+      socket.sendJson({
         message_type: "InitializeJoggingRequest",
         motion_group: this.motionGroupId,
         ...(this.tcp ? { tcp: this.tcp } : {}),

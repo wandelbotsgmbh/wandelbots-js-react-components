@@ -271,7 +271,11 @@ export class JoggingStore {
     }
   }
 
-  /** Activate the jogger with current settings */
+  /**
+   * Activate the jogger with current settings. Resolves when the jogging
+   * websocket is initialized, or when the jogging was stopped before that
+   * (`deactivate`).
+   */
   async activate() {
     if (this.currentTab.id === "cartesian") {
       // Ensure jogger has the correct TCP and orientation before starting
@@ -286,12 +290,12 @@ export class JoggingStore {
       }
 
       if (this.activeDiscreteIncrement) {
-        this.jogger.setJoggingMode("trajectory")
+        await this.jogger.setJoggingMode("trajectory")
       } else {
-        this.jogger.setJoggingMode("jogging")
+        await this.jogger.setJoggingMode("jogging")
       }
     } else {
-      this.jogger.setJoggingMode("jogging")
+      await this.jogger.setJoggingMode("jogging")
     }
 
     return this.jogger
@@ -590,7 +594,9 @@ export class JoggingStore {
   unblock() {
     this.blocked = false
     if (this.jogger.mode === "jogging") {
-      this.jogger.initializeJoggingWebsocket()
+      this.jogger.initializeJoggingWebsocket().catch((err) => {
+        console.error("Failed to initialize jogging:", err)
+      })
     }
   }
 

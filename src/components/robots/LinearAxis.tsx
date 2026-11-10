@@ -1,5 +1,5 @@
 import type { ThreeElements } from "@react-three/fiber"
-
+import { useCallback } from "react"
 import type { Group } from "three"
 import type { ConnectedMotionGroup } from "../../lib/ConnectedMotionGroup"
 import { DHLinearAxis } from "./DHLinearAxis"
@@ -20,19 +20,27 @@ export type LinearAxisProps = {
  *
  * @param {LinearAxisProps} props - The properties for the LinearAxis component.
  * @param {ConnectedMotionGroup} props.connectedMotionGroup - The connected motion group containing motion state and parameters.
- * @param {Function} [props.getModel=defaultGetModel] - Optional function to get the model URL. Defaults to defaultGetModel.
+ * @param {Function} [props.getModel] - Optional function to get the model URL. Defaults to defaultGetModel with the connection of the connected motion group (its URL and access token).
  * @param {Object} props - Additional properties passed to the underlying component.
  *
  * @returns {JSX.Element} The rendered SupportedLinearAxis or DHLinearAxis component.
  */
 export function LinearAxis({
   connectedMotionGroup,
-  getModel = defaultGetModel,
+  getModel,
   flangeRef,
   transparentColor,
   postModelRender,
   ...props
 }: LinearAxisProps) {
+  // The model from the instance of the motion group, with the access token
+  // of its connection
+  const getModelOfConnection = useCallback(
+    (model: string) => defaultGetModel(model, connectedMotionGroup.nova),
+    [connectedMotionGroup],
+  )
+  const loadModel = getModel ?? getModelOfConnection
+
   if (!connectedMotionGroup.dhParameters) {
     return null
   }
@@ -41,7 +49,9 @@ export function LinearAxis({
   const mountingQuaternion = connectedMotionGroup.mountingQuaternion
 
   const modelFromController = connectedMotionGroup.modelFromController || ""
-  const hasModel = modelFromController && getModel(modelFromController)
+  // getModel always returns a promise: a call here would start a download at
+  // every render, also after a failed download. SupportedLinearAxis loads it.
+  const hasModel = !!modelFromController
 
   // Use SupportedLinearAxis if model is available, otherwise fall back to DHLinearAxis
   if (hasModel) {
@@ -52,7 +62,7 @@ export function LinearAxis({
         }
         modelFromController={modelFromController}
         dhParameters={connectedMotionGroup.dhParameters}
-        getModel={getModel}
+        getModel={loadModel}
         flangeRef={flangeRef}
         transparentColor={transparentColor}
         postModelRender={postModelRender}

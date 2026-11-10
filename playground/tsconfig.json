@@ -1,0 +1,15 @@
+{
+  // The type check of `pnpm tsc`: the library (src/), the e2e tests (also
+  // the Playwright tests in e2e/playground/ with their config) and the
+  // playground. The playground imports the library by its package name, from
+  // src/ (the same alias as in playground/vite.config.ts).
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "rootDir": "..",
+    "noEmit": true,
+    "paths": {
+      "@wandelbots/wandelbots-js-react-components": ["../src/index.ts"]
+    }
+  },
+  "include": ["../src", "../e2e", "../playwright.config.ts", "."]
+}

@@ -10,14 +10,7 @@ export {
 export * from "./components/3d-viewport/PresetEnvironment"
 export * from "./components/3d-viewport/SafetyZonesRenderer"
 export * from "./components/3d-viewport/TrajectoryRenderer"
-export * from "./components/RobotCard"
-export * from "./components/robots/AxisConfig"
 export * from "./components/robots/LinearAxis"
-export {
-  extractManufacturer,
-  getDefaultHomeConfig,
-  MANUFACTURER_HOME_CONFIGS,
-} from "./components/robots/manufacturerHomePositions"
 export * from "./components/robots/MotionGroupVisualizer"
 export * from "./components/robots/Robot"
 export { defaultGetModel } from "./components/robots/robotModelLogic"

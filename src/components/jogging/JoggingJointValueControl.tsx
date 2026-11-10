@@ -12,6 +12,7 @@ import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { externalizeComponent } from "../../externalizeComponent"
 import { useAnimationFrame } from "../utils/hooks"
+import { jointArrowColor } from "./joggingColors"
 
 type JoggingJointValueControlProps = {
   startJogging: (direction: "-" | "+") => void
@@ -169,9 +170,7 @@ export const JoggingJointValueControl = externalizeComponent(
             <ChevronLeft
               sx={{
                 pointerEvents: "none",
-                color:
-                  theme.componentsExt?.JoggingPanel?.JoggingJoint?.Joint
-                    ?.arrowColor,
+                color: jointArrowColor,
               }}
             />
           </IconButton>
@@ -278,9 +277,7 @@ export const JoggingJointValueControl = externalizeComponent(
             <ChevronRight
               sx={{
                 pointerEvents: "none",
-                color:
-                  theme.componentsExt?.JoggingPanel?.JoggingJoint?.Joint
-                    ?.arrowColor,
+                color: jointArrowColor,
               }}
             />
           </IconButton>
