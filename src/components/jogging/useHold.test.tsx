@@ -88,17 +88,61 @@ describe("useHold", () => {
     ["the pointer is cancelled", "pointerCancel"],
     ["the pointer capture is lost", "lostPointerCapture"],
     ["the control loses focus", "blur"],
-  ] as const)("stops once when %s", (_, event) => {
+  ] as const)("stops when %s, without waiting for a release", (_, event) => {
     const { onStop, press } = setup()
+    const a = screen.getByRole("button", { name: "a" })
 
     press("a")
-    fireEvent[event](screen.getByRole("button", { name: "a" }))
+    fireEvent[event](a)
+    expect(onStop).toHaveBeenCalledTimes(1)
+
+    // A release that still comes stops nothing more
+    fireEvent.pointerUp(a)
+    expect(onStop).toHaveBeenCalledTimes(1)
+  })
+
+  it("captures the pointer, so a release off the control still reaches it", () => {
+    // jsdom has no pointer capture of its own
+    const setPointerCapture = vi.fn()
+    const original = HTMLElement.prototype.setPointerCapture
+    HTMLElement.prototype.setPointerCapture = setPointerCapture
+    try {
+      setup()
+      fireEvent.pointerDown(screen.getByRole("button", { name: "a" }), {
+        button: 0,
+        pointerId: 7,
+      })
+
+      expect(setPointerCapture).toHaveBeenCalledWith(7)
+    } finally {
+      HTMLElement.prototype.setPointerCapture = original
+    }
+  })
+
+  it("stops once in all when a release is followed by an unmount", () => {
+    const { onStop, press, view } = setup()
+
+    press("a")
     fireEvent.pointerUp(screen.getByRole("button", { name: "a" }))
+    view.unmount()
 
     expect(onStop).toHaveBeenCalledTimes(1)
   })
 
-  it("holds with Space or Enter, without restarting on key repeat", () => {
+  it("does not restart on key repeat after something else ended the hold", () => {
+    const { onStart, onStop, view } = setup()
+    const a = screen.getByRole("button", { name: "a" })
+
+    fireEvent.keyDown(a, { key: " " })
+    view.rerender(<Controls onStart={onStart} onStop={onStop} disabled />)
+    view.rerender(<Controls onStart={onStart} onStop={onStop} />)
+    // The key is still down, so the browser keeps sending repeats
+    fireEvent.keyDown(a, { key: " ", repeat: true })
+
+    expect(onStart).toHaveBeenCalledTimes(1)
+  })
+
+  it("holds with Space or Enter", () => {
     const { onStart, onStop } = setup()
     const button = screen.getByRole("button", { name: "a" })
 

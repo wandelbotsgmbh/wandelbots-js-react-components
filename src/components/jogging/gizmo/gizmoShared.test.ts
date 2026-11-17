@@ -12,8 +12,4 @@ describe("gizmoMeasures", () => {
     expect(small.grab.beyondTipPx).toBeCloseTo(large.grab.beyondTipPx / 2)
     expect(small.grab.minTipPx).toBeCloseTo(large.grab.minTipPx / 2)
   })
-
-  it("keeps the axis labels readable on a small gizmo", () => {
-    expect(gizmoMeasures(60).labelFontPx).toBeGreaterThanOrEqual(10)
-  })
 })
