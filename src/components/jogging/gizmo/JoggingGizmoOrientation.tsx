@@ -1,10 +1,9 @@
 import { useFrame, useThree } from "@react-three/fiber"
-import type { RefObject } from "react"
-import { Quaternion } from "three"
-import { jogFrameInCamera } from "./jogGizmoProjection"
+import { type RefObject, useRef } from "react"
+import { type Group, Quaternion } from "three"
+import { jogFrameSeenBy } from "./jogGizmoProjection"
 
 const IDENTITY = new Quaternion()
-const cameraQuaternion = new Quaternion()
 
 /**
  * Props of {@link JoggingGizmoOrientation}
@@ -18,11 +17,14 @@ export type JoggingGizmoOrientationProps = {
    */
   target: RefObject<Quaternion | null>
   /**
-   * World orientation of the frame the gizmo jogs along, as the 3D scene has
-   * it. Defaults to the scene's own axes, the world frame of a scene that is
-   * Z up like NOVA. A frame that turns, such as the tool's, can be a
-   * function: it is called every frame the scene renders, so the gizmo turns
-   * with the tool without re-rendering React.
+   * Orientation of the frame the gizmo jogs along, in the coordinates of the
+   * group this component sits in. Defaults to that group's own axes: in a
+   * group that turns NOVA's Z up into the scene's Y up, that is NOVA's world
+   * frame.
+   *
+   * A frame that turns, such as the tool's, can be a function: it is called
+   * every frame the scene renders, so the gizmo turns with the tool without
+   * re-rendering React.
    */
   frameQuaternion?: Quaternion | (() => Quaternion)
 }
@@ -33,6 +35,12 @@ export type JoggingGizmoOrientationProps = {
  * into `target` instead of setting state, so orbiting does not re-render
  * React.
  *
+ * Put it where NOVA poses are drawn as they are: in a scene that is Y up,
+ * like that of this library's robots, inside a group that turns NOVA's Z up
+ * into Y up (`<group rotation={[-Math.PI / 2, 0, 0]}>`, as for
+ * `JointLimitGizmo`). Directly in a Y-up scene, the gizmo would take the
+ * scene's Y for NOVA's Z, and its arrows would point the wrong way.
+ *
  * @beta
  */
 export function JoggingGizmoOrientation({
@@ -40,19 +48,22 @@ export function JoggingGizmoOrientation({
   frameQuaternion = IDENTITY,
 }: JoggingGizmoOrientationProps) {
   const camera = useThree((state) => state.camera)
+  // Holds no geometry: it only tells where in the scene this component sits
+  const anchor = useRef<Group>(null)
 
   useFrame(() => {
+    if (!anchor.current) return
     const frame =
       typeof frameQuaternion === "function"
         ? frameQuaternion()
         : frameQuaternion
-    camera.getWorldQuaternion(cameraQuaternion)
-    target.current = jogFrameInCamera(
-      cameraQuaternion,
+    target.current = jogFrameSeenBy(
+      camera,
+      anchor.current,
       frame,
       target.current ?? new Quaternion(),
     )
   })
 
-  return null
+  return <group ref={anchor} />
 }

@@ -168,15 +168,20 @@ Manual robot control interfaces.
 **JoggingGizmo** and **JoggingGizmoOrientation** (from `/3d`, beta) - Jogging by the axes of the jog frame as the camera of the 3D view sees them: orbit the view and the gizmo turns with it, so the arrow pointing right on screen moves the robot right on screen. Hold a handle to jog.
 
 - The gizmo draws in its own small canvas, so it can sit in a panel next to the 3D view. `JoggingGizmoOrientation` goes inside the app's `<Canvas>` and passes the camera's view to the gizmo through a shared ref. Until it has, the gizmo stays disabled.
-- `frameQuaternion` is the frame the gizmo jogs along, as the 3D scene has it. A frame that turns, such as the tool's, can be a function.
+- Put `JoggingGizmoOrientation` where NOVA poses are drawn as they are. The robots of this library stand in a Y-up scene, so that is a group that turns NOVA's Z up into Y up, as for `JointLimitGizmo`. Directly in a Y-up scene, the gizmo takes the scene's Y for NOVA's Z, and its arrows point the wrong way.
+- `frameQuaternion` is the frame the gizmo jogs along, in the coordinates of that group: by default NOVA's world frame. A frame that turns, such as the tool's, can be a function.
 - The gizmo moves nothing itself: `onJogStart(axis, direction)` and `onJogStop` leave that to the app, in the frame it jogs in.
+- A press jogs along the arrow drawn where it lands. Where a press could not tell two handles apart, it jogs neither: an arrow that points (almost) at or away from the viewer, or the farther of two arrowheads drawn over each other. The keyboard reaches every handle by its name.
 
 ```tsx
 const orientation = useRef<Quaternion | null>(null)
 
 <Canvas>
-  {/* … the 3D view */}
-  <JoggingGizmoOrientation target={orientation} />
+  {/* … the 3D view with the robot */}
+  {/* NOVA's coordinates: Z up */}
+  <group rotation={[-Math.PI / 2, 0, 0]}>
+    <JoggingGizmoOrientation target={orientation} />
+  </group>
 </Canvas>
 
 <JoggingGizmo

@@ -110,7 +110,16 @@ export const JoggingGizmo = externalizeComponent(
     return (
       <Box
         data-testid="jogging-gizmo"
-        sx={{ position: "relative", width: size, height: size, flexShrink: 0 }}
+        sx={{
+          position: "relative",
+          width: size,
+          height: size,
+          flexShrink: 0,
+          // Keeps the z-indexes of the handles inside the gizmo: without it,
+          // they would lie over the app's own elements that cover the gizmo
+          // (e.g. a sticky header), and a press there would jog
+          isolation: "isolate",
+        }}
       >
         <Canvas
           orthographic

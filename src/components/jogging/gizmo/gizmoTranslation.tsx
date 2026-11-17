@@ -11,23 +11,24 @@ import {
   type JogDirection,
 } from "../jogHandle"
 import {
+  ARROW_HEAD_LENGTH as HEAD_LENGTH,
   axisColor,
   type GizmoHandlesProps,
   type GizmoSceneProps,
+  gizmoGrabSizes,
   gizmoMeasures,
   handleKey,
   overlayRef,
   UP,
 } from "./gizmoShared"
 import {
-  grabAreaOf,
+  grabAreasOf,
   hasTurned,
   projectJogHandles,
   UNIT_VECTOR,
 } from "./jogGizmoProjection"
 
 const SHAFT_RADIUS = 0.035
-const HEAD_LENGTH = 0.26
 const HEAD_RADIUS = 0.1
 /** Labels sit this far out from the center, in gizmo radii */
 const LABEL_DISTANCE = 1.28
@@ -79,23 +80,26 @@ export function TranslationScene({
     // The first frames can come before the handles are attached; only once
     // all are placed is this rotation done with
     let placedAll = true
-    for (const tip of projectJogHandles(q)) {
+    const tips = projectJogHandles(q)
+    const areas = grabAreasOf(tips, gizmoGrabSizes(size, radius))
+    for (const [i, tip] of tips.entries()) {
       const grip = overlay.current.get(handleKey(tip)) as
         | HTMLElement
         | undefined
-      if (grip) {
-        const area = grabAreaOf(tip, {
-          radiusPx: radius,
-          ...gizmoMeasures(size).grab,
-        })
+      const area = areas[i]
+      if (!grip) {
+        placedAll = false
+      } else if (area) {
         grip.style.left = `${center + area.x}px`
         grip.style.top = `${center + area.y}px`
         grip.style.width = `${area.length}px`
         grip.style.transform = `translateY(-50%) rotate(${area.angle}rad)`
-        // Nearer handles on top, where two overlap
-        grip.style.zIndex = String(10 + Math.round(tip.depth * 5))
+        grip.style.zIndex = String(area.layer)
+        grip.style.pointerEvents = ""
       } else {
-        placedAll = false
+        // A press here could not tell this handle from another one. The
+        // keyboard, which picks a handle by its name, still reaches it.
+        grip.style.pointerEvents = "none"
       }
       if (tip.direction !== "+") continue
       const label = overlay.current.get(labelKey(tip.axis)) as

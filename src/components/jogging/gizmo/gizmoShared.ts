@@ -3,8 +3,12 @@ import { type Quaternion, Vector3 } from "three"
 import type { JogAxis, JogHandle } from "../jogHandle"
 import { cartesianAxisColors } from "../joggingColors"
 import type { useHoldToJog } from "../useHoldToJog"
+import type { JogGrabSizes } from "./jogGizmoProjection"
 
 export const UP = new Vector3(0, 1, 0)
+
+/** Length of an arrowhead, in gizmo radii: an arrow is 1 long */
+export const ARROW_HEAD_LENGTH = 0.26
 
 export const handleKey = (handle: JogHandle) =>
   `${handle.axis}${handle.direction}`
@@ -42,11 +46,22 @@ export function gizmoMeasures(size: number) {
       innerPx: 10 * scale,
       // The arrowhead is the obvious thing to grab, so the bar reaches past it
       beyondTipPx: 10 * scale,
-      minLengthPx: 32 * scale,
+      // Shorter, an arrow points within about 13° of the line of sight: its
+      // two halves can no longer be told apart
+      minTipPx: 16 * scale,
     },
     /** The axis labels, which stay readable on a small gizmo */
     labelFontPx: Math.max(10, 13 * scale),
   }
+}
+
+/**
+ * The measures that the grab areas of a gizmo `size` px wide are laid out
+ * by, with `radiusPx` px per gizmo radius
+ */
+export function gizmoGrabSizes(size: number, radiusPx: number): JogGrabSizes {
+  const { gripPx, grab } = gizmoMeasures(size)
+  return { radiusPx, gripPx, headLength: ARROW_HEAD_LENGTH, ...grab }
 }
 
 /**

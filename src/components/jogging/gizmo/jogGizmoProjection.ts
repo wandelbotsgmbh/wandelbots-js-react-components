@@ -1,4 +1,4 @@
-import { Quaternion, Vector3 } from "three"
+import { type Object3D, Quaternion, Vector3 } from "three"
 import {
   JOG_AXES,
   JOG_DIRECTIONS,
@@ -44,6 +44,26 @@ export function jogFrameInCamera(
     .multiply(frameWorldQuaternion)
 }
 
+const cameraWorld = new Quaternion()
+const frameWorld = new Quaternion()
+
+/**
+ * The jog frame as `camera` sees it, for a `frame` given in the coordinates
+ * of `anchor`, the place in the scene where it sits. In a group that turns
+ * NOVA's Z up into the scene's Y up, an unturned `frame` is NOVA's world
+ * frame, as the robot there has it.
+ */
+export function jogFrameSeenBy(
+  camera: Object3D,
+  anchor: Object3D,
+  frame: Quaternion,
+  target = new Quaternion(),
+): Quaternion {
+  camera.getWorldQuaternion(cameraWorld)
+  anchor.getWorldQuaternion(frameWorld).multiply(frame)
+  return jogFrameInCamera(cameraWorld, frameWorld, target)
+}
+
 /**
  * Where the six handles of a gizmo turned by `frameInCamera` appear. three.js
  * cameras look down −Z with +Y up, so a view-space vector lands on screen at
@@ -85,7 +105,7 @@ export function fitGizmoRadiusPx(
   return Math.max(1, Math.min(width, height) / 2 - marginPx)
 }
 
-/** Where a handle can be grabbed: a bar along its half of the axis */
+/** Where a handle can be grabbed: a bar along its arrow */
 export type JogGrabArea = {
   /** Start of the bar, in px from the gizmo center, y pointing down */
   x: number
@@ -94,42 +114,97 @@ export type JogGrabArea = {
   length: number
   /** Direction of the bar on screen, in radians, y pointing down */
   angle: number
+  /** Where two bars overlap, the one with the higher layer is on top */
+  layer: number
+}
+
+/** The px measures that {@link grabAreasOf} lays the grab areas out by */
+export type JogGrabSizes = {
+  /** Px per gizmo radius: the length on screen of an arrow across the screen */
+  radiusPx: number
+  /** Thickness of a grab bar */
+  gripPx: number
+  /** The center, which no handle owns, reaches this far out */
+  innerPx: number
+  /** How far a bar reaches past its arrow's tip */
+  beyondTipPx: number
+  /** An arrow shorter than this on screen points too nearly at or away from the viewer to grab */
+  minTipPx: number
+  /** The arrowhead's share of an arrow's length */
+  headLength: number
 }
 
 /**
- * The bar a handle can be grabbed along: its half of the axis, from `innerPx`
- * out from the center (which no handle owns) to `beyondTipPx` past the tip.
- * An axis pointing at the viewer has no length on screen, so its handle keeps
- * a bar of `minLengthPx` centered on the tip.
+ * Where each of `handles` can be grabbed, in the same order: a bar along its
+ * arrow, from beside the center to past the tip, or `null` where a press
+ * could not tell it from another handle. So a press jogs along the arrow that
+ * is drawn there, never along another one:
+ *
+ * - The center belongs to no handle, and no bar reaches across it.
+ * - An arrow shorter than `minTipPx` on screen points (almost) at or away
+ *   from the viewer, where its two halves look the same: neither is grabbed.
+ * - Two arrows that point the same way on screen share the line: the shorter
+ *   bar ends and the longer begins halfway between the shorter tip and the
+ *   longer arrowhead, so each arrowhead stays on its own bar. Where the two
+ *   arrowheads are drawn over each other, only the nearer is grabbed.
+ * - Where bars still overlap, close to the center, the nearer handle is on
+ *   top.
  */
-export function grabAreaOf(
-  handle: ProjectedJogHandle,
-  sizes: {
-    radiusPx: number
-    innerPx: number
-    beyondTipPx: number
-    minLengthPx: number
-  },
-): JogGrabArea {
-  const { radiusPx, innerPx, beyondTipPx, minLengthPx } = sizes
-  const extent = Math.hypot(handle.x, handle.y)
-  const angle = extent > 1e-6 ? Math.atan2(handle.y, handle.x) : 0
-  const dx = Math.cos(angle)
-  const dy = Math.sin(angle)
-  const end = extent * radiusPx + beyondTipPx
+export function grabAreasOf(
+  handles: readonly ProjectedJogHandle[],
+  sizes: JogGrabSizes,
+): (JogGrabArea | null)[] {
+  const { radiusPx, gripPx, innerPx, beyondTipPx, minTipPx, headLength } = sizes
+  const bars = handles.map((handle) => {
+    const tip = Math.hypot(handle.x, handle.y) * radiusPx
+    return {
+      tip,
+      angle: Math.atan2(handle.y, handle.x),
+      start: innerPx,
+      end: tip + beyondTipPx,
+      depth: handle.depth,
+      grabbed: tip >= minTipPx,
+    }
+  })
 
-  if (end - innerPx >= minLengthPx) {
-    return { x: dx * innerPx, y: dy * innerPx, length: end - innerPx, angle }
+  for (const [i, a] of bars.entries()) {
+    for (const b of bars.slice(i + 1)) {
+      if (!a.grabbed || !b.grabbed) continue
+      const [shorter, longer] = a.tip <= b.tip ? [a, b] : [b, a]
+      const between = a.angle - b.angle
+      // Only arrows on the same side whose bars overlap around the shorter
+      // arrowhead share a line
+      const apartAtShorterTip = shorter.tip * Math.abs(Math.sin(between))
+      if (Math.cos(between) <= 0 || apartAtShorterTip >= gripPx) continue
+
+      const longerHead = longer.tip * (1 - headLength)
+      if (shorter.tip > longerHead) {
+        // The arrowheads are drawn over each other
+        const farther = a.depth < b.depth ? a : b
+        farther.grabbed = false
+      } else {
+        const split = (shorter.tip + longerHead) / 2
+        shorter.end = Math.min(shorter.end, split)
+        longer.start = Math.max(longer.start, split)
+      }
+    }
   }
 
-  const tipX = handle.x * radiusPx
-  const tipY = handle.y * radiusPx
-  return {
-    x: tipX - (dx * minLengthPx) / 2,
-    y: tipY - (dy * minLengthPx) / 2,
-    length: minLengthPx,
-    angle,
-  }
+  // Nearer on top: the layer is the rank by depth
+  const nearToFar = bars.map((_, i) => i)
+  nearToFar.sort((i, j) => bars[i].depth - bars[j].depth)
+  const layers = new Map(nearToFar.map((index, rank) => [index, rank + 1]))
+
+  return bars.map((bar, i) => {
+    if (!bar.grabbed || bar.end <= bar.start) return null
+    return {
+      x: Math.cos(bar.angle) * bar.start,
+      y: Math.sin(bar.angle) * bar.start,
+      length: bar.end - bar.start,
+      angle: bar.angle,
+      layer: layers.get(i) ?? 0,
+    }
+  })
 }
 
 /**

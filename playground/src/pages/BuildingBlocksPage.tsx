@@ -34,9 +34,14 @@ import {
 } from "@wandelbots/wandelbots-js-react-components"
 import { observer } from "mobx-react-lite"
 import { type ReactNode, useRef, useState } from "react"
-import { Euler, Quaternion } from "three"
+import type { Quaternion } from "three"
 import { startJogging, stopJogging, useJoggingStore } from "../connections"
-import { FitCamera, MotionGroupModel, Viewport } from "../scene"
+import {
+  FitCamera,
+  MotionGroupModel,
+  NovaCoordinates,
+  Viewport,
+} from "../scene"
 import type { PageProps } from "."
 
 /**
@@ -345,15 +350,6 @@ const JointValueControls = observer(({ store }: { store: JoggingStore }) => {
   )
 })
 
-/**
- * The NOVA world frame (Z up) as the 3D view sees it (Y up), like
- * NovaCoordinates (scene.tsx). In a scene that is Z up itself, this is no
- * turn at all.
- */
-const NOVA_WORLD_IN_VIEW = new Quaternion().setFromEuler(
-  new Euler(-Math.PI / 2, 0, 0),
-)
-
 const Gizmos = observer(
   ({
     store,
@@ -388,10 +384,11 @@ const Gizmos = observer(
                 />
               )}
             </FitCamera>
-            <JoggingGizmoOrientation
-              target={orientation}
-              frameQuaternion={NOVA_WORLD_IN_VIEW}
-            />
+            {/* In NOVA's coordinates, so the gizmo's axes are NOVA's world
+                frame, the frame the store jogs in */}
+            <NovaCoordinates>
+              <JoggingGizmoOrientation target={orientation} />
+            </NovaCoordinates>
           </Viewport>
         </Box>
         <JoggingGizmo
