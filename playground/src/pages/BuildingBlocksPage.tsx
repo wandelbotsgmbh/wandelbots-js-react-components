@@ -20,7 +20,10 @@ import { ElevationCard, PrimaryButton, SecondaryButton } from "@wandelbots/mui"
 import { JointTypeEnum } from "@wandelbots/nova-js/v2"
 import {
   type AxisControlComponentColors,
+  type ConnectedMotionGroup,
   JoggingCartesianAxisControl,
+  JoggingGizmo,
+  JoggingGizmoOrientation,
   JoggingJointValueControl,
   type JoggingStore,
   LoadingCover,
@@ -30,8 +33,10 @@ import {
   VelocitySliderLabel,
 } from "@wandelbots/wandelbots-js-react-components"
 import { observer } from "mobx-react-lite"
-import { type ReactNode, useState } from "react"
+import { type ReactNode, useRef, useState } from "react"
+import { Euler, Quaternion } from "three"
 import { startJogging, stopJogging, useJoggingStore } from "../connections"
+import { FitCamera, MotionGroupModel, Viewport } from "../scene"
 import type { PageProps } from "."
 
 /**
@@ -69,6 +74,16 @@ export function BuildingBlocksPage({ instance, motionGroup }: PageProps) {
     >
       {withStore((store) => (
         <JointValueControls store={store} />
+      ))}
+    </Section>
+  )
+  const gizmo = (
+    <Section
+      title="JoggingGizmo and JoggingGizmoOrientation"
+      description="Moves the TCP along an axis of the world frame while a handle is held. JoggingGizmoOrientation in the 3D view turns the gizmo like the camera: orbit the view and the gizmo turns with it."
+    >
+      {withStore((store) => (
+        <Gizmos store={store} motionGroup={motionGroup} />
       ))}
     </Section>
   )
@@ -118,6 +133,7 @@ export function BuildingBlocksPage({ instance, motionGroup }: PageProps) {
         </Stack>
         <Stack gap={3}>
           {joint}
+          {gizmo}
           {loadingCover}
         </Stack>
       </Box>
@@ -328,6 +344,87 @@ const JointValueControls = observer(({ store }: { store: JoggingStore }) => {
     </Stack>
   )
 })
+
+/**
+ * The NOVA world frame (Z up) as the 3D view sees it (Y up), like
+ * NovaCoordinates (scene.tsx). In a scene that is Z up itself, this is no
+ * turn at all.
+ */
+const NOVA_WORLD_IN_VIEW = new Quaternion().setFromEuler(
+  new Euler(-Math.PI / 2, 0, 0),
+)
+
+const Gizmos = observer(
+  ({
+    store,
+    motionGroup,
+  }: {
+    store: JoggingStore
+    motionGroup: ConnectedMotionGroup
+  }) => {
+    const orientation = useRef<Quaternion | null>(null)
+    // Without an inverse solver, the TCP cannot move along an axis
+    const disabled = store.isLocked || store.inverseSolver === null
+
+    return (
+      <Stack direction="row" gap={3} flexWrap="wrap" alignItems="flex-start">
+        <Box
+          sx={{
+            position: "relative",
+            width: 260,
+            height: 260,
+            border: 1,
+            borderColor: "divider",
+            borderRadius: 1,
+            overflow: "hidden",
+          }}
+        >
+          <Viewport>
+            <FitCamera>
+              {(refit) => (
+                <MotionGroupModel
+                  motionGroup={motionGroup}
+                  onModelLoaded={refit}
+                />
+              )}
+            </FitCamera>
+            <JoggingGizmoOrientation
+              target={orientation}
+              frameQuaternion={NOVA_WORLD_IN_VIEW}
+            />
+          </Viewport>
+        </Box>
+        <JoggingGizmo
+          orientation={orientation}
+          onJogStart={(axis, direction) =>
+            startJogging(store, { axis, direction })
+          }
+          onJogStop={() => stopJogging(store)}
+          disabled={disabled}
+        />
+        <Stack gap={1}>
+          <Typography variant="caption" color="text.secondary">
+            Disabled, and with activeHandle X+
+          </Typography>
+          <JoggingGizmo
+            orientation={orientation}
+            onJogStart={() => {}}
+            onJogStop={() => {}}
+            disabled
+            size={120}
+          />
+          <JoggingGizmo
+            orientation={orientation}
+            onJogStart={() => {}}
+            onJogStop={() => {}}
+            activeHandle={{ axis: "x", direction: "+" }}
+            size={120}
+          />
+        </Stack>
+      </Stack>
+    )
+  },
+)
 
 const VelocitySliders = observer(({ store }: { store: JoggingStore }) => (
   <Stack gap={2} sx={{ maxWidth: 480 }}>

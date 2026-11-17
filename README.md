@@ -165,6 +165,27 @@ Manual robot control interfaces.
 - **VelocitySlider** (and **VelocitySliderLabel**) - Speed adjustment interface
 - **JoggingStore** - The state of the jogging (velocity, coordinate system, the jogging connection). `JoggingPanel` gives it to `onSetup`, and `JoggingStore.loadFor` creates one for your own controls.
 
+**JoggingGizmo** and **JoggingGizmoOrientation** (from `/3d`, beta) - Jogging by the axes of the jog frame as the camera of the 3D view sees them: orbit the view and the gizmo turns with it, so the arrow pointing right on screen moves the robot right on screen. Hold a handle to jog.
+
+- The gizmo draws in its own small canvas, so it can sit in a panel next to the 3D view. `JoggingGizmoOrientation` goes inside the app's `<Canvas>` and passes the camera's view to the gizmo through a shared ref. Until it has, the gizmo stays disabled.
+- `frameQuaternion` is the frame the gizmo jogs along, as the 3D scene has it. A frame that turns, such as the tool's, can be a function.
+- The gizmo moves nothing itself: `onJogStart(axis, direction)` and `onJogStop` leave that to the app, in the frame it jogs in.
+
+```tsx
+const orientation = useRef<Quaternion | null>(null)
+
+<Canvas>
+  {/* … the 3D view */}
+  <JoggingGizmoOrientation target={orientation} />
+</Canvas>
+
+<JoggingGizmo
+  orientation={orientation}
+  onJogStart={(axis, direction) => startJogging(axis, direction)}
+  onJogStop={() => stopJogging()}
+/>
+```
+
 ### 3D Visualization & Robotics
 
 3D components for robot visualization. They render inside the `<Canvas>` of React Three Fiber.

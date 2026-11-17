@@ -1,0 +1,268 @@
+import Box from "@mui/material/Box"
+import { alpha, useTheme } from "@mui/material/styles"
+import { useFrame, useThree } from "@react-three/fiber"
+import { useEffect, useMemo, useRef } from "react"
+import { type Group, Quaternion } from "three"
+import {
+  isSameJogHandle,
+  JOG_AXES,
+  JOG_DIRECTIONS,
+  type JogAxis,
+  type JogDirection,
+} from "../jogHandle"
+import {
+  axisColor,
+  type GizmoHandlesProps,
+  type GizmoSceneProps,
+  gizmoMeasures,
+  handleKey,
+  overlayRef,
+  UP,
+} from "./gizmoShared"
+import {
+  grabAreaOf,
+  hasTurned,
+  projectJogHandles,
+  UNIT_VECTOR,
+} from "./jogGizmoProjection"
+
+const SHAFT_RADIUS = 0.035
+const HEAD_LENGTH = 0.26
+const HEAD_RADIUS = 0.1
+/** Labels sit this far out from the center, in gizmo radii */
+const LABEL_DISTANCE = 1.28
+
+const labelKey = (axis: JogAxis) => `label:${axis}`
+
+/**
+ * The translation gizmo's arrows, turned by `orientation` whenever it turns.
+ * Also lays the grab bars and labels over them.
+ */
+export function TranslationScene({
+  orientation,
+  lit,
+  disabled,
+  size,
+  radius,
+  overlay,
+}: GizmoSceneProps) {
+  const group = useRef<Group>(null)
+  const last = useRef<Quaternion | null>(null)
+  const center = size / 2
+  const invalidate = useThree((state) => state.invalidate)
+
+  // A new size moves every handle, whether or not the gizmo turned
+  // biome-ignore lint/correctness/useExhaustiveDependencies: size and radius are the trigger
+  useEffect(() => {
+    last.current = null
+    invalidate()
+  }, [size, radius, invalidate])
+
+  // The canvas draws on demand. Looking for a turn every animation frame
+  // costs a comparison of two rotations; drawing happens only after a turn,
+  // and again until every handle is placed
+  useEffect(() => {
+    let frame = requestAnimationFrame(function check() {
+      const q = orientation.current
+      if (q && hasTurned(last.current, q)) invalidate()
+      frame = requestAnimationFrame(check)
+    })
+    return () => cancelAnimationFrame(frame)
+  }, [orientation, invalidate])
+
+  useFrame(() => {
+    const q = orientation.current
+    if (!q || !group.current) return
+    if (!hasTurned(last.current, q)) return
+    group.current.quaternion.copy(q)
+
+    // The first frames can come before the handles are attached; only once
+    // all are placed is this rotation done with
+    let placedAll = true
+    for (const tip of projectJogHandles(q)) {
+      const grip = overlay.current.get(handleKey(tip)) as
+        | HTMLElement
+        | undefined
+      if (grip) {
+        const area = grabAreaOf(tip, {
+          radiusPx: radius,
+          ...gizmoMeasures(size).grab,
+        })
+        grip.style.left = `${center + area.x}px`
+        grip.style.top = `${center + area.y}px`
+        grip.style.width = `${area.length}px`
+        grip.style.transform = `translateY(-50%) rotate(${area.angle}rad)`
+        // Nearer handles on top, where two overlap
+        grip.style.zIndex = String(10 + Math.round(tip.depth * 5))
+      } else {
+        placedAll = false
+      }
+      if (tip.direction !== "+") continue
+      const label = overlay.current.get(labelKey(tip.axis)) as
+        | HTMLElement
+        | undefined
+      if (label) {
+        label.style.left = `${center + tip.x * radius * LABEL_DISTANCE}px`
+        label.style.top = `${center + tip.y * radius * LABEL_DISTANCE}px`
+      } else {
+        placedAll = false
+      }
+    }
+    if (placedAll) last.current = q.clone()
+  })
+
+  return (
+    <group ref={group}>
+      <mesh>
+        <sphereGeometry args={[0.07, 16, 16]} />
+        <meshBasicMaterial color="#c4c8d0" />
+      </mesh>
+      {JOG_AXES.map((axis) => (
+        <Arrow
+          key={axis}
+          axis={axis}
+          color={axisColor(axis)}
+          lit={lit?.axis === axis ? lit.direction : null}
+          disabled={disabled}
+        />
+      ))}
+    </group>
+  )
+}
+
+/**
+ * One axis: a half arrow per direction, shaft and arrowhead, so the half a
+ * handle covers lights up as a whole
+ */
+function Arrow({
+  axis,
+  color,
+  lit,
+  disabled,
+}: {
+  axis: JogAxis
+  color: string
+  lit: JogDirection | null
+  disabled: boolean
+}) {
+  const rotation = useMemo(
+    () => new Quaternion().setFromUnitVectors(UP, UNIT_VECTOR[axis]),
+    [axis],
+  )
+  const shaftLength = 1 - HEAD_LENGTH
+
+  return (
+    <group quaternion={rotation}>
+      {JOG_DIRECTIONS.map((direction) => {
+        const isLit = lit === direction
+        const opacity = isLit ? 1 : disabled ? 0.35 : 0.8
+        const shaftRadius = isLit ? SHAFT_RADIUS * 1.5 : SHAFT_RADIUS
+        return (
+          // The minus half is the plus half turned around
+          <group
+            key={direction}
+            rotation={[direction === "+" ? 0 : Math.PI, 0, 0]}
+          >
+            <mesh position={[0, shaftLength / 2, 0]}>
+              <cylinderGeometry
+                args={[shaftRadius, shaftRadius, shaftLength, 12]}
+              />
+              <meshBasicMaterial color={color} transparent opacity={opacity} />
+            </mesh>
+            <mesh
+              position={[0, 1 - HEAD_LENGTH / 2, 0]}
+              scale={isLit ? 1.2 : 1}
+            >
+              <coneGeometry args={[HEAD_RADIUS, HEAD_LENGTH, 20]} />
+              <meshBasicMaterial color={color} transparent opacity={opacity} />
+            </mesh>
+          </group>
+        )
+      })}
+    </group>
+  )
+}
+
+/**
+ * The translation handles: a button per direction, a bar along its half of
+ * the axis, so it can be grabbed anywhere along it. And the axis labels.
+ */
+export function TranslationHandles({
+  held,
+  activeHandle,
+  disabled,
+  onHover,
+  handlersFor,
+  label,
+  overlay,
+  size,
+}: GizmoHandlesProps) {
+  const theme = useTheme()
+  const { gripPx, labelFontPx } = gizmoMeasures(size)
+
+  return (
+    <>
+      {JOG_AXES.map((axis) => (
+        <Box
+          key={axis}
+          component="span"
+          aria-hidden
+          ref={overlayRef(overlay, labelKey(axis))}
+          sx={{
+            position: "absolute",
+            transform: "translate(-50%, -50%)",
+            pointerEvents: "none",
+            fontSize: labelFontPx,
+            color: axisColor(axis),
+            opacity: disabled ? 0.4 : 1,
+          }}
+        >
+          {axis.toUpperCase()}
+        </Box>
+      ))}
+
+      {JOG_AXES.flatMap((axis) =>
+        JOG_DIRECTIONS.map((direction) => {
+          const handle = { axis, direction }
+          const color = axisColor(axis)
+          const pressed =
+            isSameJogHandle(held, handle) ||
+            isSameJogHandle(activeHandle, handle)
+          return (
+            <Box
+              key={handleKey(handle)}
+              component="button"
+              type="button"
+              ref={overlayRef(overlay, handleKey(handle))}
+              disabled={disabled}
+              aria-label={label(handle)}
+              aria-pressed={pressed}
+              onPointerEnter={() => onHover(handle)}
+              onPointerLeave={() => onHover(null)}
+              {...handlersFor(handle)}
+              sx={{
+                // Placed, sized and turned along its half of the axis by
+                // TranslationScene, every frame the gizmo turns
+                position: "absolute",
+                height: gripPx,
+                transformOrigin: "0 50%",
+                padding: 0,
+                borderRadius: `${gripPx / 2}px`,
+                border: "none",
+                background: "transparent",
+                cursor: disabled ? "default" : "pointer",
+                touchAction: "none",
+                userSelect: "none",
+                "&:hover:not(:disabled)": { background: alpha(color, 0.12) },
+                "&:focus-visible": {
+                  outline: `2px solid ${theme.palette.primary.main}`,
+                },
+                ...(pressed && { background: alpha(color, 0.25) }),
+              }}
+            />
+          )
+        }),
+      )}
+    </>
+  )
+}
