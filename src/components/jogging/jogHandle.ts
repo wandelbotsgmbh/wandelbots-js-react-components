@@ -29,7 +29,15 @@ export function isSameJogHandle(
   return !!a && !!b && a.axis === b.axis && a.direction === b.direction
 }
 
-/** How a handle is named on screen, e.g. X+ */
-export function jogHandleName(handle: JogHandle): string {
-  return `${handle.axis.toUpperCase()}${handle.direction}`
+/**
+ * How a handle is named on screen, as the jog buttons name it: X+, or Rx+
+ * when it rotates about X
+ */
+export function jogHandleName(
+  handle: JogHandle,
+  motion: "translate" | "rotate" = "translate",
+): string {
+  return motion === "rotate"
+    ? `R${handle.axis}${handle.direction}`
+    : `${handle.axis.toUpperCase()}${handle.direction}`
 }

@@ -3,12 +3,15 @@ import { type Quaternion, Vector3 } from "three"
 import type { JogAxis, JogHandle } from "../jogHandle"
 import { cartesianAxisColors } from "../joggingColors"
 import type { useHoldToJog } from "../useHoldToJog"
+import type { JogArcGrabSizes } from "./jogGizmoArcs"
 import type { JogGrabSizes } from "./jogGizmoProjection"
 
 export const UP = new Vector3(0, 1, 0)
 
 /** Length of an arrowhead, in gizmo radii: an arrow is 1 long */
 export const ARROW_HEAD_LENGTH = 0.26
+/** Radius of an arrowhead's base, in gizmo radii */
+export const ARROW_HEAD_RADIUS = 0.1
 
 export const handleKey = (handle: JogHandle) =>
   `${handle.axis}${handle.direction}`
@@ -65,6 +68,23 @@ export function gizmoGrabSizes(size: number, radiusPx: number): JogGrabSizes {
 }
 
 /**
+ * The measures that the grab areas of the rotation arcs of a gizmo `size` px
+ * wide are laid out by, with `radiusPx` px per gizmo radius
+ */
+export function gizmoArcGrabSizes(
+  size: number,
+  radiusPx: number,
+): JogArcGrabSizes {
+  const { gripPx, grab } = gizmoMeasures(size)
+  return {
+    radiusPx,
+    gripPx,
+    beyondTipPx: grab.beyondTipPx,
+    headLength: ARROW_HEAD_LENGTH,
+  }
+}
+
+/**
  * The elements laid over the gizmo, by key. The 3D scene places them every
  * frame the gizmo turns, directly, so that orbiting does not re-render React.
  */
@@ -95,6 +115,8 @@ export type GizmoSceneProps = {
 export type GizmoHandlesProps = {
   held: JogHandle | null
   activeHandle?: JogHandle | null
+  /** The handle the pointer is over */
+  hovered: JogHandle | null
   disabled: boolean
   size: number
   onHover: (handle: JogHandle | null) => void

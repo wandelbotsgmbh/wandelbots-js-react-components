@@ -1,7 +1,6 @@
 import Box from "@mui/material/Box"
 import { alpha, useTheme } from "@mui/material/styles"
-import { useFrame, useThree } from "@react-three/fiber"
-import { useEffect, useMemo, useRef } from "react"
+import { useMemo, useRef } from "react"
 import { type Group, Quaternion } from "three"
 import {
   isSameJogHandle,
@@ -12,6 +11,7 @@ import {
 } from "../jogHandle"
 import {
   ARROW_HEAD_LENGTH as HEAD_LENGTH,
+  ARROW_HEAD_RADIUS as HEAD_RADIUS,
   axisColor,
   type GizmoHandlesProps,
   type GizmoSceneProps,
@@ -23,13 +23,12 @@ import {
 } from "./gizmoShared"
 import {
   grabAreasOf,
-  hasTurned,
   projectJogHandles,
   UNIT_VECTOR,
 } from "./jogGizmoProjection"
+import { useGizmoTurn } from "./useGizmoTurn"
 
 const SHAFT_RADIUS = 0.035
-const HEAD_RADIUS = 0.1
 /** Labels sit this far out from the center, in gizmo radii */
 const LABEL_DISTANCE = 1.28
 
@@ -48,72 +47,49 @@ export function TranslationScene({
   overlay,
 }: GizmoSceneProps) {
   const group = useRef<Group>(null)
-  const last = useRef<Quaternion | null>(null)
   const center = size / 2
-  const invalidate = useThree((state) => state.invalidate)
 
-  // A new size moves every handle, whether or not the gizmo turned
-  // biome-ignore lint/correctness/useExhaustiveDependencies: size and radius are the trigger
-  useEffect(() => {
-    last.current = null
-    invalidate()
-  }, [size, radius, invalidate])
-
-  // The canvas draws on demand. Looking for a turn every animation frame
-  // costs a comparison of two rotations; drawing happens only after a turn,
-  // and again until every handle is placed
-  useEffect(() => {
-    let frame = requestAnimationFrame(function check() {
-      const q = orientation.current
-      if (q && hasTurned(last.current, q)) invalidate()
-      frame = requestAnimationFrame(check)
-    })
-    return () => cancelAnimationFrame(frame)
-  }, [orientation, invalidate])
-
-  useFrame(() => {
-    const q = orientation.current
-    if (!q || !group.current) return
-    if (!hasTurned(last.current, q)) return
-    group.current.quaternion.copy(q)
-
-    // The first frames can come before the handles are attached; only once
-    // all are placed is this rotation done with
-    let placedAll = true
-    const tips = projectJogHandles(q)
-    const areas = grabAreasOf(tips, gizmoGrabSizes(size, radius))
-    for (const [i, tip] of tips.entries()) {
-      const grip = overlay.current.get(handleKey(tip)) as
-        | HTMLElement
-        | undefined
-      const area = areas[i]
-      if (!grip) {
-        placedAll = false
-      } else if (area) {
-        grip.style.left = `${center + area.x}px`
-        grip.style.top = `${center + area.y}px`
-        grip.style.width = `${area.length}px`
-        grip.style.transform = `translateY(-50%) rotate(${area.angle}rad)`
-        grip.style.zIndex = String(area.layer)
-        grip.style.pointerEvents = ""
-      } else {
-        // A press here could not tell this handle from another one. The
-        // keyboard, which picks a handle by its name, still reaches it.
-        grip.style.pointerEvents = "none"
+  useGizmoTurn(
+    orientation,
+    group,
+    (q) => {
+      let placedAll = true
+      const tips = projectJogHandles(q)
+      const areas = grabAreasOf(tips, gizmoGrabSizes(size, radius))
+      for (const [i, tip] of tips.entries()) {
+        const grip = overlay.current.get(handleKey(tip)) as
+          | HTMLElement
+          | undefined
+        const area = areas[i]
+        if (!grip) {
+          placedAll = false
+        } else if (area) {
+          grip.style.left = `${center + area.x}px`
+          grip.style.top = `${center + area.y}px`
+          grip.style.width = `${area.length}px`
+          grip.style.transform = `translateY(-50%) rotate(${area.angle}rad)`
+          grip.style.zIndex = String(area.layer)
+          grip.style.pointerEvents = ""
+        } else {
+          // A press here could not tell this handle from another one. The
+          // keyboard, which picks a handle by its name, still reaches it.
+          grip.style.pointerEvents = "none"
+        }
+        if (tip.direction !== "+") continue
+        const label = overlay.current.get(labelKey(tip.axis)) as
+          | HTMLElement
+          | undefined
+        if (label) {
+          label.style.left = `${center + tip.x * radius * LABEL_DISTANCE}px`
+          label.style.top = `${center + tip.y * radius * LABEL_DISTANCE}px`
+        } else {
+          placedAll = false
+        }
       }
-      if (tip.direction !== "+") continue
-      const label = overlay.current.get(labelKey(tip.axis)) as
-        | HTMLElement
-        | undefined
-      if (label) {
-        label.style.left = `${center + tip.x * radius * LABEL_DISTANCE}px`
-        label.style.top = `${center + tip.y * radius * LABEL_DISTANCE}px`
-      } else {
-        placedAll = false
-      }
-    }
-    if (placedAll) last.current = q.clone()
-  })
+      return placedAll
+    },
+    `${size}:${radius}`,
+  )
 
   return (
     <group ref={group}>

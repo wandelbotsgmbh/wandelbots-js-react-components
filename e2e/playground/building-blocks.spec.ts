@@ -112,6 +112,38 @@ test("jogs the TCP up along Z with JoggingGizmo", async ({ page }) => {
   await screenshot(page, "building-blocks-gizmo-z")
 })
 
+/** The numbers of a text, e.g. of the TCP orientation in degrees */
+function numbersOf(text: string) {
+  return (text.match(/-?\d+(\.\d+)?/g) ?? []).map(Number)
+}
+
+test("turns the TCP about Z with JoggingGizmo in rotate mode", async ({
+  page,
+}) => {
+  await openPage(page, "building-blocks")
+  await expectModelDrawn(page)
+  const gizmos = section(page, "JoggingGizmo and JoggingGizmoOrientation")
+  await gizmos.getByRole("button", { name: "Rotate" }).click()
+  // The first gizmo jogs, as in translate mode. Its handle is the round
+  // button on the arrowhead.
+  const rzPlus = gizmos.getByRole("button", { name: "Jog Rz+" }).first()
+  await expect(rzPlus).toBeEnabled()
+  const orientation = gizmos.getByTestId("tcp-orientation")
+  await expect(orientation).toContainText(/\d°/)
+  const before = numbersOf(await orientation.innerText())
+
+  await jogPress(page, rzPlus, async () => {
+    // A turn about Z changes the rotation vector in more than one number
+    const now = numbersOf(await orientation.innerText())
+    const change = now.reduce(
+      (sum, value, i) => sum + Math.abs(value - before[i]),
+      0,
+    )
+    return change > 1
+  })
+  await screenshot(page, "building-blocks-gizmo-rz")
+})
+
 test("turns JoggingGizmo with the camera of the 3D view", async ({ page }) => {
   await openPage(page, "building-blocks")
   await expectModelDrawn(page)

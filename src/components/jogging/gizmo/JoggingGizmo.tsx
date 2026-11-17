@@ -11,6 +11,7 @@ import {
   jogHandleName,
 } from "../jogHandle"
 import { useHoldToJog } from "../useHoldToJog"
+import { RotationHandles, RotationScene } from "./gizmoRotation"
 import { type GizmoOverlay, gizmoMeasures } from "./gizmoShared"
 import { TranslationHandles, TranslationScene } from "./gizmoTranslation"
 import { fitGizmoRadiusPx } from "./jogGizmoProjection"
@@ -29,7 +30,16 @@ export type JoggingGizmoProps = {
    * 3D view does not.
    */
   orientation: RefObject<Quaternion | null>
-  /** A handle was pressed: jog until `onJogStop` */
+  /**
+   * Whether the handles move the robot along the axes (arrows) or turn it
+   * about them (arcs). Defaults to `"translate"`. A jog that runs when it
+   * changes stops.
+   */
+  motion?: "translate" | "rotate"
+  /**
+   * A handle was pressed: jog along `axis` (or about it, in `"rotate"`
+   * motion) until `onJogStop`
+   */
   onJogStart: (axis: JogAxis, direction: JogDirection) => void
   /** The held handle was let go */
   onJogStop: () => void
@@ -77,8 +87,10 @@ function useHasOrientation(orientation: RefObject<Quaternion | null>) {
  * the handle that points right on screen moves the robot right on screen, and
  * orbiting the scene turns the gizmo with it.
  *
- * Each axis is an arrow with a handle per direction, grabbed anywhere along
- * its half of the axis and held to jog.
+ * To translate, each axis is an arrow with a handle per direction, grabbed
+ * anywhere along its half of the axis. To rotate, each axis has a circle
+ * about it with an arc per direction, whose arrowhead shows the way it
+ * turns, grabbed anywhere along the arc. A handle is held to jog.
  *
  * The gizmo is drawn in 3D; the handles are laid over it as buttons, so it
  * works from the keyboard and tests can find a handle by its name. It draws
@@ -89,6 +101,7 @@ function useHasOrientation(orientation: RefObject<Quaternion | null>) {
 export const JoggingGizmo = externalizeComponent(
   ({
     orientation,
+    motion = "translate",
     onJogStart,
     onJogStop,
     activeHandle,
@@ -98,12 +111,23 @@ export const JoggingGizmo = externalizeComponent(
     const { t } = useTranslation()
     const hasOrientation = useHasOrientation(orientation)
     const disabled = disabledByApp || !hasOrientation
-    const { held, handlersFor } = useHoldToJog({
+    const { held, handlersFor, stop } = useHoldToJog({
       onJogStart,
       onJogStop,
       disabled,
     })
     const [hovered, setHovered] = useState<JogHandle | null>(null)
+
+    // A held handle belongs to the motion it was pressed in: a translation
+    // must not go on as a rotation
+    // biome-ignore lint/correctness/useExhaustiveDependencies: motion is the trigger
+    useEffect(() => {
+      stop()
+      setHovered(null)
+    }, [motion, stop])
+
+    const Scene = motion === "rotate" ? RotationScene : TranslationScene
+    const Handles = motion === "rotate" ? RotationHandles : TranslationHandles
     const overlay = useRef<GizmoOverlay>(new Map())
     const radius = fitGizmoRadiusPx(size, size, gizmoMeasures(size).marginPx)
 
@@ -129,7 +153,7 @@ export const JoggingGizmo = externalizeComponent(
           gl={{ alpha: true, antialias: true }}
           style={{ position: "absolute", inset: 0, pointerEvents: "none" }}
         >
-          <TranslationScene
+          <Scene
             orientation={orientation}
             lit={held ?? activeHandle ?? hovered}
             disabled={disabled}
@@ -139,15 +163,16 @@ export const JoggingGizmo = externalizeComponent(
           />
         </Canvas>
 
-        <TranslationHandles
+        <Handles
           held={held}
           activeHandle={activeHandle}
+          hovered={hovered}
           disabled={disabled}
           size={size}
           onHover={setHovered}
           handlersFor={handlersFor}
           label={(handle) =>
-            t("Jogging.Handle.lb", { handle: jogHandleName(handle) })
+            t("Jogging.Handle.lb", { handle: jogHandleName(handle, motion) })
           }
           overlay={overlay}
         />

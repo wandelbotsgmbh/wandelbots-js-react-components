@@ -1,6 +1,8 @@
 import Box from "@mui/material/Box"
 import Portal from "@mui/material/Portal"
 import Stack from "@mui/material/Stack"
+import ToggleButton from "@mui/material/ToggleButton"
+import ToggleButtonGroup from "@mui/material/ToggleButtonGroup"
 import Typography from "@mui/material/Typography"
 import {
   ColorsBlue900,
@@ -85,7 +87,7 @@ export function BuildingBlocksPage({ instance, motionGroup }: PageProps) {
   const gizmo = (
     <Section
       title="JoggingGizmo and JoggingGizmoOrientation"
-      description="Moves the TCP along an axis of the world frame while a handle is held. JoggingGizmoOrientation in the 3D view turns the gizmo like the camera: orbit the view and the gizmo turns with it."
+      description="Moves the TCP along an axis of the world frame while a handle is held (Translate), or turns it about one (Rotate). JoggingGizmoOrientation in the 3D view turns the gizmo like the camera: orbit the view and the gizmo turns with it."
     >
       {withStore((store) => (
         <Gizmos store={store} motionGroup={motionGroup} />
@@ -359,69 +361,108 @@ const Gizmos = observer(
     motionGroup: ConnectedMotionGroup
   }) => {
     const orientation = useRef<Quaternion | null>(null)
+    const [motion, setMotion] = useState<"translate" | "rotate">("translate")
     // Without an inverse solver, the TCP cannot move along an axis
     const disabled = store.isLocked || store.inverseSolver === null
 
     return (
-      <Stack direction="row" gap={3} flexWrap="wrap" alignItems="flex-start">
-        <Box
-          sx={{
-            position: "relative",
-            width: 260,
-            height: 260,
-            border: 1,
-            borderColor: "divider",
-            borderRadius: 1,
-            overflow: "hidden",
-          }}
-        >
-          <Viewport>
-            <FitCamera>
-              {(refit) => (
-                <MotionGroupModel
-                  motionGroup={motionGroup}
-                  onModelLoaded={refit}
-                />
-              )}
-            </FitCamera>
-            {/* In NOVA's coordinates, so the gizmo's axes are NOVA's world
+      <Stack gap={2}>
+        <Stack direction="row" gap={3} alignItems="center" flexWrap="wrap">
+          <ToggleButtonGroup
+            exclusive
+            size="small"
+            value={motion}
+            onChange={(_, value) => value && setMotion(value)}
+            aria-label="Motion"
+          >
+            <ToggleButton value="translate">Translate</ToggleButton>
+            <ToggleButton value="rotate">Rotate</ToggleButton>
+          </ToggleButtonGroup>
+          <TcpOrientation store={store} />
+        </Stack>
+        <Stack direction="row" gap={3} flexWrap="wrap" alignItems="flex-start">
+          <Box
+            sx={{
+              position: "relative",
+              width: 260,
+              height: 260,
+              border: 1,
+              borderColor: "divider",
+              borderRadius: 1,
+              overflow: "hidden",
+            }}
+          >
+            <Viewport>
+              <FitCamera>
+                {(refit) => (
+                  <MotionGroupModel
+                    motionGroup={motionGroup}
+                    onModelLoaded={refit}
+                  />
+                )}
+              </FitCamera>
+              {/* In NOVA's coordinates, so the gizmo's axes are NOVA's world
                 frame, the frame the store jogs in */}
-            <NovaCoordinates>
-              <JoggingGizmoOrientation target={orientation} />
-            </NovaCoordinates>
-          </Viewport>
-        </Box>
-        <JoggingGizmo
-          orientation={orientation}
-          onJogStart={(axis, direction) =>
-            startJogging(store, { axis, direction })
-          }
-          onJogStop={() => stopJogging(store)}
-          disabled={disabled}
-        />
-        <Stack gap={1}>
-          <Typography variant="caption" color="text.secondary">
-            Disabled, and with activeHandle X+
-          </Typography>
+              <NovaCoordinates>
+                <JoggingGizmoOrientation target={orientation} />
+              </NovaCoordinates>
+            </Viewport>
+          </Box>
           <JoggingGizmo
             orientation={orientation}
-            onJogStart={() => {}}
-            onJogStop={() => {}}
-            disabled
-            size={120}
+            motion={motion}
+            onJogStart={(axis, direction) =>
+              startJogging(store, {
+                axis,
+                direction,
+                rotate: motion === "rotate",
+              })
+            }
+            onJogStop={() => stopJogging(store)}
+            disabled={disabled}
           />
-          <JoggingGizmo
-            orientation={orientation}
-            onJogStart={() => {}}
-            onJogStop={() => {}}
-            activeHandle={{ axis: "x", direction: "+" }}
-            size={120}
-          />
+          <Stack gap={1}>
+            <Typography variant="caption" color="text.secondary">
+              Disabled, and with activeHandle X+ (Rx+ when rotating)
+            </Typography>
+            <JoggingGizmo
+              orientation={orientation}
+              motion={motion}
+              onJogStart={() => {}}
+              onJogStop={() => {}}
+              disabled
+              size={120}
+            />
+            <JoggingGizmo
+              orientation={orientation}
+              motion={motion}
+              onJogStart={() => {}}
+              onJogStop={() => {}}
+              activeHandle={{ axis: "x", direction: "+" }}
+              size={120}
+            />
+          </Stack>
         </Stack>
       </Stack>
     )
   },
 )
+
+/** The TCP's orientation, as NOVA gives it: a rotation vector, in degrees */
+const TcpOrientation = observer(({ store }: { store: JoggingStore }) => {
+  const orientation =
+    store.jogger.motionStream.rapidlyChangingMotionState.tcp_pose?.orientation
+  const degrees = (value: number | undefined) =>
+    value === undefined ? "–" : `${((value * 180) / Math.PI).toFixed(1)}°`
+  return (
+    <Typography variant="body2" color="text.secondary">
+      TCP orientation:{" "}
+      <span data-testid="tcp-orientation">
+        {[0, 1, 2].map((i) => degrees(orientation?.[i])).join(" ")}
+      </span>
+    </Typography>
+  )
+})
 
 const VelocitySliders = observer(({ store }: { store: JoggingStore }) => (
   <Stack gap={2} sx={{ maxWidth: 480 }}>
