@@ -41,6 +41,7 @@ const HALVES = [0, 1] as const
 const halfKey = (handle: JogHandle, half: number) =>
   `half:${handleKey(handle)}:${half}`
 const haloKey = (handle: JogHandle) => `halo:${handleKey(handle)}`
+const focusKey = (handle: JogHandle) => `focus:${handleKey(handle)}`
 
 /** A clip path that shows nothing and takes no press */
 const NOWHERE = "polygon(0 0, 0 0, 0 0)"
@@ -62,6 +63,8 @@ export function RotationScene({
   const px = (value: number) => `${(center + value).toFixed(2)}px`
   const polygonOf = (points: { x: number; y: number }[]) =>
     `polygon(${points.map((p) => `${px(p.x)} ${px(p.y)}`).join(", ")})`
+  const pathOf = (points: { x: number; y: number }[]) =>
+    `M${points.map((p) => `${(center + p.x).toFixed(2)} ${(center + p.y).toFixed(2)}`).join("L")}Z`
 
   useGizmoTurn(
     orientation,
@@ -77,11 +80,12 @@ export function RotationScene({
         const halo = overlay.current.get(haloKey(arc)) as
           | HTMLElement
           | undefined
+        const focusRing = overlay.current.get(focusKey(arc))
         const halves = HALVES.map(
           (half) =>
             overlay.current.get(halfKey(arc, half)) as HTMLElement | undefined,
         )
-        if (!head || !halo || halves.some((half) => !half)) {
+        if (!head || !halo || !focusRing || halves.some((half) => !half)) {
           placedAll = false
           continue
         }
@@ -92,7 +96,9 @@ export function RotationScene({
         head.style.top = px(arc.head.y * radius)
         head.style.zIndex = area ? String(area.headLayer) : "0"
         head.style.pointerEvents = area ? "" : "none"
+        head.dataset.band = area ? "shown" : "none"
         halo.style.clipPath = area ? polygonOf(area.band) : NOWHERE
+        focusRing.setAttribute("d", area ? pathOf(area.band) : "")
         for (const [k, element] of halves.entries()) {
           if (!element) continue
           const half = area?.halves[k]
@@ -303,12 +309,43 @@ export function RotationHandles({
               border: "none",
               borderRadius: "50%",
               background: "transparent",
+              // Around the arrowhead only where the arc has no band; else
+              // the ring below goes around the whole band
               "&:focus-visible": {
                 outline: `2px solid ${theme.palette.primary.main}`,
               },
+              "&[data-band='shown']:focus-visible": { outline: "none" },
               ...common,
             }}
           />
+          {/* The keyboard's focus ring around the band, as the translation
+              handles have it around their bar. It follows the button. */}
+          <Box
+            component="svg"
+            aria-hidden
+            sx={{
+              position: "absolute",
+              left: 0,
+              top: 0,
+              width: size,
+              height: size,
+              overflow: "visible",
+              pointerEvents: "none",
+              display: "none",
+              zIndex: 100,
+              "button[data-band='shown']:focus-visible + &": {
+                display: "block",
+              },
+            }}
+          >
+            <path
+              ref={overlayRef(overlay, focusKey(handle))}
+              fill="none"
+              stroke={theme.palette.primary.main}
+              strokeWidth={2}
+              strokeLinejoin="round"
+            />
+          </Box>
         </Fragment>
       )
     }),
