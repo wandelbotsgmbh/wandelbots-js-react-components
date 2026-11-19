@@ -1,16 +1,10 @@
 import Box from "@mui/material/Box"
 import { Canvas } from "@react-three/fiber"
 import { type RefObject, useEffect, useMemo, useRef, useState } from "react"
-import { useTranslation } from "react-i18next"
 import { Quaternion } from "three"
 import { externalizeComponent } from "../../../externalizeComponent"
-import {
-  type JogAxis,
-  type JogDirection,
-  type JogHandle,
-  jogHandleName,
-} from "../jogHandle"
-import { useHoldToJog } from "../useHoldToJog"
+import type { JogHandle } from "../jogHandle"
+import { type JogControlsProps, useJogControls } from "../useJogControls"
 import {
   fitGizmoRadiusPx,
   type GizmoOverlay,
@@ -25,7 +19,7 @@ import { TranslationScene } from "./TranslationScene"
 /**
  * Props of {@link JoggingGizmo}
  */
-export type JoggingGizmoProps = {
+export type JoggingGizmoProps = JogControlsProps & {
   /**
    * NOVA's axes as the camera of the app's 3D view sees them, read every
    * animation frame. Fill it with a {@link JoggingGizmoOrientation} inside
@@ -44,22 +38,6 @@ export type JoggingGizmoProps = {
    * re-rendering React.
    */
   frameQuaternion?: Quaternion | (() => Quaternion)
-  /**
-   * Whether the handles move the robot along the axes (arrows) or turn it
-   * about them (arcs). Defaults to `"translate"`. A jog that runs when it
-   * changes stops.
-   */
-  motion?: "translate" | "rotate"
-  /**
-   * A handle was pressed: jog along `axis` (or about it, in `"rotate"`
-   * motion) until `onJogStop`
-   */
-  onJogStart: (axis: JogAxis, direction: JogDirection) => void
-  /** The held handle was let go */
-  onJogStop: () => void
-  /** Shows a handle as pressed while it is not held, e.g. a running step */
-  activeHandle?: JogHandle | null
-  disabled?: boolean
   /** Side of the square the gizmo takes, in px. Defaults to 200. */
   size?: number
 }
@@ -126,8 +104,8 @@ function useHasOrientation(orientation: RefObject<Quaternion | null>) {
  * the handle that points right on screen moves the robot right on screen, and
  * orbiting the scene turns the gizmo with it.
  *
- * To translate, each axis is an arrow with a handle per direction, grabbed
- * anywhere along its half of the axis. To rotate, each axis has a circle
+ * `motion` picks the handles. To translate, each axis is an arrow with a
+ * handle per direction, grabbed anywhere along its half of the axis. To rotate, each axis has a circle
  * about it with an arc per direction, whose arrowhead shows the way it
  * turns, grabbed anywhere along the arc. A handle is held to jog.
  *
@@ -146,24 +124,21 @@ export const JoggingGizmo = externalizeComponent(
     disabled: disabledByApp = false,
     size = 200,
   }: JoggingGizmoProps) => {
-    const { t } = useTranslation()
     const hasOrientation = useHasOrientation(orientation)
     const disabled = disabledByApp || !hasOrientation
     const jogFrame = useJogFrameInView(orientation, frameQuaternion)
-    const { held, handlersFor, stop } = useHoldToJog({
+    const { held, handlersFor, label, isPressed } = useJogControls({
+      motion,
       onJogStart,
       onJogStop,
+      activeHandle,
       disabled,
     })
     const [hovered, setHovered] = useState<JogHandle | null>(null)
 
-    // A held handle belongs to the motion it was pressed in: a translation
-    // must not go on as a rotation
+    // The handles of the other motion are other elements
     // biome-ignore lint/correctness/useExhaustiveDependencies: motion is the trigger
-    useEffect(() => {
-      stop()
-      setHovered(null)
-    }, [motion, stop])
+    useEffect(() => setHovered(null), [motion])
 
     const Scene = motion === "rotate" ? RotationScene : TranslationScene
     const Handles = motion === "rotate" ? RotationHandles : TranslationHandles
@@ -211,16 +186,13 @@ export const JoggingGizmo = externalizeComponent(
         </Canvas>
 
         <Handles
-          held={held}
-          activeHandle={activeHandle}
+          isPressed={isPressed}
           hovered={hovered}
           disabled={disabled}
           size={size}
           onHover={setHovered}
           handlersFor={handlersFor}
-          label={(handle) =>
-            t("Jogging.Handle.lb", { handle: jogHandleName(handle, motion) })
-          }
+          label={label}
           overlay={overlay}
         />
       </Box>

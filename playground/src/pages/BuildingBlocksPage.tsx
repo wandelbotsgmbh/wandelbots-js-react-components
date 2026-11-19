@@ -23,6 +23,7 @@ import { JointTypeEnum } from "@wandelbots/nova-js/v2"
 import {
   type AxisControlComponentColors,
   type ConnectedMotionGroup,
+  JoggingButtons,
   JoggingCartesianAxisControl,
   JoggingGizmo,
   JoggingGizmoOrientation,
@@ -89,6 +90,16 @@ export function BuildingBlocksPage({ instance, motionGroup }: PageProps) {
       ))}
     </Section>
   )
+  const buttons = (
+    <Section
+      title="JoggingButtons"
+      description="Moves the TCP along an axis while a button is held (Translate), or turns it about one (Rotate): an axis of the world frame, or of the tool. It takes the same props as JoggingGizmo, but does not turn with the 3D view: X+ is X+ of the frame, wherever the camera looks from."
+    >
+      {withStore((store) => (
+        <Buttons store={store} />
+      ))}
+    </Section>
+  )
   const velocity = (
     <Section
       title="VelocitySlider and VelocitySliderLabel"
@@ -136,6 +147,7 @@ export function BuildingBlocksPage({ instance, motionGroup }: PageProps) {
         <Stack gap={3}>
           {joint}
           {gizmo}
+          {buttons}
           {loadingCover}
         </Stack>
       </Box>
@@ -356,42 +368,21 @@ const Gizmos = observer(
     motionGroup: ConnectedMotionGroup
   }) => {
     const orientation = useRef<Quaternion | null>(null)
-    const [motion, setMotion] = useState<"translate" | "rotate">("translate")
-    const [frame, setFrame] = useState<"world" | "tool">("world")
+    const [motion, setMotion] = useState<Motion>("translate")
+    const [frame, setFrame] = useState<Frame>("world")
     const toolFrame = useToolFrame(store)
-    // Without an inverse solver, the TCP cannot move along an axis
-    const disabled = store.isLocked || store.inverseSolver === null
+    const disabled = cannotJog(store)
 
     return (
       <Stack gap={2}>
-        <Stack direction="row" gap={3} alignItems="center" flexWrap="wrap">
-          <ToggleButtonGroup
-            exclusive
-            size="small"
-            value={motion}
-            onChange={(_, value) => value && setMotion(value)}
-            aria-label="Motion"
-          >
-            <ToggleButton value="translate">Translate</ToggleButton>
-            <ToggleButton value="rotate">Rotate</ToggleButton>
-          </ToggleButtonGroup>
-          <Stack direction="row" gap={1} alignItems="center">
-            <Typography variant="body2" color="text.secondary">
-              Move along the axes of
-            </Typography>
-            <ToggleButtonGroup
-              exclusive
-              size="small"
-              value={frame}
-              onChange={(_, value) => value && setFrame(value)}
-              aria-label="Move along the axes of"
-            >
-              <ToggleButton value="world">World</ToggleButton>
-              <ToggleButton value="tool">Tool</ToggleButton>
-            </ToggleButtonGroup>
-          </Stack>
+        <JogOptions
+          motion={motion}
+          onMotion={setMotion}
+          frame={frame}
+          onFrame={setFrame}
+        >
           <TcpOrientation store={store} />
-        </Stack>
+        </JogOptions>
         <Stack direction="row" gap={3} flexWrap="wrap" alignItems="flex-start">
           <Box
             sx={{
@@ -458,6 +449,110 @@ const Gizmos = observer(
     )
   },
 )
+
+const Buttons = observer(({ store }: { store: JoggingStore }) => {
+  const [motion, setMotion] = useState<Motion>("translate")
+  const [frame, setFrame] = useState<Frame>("world")
+
+  return (
+    <Stack gap={2}>
+      <JogOptions
+        motion={motion}
+        onMotion={setMotion}
+        frame={frame}
+        onFrame={setFrame}
+      />
+      <JoggingButtons
+        motion={motion}
+        onJogStart={(axis, direction) =>
+          startJogging(store, {
+            axis,
+            direction,
+            rotate: motion === "rotate",
+            tool: frame === "tool",
+          })
+        }
+        onJogStop={() => stopJogging(store)}
+        disabled={cannotJog(store)}
+      />
+      <Typography variant="caption" color="text.secondary">
+        Disabled, and disabled with activeHandle X+ (Rx+ when rotating), as
+        while a step runs
+      </Typography>
+      <Stack direction="row" gap={3} flexWrap="wrap">
+        <JoggingButtons
+          motion={motion}
+          onJogStart={() => {}}
+          onJogStop={() => {}}
+          disabled
+        />
+        <JoggingButtons
+          motion={motion}
+          onJogStart={() => {}}
+          onJogStop={() => {}}
+          disabled
+          activeHandle={{ axis: "x", direction: "+" }}
+        />
+      </Stack>
+    </Stack>
+  )
+})
+
+type Motion = "translate" | "rotate"
+type Frame = "world" | "tool"
+
+/** Without an inverse solver, the TCP cannot move along an axis */
+const cannotJog = (store: JoggingStore) =>
+  store.isLocked || store.inverseSolver === null
+
+/**
+ * Translate or rotate, along the world's or the tool's axes: what an app's
+ * jogging panel lets pick for the gizmo and the buttons
+ */
+function JogOptions({
+  motion,
+  onMotion,
+  frame,
+  onFrame,
+  children,
+}: {
+  motion: Motion
+  onMotion: (motion: Motion) => void
+  frame: Frame
+  onFrame: (frame: Frame) => void
+  children?: ReactNode
+}) {
+  return (
+    <Stack direction="row" gap={3} alignItems="center" flexWrap="wrap">
+      <ToggleButtonGroup
+        exclusive
+        size="small"
+        value={motion}
+        onChange={(_, value) => value && onMotion(value)}
+        aria-label="Motion"
+      >
+        <ToggleButton value="translate">Translate</ToggleButton>
+        <ToggleButton value="rotate">Rotate</ToggleButton>
+      </ToggleButtonGroup>
+      <Stack direction="row" gap={1} alignItems="center">
+        <Typography variant="body2" color="text.secondary">
+          Move along the axes of
+        </Typography>
+        <ToggleButtonGroup
+          exclusive
+          size="small"
+          value={frame}
+          onChange={(_, value) => value && onFrame(value)}
+          aria-label="Move along the axes of"
+        >
+          <ToggleButton value="world">World</ToggleButton>
+          <ToggleButton value="tool">Tool</ToggleButton>
+        </ToggleButtonGroup>
+      </Stack>
+      {children}
+    </Stack>
+  )
+}
 
 /**
  * The orientation of the TCP: the frame of jogging along the tool's axes.
