@@ -17,6 +17,12 @@ import { MoveToTab } from "./MoveToTab"
 /** Whether a jog moves the TCP along the axes or turns it about them */
 export type JogMotion = "translate" | "rotate"
 
+/** A tab of the panel */
+export type RobotControlTab = JogMotion | "joint" | "moveTo"
+
+/** Jogging while a control is held, or one step per press */
+export type RobotControlJogMode = "continuous" | "increment"
+
 /** A choice of one of the panel's selects */
 export type RobotControlOption = {
   id: string
@@ -54,6 +60,13 @@ export type RobotControlIncrements = {
   ) => void
   /** The step that runs now: its control shows as pressed */
   running?: JogHandle | null
+  /**
+   * The chosen step size of a motion, one of its `steps`. Without it, the
+   * panel keeps its own choice (the first step to start with).
+   */
+  step?: Partial<Record<JogMotion, number>>
+  /** A step size was chosen in the panel */
+  onStepChange?: (motion: JogMotion, distance: number) => void
 }
 
 /** One joint of the Joint tab, in NOVA's units: rad, or mm for a linear axis */
@@ -129,8 +142,22 @@ export type RobotControlMoveTo = {
 export type RobotControlPanelProps = {
   /** Shows a close button in the header that calls this */
   onClose?: () => void
-  /** Disables every control, e.g. while another motion runs */
+  /** Disables every control: nothing may move */
   disabled?: boolean
+  /**
+   * Disables the jogging of the Translate, Rotate and Joint tabs, e.g. while
+   * a trajectory moves the robot. Move to stays usable: a move of its own
+   * must not end because the app locks jogging while it runs.
+   */
+  jogDisabled?: boolean
+  /** The tab to show. Without it, the panel keeps its own tab. */
+  tab?: RobotControlTab
+  /** A tab was chosen in the panel */
+  onTabChange?: (tab: RobotControlTab) => void
+  /** The jog mode. Without it, the panel keeps its own mode. */
+  jogMode?: RobotControlJogMode
+  /** A jog mode was chosen in the panel */
+  onJogModeChange?: (mode: RobotControlJogMode) => void
   /** The TCP to jog. Without it, the panel has no TCP select. */
   tcp?: RobotControlSelect
   /**
@@ -180,9 +207,6 @@ export type RobotControlPanelProps = {
   sx?: SxProps<Theme>
 }
 
-/** A tab of the panel */
-type PanelTab = JogMotion | "joint" | "moveTo"
-
 /**
  * The Robot control panel of the design: a header, the tabs Translate and
  * Rotate, and in them the TCP and the frame to jog along, Continuous or
@@ -196,22 +220,56 @@ type PanelTab = JogMotion | "joint" | "moveTo"
  * size and whether it shows the gizmo or the buttons.
  */
 export const RobotControlPanel = externalizeComponent(
-  ({ onClose, sx, joints, moveTo, ...props }: RobotControlPanelProps) => {
+  ({
+    onClose,
+    sx,
+    joints,
+    moveTo,
+    jogDisabled = false,
+    tab: appTab,
+    onTabChange,
+    jogMode,
+    onJogModeChange,
+    ...props
+  }: RobotControlPanelProps) => {
     const { t } = useTranslation()
-    const [chosenTab, setTab] = useState<PanelTab>("translate")
+    const disabled = props.disabled ?? false
+    // The panel's own tab, mode and step size: those the app does not give
+    const [ownTab, setOwnTab] = useState<RobotControlTab>("translate")
+    const [ownSettings, setOwnSettings] = useState<CartesianJogSettings>({
+      mode: "continuous",
+      view: "gizmo",
+      step: { translate: 0, rotate: 0 },
+    })
+    const chosenTab = appTab ?? ownTab
     // A tab goes when the app no longer gives what it needs
     const tab =
       (chosenTab === "joint" && !joints) || (chosenTab === "moveTo" && !moveTo)
         ? "translate"
         : chosenTab
+    const settings = withAppSettings(ownSettings, jogMode, props.increments)
     // The typed target pose stays while other tabs show
     const [moveToText, setMoveToText] = useState("")
-    const [settings, setSettings] = useState<CartesianJogSettings>({
-      mode: "continuous",
-      view: "gizmo",
-      step: { translate: 0, rotate: 0 },
-    })
     const title = t("RobotControl.Title.ti")
+
+    function changeTab(next: RobotControlTab) {
+      setOwnTab(next)
+      onTabChange?.(next)
+    }
+
+    function changeSettings(next: CartesianJogSettings) {
+      setOwnSettings(next)
+      if (next.mode !== settings.mode) onJogModeChange?.(next.mode)
+      for (const motion of ["translate", "rotate"] as const) {
+        const distance = props.increments?.steps[motion][next.step[motion]]
+        if (
+          next.step[motion] !== settings.step[motion] &&
+          distance !== undefined
+        ) {
+          props.increments?.onStepChange?.(motion, distance)
+        }
+      }
+    }
 
     return (
       <Stack
@@ -254,7 +312,7 @@ export const RobotControlPanel = externalizeComponent(
 
         <Tabs
           value={tab}
-          onChange={(_event, next: PanelTab) => setTab(next)}
+          onChange={(_event, next: RobotControlTab) => changeTab(next)}
           aria-label={title}
           // The panel can get narrower than its tabs: scroll rather than
           // cut the last one off
@@ -297,7 +355,7 @@ export const RobotControlPanel = externalizeComponent(
 
         <Stack sx={{ flexGrow: 1, overflowY: "auto", overflowX: "hidden" }}>
           {tab === "joint" && joints ? (
-            <JointJogTab joints={joints} disabled={props.disabled ?? false} />
+            <JointJogTab joints={joints} disabled={disabled || jogDisabled} />
           ) : tab === "moveTo" && moveTo ? (
             <MoveToTab
               moveTo={moveTo}
@@ -308,14 +366,15 @@ export const RobotControlPanel = externalizeComponent(
               onVelocityChange={(value) =>
                 props.onVelocityChange("translate", value)
               }
-              disabled={props.disabled ?? false}
+              disabled={disabled}
             />
           ) : (
             <CartesianJogTab
               {...props}
+              disabled={disabled || jogDisabled}
               motion={tab === "rotate" ? "rotate" : "translate"}
               settings={settings}
-              onSettingsChange={setSettings}
+              onSettingsChange={changeSettings}
             />
           )}
         </Stack>
@@ -323,3 +382,27 @@ export const RobotControlPanel = externalizeComponent(
     )
   },
 )
+
+/**
+ * The jog settings as shown: the panel's own, with the jog mode and the
+ * step sizes the app gives instead, where it gives them
+ */
+function withAppSettings(
+  own: CartesianJogSettings,
+  jogMode: RobotControlJogMode | undefined,
+  increments: RobotControlIncrements | undefined,
+): CartesianJogSettings {
+  const stepIndex = (motion: JogMotion) => {
+    const distance = increments?.step?.[motion]
+    if (distance === undefined) return own.step[motion]
+    const index = increments?.steps[motion].findIndex(
+      (step) => Math.abs(step - distance) <= 1e-9 * Math.max(1, Math.abs(step)),
+    )
+    return index === undefined || index < 0 ? own.step[motion] : index
+  }
+  return {
+    ...own,
+    mode: jogMode ?? own.mode,
+    step: { translate: stepIndex("translate"), rotate: stepIndex("rotate") },
+  }
+}

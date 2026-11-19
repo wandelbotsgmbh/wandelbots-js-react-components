@@ -28,6 +28,7 @@ export {
   type JogMotion,
   RobotControlPanel,
   type RobotControlIncrements,
+  type RobotControlJogMode,
   type RobotControlJoint,
   type RobotControlJoints,
   type RobotControlMoveTo,
@@ -35,6 +36,7 @@ export {
   type RobotControlPanelProps,
   type RobotControlPose,
   type RobotControlSelect,
+  type RobotControlTab,
   type RobotControlVelocity,
 } from "./components/robotControl/RobotControlPanel"
 export * from "./components/robots/LinearAxis"

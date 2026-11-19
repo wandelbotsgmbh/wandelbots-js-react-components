@@ -669,7 +669,12 @@ export type RobotControlIncrements = {
     steps: Record<JogMotion, number[]>;
     onStep: (motion: JogMotion, axis: JogAxis, direction: JogDirection, distance: number) => void;
     running?: JogHandle | null;
+    step?: Partial<Record<JogMotion, number>>;
+    onStepChange?: (motion: JogMotion, distance: number) => void;
 };
+
+// @public
+export type RobotControlJogMode = "continuous" | "increment";
 
 // @public
 export type RobotControlJoint = {
@@ -713,6 +718,11 @@ export const RobotControlPanel: (input: RobotControlPanelProps) => JSX.Element;
 export type RobotControlPanelProps = {
     onClose?: () => void;
     disabled?: boolean;
+    jogDisabled?: boolean;
+    tab?: RobotControlTab;
+    onTabChange?: (tab: RobotControlTab) => void;
+    jogMode?: RobotControlJogMode;
+    onJogModeChange?: (mode: RobotControlJogMode) => void;
     tcp?: RobotControlSelect;
     jogFrame?: RobotControlSelect;
     velocity: Record<JogMotion, RobotControlVelocity>;
@@ -739,6 +749,9 @@ export type RobotControlSelect = {
     value: string;
     onChange: (id: string) => void;
 };
+
+// @public
+export type RobotControlTab = JogMotion | "joint" | "moveTo";
 
 // @public
 export type RobotControlVelocity = {
