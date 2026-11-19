@@ -2,6 +2,7 @@ import { expect, type Locator, type Page, test } from "@playwright/test"
 import {
   expectModelDrawn,
   jogPress,
+  jointPositions,
   millimeters,
   openPage,
   screenshot,
@@ -34,6 +35,7 @@ test("shows the sections and the states of LoadingCover", async ({ page }) => {
     "VelocitySlider and VelocitySliderLabel",
     "JoggingGizmo and JoggingGizmoOrientation",
     "JoggingButtons",
+    "JoggingJointSlider",
     "LoadingCover and LoadingErrorMessage",
     "NoMotionGroupModal",
   ]) {
@@ -111,6 +113,75 @@ test("jogs the TCP up along Z with JoggingGizmo", async ({ page }) => {
     async () => millimeters(await z.innerText()) > before + 3,
   )
   await screenshot(page, "building-blocks-gizmo-z")
+})
+
+test("jogs a joint toward the pressed point with JoggingJointSlider, turns it around when the goal passes it, and stops it on release", async ({
+  page,
+}) => {
+  await openPage(page, "building-blocks")
+  const j1 = section(page, "JoggingJointSlider").getByRole("slider", {
+    name: "J1 Base",
+  })
+  await expect(j1).not.toHaveAttribute("aria-disabled", "true")
+  const before = (await jointPositions())[0]
+
+  // A goal 20° above the joint, along a track from aria-valuemin to
+  // aria-valuemax (in degrees) that spans the slider's width
+  const min = Number(await j1.getAttribute("aria-valuemin"))
+  const max = Number(await j1.getAttribute("aria-valuemax"))
+  const beforeDegrees = (before * 180) / Math.PI
+  // The mouse goes by the viewport: the slider must be in it
+  await j1.scrollIntoViewIfNeeded()
+  const box = await j1.boundingBox()
+  if (!box) throw new Error("No slider J1")
+  const pointAt = (degrees: number) =>
+    page.mouse.move(
+      box.x + (box.width * (degrees - min)) / (max - min),
+      box.y + box.height / 2,
+    )
+  await pointAt(beforeDegrees + 20)
+  await page.mouse.down()
+  try {
+    await expect
+      .poll(async () => (await jointPositions())[0], {
+        message: "Joint 1 turns toward the goal while the track is pressed",
+        // On a CI runner, the jogging connection can need more than 10 s
+        timeout: 30_000,
+      })
+      .toBeGreaterThan(before + 0.01)
+
+    // Still pressed, the goal moves below the joint: it turns around, with
+    // the stop and the start of the other way in one event
+    const turnedAt = (await jointPositions())[0]
+    await pointAt(beforeDegrees - 20)
+    await expect
+      .poll(async () => (await jointPositions())[0], {
+        message: "Joint 1 turns around when the goal passes it",
+        timeout: 30_000,
+      })
+      .toBeLessThan(turnedAt - 0.01)
+  } finally {
+    await page.mouse.up()
+  }
+
+  // Released: joint 1 stands still, two readings in a row the same
+  let last = Number.NaN
+  await expect
+    .poll(
+      async () => {
+        const now = (await jointPositions())[0]
+        const still = Math.abs(now - last) < 1e-5
+        last = now
+        return still
+      },
+      {
+        message: "Joint 1 stops on release",
+        intervals: [500],
+        timeout: 15_000,
+      },
+    )
+    .toBe(true)
+  await screenshot(page, "building-blocks-joint-sliders")
 })
 
 test("jogs the TCP up along Z with JoggingButtons", async ({ page }) => {

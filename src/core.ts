@@ -13,6 +13,10 @@ export {
 export * from "./components/jogging/JoggingCartesianAxisControl"
 export type { AxisControlComponentColors } from "./components/jogging/joggingColors"
 export * from "./components/jogging/JoggingJointValueControl"
+export {
+  JoggingJointSlider,
+  type JoggingJointSliderProps,
+} from "./components/jogging/joint/JoggingJointSlider"
 export * from "./components/jogging/JoggingPanel"
 export { JoggingStore } from "./components/jogging/JoggingStore"
 export type {

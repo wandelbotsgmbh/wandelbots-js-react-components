@@ -210,6 +210,41 @@ const orientation = useRef<Quaternion | null>(null)
 />
 ```
 
+**JoggingJointSlider** - One joint as a slider across its limits, with the thumb at the joint's value and the limits below; an app shows one per joint. Hover the track to see the goal under the pointer, and press there to jog the joint toward it: it stops when it gets there or when the slider is let go. While held, the goal follows the pointer, and the joint turns around when the goal passes it. An arrow key held on the focused slider jogs toward that limit.
+
+- `value`, `min` and `max` are in NOVA's units: radians, or mm with `linear`. A revolute joint with one limit spans one turn from it, and without limits the turn it stands in. A linear axis needs both limits to be jogged with the slider; without them it only shows its value. `angleUnit` shows degrees (default) or radians.
+- `onJogStart(direction)` and `onJogStop` leave the jogging to the app, as for `JoggingGizmo` and `JoggingButtons`. One press can bring several starts and stops, always in turn: the joint stops at the goal, and starts again when the goal moves on. When the goal passes the joint, `onJogStop` and the `onJogStart` of the other way come in the same event: an app with asynchronous jog commands must apply them in that order, and must not tear down its jogging connection on that stop.
+- One joint at a time is up to the app. Keep the jogging joint in a ref, which changes at once, and ignore the others' calls: `disabled` alone changes only with the next render, too late for two fingers that move in the same frame.
+
+```tsx
+const jogging = useRef<number | null>(null)
+const [active, setActive] = useState<number | null>(null)
+
+{jointValues.map((value, index) => (
+  <JoggingJointSlider
+    key={index}
+    label={`J${index + 1}`}
+    value={value}
+    min={limits[index].lower_limit}
+    max={limits[index].upper_limit}
+    onJogStart={(direction) => {
+      if (jogging.current !== null && jogging.current !== index) return
+      jogging.current = index
+      setActive(index)
+      startJointJogging(index, direction)
+    }}
+    onJogStop={() => {
+      if (jogging.current !== index) return
+      jogging.current = null
+      setActive(null)
+      stopJogging()
+    }}
+    // Shows the others as unavailable; the ref does the excluding
+    disabled={active !== null && active !== index}
+  />
+))}
+```
+
 ### 3D Visualization & Robotics
 
 3D components for robot visualization. They render inside the `<Canvas>` of React Three Fiber.
