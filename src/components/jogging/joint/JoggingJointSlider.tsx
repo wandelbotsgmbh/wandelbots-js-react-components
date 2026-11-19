@@ -72,8 +72,16 @@ export type JoggingJointSliderProps = {
   disabled?: boolean
 }
 
-/** A goal closer than this (px) to the joint does not jog it */
-const DEAD_ZONE_PX = 4
+/**
+ * How close (px) to the joint a goal counts as there, and does not jog it:
+ * the pointer's jitter must not. A mouse or pen keeps still, so a goal a
+ * pixel off jogs the joint (4 px would be over 10° on a joint with a wide
+ * range). A finger trembles by a few pixels, and lands less precisely than
+ * that anyway.
+ */
+function deadZonePx(pointerType: string): number {
+  return pointerType === "mouse" || pointerType === "pen" ? 1 : 4
+}
 
 /** Which way an arrow key jogs: up the track or down */
 function arrowDirection(key: string): JogDirection | null {
@@ -121,19 +129,20 @@ export const JoggingJointSlider = externalizeComponent(
     const format = (v: number) => formatJointValue(v, unit)
 
     /** The goal under the pointer, and how close to the joint counts as there */
-    function pointed(clientX: number) {
+    function pointed({ clientX, pointerType }: PointerEvent<HTMLElement>) {
       if (!range || !rail.current) return null
       const rect = rail.current.getBoundingClientRect()
       if (rect.width <= 0) return null
       return {
         goal: valueAt((clientX - rect.left) / rect.width, range),
-        deadband: (DEAD_ZONE_PX / rect.width) * (range.max - range.min),
+        deadband:
+          (deadZonePx(pointerType) / rect.width) * (range.max - range.min),
       }
     }
 
     function onPointerDown(event: PointerEvent<HTMLElement>) {
       if (!startsPointerHold(event) || disabled || isHolding()) return
-      const at = pointed(event.clientX)
+      const at = pointed(event)
       if (!at) return
       try {
         // Before the jog starts: dragging off the track keeps steering, and
@@ -146,7 +155,7 @@ export const JoggingJointSlider = externalizeComponent(
     }
 
     function onPointerMove(event: PointerEvent<HTMLElement>) {
-      const at = pointed(event.clientX)
+      const at = pointed(event)
       setHoverGoal(disabled ? null : (at?.goal ?? null))
       const by = heldBy()
       if (!by || !("pointer" in by) || by.pointer !== event.pointerId) return
