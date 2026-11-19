@@ -6,6 +6,7 @@ import {
   type JoggingStore,
   RobotControlPanel,
 } from "@wandelbots/wandelbots-js-react-components"
+import { JointTypeEnum } from "@wandelbots/nova-js/v2"
 import { observer } from "mobx-react-lite"
 import { useRef } from "react"
 import type { Quaternion } from "three"
@@ -15,6 +16,16 @@ import { FitCamera, MotionGroupModel, Viewport } from "../scene"
 
 const toRadians = (degrees: number) => (degrees * Math.PI) / 180
 const toDegrees = (radians: number) => (radians * 180) / Math.PI
+
+/** The joints of a six-axis robot arm, as the design names them */
+const SIX_AXIS_NAMES = [
+  "Base",
+  "Shoulder",
+  "Elbow",
+  "Forearm",
+  "Wrist",
+  "Flange",
+]
 
 /** The step sizes of JoggingPanel's Increment mode, in NOVA's units */
 const STEPS = {
@@ -37,6 +48,26 @@ export const RobotControlPanelDemo = observer(
     const orientation = useRef<Quaternion | null>(null)
     const toolFrame = useToolFrame(store)
     const tool = store.selectedOrientation === "tool"
+    // A prismatic joint (a linear axis) is in mm, and jogs in mm/s
+    const linear = store.jointType !== JointTypeEnum.RevoluteJoint
+    const jointValues =
+      store.jogger.motionStream.rapidlyChangingMotionState.joint_position
+    const jointLimits =
+      store.motionGroupDescription.operation_limits.auto_limits?.joints
+    const translateVelocity = {
+      value: store.translationVelocityMmPerSec,
+      min: store.minTranslationVelocityMmPerSec,
+      max: store.maxTranslationVelocityMmPerSec,
+    }
+    const rotateVelocity = {
+      value: store.rotationVelocityRadsPerSec,
+      min: toRadians(store.minRotationVelocityDegPerSec),
+      max: toRadians(store.maxRotationVelocityDegPerSec),
+    }
+    const setVelocity = (rotate: boolean, value: number) =>
+      rotate
+        ? store.setVelocityFromSlider(toDegrees(value), true)
+        : store.setVelocityFromSlider(value, false)
 
     return (
       <Stack direction="row" gap={3} flexWrap="wrap" alignItems="flex-start">
@@ -94,22 +125,9 @@ export const RobotControlPanelDemo = observer(
             onChange: (id) =>
               store.setSelectedOrientation(id === "tool" ? "tool" : "coordsys"),
           }}
-          velocity={{
-            translate: {
-              value: store.translationVelocityMmPerSec,
-              min: store.minTranslationVelocityMmPerSec,
-              max: store.maxTranslationVelocityMmPerSec,
-            },
-            rotate: {
-              value: store.rotationVelocityRadsPerSec,
-              min: toRadians(store.minRotationVelocityDegPerSec),
-              max: toRadians(store.maxRotationVelocityDegPerSec),
-            },
-          }}
+          velocity={{ translate: translateVelocity, rotate: rotateVelocity }}
           onVelocityChange={(motion, value) =>
-            motion === "rotate"
-              ? store.setVelocityFromSlider(toDegrees(value), true)
-              : store.setVelocityFromSlider(value, false)
+            setVelocity(motion === "rotate", value)
           }
           onJogStart={(motion, axis, direction) =>
             startJogging(store, {
@@ -136,6 +154,25 @@ export const RobotControlPanelDemo = observer(
                   running: store.incrementJogInProgress,
                 }
           }
+          // A joint jogs with the store's rotation velocity (rad/s), or its
+          // translation velocity (mm/s) when it is a linear axis
+          joints={{
+            joints: jointValues.map((value, index) => ({
+              value,
+              min: jointLimits?.[index]?.position?.lower_limit,
+              max: jointLimits?.[index]?.position?.upper_limit,
+              name:
+                jointValues.length === SIX_AXIS_NAMES.length && !linear
+                  ? SIX_AXIS_NAMES[index]
+                  : undefined,
+            })),
+            linear,
+            velocity: linear ? translateVelocity : rotateVelocity,
+            onVelocityChange: (value) => setVelocity(!linear, value),
+            onJogStart: (joint, direction) =>
+              startJogging(store, { joint, direction }),
+            onJogStop: () => stopJogging(store),
+          }}
         />
       </Stack>
     )

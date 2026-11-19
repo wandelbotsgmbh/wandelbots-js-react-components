@@ -33,6 +33,24 @@ export type RobotControlIncrements = {
 };
 
 // @public
+export type RobotControlJoint = {
+    value: number;
+    min?: number;
+    max?: number;
+    name?: string;
+};
+
+// @public
+export type RobotControlJoints = {
+    joints: RobotControlJoint[];
+    linear?: boolean;
+    velocity: RobotControlVelocity;
+    onVelocityChange: (value: number) => void;
+    onJogStart: (index: number, direction: JogDirection) => void;
+    onJogStop: () => void;
+};
+
+// @public
 export type RobotControlOption = {
     id: string;
     label: string;
@@ -56,6 +74,7 @@ export type RobotControlPanelProps = {
     increments?: RobotControlIncrements;
     gizmoOrientation?: RefObject<Quaternion | null>;
     gizmoFrameQuaternion?: Quaternion | (() => Quaternion);
+    joints?: RobotControlJoints;
     sx?: SxProps<Theme>;
 };
 

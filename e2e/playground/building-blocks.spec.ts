@@ -273,6 +273,61 @@ test("jogs the TCP with RobotControlPanel: up while Z+ is held, and one step of 
   await screenshot(page, "building-blocks-robot-control-panel-increment")
 })
 
+test("jogs a joint with RobotControlPanel's Joint tab, one joint at a time, and stops it on release", async ({
+  page,
+}) => {
+  await openPage(page, "building-blocks")
+  const panel = section(page, "RobotControlPanel")
+  await panel.getByRole("tab", { name: "Joint" }).click()
+  const j2 = panel.getByRole("slider", { name: "J2 Shoulder" })
+  const j3 = panel.getByRole("slider", { name: "J3 Elbow" })
+  await expect(j2).not.toHaveAttribute("aria-disabled", "true")
+  const before = (await jointPositions())[1]
+
+  // A goal 20° above joint 2, along a track from aria-valuemin to
+  // aria-valuemax (in degrees) that spans the slider's width
+  const min = Number(await j2.getAttribute("aria-valuemin"))
+  const max = Number(await j2.getAttribute("aria-valuemax"))
+  await j2.scrollIntoViewIfNeeded()
+  const box = await j2.boundingBox()
+  if (!box) throw new Error("No slider J2")
+  const goal = (before * 180) / Math.PI + 20
+  await page.mouse.move(
+    box.x + (box.width * (goal - min)) / (max - min),
+    box.y + box.height / 2,
+  )
+  await page.mouse.down()
+  try {
+    await expect
+      .poll(async () => (await jointPositions())[1], {
+        message: "Joint 2 turns toward the goal while its track is pressed",
+        // On a CI runner, the jogging connection can need more than 10 s
+        timeout: 30_000,
+      })
+      .toBeGreaterThan(before + 0.01)
+    // The other joints wait
+    await expect(j3).toHaveAttribute("aria-disabled", "true")
+  } finally {
+    await page.mouse.up()
+  }
+
+  // Released: joint 2 stands still, two readings in a row the same
+  let last = Number.NaN
+  await expect
+    .poll(
+      async () => {
+        const now = (await jointPositions())[1]
+        const still = Math.abs(now - last) < 1e-5
+        last = now
+        return still
+      },
+      { message: "Joint 2 stops on release", timeout: 30_000 },
+    )
+    .toBe(true)
+  await expect(j3).not.toHaveAttribute("aria-disabled", "true")
+  await screenshot(page, "building-blocks-robot-control-panel-joint")
+})
+
 /** The numbers of a text, e.g. of the TCP orientation in degrees */
 function numbersOf(text: string) {
   return (text.match(/-?\d+(\.\d+)?/g) ?? []).map(Number)

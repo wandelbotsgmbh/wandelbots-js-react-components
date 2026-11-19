@@ -75,5 +75,6 @@
   "RobotControl.JogArea.Hint.HoldHandle.lb": "Hold a handle to jog · Release to stop",
   "RobotControl.JogArea.Hint.HoldButton.lb": "Hold a button to jog · Release to stop",
   "RobotControl.JogArea.Hint.ClickHandle.lb": "Click a handle to jog one step",
-  "RobotControl.JogArea.Hint.ClickButton.lb": "Click a button to jog one step"
+  "RobotControl.JogArea.Hint.ClickButton.lb": "Click a button to jog one step",
+  "RobotControl.Tab.Joint.bt": "Joint"
 }

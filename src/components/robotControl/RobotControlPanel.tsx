@@ -11,6 +11,7 @@ import type { Quaternion } from "three"
 import { externalizeComponent } from "../../externalizeComponent"
 import type { JogAxis, JogDirection, JogHandle } from "../jogging/jogHandle"
 import { type CartesianJogSettings, CartesianJogTab } from "./CartesianJogTab"
+import { JointJogTab } from "./JointJogTab"
 
 /** Whether a jog moves the TCP along the axes or turns it about them */
 export type JogMotion = "translate" | "rotate"
@@ -52,6 +53,39 @@ export type RobotControlIncrements = {
   ) => void
   /** The step that runs now: its control shows as pressed */
   running?: JogHandle | null
+}
+
+/** One joint of the Joint tab, in NOVA's units: rad, or mm for a linear axis */
+export type RobotControlJoint = {
+  /** Its live position */
+  value: number
+  /** Its lower limit: see `JoggingJointSlider` for a joint without limits */
+  min?: number
+  /** Its upper limit */
+  max?: number
+  /** What it is, e.g. "Base", shown after its label (J1, J2, …) */
+  name?: string
+}
+
+/** The Joint tab: what the app gives to jog joint by joint */
+export type RobotControlJoints = {
+  /** The joints in order: the panel labels them J1, J2, … */
+  joints: RobotControlJoint[]
+  /** The joints are linear axes, in mm and mm/s. Defaults to revolute joints. */
+  linear?: boolean
+  /** The velocity of a joint jog: rad/s, or mm/s for linear axes */
+  velocity: RobotControlVelocity
+  onVelocityChange: (value: number) => void
+  /**
+   * A joint's slider was pressed: jog joint `index` (from 0) in `direction`
+   * until `onJogStop`. As with `JoggingJointSlider`, one press can bring
+   * several starts and stops, always in turn; when the goal passes the
+   * joint, `onJogStop` and the `onJogStart` of the other way come in the
+   * same event. One joint jogs at a time.
+   */
+  onJogStart: (index: number, direction: JogDirection) => void
+  /** The joint must stop: it got to its goal, or its slider was let go */
+  onJogStop: () => void
 }
 
 /**
@@ -97,14 +131,20 @@ export type RobotControlPanelProps = {
   gizmoOrientation?: RefObject<Quaternion | null>
   /** The orientation of the frame the gizmo jogs along: see `JoggingGizmo` */
   gizmoFrameQuaternion?: Quaternion | (() => Quaternion)
+  /** The Joint tab. Without it, the panel has none. */
+  joints?: RobotControlJoints
   /** Styles of the panel's box, e.g. its width */
   sx?: SxProps<Theme>
 }
 
+/** A tab of the panel */
+type PanelTab = JogMotion | "joint"
+
 /**
  * The Robot control panel of the design: a header, the tabs Translate and
  * Rotate, and in them the TCP and the frame to jog along, Continuous or
- * Increment, the velocity, the step size, and the gizmo or the buttons.
+ * Increment, the velocity, the step size, and the gizmo or the buttons; and
+ * the tab Joint, with a slider per joint and the joint velocity.
  *
  * It moves nothing itself: the app gets the presses (`onJogStart`,
  * `onJogStop`, `increments.onStep`) and keeps the velocity and the selects
@@ -112,9 +152,11 @@ export type RobotControlPanelProps = {
  * size and whether it shows the gizmo or the buttons.
  */
 export const RobotControlPanel = externalizeComponent(
-  ({ onClose, sx, ...props }: RobotControlPanelProps) => {
+  ({ onClose, sx, joints, ...props }: RobotControlPanelProps) => {
     const { t } = useTranslation()
-    const [motion, setMotion] = useState<JogMotion>("translate")
+    const [chosenTab, setTab] = useState<PanelTab>("translate")
+    // The Joint tab goes when the app no longer gives joints
+    const tab = chosenTab === "joint" && !joints ? "translate" : chosenTab
     const [settings, setSettings] = useState<CartesianJogSettings>({
       mode: "continuous",
       view: "gizmo",
@@ -162,8 +204,8 @@ export const RobotControlPanel = externalizeComponent(
         </Stack>
 
         <Tabs
-          value={motion}
-          onChange={(_event, next: JogMotion) => setMotion(next)}
+          value={tab}
+          onChange={(_event, next: PanelTab) => setTab(next)}
           aria-label={title}
           // The panel can get narrower than its tabs: scroll rather than
           // cut the last one off
@@ -188,15 +230,26 @@ export const RobotControlPanel = externalizeComponent(
             label={t("RobotControl.Tab.Rotate.bt")}
             sx={{ minWidth: 0, paddingX: "12px", textTransform: "none" }}
           />
+          {joints && (
+            <Tab
+              value="joint"
+              label={t("RobotControl.Tab.Joint.bt")}
+              sx={{ minWidth: 0, paddingX: "12px", textTransform: "none" }}
+            />
+          )}
         </Tabs>
 
         <Stack sx={{ flexGrow: 1, overflowY: "auto", overflowX: "hidden" }}>
-          <CartesianJogTab
-            {...props}
-            motion={motion}
-            settings={settings}
-            onSettingsChange={setSettings}
-          />
+          {tab === "joint" && joints ? (
+            <JointJogTab joints={joints} disabled={props.disabled ?? false} />
+          ) : (
+            <CartesianJogTab
+              {...props}
+              motion={tab === "joint" ? "translate" : tab}
+              settings={settings}
+              onSettingsChange={setSettings}
+            />
+          )}
         </Stack>
       </Stack>
     )

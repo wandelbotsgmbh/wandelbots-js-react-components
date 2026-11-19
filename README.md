@@ -255,12 +255,13 @@ const [active, setActive] = useState<number | null>(null)
 ))}
 ```
 
-**RobotControlPanel** (from `/3d` or `/RobotControlPanel`) - The Robot control panel of the design, built from the parts above: the tabs Translate and Rotate, the TCP and the frame to jog along, Continuous or Increment, the velocity, the step size, and the gizmo or the buttons with a switch between them. An app that wants the whole panel imports this; an app that wants one part imports that part.
+**RobotControlPanel** (from `/3d` or `/RobotControlPanel`) - The Robot control panel of the design, built from the parts above: the tabs Translate and Rotate, with the TCP and the frame to jog along, Continuous or Increment, the velocity, the step size, and the gizmo or the buttons with a switch between them; and the tab Joint, with a `JoggingJointSlider` per joint and the joint velocity. An app that wants the whole panel imports this; an app that wants one part imports that part.
 
 - It moves nothing itself, as its parts: `onJogStart(motion, axis, direction)` and `onJogStop` for jogging while held, and `increments.onStep(motion, axis, direction, distance)` for one step per press. The app keeps the velocity and the selects in its own store; the panel keeps the tab, the mode, the step size and the view.
 - Velocities and step sizes are in NOVA's units: mm and mm/s to translate, rad and rad/s to rotate. The panel shows mm/s and °/s.
 - `tcp` and `jogFrame` show a select each, filled by the app. Without `increments`, there is no Continuous/Increment toggle. Without `gizmoOrientation` (from a `JoggingGizmoOrientation` in the app's 3D scene), it jogs with buttons only.
 - `onJogStop` also comes when the tab, the mode or the view changes while a control is held: the jog of that press must not go on.
+- `joints` gives the Joint tab: the joints' values and limits (rad, or mm with `linear`), their names, the joint velocity, and `onJogStart(index, direction)` and `onJogStop`. The panel jogs one joint at a time; the turn-around of a slider brings `onJogStop` and `onJogStart` in the same event, as described for `JoggingJointSlider`. Without `joints`, there is no Joint tab.
 
 ```tsx
 const orientation = useRef<Quaternion | null>(null)
@@ -280,6 +281,17 @@ const orientation = useRef<Quaternion | null>(null)
     steps: { translate: [0.1, 1, 5, 10], rotate: [0.001, 0.01, 0.05] },
     onStep: (motion, axis, direction, distance) =>
       jogStep(motion, axis, direction, distance),
+  }}
+  joints={{
+    joints: jointValues.map((value, index) => ({
+      value,
+      min: limits[index].lower_limit,
+      max: limits[index].upper_limit,
+    })),
+    velocity: { value: jointRadPerSec, min: 0.02, max: 1 },
+    onVelocityChange: setJointVelocity,
+    onJogStart: (index, direction) => startJointJogging(index, direction),
+    onJogStop: () => stopJogging(),
   }}
 />
 ```

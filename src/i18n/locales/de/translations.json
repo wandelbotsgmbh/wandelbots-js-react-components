@@ -74,5 +74,6 @@
   "RobotControl.JogArea.Hint.HoldHandle.lb": "Griff halten zum Verfahren · Loslassen zum Stoppen",
   "RobotControl.JogArea.Hint.HoldButton.lb": "Taste halten zum Verfahren · Loslassen zum Stoppen",
   "RobotControl.JogArea.Hint.ClickHandle.lb": "Griff klicken für einen Schritt",
-  "RobotControl.JogArea.Hint.ClickButton.lb": "Taste klicken für einen Schritt"
+  "RobotControl.JogArea.Hint.ClickButton.lb": "Taste klicken für einen Schritt",
+  "RobotControl.Tab.Joint.bt": "Gelenk"
 }

@@ -6,6 +6,8 @@ export {
   RobotControlPanel,
   RobotControlPanel as default,
   type RobotControlIncrements,
+  type RobotControlJoint,
+  type RobotControlJoints,
   type RobotControlOption,
   type RobotControlPanelProps,
   type RobotControlSelect,

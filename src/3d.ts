@@ -28,6 +28,8 @@ export {
   type JogMotion,
   RobotControlPanel,
   type RobotControlIncrements,
+  type RobotControlJoint,
+  type RobotControlJoints,
   type RobotControlOption,
   type RobotControlPanelProps,
   type RobotControlSelect,

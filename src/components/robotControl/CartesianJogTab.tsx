@@ -1,12 +1,13 @@
 import Divider from "@mui/material/Divider"
 import Stack from "@mui/material/Stack"
-import { type ReactNode, useRef } from "react"
+import { useRef } from "react"
 import { useTranslation } from "react-i18next"
 import type { JogAxis, JogDirection } from "../jogging/jogHandle"
 import { JogArea, type JogView } from "./JogArea"
 import { type JogMode, JogModeToggle } from "./JogModeToggle"
 import { InlineSelect, PanelSelect } from "./PanelSelect"
 import type { JogMotion, RobotControlPanelProps } from "./RobotControlPanel"
+import { Section } from "./Section"
 import { formatStep } from "./units"
 import { VelocityRow } from "./VelocityRow"
 
@@ -18,15 +19,13 @@ export type CartesianJogSettings = {
   step: Record<JogMotion, number>
 }
 
-type CartesianJogTabProps = Omit<RobotControlPanelProps, "onClose"> & {
+type CartesianJogTabProps = Omit<
+  RobotControlPanelProps,
+  "onClose" | "joints"
+> & {
   motion: JogMotion
   settings: CartesianJogSettings
   onSettingsChange: (settings: CartesianJogSettings) => void
-}
-
-/** A section of a tab, spaced as in the design */
-function Section({ children }: { children: ReactNode }) {
-  return <Stack sx={{ padding: "16px 20px", gap: "16px" }}>{children}</Stack>
 }
 
 /**
