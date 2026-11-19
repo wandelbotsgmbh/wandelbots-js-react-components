@@ -1,50 +1,37 @@
-import Box from "@mui/material/Box"
-import { alpha, useTheme } from "@mui/material/styles"
-import { Fragment, useMemo, useRef } from "react"
+import { useMemo, useRef } from "react"
 import { type Group, Matrix4, Quaternion, Vector3 } from "three"
 import {
-  isSameJogHandle,
   JOG_AXES,
   JOG_DIRECTIONS,
   type JogAxis,
   type JogDirection,
-  type JogHandle,
 } from "../jogHandle"
-import {
-  ARROW_HEAD_LENGTH as HEAD_LENGTH,
-  ARROW_HEAD_RADIUS as HEAD_RADIUS,
-  axisColor,
-  type GizmoHandlesProps,
-  type GizmoSceneProps,
-  gizmoArcGrabSizes,
-  gizmoMeasures,
-  handleKey,
-  overlayRef,
-  UP,
-} from "./gizmoShared"
+import { arcGrabAreasOf } from "./arcGrabAreas"
 import {
   ARC_BASIS,
   ARC_RADIUS,
   ARC_SWEEP,
   arcAngles,
-  arcGrabAreasOf,
   projectJogArcs,
-} from "./jogGizmoArcs"
-import { UNIT_VECTOR } from "./jogGizmoProjection"
+} from "./arcs"
+import {
+  ARROW_HEAD_LENGTH as HEAD_LENGTH,
+  ARROW_HEAD_RADIUS as HEAD_RADIUS,
+  axisColor,
+  focusKey,
+  type GizmoSceneProps,
+  gizmoArcGrabSizes,
+  HALVES,
+  halfKey,
+  haloKey,
+  handleKey,
+  NOWHERE,
+  UP,
+} from "./gizmoShared"
+import { UNIT_VECTOR } from "./gizmoView"
 import { useGizmoTurn } from "./useGizmoTurn"
 
 const TUBE_RADIUS = 0.03
-
-/** A band takes presses in two halves: see JogArcGrabArea */
-const HALVES = [0, 1] as const
-
-const halfKey = (handle: JogHandle, half: number) =>
-  `half:${handleKey(handle)}:${half}`
-const haloKey = (handle: JogHandle) => `halo:${handleKey(handle)}`
-const focusKey = (handle: JogHandle) => `focus:${handleKey(handle)}`
-
-/** A clip path that shows nothing and takes no press */
-const NOWHERE = "polygon(0 0, 0 0, 0 0)"
 
 /**
  * The rotation gizmo's arcs, turned by `orientation` whenever it turns. Also
@@ -213,141 +200,5 @@ function ArcHead({
       <coneGeometry args={[HEAD_RADIUS, HEAD_LENGTH, 20]} />
       <meshBasicMaterial color={color} transparent opacity={opacity} />
     </mesh>
-  )
-}
-
-/**
- * The rotation handles: a round button on each arrowhead, which the keyboard
- * reaches and which names the handle, and a band along its arc, so it can be
- * grabbed anywhere along it
- */
-export function RotationHandles({
-  held,
-  activeHandle,
-  hovered,
-  disabled,
-  onHover,
-  handlersFor,
-  label,
-  overlay,
-  size,
-}: GizmoHandlesProps) {
-  const theme = useTheme()
-  const { gripPx } = gizmoMeasures(size)
-
-  return JOG_AXES.flatMap((axis) =>
-    JOG_DIRECTIONS.map((direction) => {
-      const handle = { axis, direction }
-      const color = axisColor(axis)
-      const pressed =
-        isSameJogHandle(held, handle) || isSameJogHandle(activeHandle, handle)
-      const lit = !disabled && (pressed || isSameJogHandle(hovered, handle))
-      const grip = {
-        onPointerEnter: () => onHover(handle),
-        onPointerLeave: () => onHover(null),
-        ...handlersFor(handle),
-      }
-      const common = {
-        cursor: disabled ? "default" : "pointer",
-        touchAction: "none",
-        userSelect: "none",
-      } as const
-
-      return (
-        <Fragment key={handleKey(handle)}>
-          {/* The highlight of the whole band, drawn once */}
-          <Box
-            component="span"
-            aria-hidden
-            ref={overlayRef(overlay, haloKey(handle))}
-            sx={{
-              // Cut to the band along the arc by RotationScene
-              position: "absolute",
-              inset: 0,
-              clipPath: NOWHERE,
-              pointerEvents: "none",
-              background: pressed
-                ? alpha(color, 0.25)
-                : lit
-                  ? alpha(color, 0.12)
-                  : "transparent",
-            }}
-          />
-          {HALVES.map((half) => (
-            <Box
-              key={half}
-              component="span"
-              aria-hidden
-              ref={overlayRef(overlay, halfKey(handle, half))}
-              {...grip}
-              sx={{
-                // Covers the gizmo, cut to its half of the band by
-                // RotationScene, every frame the gizmo turns
-                position: "absolute",
-                inset: 0,
-                clipPath: NOWHERE,
-                ...common,
-              }}
-            />
-          ))}
-          <Box
-            component="button"
-            type="button"
-            ref={overlayRef(overlay, handleKey(handle))}
-            disabled={disabled}
-            aria-label={label(handle)}
-            aria-pressed={pressed}
-            {...grip}
-            sx={{
-              // Placed on the arrowhead by RotationScene. It shows nothing
-              // itself: the band's highlight covers the arrowhead
-              position: "absolute",
-              width: gripPx,
-              height: gripPx,
-              transform: "translate(-50%, -50%)",
-              padding: 0,
-              border: "none",
-              borderRadius: "50%",
-              background: "transparent",
-              // Around the arrowhead only where the arc has no band; else
-              // the ring below goes around the whole band
-              "&:focus-visible": {
-                outline: `2px solid ${theme.palette.primary.main}`,
-              },
-              "&[data-band='shown']:focus-visible": { outline: "none" },
-              ...common,
-            }}
-          />
-          {/* The keyboard's focus ring around the band, as the translation
-              handles have it around their bar. It follows the button. */}
-          <Box
-            component="svg"
-            aria-hidden
-            sx={{
-              position: "absolute",
-              left: 0,
-              top: 0,
-              width: size,
-              height: size,
-              overflow: "visible",
-              pointerEvents: "none",
-              display: "none",
-              zIndex: 100,
-              "button[data-band='shown']:focus-visible + &": {
-                display: "block",
-              },
-            }}
-          >
-            <path
-              ref={overlayRef(overlay, focusKey(handle))}
-              fill="none"
-              stroke={theme.palette.primary.main}
-              strokeWidth={2}
-              strokeLinejoin="round"
-            />
-          </Box>
-        </Fragment>
-      )
-    }),
   )
 }

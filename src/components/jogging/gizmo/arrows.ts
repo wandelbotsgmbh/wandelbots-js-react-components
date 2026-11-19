@@ -1,10 +1,14 @@
-import { Matrix4, type Object3D, Quaternion, Vector3 } from "three"
+import type { Quaternion } from "three"
 import {
   JOG_AXES,
   JOG_DIRECTIONS,
   type JogAxis,
   type JogDirection,
 } from "../jogHandle"
+import { UNIT_VECTOR } from "./gizmoView"
+
+// The translation gizmo: where its arrows land on screen, and where each
+// can be pressed
 
 /** A jog handle where the gizmo draws it */
 export type ProjectedJogHandle = {
@@ -16,70 +20,6 @@ export type ProjectedJogHandle = {
   y: number
   /** Toward the viewer is positive; nearer handles are drawn on top */
   depth: number
-}
-
-/** The unit vector along each axis */
-export const UNIT_VECTOR: Record<JogAxis, Vector3> = {
-  x: new Vector3(1, 0, 0),
-  y: new Vector3(0, 1, 0),
-  z: new Vector3(0, 0, 1),
-}
-
-/**
- * The jog frame as the camera sees it, `camera⁻¹ · frame`: what turns the
- * gizmo so that the handle pointing right on screen moves the robot right on
- * screen.
- *
- * Both are world orientations, so this works whichever axis is up in the
- * scene.
- */
-export function jogFrameInCamera(
-  cameraWorldQuaternion: Quaternion,
-  frameWorldQuaternion: Quaternion,
-  target = new Quaternion(),
-): Quaternion {
-  return target
-    .copy(cameraWorldQuaternion)
-    .invert()
-    .multiply(frameWorldQuaternion)
-}
-
-/**
- * The dictionary from NOVA's axes to the 3D scene's: NOVA has Z up, the
- * scene (as that of this library's robots) Y up. NOVA's X is the scene's X,
- * its Y the scene's -Z, its Z the scene's Y. The teaching app's gizmo uses
- * the same table.
- */
-export const NOVA_AXES_IN_SCENE = new Quaternion().setFromRotationMatrix(
-  new Matrix4().makeBasis(
-    new Vector3(1, 0, 0),
-    new Vector3(0, 0, -1),
-    new Vector3(0, 1, 0),
-  ),
-)
-
-const cameraWorld = new Quaternion()
-
-/** NOVA's axes as `camera` sees them, in a scene that is Y up */
-export function novaAxesSeenBy(
-  camera: Object3D,
-  target = new Quaternion(),
-): Quaternion {
-  camera.getWorldQuaternion(cameraWorld)
-  return jogFrameInCamera(cameraWorld, NOVA_AXES_IN_SCENE, target)
-}
-
-/**
- * The jog frame as the camera sees it: `view`, NOVA's axes as the camera
- * sees them (see {@link novaAxesSeenBy}), turned by `frame`, the jog frame
- * in NOVA's coordinates
- */
-export function jogFrameInView(
-  view: Quaternion,
-  frame: Quaternion,
-  target = new Quaternion(),
-): Quaternion {
-  return target.copy(view).multiply(frame)
 }
 
 /**
@@ -108,19 +48,6 @@ export function projectJogHandles(
     }
   }
   return handles
-}
-
-/**
- * The gizmo radius, in px, that fits a `width` × `height` canvas whichever
- * way the gizmo is turned, keeping `marginPx` free for the labels and grab
- * areas around the tips. At least 1, so an unmeasured canvas still draws.
- */
-export function fitGizmoRadiusPx(
-  width: number,
-  height: number,
-  marginPx: number,
-): number {
-  return Math.max(1, Math.min(width, height) / 2 - marginPx)
 }
 
 /** Where a handle can be grabbed: a bar along its arrow */
@@ -223,24 +150,4 @@ export function grabAreasOf(
       layer: layers.get(i) ?? 0,
     }
   })
-}
-
-/**
- * Below this, two rotations count as the same: about a sixtieth of a degree,
- * far under what shows on screen and far over float noise
- */
-const SAME_ROTATION_EPSILON = 1e-8
-
-/**
- * Whether `next` is a different rotation from `previous`, so the gizmo has to
- * be drawn anew. A camera orientation computed afresh each frame differs in
- * its last digits without turning, and a quaternion and its negation are the
- * same rotation, so this compares rotations, not numbers.
- */
-export function hasTurned(
-  previous: Quaternion | null,
-  next: Quaternion,
-): boolean {
-  if (!previous) return true
-  return Math.abs(previous.dot(next)) < 1 - SAME_ROTATION_EPSILON
 }

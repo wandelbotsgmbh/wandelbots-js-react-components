@@ -11,10 +11,16 @@ import {
   jogHandleName,
 } from "../jogHandle"
 import { useHoldToJog } from "../useHoldToJog"
-import { RotationHandles, RotationScene } from "./gizmoRotation"
-import { type GizmoOverlay, gizmoMeasures } from "./gizmoShared"
-import { TranslationHandles, TranslationScene } from "./gizmoTranslation"
-import { fitGizmoRadiusPx, jogFrameInView } from "./jogGizmoProjection"
+import {
+  fitGizmoRadiusPx,
+  type GizmoOverlay,
+  gizmoMeasures,
+} from "./gizmoShared"
+import { jogFrameInView } from "./gizmoView"
+import { RotationHandles } from "./RotationHandles"
+import { RotationScene } from "./RotationScene"
+import { TranslationHandles } from "./TranslationHandles"
+import { TranslationScene } from "./TranslationScene"
 
 /**
  * Props of {@link JoggingGizmo}

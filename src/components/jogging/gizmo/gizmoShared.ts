@@ -1,20 +1,38 @@
+import { alpha, type Theme } from "@mui/material/styles"
 import type { RefObject } from "react"
 import { type Quaternion, Vector3 } from "three"
-import type { JogAxis, JogHandle } from "../jogHandle"
+import { isSameJogHandle, type JogAxis, type JogHandle } from "../jogHandle"
 import { cartesianAxisColors } from "../joggingColors"
 import type { useHoldToJog } from "../useHoldToJog"
-import type { JogArcGrabSizes } from "./jogGizmoArcs"
-import type { JogGrabSizes } from "./jogGizmoProjection"
+import type { JogArcGrabSizes } from "./arcGrabAreas"
+import type { JogGrabSizes } from "./arrows"
+
+// The words the gizmo's code uses:
+//
+// - handle: one jog control, an axis and a direction, e.g. X+ or Rx+
+//   (JogHandle). Translating, it is half of an arrow. Rotating, it is an arc.
+// - scene: the gizmo's own small 3D drawing, in its canvas (…Scene)
+// - handles: the elements laid over the drawing, which take the presses and
+//   the keyboard (…Handles). The button of a handle names it, e.g. "Jog X+".
+// - overlay: those elements, placed by the scene each time the gizmo turns,
+//   without React (GizmoOverlay)
+// - view: NOVA's axes as the camera of the app's 3D view sees them
+//   (JoggingGizmoOrientation, gizmoView.ts)
+// - frame: the axes the robot jogs along, e.g. the world's or the tool's
+//   (frameQuaternion)
+// - grab area: where a press reaches a handle. A bar along an arrow
+//   (arrows.ts). A band along an arc, in two halves, and a circle on the
+//   arc's arrowhead (arcGrabAreas.ts).
+// - layer: which grab area is on top where two overlap
+// - highlight: the tint of a grab area while it is hovered or held
 
 export const UP = new Vector3(0, 1, 0)
 
 /** Length of an arrowhead, in gizmo radii: an arrow is 1 long */
 export const ARROW_HEAD_LENGTH = 0.26
+
 /** Radius of an arrowhead's base, in gizmo radii */
 export const ARROW_HEAD_RADIUS = 0.1
-
-export const handleKey = (handle: JogHandle) =>
-  `${handle.axis}${handle.direction}`
 
 const AXIS_KEY = { x: "X", y: "Y", z: "Z" } as const
 
@@ -59,6 +77,19 @@ export function gizmoMeasures(size: number) {
 }
 
 /**
+ * The gizmo radius, in px, that fits a `width` × `height` canvas whichever
+ * way the gizmo is turned, keeping `marginPx` free for the labels and grab
+ * areas around the tips. At least 1, so an unmeasured canvas still draws.
+ */
+export function fitGizmoRadiusPx(
+  width: number,
+  height: number,
+  marginPx: number,
+): number {
+  return Math.max(1, Math.min(width, height) / 2 - marginPx)
+}
+
+/**
  * The measures that the grab areas of a gizmo `size` px wide are laid out
  * by, with `radiusPx` px per gizmo radius
  */
@@ -98,6 +129,24 @@ export function overlayRef(overlay: RefObject<GizmoOverlay>, key: string) {
   }
 }
 
+export const handleKey = (handle: JogHandle) =>
+  `${handle.axis}${handle.direction}`
+
+export const labelKey = (axis: JogAxis) => `label:${axis}`
+
+/** A band takes presses in two halves: see JogArcGrabArea */
+export const HALVES = [0, 1] as const
+
+export const halfKey = (handle: JogHandle, half: number) =>
+  `half:${handleKey(handle)}:${half}`
+
+export const haloKey = (handle: JogHandle) => `halo:${handleKey(handle)}`
+
+export const focusKey = (handle: JogHandle) => `focus:${handleKey(handle)}`
+
+/** A clip path that shows nothing and takes no press */
+export const NOWHERE = "polygon(0 0, 0 0, 0 0)"
+
 /** What the 3D half of a gizmo (inside the canvas) gets */
 export type GizmoSceneProps = {
   orientation: RefObject<Quaternion | null>
@@ -125,3 +174,55 @@ export type GizmoHandlesProps = {
   label: (handle: JogHandle) => string
   overlay: RefObject<GizmoOverlay>
 }
+
+/**
+ * How a handle shows: pressed while it is held or shown as active, lit
+ * (highlighted) while it is pressed or hovered
+ */
+export function handleState(
+  handle: JogHandle,
+  {
+    held,
+    activeHandle,
+    hovered,
+    disabled,
+  }: Pick<GizmoHandlesProps, "held" | "activeHandle" | "hovered" | "disabled">,
+) {
+  const pressed =
+    isSameJogHandle(held, handle) || isSameJogHandle(activeHandle, handle)
+  const lit = !disabled && (pressed || isSameJogHandle(hovered, handle))
+  return { pressed, lit }
+}
+
+/** The highlight of a handle's grab area, stronger while it is pressed */
+export function highlightOf(
+  color: string,
+  { pressed, lit }: ReturnType<typeof handleState>,
+) {
+  if (pressed) return alpha(color, 0.25)
+  return lit ? alpha(color, 0.12) : "transparent"
+}
+
+/** What each element that grabs a handle gets: hover, and press and hold */
+export function gripProps(
+  handle: JogHandle,
+  { onHover, handlersFor }: Pick<GizmoHandlesProps, "onHover" | "handlersFor">,
+) {
+  return {
+    onPointerEnter: () => onHover(handle),
+    onPointerLeave: () => onHover(null),
+    ...handlersFor(handle),
+  }
+}
+
+/** The styles of each element that grabs a handle: no browser gesture on it */
+export const gripStyle = (disabled: boolean) =>
+  ({
+    cursor: disabled ? "default" : "pointer",
+    touchAction: "none",
+    userSelect: "none",
+  }) as const
+
+/** The keyboard's focus outline, in the theme's primary color */
+export const focusOutline = (theme: Theme) =>
+  `2px solid ${theme.palette.primary.main}`

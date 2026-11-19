@@ -1,5 +1,5 @@
 import { Matrix4, Quaternion, Vector3 } from "three"
-import { jogFrameInCamera } from "../jogGizmoProjection"
+import { jogFrameInCamera } from "../gizmoView"
 
 /**
  * The jog frame as a camera sees it that looks at it from `azimuth` and

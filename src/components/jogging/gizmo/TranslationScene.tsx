@@ -1,38 +1,29 @@
-import Box from "@mui/material/Box"
-import { alpha, useTheme } from "@mui/material/styles"
 import { useMemo, useRef } from "react"
 import { type Group, Quaternion } from "three"
 import {
-  isSameJogHandle,
   JOG_AXES,
   JOG_DIRECTIONS,
   type JogAxis,
   type JogDirection,
 } from "../jogHandle"
+import { grabAreasOf, projectJogHandles } from "./arrows"
 import {
   ARROW_HEAD_LENGTH as HEAD_LENGTH,
   ARROW_HEAD_RADIUS as HEAD_RADIUS,
   axisColor,
-  type GizmoHandlesProps,
   type GizmoSceneProps,
   gizmoGrabSizes,
-  gizmoMeasures,
   handleKey,
-  overlayRef,
+  labelKey,
   UP,
 } from "./gizmoShared"
-import {
-  grabAreasOf,
-  projectJogHandles,
-  UNIT_VECTOR,
-} from "./jogGizmoProjection"
+import { UNIT_VECTOR } from "./gizmoView"
 import { useGizmoTurn } from "./useGizmoTurn"
 
 const SHAFT_RADIUS = 0.035
+
 /** Labels sit this far out from the center, in gizmo radii */
 const LABEL_DISTANCE = 1.28
-
-const labelKey = (axis: JogAxis) => `label:${axis}`
 
 /**
  * The translation gizmo's arrows, turned by `orientation` whenever it turns.
@@ -160,89 +151,5 @@ function Arrow({
         )
       })}
     </group>
-  )
-}
-
-/**
- * The translation handles: a button per direction, a bar along its half of
- * the axis, so it can be grabbed anywhere along it. And the axis labels.
- */
-export function TranslationHandles({
-  held,
-  activeHandle,
-  disabled,
-  onHover,
-  handlersFor,
-  label,
-  overlay,
-  size,
-}: GizmoHandlesProps) {
-  const theme = useTheme()
-  const { gripPx, labelFontPx } = gizmoMeasures(size)
-
-  return (
-    <>
-      {JOG_AXES.map((axis) => (
-        <Box
-          key={axis}
-          component="span"
-          aria-hidden
-          ref={overlayRef(overlay, labelKey(axis))}
-          sx={{
-            position: "absolute",
-            transform: "translate(-50%, -50%)",
-            pointerEvents: "none",
-            fontSize: labelFontPx,
-            color: axisColor(axis),
-            opacity: disabled ? 0.4 : 1,
-          }}
-        >
-          {axis.toUpperCase()}
-        </Box>
-      ))}
-
-      {JOG_AXES.flatMap((axis) =>
-        JOG_DIRECTIONS.map((direction) => {
-          const handle = { axis, direction }
-          const color = axisColor(axis)
-          const pressed =
-            isSameJogHandle(held, handle) ||
-            isSameJogHandle(activeHandle, handle)
-          return (
-            <Box
-              key={handleKey(handle)}
-              component="button"
-              type="button"
-              ref={overlayRef(overlay, handleKey(handle))}
-              disabled={disabled}
-              aria-label={label(handle)}
-              aria-pressed={pressed}
-              onPointerEnter={() => onHover(handle)}
-              onPointerLeave={() => onHover(null)}
-              {...handlersFor(handle)}
-              sx={{
-                // Placed, sized and turned along its half of the axis by
-                // TranslationScene, every frame the gizmo turns
-                position: "absolute",
-                height: gripPx,
-                transformOrigin: "0 50%",
-                padding: 0,
-                borderRadius: `${gripPx / 2}px`,
-                border: "none",
-                background: "transparent",
-                cursor: disabled ? "default" : "pointer",
-                touchAction: "none",
-                userSelect: "none",
-                "&:hover:not(:disabled)": { background: alpha(color, 0.12) },
-                "&:focus-visible": {
-                  outline: `2px solid ${theme.palette.primary.main}`,
-                },
-                ...(pressed && { background: alpha(color, 0.25) }),
-              }}
-            />
-          )
-        }),
-      )}
-    </>
   )
 }

@@ -1,103 +1,23 @@
-import { Quaternion, Vector3 } from "three"
+import { Quaternion } from "three"
 import { describe, expect, it } from "vitest"
+import { about, arcName, arcOf } from "./__fixtures__/helpers"
 import { seenFrom, VIEWS } from "./__fixtures__/views"
-import { gizmoArcGrabSizes, gizmoMeasures } from "./gizmoShared"
 import {
-  ARC_BASIS,
-  ARC_RADIUS,
-  arcAngles,
   arcGrabAreasOf,
   type JogArcGrabArea,
   type JogArcGrabSizes,
+} from "./arcGrabAreas"
+import {
+  ARC_RADIUS,
+  arcAngles,
   type ProjectedJogArc,
   projectJogArcs,
-} from "./jogGizmoArcs"
-import { fitGizmoRadiusPx, UNIT_VECTOR } from "./jogGizmoProjection"
-
-const about = (axis: [number, number, number], degrees: number) =>
-  new Quaternion().setFromAxisAngle(
-    new Vector3(...axis),
-    (degrees * Math.PI) / 180,
-  )
-
-const nameOf = (arc: ProjectedJogArc) => `${arc.axis}${arc.direction}`
-
-function arcOf(arcs: ProjectedJogArc[], name: string) {
-  const arc = arcs.find((a) => nameOf(a) === name)
-  if (!arc) throw new Error(`no arc ${name}`)
-  return arc
-}
-
-describe("projectJogArcs", () => {
-  it("draws each axis's arcs on a circle about it: seen along Z, Z's circle is round and X's and Y's are lines", () => {
-    const arcs = projectJogArcs(new Quaternion())
-
-    for (const name of ["z+", "z-"]) {
-      const arc = arcOf(arcs, name)
-      expect(arc.openness).toBeCloseTo(1)
-      for (const p of arc.points) {
-        expect(Math.hypot(p.x, p.y)).toBeCloseTo(ARC_RADIUS)
-        expect(p.depth).toBeCloseTo(0)
-      }
-    }
-    for (const name of ["x+", "x-"]) {
-      const arc = arcOf(arcs, name)
-      expect(arc.openness).toBeCloseTo(0)
-      for (const p of arc.points) expect(p.x).toBeCloseTo(0)
-    }
-  })
-
-  it("turns the + arc counterclockwise as seen from the tip of its axis, the − arc clockwise (right-hand rule)", () => {
-    // Seen along Z, from its tip
-    const arcs = projectJogArcs(new Quaternion())
-    // Screen y grows downward, so a counterclockwise turn has a negative
-    // cross product of where the arrowhead is and where it points
-    const turn = ({ head }: ProjectedJogArc) =>
-      head.x * head.dy - head.y * head.dx
-
-    expect(turn(arcOf(arcs, "z+"))).toBeLessThan(0)
-    expect(turn(arcOf(arcs, "z-"))).toBeGreaterThan(0)
-  })
-
-  it("points each arrowhead the way its rotation moves it on screen, whichever way the camera looks", () => {
-    const wrong: string[] = []
-    const step = 1e-4
-    for (const [azimuth, elevation] of VIEWS) {
-      const q = seenFrom(azimuth, elevation)
-      for (const arc of projectJogArcs(q)) {
-        // The arrowhead's point, turned a little about the axis the way the
-        // handle turns
-        const [u, v] = ARC_BASIS[arc.axis]
-        const angle = arcAngles(arc.direction).head
-        const point = u
-          .clone()
-          .multiplyScalar(Math.cos(angle) * ARC_RADIUS)
-          .addScaledVector(v, Math.sin(angle) * ARC_RADIUS)
-        const turned = point
-          .clone()
-          .applyQuaternion(
-            new Quaternion().setFromAxisAngle(
-              UNIT_VECTOR[arc.axis],
-              arc.direction === "+" ? step : -step,
-            ),
-          )
-        const from = point.applyQuaternion(q)
-        const to = turned.applyQuaternion(q)
-        const dx = to.x - from.x
-        const dy = -(to.y - from.y)
-        const length = Math.hypot(dx, dy)
-        // Moving (almost) straight at the viewer: no way on screen to check
-        if (length < 0.05 * step) continue
-        const agreement = (dx * arc.head.dx + dy * arc.head.dy) / length
-        if (agreement < Math.cos((0.5 * Math.PI) / 180)) {
-          wrong.push(`${nameOf(arc)} at ${azimuth}°/${elevation}°`)
-        }
-      }
-    }
-
-    expect(wrong.slice(0, 10)).toEqual([])
-  })
-})
+} from "./arcs"
+import {
+  fitGizmoRadiusPx,
+  gizmoArcGrabSizes,
+  gizmoMeasures,
+} from "./gizmoShared"
 
 describe("arcGrabAreasOf", () => {
   const sizes: JogArcGrabSizes = {
@@ -113,7 +33,7 @@ describe("arcGrabAreasOf", () => {
     return {
       arcs,
       areas,
-      area: (name: string) => areas[arcs.findIndex((a) => nameOf(a) === name)],
+      area: (name: string) => areas[arcs.findIndex((a) => arcName(a) === name)],
     }
   }
 
@@ -155,12 +75,12 @@ describe("arcGrabAreasOf", () => {
       const onHead =
         Math.hypot(x - area.head.x, y - area.head.y) <= measures.gripPx / 2
       if (onHead && area.headLayer > layer) {
-        reached = nameOf(arcs[i])
+        reached = arcName(arcs[i])
         layer = area.headLayer
       }
       for (const half of area.halves) {
         if (half.layer > layer && inPolygon(half.polygon, x, y)) {
-          reached = nameOf(arcs[i])
+          reached = arcName(arcs[i])
           layer = half.layer
         }
       }
@@ -230,7 +150,7 @@ describe("arcGrabAreasOf", () => {
     // + arc and reaches 13 px past its center (half its length)
     const [hx, hy] = at(end)
     const { dx, dy } = layoutOf(new Quaternion()).arcs.find(
-      (a) => nameOf(a) === "z+",
+      (a) => arcName(a) === "z+",
     )?.head ?? { dx: 0, dy: 0 }
     expect(inBand(area, hx + dx * 18, hy + dy * 18)).toBe(true)
     expect(inBand(area, hx + dx * 25, hy + dy * 25)).toBe(false)
@@ -300,9 +220,9 @@ describe("arcGrabAreasOf", () => {
         )
         if (underArc) covered++
         const reached = pressAt(layout, x, y, DEFAULT_SIZES)
-        if (reached !== nameOf(layout.arcs[i])) {
+        if (reached !== arcName(layout.arcs[i])) {
           wrong.push(
-            `${nameOf(layout.arcs[i])} at ${azimuth}°/${elevation}° turns ${reached}`,
+            `${arcName(layout.arcs[i])} at ${azimuth}°/${elevation}° turns ${reached}`,
           )
         }
       })
@@ -334,9 +254,9 @@ describe("arcGrabAreasOf", () => {
           )
           if (crowded) continue
           const reached = pressAt(layout, x, y, DEFAULT_SIZES)
-          if (reached !== nameOf(layout.arcs[i])) {
+          if (reached !== arcName(layout.arcs[i])) {
             wrong.push(
-              `${nameOf(layout.arcs[i])} at ${azimuth}°/${elevation}° turns ${reached}`,
+              `${arcName(layout.arcs[i])} at ${azimuth}°/${elevation}° turns ${reached}`,
             )
             return
           }
@@ -398,9 +318,9 @@ describe("arcGrabAreasOf", () => {
             crossings++
             const nearer = p.depth > q.depth ? a : b
             const reached = pressAt(layout, x, y, DEFAULT_SIZES)
-            if (reached !== nameOf(nearer)) {
+            if (reached !== arcName(nearer)) {
               wrong.push(
-                `${nameOf(a)} × ${nameOf(b)} at ${azimuth}°/${elevation}° turns ${reached} (${x.toFixed(1)},${y.toFixed(1)} ${p.depth.toFixed(2)}/${q.depth.toFixed(2)})`,
+                `${arcName(a)} × ${arcName(b)} at ${azimuth}°/${elevation}° turns ${reached} (${x.toFixed(1)},${y.toFixed(1)} ${p.depth.toFixed(2)}/${q.depth.toFixed(2)})`,
               )
             }
           }

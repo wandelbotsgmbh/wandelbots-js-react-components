@@ -1,7 +1,7 @@
 import { useFrame, useThree } from "@react-three/fiber"
 import { type RefObject, useEffect, useRef } from "react"
 import type { Group, Quaternion } from "three"
-import { hasTurned } from "./jogGizmoProjection"
+import { hasTurned } from "./gizmoView"
 
 /**
  * Turns `group` with `orientation`, and has `place` lay the handles over it,

@@ -1,7 +1,7 @@
 import { useFrame, useThree } from "@react-three/fiber"
 import type { RefObject } from "react"
 import { Quaternion } from "three"
-import { novaAxesSeenBy } from "./jogGizmoProjection"
+import { novaAxesSeenBy } from "./gizmoView"
 
 /**
  * Props of {@link JoggingGizmoOrientation}
