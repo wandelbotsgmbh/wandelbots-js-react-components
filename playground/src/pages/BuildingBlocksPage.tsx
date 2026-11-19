@@ -27,6 +27,7 @@ import {
   JoggingCartesianAxisControl,
   JoggingGizmo,
   JoggingGizmoOrientation,
+  JoggingJointSlider,
   JoggingJointValueControl,
   type JoggingStore,
   LoadingCover,
@@ -77,6 +78,16 @@ export function BuildingBlocksPage({ instance, motionGroup }: PageProps) {
     >
       {withStore((store) => (
         <JointValueControls store={store} />
+      ))}
+    </Section>
+  )
+  const jointSliders = (
+    <Section
+      title="JoggingJointSlider"
+      description="Joint 1 as a slider across its limits; an app shows one per joint. Hover the track to see the goal under the pointer; press there to jog the joint toward it until it gets there or you let go. While held, the goal follows the pointer. A held arrow key jogs the focused slider toward a limit. Below it, joint 2, disabled."
+    >
+      {withStore((store) => (
+        <JointSliders store={store} />
       ))}
     </Section>
   )
@@ -142,6 +153,7 @@ export function BuildingBlocksPage({ instance, motionGroup }: PageProps) {
         <Stack gap={3}>
           {cartesian}
           {velocity}
+          {jointSliders}
           {modal}
         </Stack>
         <Stack gap={3}>
@@ -352,6 +364,64 @@ const JointValueControls = observer(({ store }: { store: JoggingStore }) => {
           {...jointProps(1)}
           startJogging={() => {}}
           stopJogging={() => {}}
+          disabled
+        />
+      </Stack>
+    </Stack>
+  )
+})
+
+const JointSliders = observer(({ store }: { store: JoggingStore }) => {
+  const [angleUnit, setAngleUnit] = useState<"deg" | "rad">("deg")
+  // A prismatic joint (a linear axis) is in mm
+  const linear = store.jointType !== JointTypeEnum.RevoluteJoint
+  const limits = (index: number) =>
+    store.motionGroupDescription.operation_limits.auto_limits?.joints?.[index]
+      ?.position
+  const values =
+    store.jogger.motionStream.rapidlyChangingMotionState.joint_position
+  const sixAxis = values.length === 6
+
+  return (
+    <Stack gap={2}>
+      <ToggleButtonGroup
+        exclusive
+        size="small"
+        value={angleUnit}
+        onChange={(_, value) => value && setAngleUnit(value)}
+        aria-label="Angle unit"
+        sx={{ alignSelf: "flex-start" }}
+      >
+        <ToggleButton value="deg">Degrees</ToggleButton>
+        <ToggleButton value="rad">Radians</ToggleButton>
+      </ToggleButtonGroup>
+      <JoggingJointSlider
+        label="J1"
+        name={sixAxis ? "Base" : undefined}
+        value={values[0] ?? 0}
+        min={limits(0)?.lower_limit}
+        max={limits(0)?.upper_limit}
+        linear={linear}
+        angleUnit={angleUnit}
+        onJogStart={(direction) => startJogging(store, { joint: 0, direction })}
+        onJogStop={() => stopJogging(store)}
+        // Joints jog without the inverse solver
+        disabled={store.isLocked}
+      />
+      <Stack gap={1}>
+        <Typography variant="caption" color="text.secondary">
+          Joint 2, disabled
+        </Typography>
+        <JoggingJointSlider
+          label="J2"
+          name={sixAxis ? "Shoulder" : undefined}
+          value={values[1] ?? 0}
+          min={limits(1)?.lower_limit}
+          max={limits(1)?.upper_limit}
+          linear={linear}
+          angleUnit={angleUnit}
+          onJogStart={() => {}}
+          onJogStop={() => {}}
           disabled
         />
       </Stack>

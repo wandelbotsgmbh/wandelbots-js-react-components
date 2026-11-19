@@ -210,6 +210,27 @@ const orientation = useRef<Quaternion | null>(null)
 />
 ```
 
+**JoggingJointSlider** - One joint as a slider across its limits, with the thumb at the joint's value and the limits below; an app shows one per joint. Hover the track to see the goal under the pointer, and press there to jog the joint toward it: it stops when it gets there or when the slider is let go. While held, the goal follows the pointer, and the joint turns around when the goal passes it. An arrow key held on the focused slider jogs toward that limit.
+
+- `value`, `min` and `max` are in NOVA's units: radians, or mm with `linear`. A revolute joint without limits spans a full turn. `angleUnit` shows degrees (default) or radians.
+- `onJogStart(direction)` and `onJogStop` leave the jogging to the app, as for `JoggingGizmo` and `JoggingButtons`. One press can bring several starts and stops, always in turn: the joint stops at the goal, and starts again when the goal moves on.
+- One joint at a time is up to the app, e.g. by disabling the other sliders while one jogs.
+
+```tsx
+{jointValues.map((value, index) => (
+  <JoggingJointSlider
+    key={index}
+    label={`J${index + 1}`}
+    value={value}
+    min={limits[index].lower_limit}
+    max={limits[index].upper_limit}
+    onJogStart={(direction) => startJointJogging(index, direction)}
+    onJogStop={() => stopJogging()}
+    disabled={jogging !== null && jogging !== index}
+  />
+))}
+```
+
 ### 3D Visualization & Robotics
 
 3D components for robot visualization. They render inside the `<Canvas>` of React Three Fiber.

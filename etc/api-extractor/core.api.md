@@ -292,6 +292,23 @@ export const JoggingCartesianAxisControl: ((input: JoggingCartesianAxisControlPr
 };
 
 // @public
+export const JoggingJointSlider: (input: JoggingJointSliderProps) => JSX.Element;
+
+// @public
+export type JoggingJointSliderProps = {
+    label: string;
+    name?: string;
+    value: number;
+    min?: number;
+    max?: number;
+    linear?: boolean;
+    angleUnit?: "deg" | "rad";
+    onJogStart: (direction: JogDirection) => void;
+    onJogStop: () => void;
+    disabled?: boolean;
+};
+
+// @public
 export const JoggingJointValueControl: ((input: JoggingJointValueControlProps) => JSX.Element) & {
     displayName: string;
 };
