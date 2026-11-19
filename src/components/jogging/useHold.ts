@@ -1,13 +1,19 @@
 import {
   type FocusEvent,
   type KeyboardEvent,
-  type MouseEvent,
   type PointerEvent,
   useCallback,
-  useEffect,
   useRef,
   useState,
 } from "react"
+import {
+  endsHold,
+  preventContextMenu,
+  primaryReleased,
+  startsKeyHold,
+  startsPointerHold,
+  useEndHoldWhenUnattended,
+} from "./holdSafety"
 
 export type HoldOptions<T> = {
   /** A control was pressed: act on `target` until `onStop` */
@@ -26,15 +32,12 @@ const isActivationKey = (key: string) => key === " " || key === "Enter"
  *
  * Only one runs at a time; pressing a second control while one is held does
  * nothing. Every way a hold can end (release, cancel, lost pointer capture,
- * blur, another key pressed, the window losing focus, the tab being hidden,
- * becoming disabled, unmount) stops it, and stops it once. Pointer capture
- * keeps a drag off the control from leaving the robot moving. The controls
- * can be any element, e.g. buttons or the handles of a gizmo.
- *
- * On macOS some presses never get their release: there is no keyup for a key
- * released while Cmd is held, and the context menu of a Ctrl+click swallows
- * the pointer release. So Cmd+Space/Enter and Ctrl+click start nothing, any
- * new key press during a hold ends it, and the controls have no context menu.
+ * a move with the primary button up, blur, another key pressed, the window
+ * losing focus, the tab being hidden, becoming disabled, unmount) stops it,
+ * and stops it once. Pointer capture keeps a drag off the control from
+ * leaving the robot moving. The controls can be any element, e.g. buttons or
+ * the handles of a gizmo. The safety rules are shared with the joint slider:
+ * see holdSafety.
  */
 export function useHold<T>({
   onStart,
@@ -44,6 +47,8 @@ export function useHold<T>({
 }: HoldOptions<T>) {
   const heldRef = useRef<T | null>(null)
   const [held, setHeld] = useState<T | null>(null)
+  // The pointer that holds, or null for a key hold
+  const heldPointer = useRef<number | null>(null)
 
   // The latest callbacks, for the cleanups below
   const latest = useRef({ onStop, isSame })
@@ -65,39 +70,26 @@ export function useHold<T>({
     if (current === null) return
     if (target !== undefined && !latest.current.isSame(current, target)) return
     heldRef.current = null
+    heldPointer.current = null
     setHeld(null)
     latest.current.onStop()
   }, [])
 
-  useEffect(() => {
-    if (disabled) stop()
-  }, [disabled, stop])
-
-  useEffect(() => () => stop(), [stop])
-
-  // A release outside the page never reaches the control: switching to
-  // another app or tab mid-hold must not leave the robot moving
-  const isHolding = held !== null
-  useEffect(() => {
-    if (!isHolding) return
-    const stopHold = () => stop()
-    const stopWhenHidden = () => {
-      if (document.visibilityState === "hidden") stop()
-    }
-    window.addEventListener("blur", stopHold)
-    document.addEventListener("visibilitychange", stopWhenHidden)
-    return () => {
-      window.removeEventListener("blur", stopHold)
-      document.removeEventListener("visibilitychange", stopWhenHidden)
-    }
-  }, [isHolding, stop])
+  const stopAny = useCallback(() => stop(), [stop])
+  useEndHoldWhenUnattended(held !== null, disabled, stopAny)
 
   const handlersFor = useCallback(
     (target: T) => ({
       onPointerDown: (event: PointerEvent<Element>) => {
-        if (event.button !== 0 || event.ctrlKey) return
+        if (!startsPointerHold(event)) return
         if (start(target)) {
+          heldPointer.current = event.pointerId
           event.currentTarget.setPointerCapture?.(event.pointerId)
+        }
+      },
+      onPointerMove: (event: PointerEvent<Element>) => {
+        if (heldPointer.current === event.pointerId && primaryReleased(event)) {
+          stop(target)
         }
       },
       onPointerUp: () => stop(target),
@@ -106,23 +98,21 @@ export function useHold<T>({
       onKeyDown: (event: KeyboardEvent<Element>) => {
         const isActivation = isActivationKey(event.key)
         if (isActivation) event.preventDefault()
-        if (event.repeat) return
-        // Any new key press ends a running hold, as the keyup of its key may
-        // never come; only the auto-repeat of the held key goes on
-        if (heldRef.current !== null) stop()
-        else if (isActivation && !event.metaKey) start(target)
+        if (heldRef.current !== null) {
+          if (endsHold(event)) stop()
+        } else if (isActivation && startsKeyHold(event)) {
+          start(target)
+        }
       },
       onKeyUp: (event: KeyboardEvent<Element>) => {
         if (isActivationKey(event.key)) stop(target)
       },
       onBlur: (_event: FocusEvent<Element>) => stop(target),
-      onContextMenu: (event: MouseEvent<Element>) => event.preventDefault(),
+      onContextMenu: preventContextMenu,
     }),
     [start, stop],
   )
 
   /** Ends the running hold, if any, e.g. when the controls change */
-  const stopHeld = useCallback(() => stop(), [stop])
-
-  return { held, handlersFor, stop: stopHeld }
+  return { held, handlersFor, stop: stopAny }
 }

@@ -318,6 +318,15 @@ describe("JoggingJointSlider", () => {
     expect(onJogStart.mock.calls).toEqual([["+"], ["-"]])
   })
 
+  it("ends a pointer hold on a key press too, as the gizmo and the buttons do", () => {
+    const { onJogStop } = setup()
+
+    press(xOf(1))
+    fireEvent.keyDown(track(), { key: "Meta", metaKey: true })
+
+    expect(onJogStop).toHaveBeenCalledTimes(1)
+  })
+
   it("does not restart from an auto-repeated key after a hold ended", () => {
     const { onJogStart } = setup()
 

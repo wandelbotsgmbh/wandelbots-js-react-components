@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react"
+import { useEndHoldWhenUnattended } from "../holdSafety"
 import type { JogDirection } from "../jogHandle"
 import { directionToward, hasReachedGoal } from "./jointJog"
 
@@ -29,7 +30,8 @@ export type JointJogHoldOptions = {
  * when the hold ends. One hold at a time: a second pointer or key is ignored.
  *
  * Every way a hold can end without a release reaching the slider stops it:
- * becoming disabled, the window losing focus, the tab being hidden, unmount.
+ * becoming disabled, the window losing focus, the tab being hidden, unmount
+ * (shared with the other jog controls: see holdSafety).
  * The hold is recorded before the app is called, so a failing onJogStart
  * still gets its onJogStop.
  */
@@ -134,27 +136,7 @@ export function useJointJogHold({
     }
   }, [value, setHold])
 
-  useEffect(() => {
-    if (disabled) end()
-  }, [disabled, end])
-
-  useEffect(() => () => end(), [end])
-
-  // A release outside the page never reaches the slider: switching to another
-  // app or tab mid-hold must not leave the joint moving
-  const holding = hold !== null
-  useEffect(() => {
-    if (!holding) return
-    const endWhenHidden = () => {
-      if (document.visibilityState === "hidden") end()
-    }
-    window.addEventListener("blur", end)
-    document.addEventListener("visibilitychange", endWhenHidden)
-    return () => {
-      window.removeEventListener("blur", end)
-      document.removeEventListener("visibilitychange", endWhenHidden)
-    }
-  }, [holding, end])
+  useEndHoldWhenUnattended(hold !== null, disabled, end)
 
   return { hold, isHolding, heldBy, begin, moveGoal, end, endIfHeldBy }
 }

@@ -22,6 +22,13 @@ import {
   valueAt,
   zeroFraction,
 } from "./jointJog"
+import {
+  endsHold,
+  preventContextMenu,
+  primaryReleased,
+  startsKeyHold,
+  startsPointerHold,
+} from "../holdSafety"
 import { JointSliderTrack } from "./JointSliderTrack"
 import { useJointJogHold } from "./useJointJogHold"
 
@@ -125,11 +132,7 @@ export const JoggingJointSlider = externalizeComponent(
     }
 
     function onPointerDown(event: PointerEvent<HTMLElement>) {
-      // Ctrl+click is a right click on macOS: its context menu would
-      // swallow the release
-      if (event.button !== 0 || event.ctrlKey || disabled || isHolding()) {
-        return
-      }
+      if (!startsPointerHold(event) || disabled || isHolding()) return
       const at = pointed(event.clientX)
       if (!at) return
       try {
@@ -147,9 +150,7 @@ export const JoggingJointSlider = externalizeComponent(
       setHoverGoal(disabled ? null : (at?.goal ?? null))
       const by = heldBy()
       if (!by || !("pointer" in by) || by.pointer !== event.pointerId) return
-      // The primary button is up: its release never arrived, or came while
-      // another button stays pressed (then the browser sends no pointerup)
-      if ((event.buttons & 1) === 0) {
+      if (primaryReleased(event)) {
         end()
         return
       }
@@ -162,15 +163,12 @@ export const JoggingJointSlider = externalizeComponent(
 
     function onKeyDown(event: KeyboardEvent<HTMLElement>) {
       const direction = arrowDirection(event.key)
-      if (direction === null) {
-        // Any other key ends a key hold: Cmd pressed during it would swallow
-        // the release on macOS
-        endIfHeldBy((by) => "key" in by)
+      if (direction) event.preventDefault()
+      if (isHolding()) {
+        if (endsHold(event)) end()
         return
       }
-      event.preventDefault()
-      // macOS sends no key release while Cmd is held
-      if (event.repeat || event.metaKey || disabled || !range) return
+      if (!direction || !startsKeyHold(event) || disabled || !range) return
       const goal = direction === "+" ? range.max : range.min
       const deadband = (range.max - range.min) * 1e-4
       // Never against the key: at its limit, the key does nothing
@@ -254,7 +252,7 @@ export const JoggingJointSlider = externalizeComponent(
           onKeyDown={onKeyDown}
           onKeyUp={onKeyUp}
           onBlur={end}
-          onContextMenu={(event) => event.preventDefault()}
+          onContextMenu={preventContextMenu}
           sx={{
             position: "relative",
             height: 44,
