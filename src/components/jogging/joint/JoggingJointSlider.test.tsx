@@ -74,8 +74,13 @@ const press = (x: number, init: object = {}) =>
     clientX: x,
     ...init,
   })
-const move = (x: number, buttons = 1, pointerId = 1) =>
-  fireEvent.pointerMove(track(), { pointerId, clientX: x, buttons })
+const move = (x: number, buttons = 1, pointerId = 1, pointerType?: string) =>
+  fireEvent.pointerMove(track(), {
+    pointerId,
+    clientX: x,
+    buttons,
+    pointerType,
+  })
 const release = (pointerId = 1) => fireEvent.pointerUp(track(), { pointerId })
 
 /** The emotion style rules in the document */
@@ -109,14 +114,34 @@ describe("JoggingJointSlider", () => {
     expect(onJogStart).toHaveBeenCalledWith("-")
   })
 
-  it("does not jog for a press on the joint itself", () => {
+  it("does not jog for a finger on the joint itself, nor for the finger's jitter", () => {
     const { onJogStart, onJogStop } = setup()
 
-    press(xOf(0) + 2)
+    press(xOf(0) + 3, { pointerType: "touch" })
+    move(xOf(0) - 3, 1, 1, "touch")
     release()
 
     expect(onJogStart).not.toHaveBeenCalled()
     expect(onJogStop).not.toHaveBeenCalled()
+  })
+
+  // A mouse or pen keeps still, so only the track's pixels limit how small a
+  // jog can be: on a joint with a wide range, 4 px would be over 10°
+  it.each([
+    "mouse",
+    "pen",
+  ])("jogs for a %s press 2 px off the joint", (pointerType) => {
+    const { onJogStart } = setup()
+
+    press(xOf(0) - 2, { pointerType })
+    expect(onJogStart.mock.calls).toEqual([["-"]])
+    release()
+
+    // On the joint's own pixel, it does not jog; 2 px on, it does
+    press(xOf(0) + 0.5, { pointerType })
+    expect(onJogStart).toHaveBeenCalledTimes(1)
+    move(xOf(0) + 2, 1, 1, pointerType)
+    expect(onJogStart.mock.calls).toEqual([["-"], ["+"]])
   })
 
   it("stops when the joint gets to the goal, and jogs on when the pointer moves on", () => {
