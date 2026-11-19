@@ -156,6 +156,77 @@ describe("useHold", () => {
     expect(onStop).toHaveBeenCalledTimes(2)
   })
 
+  // macOS sends no keyup for a key released while Cmd is held
+  it("does not start with Cmd held, but keeps the key's default off", () => {
+    const { onStart } = setup()
+    const a = screen.getByRole("button", { name: "a" })
+
+    fireEvent.keyDown(a, { key: "Meta", metaKey: true })
+    const enter = fireEvent.keyDown(a, { key: "Enter", metaKey: true })
+    const space = fireEvent.keyDown(a, { key: " ", metaKey: true })
+
+    expect(onStart).not.toHaveBeenCalled()
+    expect(enter).toBe(false)
+    expect(space).toBe(false)
+  })
+
+  it.each([
+    ["Cmd", { key: "Meta", metaKey: true }],
+    ["Enter", { key: "Enter" }],
+    ["the held key again, its release lost", { key: " " }],
+  ])("stops once when another key press, e.g. %s, comes during a hold", (_, key) => {
+    const { onStart, onStop } = setup()
+    const a = screen.getByRole("button", { name: "a" })
+
+    fireEvent.keyDown(a, { key: " " })
+    fireEvent.keyDown(a, { key: " ", repeat: true })
+    expect(onStop).not.toHaveBeenCalled()
+
+    fireEvent.keyDown(a, key)
+    expect(onStop).toHaveBeenCalledTimes(1)
+    expect(screen.getByRole("status")).toHaveTextContent("none")
+
+    fireEvent.keyUp(a, { key: " " })
+    expect(onStop).toHaveBeenCalledTimes(1)
+    expect(onStart).toHaveBeenCalledTimes(1)
+  })
+
+  it("stops a pointer hold when a key is pressed", () => {
+    const { onStop, press } = setup()
+
+    press("a")
+    fireEvent.keyDown(screen.getByRole("button", { name: "a" }), {
+      key: "Meta",
+      metaKey: true,
+    })
+
+    expect(onStop).toHaveBeenCalledTimes(1)
+  })
+
+  // On macOS a Ctrl+click is a main-button press that opens the context
+  // menu, and the menu swallows the release
+  it("does not start on Ctrl+click", () => {
+    const { onStart } = setup()
+
+    fireEvent.pointerDown(screen.getByRole("button", { name: "a" }), {
+      button: 0,
+      ctrlKey: true,
+      pointerId: 1,
+    })
+
+    expect(onStart).not.toHaveBeenCalled()
+  })
+
+  it("keeps the context menu off the controls", () => {
+    setup()
+
+    const shown = fireEvent.contextMenu(
+      screen.getByRole("button", { name: "a" }),
+    )
+
+    expect(shown).toBe(false)
+  })
+
   it("does not start while disabled", () => {
     const { onStart, press } = setup(true)
 
