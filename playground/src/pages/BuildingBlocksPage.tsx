@@ -1,6 +1,8 @@
 import Box from "@mui/material/Box"
 import Portal from "@mui/material/Portal"
 import Stack from "@mui/material/Stack"
+import ToggleButton from "@mui/material/ToggleButton"
+import ToggleButtonGroup from "@mui/material/ToggleButtonGroup"
 import Typography from "@mui/material/Typography"
 import {
   ColorsBlue900,
@@ -20,7 +22,10 @@ import { ElevationCard, PrimaryButton, SecondaryButton } from "@wandelbots/mui"
 import { JointTypeEnum } from "@wandelbots/nova-js/v2"
 import {
   type AxisControlComponentColors,
+  type ConnectedMotionGroup,
   JoggingCartesianAxisControl,
+  JoggingGizmo,
+  JoggingGizmoOrientation,
   JoggingJointValueControl,
   type JoggingStore,
   LoadingCover,
@@ -30,8 +35,10 @@ import {
   VelocitySliderLabel,
 } from "@wandelbots/wandelbots-js-react-components"
 import { observer } from "mobx-react-lite"
-import { type ReactNode, useState } from "react"
+import { type ReactNode, useMemo, useRef, useState } from "react"
+import { Quaternion, Vector3 } from "three"
 import { startJogging, stopJogging, useJoggingStore } from "../connections"
+import { FitCamera, MotionGroupModel, Viewport } from "../scene"
 import type { PageProps } from "."
 
 /**
@@ -69,6 +76,16 @@ export function BuildingBlocksPage({ instance, motionGroup }: PageProps) {
     >
       {withStore((store) => (
         <JointValueControls store={store} />
+      ))}
+    </Section>
+  )
+  const gizmo = (
+    <Section
+      title="JoggingGizmo and JoggingGizmoOrientation"
+      description="Moves the TCP along an axis while a handle is held (Translate), or turns it about one (Rotate): an axis of the world frame, or of the tool. JoggingGizmoOrientation in the 3D view turns the gizmo like the camera, and its frameQuaternion like the tool when it jogs along the tool's axes: orbit the view or turn the tool, and the gizmo turns with it."
+    >
+      {withStore((store) => (
+        <Gizmos store={store} motionGroup={motionGroup} />
       ))}
     </Section>
   )
@@ -118,6 +135,7 @@ export function BuildingBlocksPage({ instance, motionGroup }: PageProps) {
         </Stack>
         <Stack gap={3}>
           {joint}
+          {gizmo}
           {loadingCover}
         </Stack>
       </Box>
@@ -326,6 +344,159 @@ const JointValueControls = observer(({ store }: { store: JoggingStore }) => {
         />
       </Stack>
     </Stack>
+  )
+})
+
+const Gizmos = observer(
+  ({
+    store,
+    motionGroup,
+  }: {
+    store: JoggingStore
+    motionGroup: ConnectedMotionGroup
+  }) => {
+    const orientation = useRef<Quaternion | null>(null)
+    const [motion, setMotion] = useState<"translate" | "rotate">("translate")
+    const [frame, setFrame] = useState<"world" | "tool">("world")
+    const toolFrame = useToolFrame(store)
+    // Without an inverse solver, the TCP cannot move along an axis
+    const disabled = store.isLocked || store.inverseSolver === null
+
+    return (
+      <Stack gap={2}>
+        <Stack direction="row" gap={3} alignItems="center" flexWrap="wrap">
+          <ToggleButtonGroup
+            exclusive
+            size="small"
+            value={motion}
+            onChange={(_, value) => value && setMotion(value)}
+            aria-label="Motion"
+          >
+            <ToggleButton value="translate">Translate</ToggleButton>
+            <ToggleButton value="rotate">Rotate</ToggleButton>
+          </ToggleButtonGroup>
+          <Stack direction="row" gap={1} alignItems="center">
+            <Typography variant="body2" color="text.secondary">
+              Move along the axes of
+            </Typography>
+            <ToggleButtonGroup
+              exclusive
+              size="small"
+              value={frame}
+              onChange={(_, value) => value && setFrame(value)}
+              aria-label="Move along the axes of"
+            >
+              <ToggleButton value="world">World</ToggleButton>
+              <ToggleButton value="tool">Tool</ToggleButton>
+            </ToggleButtonGroup>
+          </Stack>
+          <TcpOrientation store={store} />
+        </Stack>
+        <Stack direction="row" gap={3} flexWrap="wrap" alignItems="flex-start">
+          <Box
+            sx={{
+              position: "relative",
+              width: 260,
+              height: 260,
+              border: 1,
+              borderColor: "divider",
+              borderRadius: 1,
+              overflow: "hidden",
+            }}
+          >
+            <Viewport>
+              <FitCamera>
+                {(refit) => (
+                  <MotionGroupModel
+                    motionGroup={motionGroup}
+                    onModelLoaded={refit}
+                  />
+                )}
+              </FitCamera>
+              {/* Anywhere in the 3D view: it translates NOVA's Z up itself */}
+              <JoggingGizmoOrientation target={orientation} />
+            </Viewport>
+          </Box>
+          <JoggingGizmo
+            orientation={orientation}
+            frameQuaternion={frame === "tool" ? toolFrame : undefined}
+            motion={motion}
+            onJogStart={(axis, direction) =>
+              startJogging(store, {
+                axis,
+                direction,
+                rotate: motion === "rotate",
+                tool: frame === "tool",
+              })
+            }
+            onJogStop={() => stopJogging(store)}
+            disabled={disabled}
+          />
+          <Stack gap={1}>
+            <Typography variant="caption" color="text.secondary">
+              Disabled, and with activeHandle X+ (Rx+ when rotating)
+            </Typography>
+            <JoggingGizmo
+              orientation={orientation}
+              motion={motion}
+              onJogStart={() => {}}
+              onJogStop={() => {}}
+              disabled
+              size={120}
+            />
+            <JoggingGizmo
+              orientation={orientation}
+              motion={motion}
+              onJogStart={() => {}}
+              onJogStop={() => {}}
+              activeHandle={{ axis: "x", direction: "+" }}
+              size={120}
+            />
+          </Stack>
+        </Stack>
+      </Stack>
+    )
+  },
+)
+
+/**
+ * The orientation of the TCP: the frame of jogging along the tool's axes.
+ * JoggingGizmo calls it every animation frame, so it turns with the tool
+ * while it jogs. NOVA gives it as a rotation vector in
+ * the world frame (the response coordinate system of the motion state, not
+ * set here), the frame of the gizmo's frameQuaternion.
+ */
+function useToolFrame(store: JoggingStore) {
+  return useMemo(() => {
+    const turn = new Quaternion()
+    const axis = new Vector3()
+    return () => {
+      const [x = 0, y = 0, z = 0] =
+        store.jogger.motionStream.rapidlyChangingMotionState.tcp_pose
+          ?.orientation ?? []
+      const angle = Math.hypot(x, y, z)
+      if (angle < 1e-9) return turn.identity()
+      return turn.setFromAxisAngle(
+        axis.set(x / angle, y / angle, z / angle),
+        angle,
+      )
+    }
+  }, [store])
+}
+
+/** The TCP's orientation, as NOVA gives it: a rotation vector, in degrees */
+const TcpOrientation = observer(({ store }: { store: JoggingStore }) => {
+  const orientation =
+    store.jogger.motionStream.rapidlyChangingMotionState.tcp_pose?.orientation
+  const degrees = (value: number | undefined) =>
+    value === undefined ? "–" : `${((value * 180) / Math.PI).toFixed(1)}°`
+  return (
+    <Typography variant="body2" color="text.secondary">
+      TCP orientation:{" "}
+      <span data-testid="tcp-orientation">
+        {[0, 1, 2].map((i) => degrees(orientation?.[i])).join(" ")}
+      </span>
+    </Typography>
   )
 })
 

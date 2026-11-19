@@ -21,8 +21,10 @@ import type { MotionGroupState } from '@wandelbots/nova-js/v2';
 import type { OperationMode } from '@wandelbots/nova-js/v2';
 import type { PopoverOrigin } from '@mui/material/Popover';
 import { Pose } from '@wandelbots/nova-js/v2';
+import { Quaternion } from 'three';
 import { default as React_2 } from 'react';
 import { ReactNode } from 'react';
+import { RefObject } from 'react';
 import type { RobotControllerState } from '@wandelbots/nova-js/v2';
 import { RobotTcp } from '@wandelbots/nova-js/v2';
 import type { SafetyStateType } from '@wandelbots/nova-js/v2';
@@ -200,6 +202,12 @@ export interface InterpolationOptions {
     threshold?: number;
 }
 
+// @public
+export type JogAxis = "x" | "y" | "z";
+
+// @public
+export type JogDirection = "+" | "-";
+
 // @public (undocumented)
 export class JoggerConnection {
     constructor(motionStream: MotionStreamConnection, options?: JoggerConnectionOptions | undefined);
@@ -302,6 +310,29 @@ export type JoggerOrientation = "coordsys" | "tool";
 // @public
 export const JoggingCartesianAxisControl: ((input: JoggingCartesianAxisControlProps) => JSX.Element) & {
     displayName: string;
+};
+
+// @public
+export const JoggingGizmo: (input: JoggingGizmoProps) => JSX.Element;
+
+// @public
+export function JoggingGizmoOrientation(input: JoggingGizmoOrientationProps): null;
+
+// @public
+export type JoggingGizmoOrientationProps = {
+    target: RefObject<Quaternion | null>;
+};
+
+// @public
+export type JoggingGizmoProps = {
+    orientation: RefObject<Quaternion | null>;
+    frameQuaternion?: Quaternion | (() => Quaternion);
+    motion?: "translate" | "rotate";
+    onJogStart: (axis: JogAxis, direction: JogDirection) => void;
+    onJogStop: () => void;
+    activeHandle?: JogHandle | null;
+    disabled?: boolean;
+    size?: number;
 };
 
 // @public
@@ -474,6 +505,12 @@ export class JoggingStore {
     velocityInDisplayUnits(useDegree: boolean): number;
     withMotionLock(fn: () => Promise<void>): Promise<void>;
 }
+
+// @public
+export type JogHandle = {
+    axis: JogAxis;
+    direction: JogDirection;
+};
 
 // @public
 export function JointLimitGizmo(input: JointLimitGizmoProps): JSX.Element;

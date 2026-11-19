@@ -57,5 +57,6 @@
   "Jogging.CoordinateSystem.hlb": "Coordinate system",
   "Jogging.Cartesian.bt": "Cartesian",
   "Jogging.Joints.bt": "Joints",
-  "Jogging.Velocity.bt": "Velocity"
+  "Jogging.Velocity.bt": "Velocity",
+  "Jogging.Handle.lb": "Jog {{handle}}"
 }

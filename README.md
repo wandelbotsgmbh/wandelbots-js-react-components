@@ -165,6 +165,37 @@ Manual robot control interfaces.
 - **VelocitySlider** (and **VelocitySliderLabel**) - Speed adjustment interface
 - **JoggingStore** - The state of the jogging (velocity, coordinate system, the jogging connection). `JoggingPanel` gives it to `onSetup`, and `JoggingStore.loadFor` creates one for your own controls.
 
+**JoggingGizmo** and **JoggingGizmoOrientation** (from `/3d`) - Jogging by the axes of the jog frame as the camera of the 3D view sees them: orbit the view and the gizmo turns with it, so the arrow pointing right on screen moves the robot right on screen. Hold a handle to jog.
+
+- The gizmo draws in its own small canvas, so it can sit in a panel next to the 3D view. `JoggingGizmoOrientation` goes inside the app's `<Canvas>` and passes the camera's view to the gizmo through a shared ref. Until it has, the gizmo stays disabled.
+- `JoggingGizmoOrientation` goes anywhere in the scene. It follows the camera's up: in a scene that is Y up, like that of this library's robots, it translates NOVA's axes (Z up), so NOVA's Z is the scene's Y. In a scene that is Z up like NOVA's world, whose camera has Z up, it takes NOVA's axes as they are.
+- `frameQuaternion` of `JoggingGizmo` is the frame the gizmo jogs along, in NOVA's coordinates: by default NOVA's world frame. The app gives it to the gizmo where it picks the frame, e.g. "Move along the axes of: Tool". Only the camera's view comes from the 3D scene. A frame that turns, such as the tool's, can be a function: the gizmo calls it every animation frame.
+- `motion` is `"translate"` (arrows, the default) or `"rotate"`: a circle about each axis with an arc per direction, whose arrowhead shows the way it turns (`+` counterclockwise seen from the tip of the axis). The handles are named as the jog buttons: "Jog X+", or "Jog Rx+" when rotating. A jog that runs when `motion` changes stops.
+- The gizmo moves nothing itself: `onJogStart(axis, direction)` and `onJogStop` leave that to the app, in the frame it jogs in. The app knows its `motion`, so it knows whether to move along the axis or turn about it.
+- A press jogs along the arrow drawn where it lands. Where a press could not tell two handles apart, it jogs neither: an arrow that points (almost) at or away from the viewer, or the farther of two arrowheads drawn over each other. The keyboard reaches every handle by its name.
+- When rotating, a press turns the way the arc drawn there points: an arc is grabbed anywhere along it, an arrowhead above everything else. Where two arcs cross, the one drawn nearer there takes the press. An axis seen (almost) edge on, whose arcs lie over each other, takes no press.
+
+```tsx
+const orientation = useRef<Quaternion | null>(null)
+
+<Canvas>
+  {/* … the 3D view with the robot */}
+  <JoggingGizmoOrientation target={orientation} />
+</Canvas>
+
+<JoggingGizmo
+  orientation={orientation}
+  frameQuaternion={jogFrame} // optional: NOVA's world frame by default
+  motion={motion} // "translate" or "rotate"
+  onJogStart={(axis, direction) =>
+    motion === "rotate"
+      ? startRotating(axis, direction)
+      : startJogging(axis, direction)
+  }
+  onJogStop={() => stopJogging()}
+/>
+```
+
 ### 3D Visualization & Robotics
 
 3D components for robot visualization. They render inside the `<Canvas>` of React Three Fiber.

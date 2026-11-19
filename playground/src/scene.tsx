@@ -86,7 +86,7 @@ function Refit({ children }: { children: (refit: () => void) => ReactNode }) {
  * Turns NOVA coordinates (Z up) into the coordinates of the 3D view and the
  * robot models (Y up), for parts that draw NOVA poses as they are:
  * SafetyZonesRenderer, CollisionSceneRenderer and JointLimitGizmo.
- * TrajectoryRenderer turns the poses itself.
+ * TrajectoryRenderer and JoggingGizmoOrientation turn them themselves.
  */
 export function NovaCoordinates({ children }: { children: ReactNode }) {
   return <group rotation={[-Math.PI / 2, 0, 0]}>{children}</group>
