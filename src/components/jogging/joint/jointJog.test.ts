@@ -15,25 +15,37 @@ const RANGE = { min: -2, max: 2 }
 
 describe("jointSliderRange", () => {
   it("spans a joint's limits", () => {
-    expect(jointSliderRange({ min: -1, max: 3 })).toEqual({
+    expect(jointSliderRange({ min: -1, max: 3 }, 0)).toEqual({
       min: -1,
       max: 3,
     })
   })
 
-  it("spans a full turn for a revolute joint without limits", () => {
-    expect(jointSliderRange({})).toEqual({
-      min: -Math.PI,
-      max: Math.PI,
+  it("spans the turn the value is in for a revolute joint without limits", () => {
+    expect(jointSliderRange({}, 0)).toEqual({ min: -Math.PI, max: Math.PI })
+    const turn = jointSliderRange({}, 4)
+    expect(turn?.min).toBeCloseTo(Math.PI)
+    expect(turn?.max).toBeCloseTo(3 * Math.PI)
+  })
+
+  it("spans one turn from the one limit a revolute joint has", () => {
+    expect(jointSliderRange({ min: -1 }, 0)).toEqual({
+      min: -1,
+      max: -1 + 2 * Math.PI,
+    })
+    expect(jointSliderRange({ max: 1 }, 0)).toEqual({
+      min: 1 - 2 * Math.PI,
+      max: 1,
     })
   })
 
-  it("has no range for a linear axis without limits: nothing to place it in", () => {
-    expect(jointSliderRange({ linear: true })).toBeNull()
+  it("has no range for a linear axis without both limits: nothing to place it in", () => {
+    expect(jointSliderRange({ linear: true }, 0)).toBeNull()
+    expect(jointSliderRange({ linear: true, min: 0 }, 0)).toBeNull()
   })
 
   it("ignores limits that span nothing", () => {
-    expect(jointSliderRange({ min: 1, max: 1 })).toEqual({
+    expect(jointSliderRange({ min: 1, max: 1 }, 0)).toEqual({
       min: -Math.PI,
       max: Math.PI,
     })
@@ -108,5 +120,15 @@ describe("formatJointLimit", () => {
     expect(formatJointLimit((-185 * Math.PI) / 180, "deg")).toBe("-185°")
     expect(formatJointLimit(0, "deg")).toBe("0°")
     expect(formatJointLimit(-500, "mm")).toBe("-500 mm")
+  })
+
+  it("keeps two decimals in radians, where a whole number says little", () => {
+    expect(formatJointLimit(0.785, "rad")).toBe("+0.79 rad")
+    expect(formatJointLimit(-Math.PI / 2, "rad")).toBe("-1.57 rad")
+  })
+
+  it("rounds symmetric limits to symmetric numbers", () => {
+    expect(formatJointLimit((172.5 * Math.PI) / 180, "deg")).toBe("+173°")
+    expect(formatJointLimit((-172.5 * Math.PI) / 180, "deg")).toBe("-173°")
   })
 })

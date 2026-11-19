@@ -16,18 +16,26 @@ export type JointRange = { min: number; max: number }
 /** How a joint's values are shown */
 export type JointUnit = "deg" | "rad" | "mm"
 
+const TURN = 2 * Math.PI
+
 /**
- * The range a joint's track spans: its limits; a full turn for a revolute
- * joint without them; none for a linear axis without them, which has nothing
- * to be placed in
+ * The range a joint's track spans: its limits. A revolute joint with one
+ * limit spans one turn from it; without limits, the turn its `value` is in,
+ * so it can be jogged both ways wherever it stands. A linear axis without
+ * both limits has nothing to be placed in: no range.
  */
-export function jointSliderRange({
-  min,
-  max,
-  linear,
-}: JointLimits): JointRange | null {
-  if (min !== undefined && max !== undefined && max > min) return { min, max }
-  return linear ? null : { min: -Math.PI, max: Math.PI }
+export function jointSliderRange(
+  { min, max, linear }: JointLimits,
+  value: number,
+): JointRange | null {
+  const hasMin = min !== undefined
+  const hasMax = max !== undefined
+  if (hasMin && hasMax && max > min) return { min, max }
+  if (linear) return null
+  if (hasMin && !hasMax) return { min, max: min + TURN }
+  if (hasMax && !hasMin) return { min: max - TURN, max }
+  const center = Math.round(value / TURN) * TURN
+  return { min: center - Math.PI, max: center + Math.PI }
 }
 
 /** Where `value` sits along a track spanning `range`, from 0 to 1 */
@@ -85,11 +93,22 @@ export function jointUnit(
 
 const DISPLAY: Record<
   JointUnit,
-  { shown: (value: number) => number; decimals: number; suffix: string }
+  {
+    shown: (value: number) => number
+    decimals: number
+    /** Of a limit below the track: whole where that says enough */
+    limitDecimals: number
+    suffix: string
+  }
 > = {
-  deg: { shown: (rad) => (rad * 180) / Math.PI, decimals: 1, suffix: "°" },
-  rad: { shown: (rad) => rad, decimals: 3, suffix: " rad" },
-  mm: { shown: (mm) => mm, decimals: 1, suffix: " mm" },
+  deg: {
+    shown: (rad) => (rad * 180) / Math.PI,
+    decimals: 1,
+    limitDecimals: 0,
+    suffix: "°",
+  },
+  rad: { shown: (rad) => rad, decimals: 3, limitDecimals: 2, suffix: " rad" },
+  mm: { shown: (mm) => mm, decimals: 1, limitDecimals: 0, suffix: " mm" },
 }
 
 /** A number with `decimals`, never "-0.0" */
@@ -109,10 +128,16 @@ export function formatJointValue(value: number, unit: JointUnit): string {
   return `${fixed(shown(value), decimals)}${suffix}`
 }
 
-/** A joint limit as shown below its track: whole, with its sign, e.g. "+185°" */
+/**
+ * A joint limit as shown below its track, with its sign: whole in degrees and
+ * mm, e.g. "+185°", with two decimals in radians. Halves round away from
+ * zero, so symmetric limits stay symmetric.
+ */
 export function formatJointLimit(value: number, unit: JointUnit): string {
-  const { shown, suffix } = DISPLAY[unit]
-  const whole = Math.round(shown(value))
-  const sign = whole > 0 ? "+" : ""
-  return `${sign}${fixed(whole, 0)}${suffix}`
+  const { shown, limitDecimals, suffix } = DISPLAY[unit]
+  const factor = 10 ** limitDecimals
+  const v = shown(value)
+  const rounded = (Math.sign(v) * Math.round(Math.abs(v) * factor)) / factor
+  const sign = rounded > 0 ? "+" : ""
+  return `${sign}${fixed(rounded, limitDecimals)}${suffix}`
 }

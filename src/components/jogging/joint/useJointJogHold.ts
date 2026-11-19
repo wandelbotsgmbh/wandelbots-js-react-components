@@ -6,6 +6,11 @@ import { directionToward, hasReachedGoal } from "./jointJog"
 export type JointHold = {
   goal: number
   direction: JogDirection | null
+  /**
+   * The goal the joint last stopped at, while it stands there: the pointer
+   * must move away from it to jog the joint again
+   */
+  settledAt: number | null
   /** What holds it: a pointer (by its id) or an arrow key (by its key) */
   by: { pointer: number } | { key: string }
 }
@@ -25,6 +30,8 @@ export type JointJogHoldOptions = {
  *
  * Every way a hold can end without a release reaching the slider stops it:
  * becoming disabled, the window losing focus, the tab being hidden, unmount.
+ * The hold is recorded before the app is called, so a failing onJogStart
+ * still gets its onJogStop.
  */
 export function useJointJogHold({
   value,
@@ -47,34 +54,55 @@ export function useJointJogHold({
   const steer = useCallback(
     (held: JointHold, goal: number, deadband: number) => {
       const wanted = directionToward(latest.current.value, goal, deadband)
+      setHold({
+        ...held,
+        goal,
+        direction: wanted,
+        settledAt: wanted ? null : held.settledAt,
+      })
       if (held.direction && held.direction !== wanted) {
         latest.current.onJogStop()
       }
       if (wanted && wanted !== held.direction) {
         latest.current.onJogStart(wanted)
       }
-      setHold({ ...held, goal, direction: wanted })
     },
     [setHold],
   )
+
+  /** Whether a hold runs, as of now, not as of the last render */
+  const isHolding = useCallback(() => holdRef.current !== null, [])
 
   /** Starts a hold toward `goal`; false if the slider cannot be held now */
   const begin = useCallback(
     (goal: number, deadband: number, by: JointHold["by"]): boolean => {
       if (disabled || holdRef.current) return false
-      steer({ goal, direction: null, by }, goal, deadband)
+      steer({ goal, direction: null, settledAt: null, by }, goal, deadband)
       return true
     },
     [disabled, steer],
   )
 
-  /** Moves the goal of the running hold, if any */
+  /**
+   * Moves the goal of the running hold, if any. A joint that stopped at its
+   * goal holds there until the goal moves away from that spot: a jog
+   * overshoots, and the pointer resting on the spot must not jog it back.
+   */
   const moveGoal = useCallback(
     (goal: number, deadband: number) => {
       const held = holdRef.current
-      if (held) steer(held, goal, deadband)
+      if (!held) return
+      if (
+        held.direction === null &&
+        held.settledAt !== null &&
+        Math.abs(goal - held.settledAt) <= deadband
+      ) {
+        setHold({ ...held, goal })
+        return
+      }
+      steer(held, goal, deadband)
     },
-    [steer],
+    [steer, setHold],
   )
 
   /** Ends the hold, if any, and stops the joint if it jogs */
@@ -85,12 +113,24 @@ export function useJointJogHold({
     if (held.direction) latest.current.onJogStop()
   }, [setHold])
 
+  /** What holds the slider now, or null */
+  const heldBy = useCallback(() => holdRef.current?.by ?? null, [])
+
+  /** Ends the hold if what holds it matches, as of now */
+  const endIfHeldBy = useCallback(
+    (match: (by: JointHold["by"]) => boolean) => {
+      const held = holdRef.current
+      if (held && match(held.by)) end()
+    },
+    [end],
+  )
+
   // Arrived: stop, but stay held, so a new goal jogs the joint on
   useEffect(() => {
     const held = holdRef.current
     if (held?.direction && hasReachedGoal(value, held.goal, held.direction)) {
+      setHold({ ...held, direction: null, settledAt: held.goal })
       latest.current.onJogStop()
-      setHold({ ...held, direction: null })
     }
   }, [value, setHold])
 
@@ -102,9 +142,9 @@ export function useJointJogHold({
 
   // A release outside the page never reaches the slider: switching to another
   // app or tab mid-hold must not leave the joint moving
-  const isHolding = hold !== null
+  const holding = hold !== null
   useEffect(() => {
-    if (!isHolding) return
+    if (!holding) return
     const endWhenHidden = () => {
       if (document.visibilityState === "hidden") end()
     }
@@ -114,7 +154,7 @@ export function useJointJogHold({
       window.removeEventListener("blur", end)
       document.removeEventListener("visibilitychange", endWhenHidden)
     }
-  }, [isHolding, end])
+  }, [holding, end])
 
-  return { hold, begin, moveGoal, end }
+  return { hold, isHolding, heldBy, begin, moveGoal, end, endIfHeldBy }
 }

@@ -189,9 +189,14 @@ export async function startJogging(store: JoggingStore, command: JogCommand) {
   }
 }
 
-/** Ends the press of startJogging: stops the motion and the jogging */
+/**
+ * Ends the press of startJogging: stops the motion and the jogging. A press
+ * that starts while the stop is under way (a joint slider turning around
+ * calls onJogStop and onJogStart in one event) keeps the jogging connection.
+ */
 export async function stopJogging(store: JoggingStore) {
-  nextJogPress(store)
+  const press = nextJogPress(store)
   await store.jogger.stop()
+  if (press !== jogPresses.get(store)) return
   await store.deactivate()
 }

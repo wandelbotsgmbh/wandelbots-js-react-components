@@ -4,20 +4,22 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { i18n } from "../../../i18n/config"
 import { JoggingJointSlider } from "./JoggingJointSlider"
 
-// The track is 200 px wide from x = 0, so a press at x is at x / 200 of the
-// way from the lower limit (-2 rad) to the upper one (+2 rad)
+// The track is 200 px wide from x = 300, so a press at x is at
+// (x - 300) / 200 of the way from the lower limit (-2 rad) to the upper one
+// (+2 rad). A goal worked out without the track's offset would be wrong.
+const TRACK_LEFT = 300
 const TRACK_WIDTH = 200
-const xOf = (value: number) => ((value + 2) / 4) * TRACK_WIDTH
+const xOf = (value: number) => TRACK_LEFT + ((value + 2) / 4) * TRACK_WIDTH
 
 beforeEach(() => {
   vi.spyOn(Element.prototype, "getBoundingClientRect").mockReturnValue({
-    left: 0,
+    left: TRACK_LEFT,
     top: 0,
-    right: TRACK_WIDTH,
+    right: TRACK_LEFT + TRACK_WIDTH,
     bottom: 20,
     width: TRACK_WIDTH,
     height: 20,
-    x: 0,
+    x: TRACK_LEFT,
     y: 0,
     toJSON: () => ({}),
   })
@@ -27,10 +29,18 @@ afterEach(() => {
   vi.restoreAllMocks()
 })
 
-type Props = { value?: number; disabled?: boolean }
+type Props = {
+  value?: number
+  disabled?: boolean
+  min?: number | null
+  max?: number | null
+  linear?: boolean
+  angleUnit?: "deg" | "rad"
+  onJogStart?: (direction: "+" | "-") => void
+}
 
 function setup(props: Props = {}) {
-  const onJogStart = vi.fn()
+  const onJogStart = vi.fn(props.onJogStart)
   const onJogStop = vi.fn()
   const slider = (p: Props) => (
     <I18nextProvider i18n={i18n}>
@@ -38,8 +48,11 @@ function setup(props: Props = {}) {
         label="J2"
         name="Shoulder"
         value={p.value ?? 0}
-        min={-2}
-        max={2}
+        // null leaves a limit out; undefined takes the default ±2 rad
+        min={p.min === null ? undefined : (p.min ?? -2)}
+        max={p.max === null ? undefined : (p.max ?? 2)}
+        linear={p.linear}
+        angleUnit={p.angleUnit}
         onJogStart={onJogStart}
         onJogStop={onJogStop}
         disabled={p.disabled}
@@ -47,7 +60,7 @@ function setup(props: Props = {}) {
     </I18nextProvider>
   )
   const view = render(slider(props))
-  const rerender = (p: Props) => view.rerender(slider(p))
+  const rerender = (p: Props) => view.rerender(slider({ ...props, ...p }))
   return { onJogStart, onJogStop, rerender, unmount: view.unmount }
 }
 
@@ -63,7 +76,10 @@ const press = (x: number, init: object = {}) =>
   })
 const move = (x: number, buttons = 1, pointerId = 1) =>
   fireEvent.pointerMove(track(), { pointerId, clientX: x, buttons })
-const release = () => fireEvent.pointerUp(track(), { pointerId: 1 })
+const release = (pointerId = 1) => fireEvent.pointerUp(track(), { pointerId })
+
+/** The emotion style rules in the document */
+const styleRules = () => document.querySelectorAll("style[data-emotion]").length
 
 describe("JoggingJointSlider", () => {
   it("is a slider named after its joint, with its value and limits", () => {
@@ -230,5 +246,209 @@ describe("JoggingJointSlider", () => {
     unmount()
 
     expect(onJogStop).toHaveBeenCalledTimes(1)
+  })
+
+  it("stops when the browser cancels the pointer or takes its capture away", () => {
+    const { onJogStop } = setup()
+
+    press(xOf(1))
+    fireEvent.pointerCancel(track(), { pointerId: 1 })
+    expect(onJogStop).toHaveBeenCalledTimes(1)
+
+    press(xOf(1))
+    fireEvent.lostPointerCapture(track(), { pointerId: 1 })
+    expect(onJogStop).toHaveBeenCalledTimes(2)
+  })
+
+  it("stops when the slider loses focus", () => {
+    const { onJogStop } = setup()
+
+    fireEvent.keyDown(track(), { key: "ArrowRight" })
+    fireEvent.blur(track())
+
+    expect(onJogStop).toHaveBeenCalledTimes(1)
+  })
+
+  it("stops when the tab is hidden", () => {
+    const { onJogStop } = setup()
+    const visibility = vi
+      .spyOn(document, "visibilityState", "get")
+      .mockReturnValue("hidden")
+
+    press(xOf(1))
+    act(() => {
+      document.dispatchEvent(new Event("visibilitychange"))
+    })
+
+    expect(onJogStop).toHaveBeenCalledTimes(1)
+    visibility.mockRestore()
+  })
+
+  it("does not stop when a second pointer, which it ignores, is released", () => {
+    const { onJogStop } = setup()
+
+    press(xOf(1))
+    press(xOf(-1), { pointerId: 2 })
+    release(2)
+
+    expect(onJogStop).not.toHaveBeenCalled()
+  })
+
+  it("stops when the primary button is released while another stays pressed", () => {
+    const { onJogStop } = setup()
+
+    press(xOf(1))
+    // The right button joins, then the left one lets go: the browser sends
+    // no pointerup until the last button is up
+    move(xOf(1), 3)
+    move(xOf(1), 2)
+
+    expect(onJogStop).toHaveBeenCalledTimes(1)
+  })
+
+  it("jogs up for ArrowUp and down for ArrowDown, and only the held key's release ends the hold", () => {
+    const { onJogStart, onJogStop } = setup()
+
+    fireEvent.keyDown(track(), { key: "ArrowUp" })
+    fireEvent.keyUp(track(), { key: "ArrowLeft" })
+    expect(onJogStop).not.toHaveBeenCalled()
+    fireEvent.keyUp(track(), { key: "ArrowUp" })
+
+    fireEvent.keyDown(track(), { key: "ArrowDown" })
+    expect(onJogStart.mock.calls).toEqual([["+"], ["-"]])
+  })
+
+  it("does not restart from an auto-repeated key after a hold ended", () => {
+    const { onJogStart } = setup()
+
+    fireEvent.keyDown(track(), { key: "ArrowRight" })
+    fireEvent.keyDown(track(), { key: "Shift" })
+    fireEvent.keyDown(track(), { key: "ArrowRight", repeat: true })
+
+    expect(onJogStart).toHaveBeenCalledTimes(1)
+  })
+
+  it("never jogs against an arrow key: at its limit, the key does nothing", () => {
+    const { onJogStart } = setup({ value: 2 })
+
+    fireEvent.keyDown(track(), { key: "ArrowRight" })
+
+    expect(onJogStart).not.toHaveBeenCalled()
+  })
+
+  it("steers by the joint's live value: after it arrived, a goal behind it jogs back", () => {
+    const { onJogStart, rerender } = setup()
+
+    press(xOf(1))
+    rerender({ value: 1.02 })
+    move(xOf(0.5))
+
+    expect(onJogStart.mock.calls).toEqual([["+"], ["-"]])
+  })
+
+  it("starts once per direction: moving the goal on the same side starts nothing new", () => {
+    const { onJogStart } = setup()
+
+    press(xOf(1))
+    move(xOf(1.5))
+    move(xOf(0.8))
+
+    expect(onJogStart).toHaveBeenCalledTimes(1)
+  })
+
+  it("holds the joint where it stopped while the pointer rests, even after an overshoot", () => {
+    const { onJogStart, rerender } = setup()
+
+    press(xOf(1))
+    // The stop lands 0.15 rad (7.5 px) past the goal
+    rerender({ value: 1.15 })
+    move(xOf(1))
+    move(xOf(1) + 1)
+    expect(onJogStart).toHaveBeenCalledTimes(1)
+
+    // A real move of the pointer jogs the joint to it again
+    move(xOf(0.5))
+    expect(onJogStart.mock.calls).toEqual([["+"], ["-"]])
+  })
+
+  it("stops on release even when the app's onJogStart throws", () => {
+    const errors = vi.spyOn(console, "error").mockImplementation(() => {})
+    const swallow = (event: ErrorEvent) => event.preventDefault()
+    window.addEventListener("error", swallow)
+    const { onJogStop } = setup({
+      onJogStart: () => {
+        throw new Error("the app failed after sending the jog")
+      },
+    })
+
+    try {
+      press(xOf(1))
+    } catch {
+      // the app's error, passed on
+    }
+    release()
+
+    expect(onJogStop).toHaveBeenCalledTimes(1)
+    window.removeEventListener("error", swallow)
+    errors.mockRestore()
+  })
+
+  it("shows no goal while disabled", () => {
+    setup({ disabled: true })
+
+    move(xOf(1), 0)
+
+    expect(screen.queryByText("/ 57.3°")).toBeNull()
+  })
+
+  it("shows the goal under the pointer after a release, not the one before the press", () => {
+    setup()
+
+    move(xOf(1), 0)
+    press(xOf(1))
+    move(xOf(-1))
+    release()
+
+    expect(screen.getByText("/ -57.3°")).toBeVisible()
+  })
+
+  it("adds no style rules as the joint moves: positions are not baked into classes", () => {
+    const { rerender } = setup()
+    rerender({ value: 0.001 })
+    const before = styleRules()
+
+    for (let i = 2; i < 40; i++) rerender({ value: i * 0.001 })
+    for (let x = 0; x < 20; x++) move(xOf(-1) + x, 0)
+
+    expect(styleRules()).toBe(before)
+  })
+
+  it("spans the turn the joint is in when a revolute joint has no limits", () => {
+    // 270°: the turn from +180° to +540°
+    const { onJogStart } = setup({
+      value: (3 * Math.PI) / 2,
+      min: null,
+      max: null,
+    })
+
+    expect(screen.getByText("+180°")).toBeVisible()
+    expect(screen.getByText("+540°")).toBeVisible()
+    fireEvent.keyDown(track(), { key: "ArrowRight" })
+    expect(onJogStart).toHaveBeenCalledWith("+")
+  })
+
+  it("spans one turn from the one limit it has", () => {
+    setup({ max: null })
+
+    // -2 rad and -2 rad + 360°
+    expect(screen.getByText("-115°")).toBeVisible()
+    expect(screen.getByText("+245°")).toBeVisible()
+  })
+
+  it("is no slider for a linear axis without limits: there is nothing to jog it across", () => {
+    setup({ linear: true, min: null, max: null, value: 523.4 })
+
+    expect(screen.queryByRole("slider")).toBeNull()
+    expect(screen.getByText("523.4 mm")).toBeVisible()
   })
 })

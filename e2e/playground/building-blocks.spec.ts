@@ -115,7 +115,7 @@ test("jogs the TCP up along Z with JoggingGizmo", async ({ page }) => {
   await screenshot(page, "building-blocks-gizmo-z")
 })
 
-test("jogs a joint toward the pressed point with JoggingJointSlider, and stops it on release", async ({
+test("jogs a joint toward the pressed point with JoggingJointSlider, turns it around when the goal passes it, and stops it on release", async ({
   page,
 }) => {
   await openPage(page, "building-blocks")
@@ -129,15 +129,17 @@ test("jogs a joint toward the pressed point with JoggingJointSlider, and stops i
   // aria-valuemax (in degrees) that spans the slider's width
   const min = Number(await j1.getAttribute("aria-valuemin"))
   const max = Number(await j1.getAttribute("aria-valuemax"))
-  const goal = (before * 180) / Math.PI + 20
+  const beforeDegrees = (before * 180) / Math.PI
   // The mouse goes by the viewport: the slider must be in it
   await j1.scrollIntoViewIfNeeded()
   const box = await j1.boundingBox()
   if (!box) throw new Error("No slider J1")
-  await page.mouse.move(
-    box.x + (box.width * (goal - min)) / (max - min),
-    box.y + box.height / 2,
-  )
+  const pointAt = (degrees: number) =>
+    page.mouse.move(
+      box.x + (box.width * (degrees - min)) / (max - min),
+      box.y + box.height / 2,
+    )
+  await pointAt(beforeDegrees + 20)
   await page.mouse.down()
   try {
     await expect
@@ -147,6 +149,17 @@ test("jogs a joint toward the pressed point with JoggingJointSlider, and stops i
         timeout: 30_000,
       })
       .toBeGreaterThan(before + 0.01)
+
+    // Still pressed, the goal moves below the joint: it turns around, with
+    // the stop and the start of the other way in one event
+    const turnedAt = (await jointPositions())[0]
+    await pointAt(beforeDegrees - 20)
+    await expect
+      .poll(async () => (await jointPositions())[0], {
+        message: "Joint 1 turns around when the goal passes it",
+        timeout: 30_000,
+      })
+      .toBeLessThan(turnedAt - 0.01)
   } finally {
     await page.mouse.up()
   }
