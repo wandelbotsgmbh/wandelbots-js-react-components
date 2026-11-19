@@ -21,9 +21,11 @@ export type JoggingGizmoOrientationProps = {
  * Writes into `target` instead of setting state, so orbiting does not
  * re-render React.
  *
- * It translates NOVA's axes (Z up) into those of a scene that is Y up, like
- * that of this library's robots: NOVA's Z is the scene's Y. Where it sits in
- * the scene does not matter.
+ * It follows the camera's up. In a scene that is Y up, like that of this
+ * library's robots, it translates NOVA's axes (Z up): NOVA's Z is the
+ * scene's Y. In a scene that is Z up like NOVA's world, whose camera has Z
+ * up, it takes NOVA's axes as they are. Where it sits in the scene does not
+ * matter.
  */
 export function JoggingGizmoOrientation({
   target,

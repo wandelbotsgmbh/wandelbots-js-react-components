@@ -47,13 +47,25 @@ export const NOVA_AXES_IN_SCENE = new Quaternion().setFromRotationMatrix(
 
 const cameraWorld = new Quaternion()
 
-/** NOVA's axes as `camera` sees them, in a scene that is Y up */
+const NOVA_AXES_AS_THEY_ARE = new Quaternion()
+
+/**
+ * NOVA's axes in the 3D scene of `camera`, by which way its camera has up. A
+ * scene that is Z up like NOVA's world (e.g. RobotPad's, whose camera's up is
+ * Z) has NOVA's axes as they are. A scene that is Y up (this library's
+ * robots, the teaching app) needs the dictionary.
+ */
+export function novaAxesInScene(camera: Object3D): Quaternion {
+  return camera.up.z > 0.5 ? NOVA_AXES_AS_THEY_ARE : NOVA_AXES_IN_SCENE
+}
+
+/** NOVA's axes as `camera` sees them */
 export function novaAxesSeenBy(
   camera: Object3D,
   target = new Quaternion(),
 ): Quaternion {
   camera.getWorldQuaternion(cameraWorld)
-  return jogFrameInCamera(cameraWorld, NOVA_AXES_IN_SCENE, target)
+  return jogFrameInCamera(cameraWorld, novaAxesInScene(camera), target)
 }
 
 /**

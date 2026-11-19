@@ -188,7 +188,15 @@ export const JoggingGizmo = externalizeComponent(
           orthographic
           flat
           frameloop="demand"
-          camera={{ position: [0, 0, 10], zoom: radius, near: 0.1, far: 100 }}
+          // Up is set: an app that makes Z the default up (RobotPad does)
+          // must not turn the gizmo's own camera
+          camera={{
+            position: [0, 0, 10],
+            up: [0, 1, 0],
+            zoom: radius,
+            near: 0.1,
+            far: 100,
+          }}
           gl={{ alpha: true, antialias: true }}
           style={{ position: "absolute", inset: 0, pointerEvents: "none" }}
         >

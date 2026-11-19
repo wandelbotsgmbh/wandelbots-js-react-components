@@ -49,12 +49,26 @@ describe("novaAxesSeenBy and jogFrameInView", () => {
   }
 
   /**
-   * Where this library draws a robot: in a group that turns NOVA's Z up into
-   * the scene's Y up
+   * RobotPad's camera: its whole scene is Z up, like NOVA's world, so the
+   * camera's up is Z
    */
-  function robotInScene() {
+  function zUpCamera() {
+    const camera = new PerspectiveCamera()
+    camera.up.set(0, 0, 1)
+    camera.position.set(3.3, -3.65, 3.2)
+    camera.lookAt(0, 0, 0)
+    camera.updateMatrixWorld()
+    return camera
+  }
+
+  /**
+   * Where the robot is drawn. In a Y-up scene, as this library and the
+   * teaching app draw it: in a group that turns NOVA's Z up into the scene's
+   * Y up. In a Z-up scene, as RobotPad draws it: as NOVA has it.
+   */
+  function robotInScene(camera: PerspectiveCamera) {
     const nova = new Group()
-    nova.rotation.x = -Math.PI / 2
+    if (camera.up.z < 0.5) nova.rotation.x = -Math.PI / 2
     const robot = new Object3D()
     nova.add(robot)
     nova.updateMatrixWorld()
@@ -63,7 +77,7 @@ describe("novaAxesSeenBy and jogFrameInView", () => {
 
   /** Where a small move along `direction` (in NOVA's coordinates) goes on screen, y down */
   function onScreen(camera: PerspectiveCamera, direction: Vector3) {
-    const robot = robotInScene()
+    const robot = robotInScene(camera)
     const from = robot.localToWorld(new Vector3()).project(camera)
     const to = robot
       .localToWorld(direction.clone().multiplyScalar(1e-3))
@@ -109,6 +123,13 @@ describe("novaAxesSeenBy and jogFrameInView", () => {
     const tool = about([0, 0, 1], 90).multiply(about([1, 0, 0], 30))
 
     expectHandlesPointWhereTheRobotGoes(playgroundCamera(), tool)
+  })
+
+  it("takes NOVA's axes as they are in a Z-up scene like RobotPad's, whose camera's up is Z", () => {
+    const tool = about([0, 0, 1], 90).multiply(about([1, 0, 0], 30))
+
+    expectHandlesPointWhereTheRobotGoes(zUpCamera(), new Quaternion())
+    expectHandlesPointWhereTheRobotGoes(zUpCamera(), tool)
   })
 })
 
