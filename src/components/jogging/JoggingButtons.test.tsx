@@ -132,6 +132,16 @@ describe("JoggingButtons", () => {
     expect(button("X-")).toHaveAttribute("aria-pressed", "false")
   })
 
+  it("stops when the primary button is released while another stays pressed", () => {
+    const { onJogStop } = setup()
+
+    fireEvent.pointerDown(button("X+"), { button: 0, buttons: 1, pointerId: 1 })
+    fireEvent.pointerMove(button("X+"), { pointerId: 1, buttons: 3 })
+    fireEvent.pointerMove(button("X+"), { pointerId: 1, buttons: 2 })
+
+    expect(onJogStop).toHaveBeenCalledTimes(1)
+  })
+
   it("does not jog while disabled", () => {
     const { onJogStart } = setup({ disabled: true })
 

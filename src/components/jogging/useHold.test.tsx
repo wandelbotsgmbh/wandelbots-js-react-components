@@ -203,6 +203,28 @@ describe("useHold", () => {
     expect(onStop).toHaveBeenCalledTimes(1)
   })
 
+  it("stops a pointer hold when a move shows the primary button is up: its release never arrived, or came while another button stays pressed", () => {
+    const { onStop, press } = setup()
+    const a = screen.getByRole("button", { name: "a" })
+
+    press("a")
+    fireEvent.pointerMove(a, { pointerId: 1, buttons: 3 })
+    expect(onStop).not.toHaveBeenCalled()
+    fireEvent.pointerMove(a, { pointerId: 1, buttons: 2 })
+
+    expect(onStop).toHaveBeenCalledTimes(1)
+  })
+
+  it("keeps a key hold when the mouse moves over the control without a button", () => {
+    const { onStop } = setup()
+    const a = screen.getByRole("button", { name: "a" })
+
+    fireEvent.keyDown(a, { key: " " })
+    fireEvent.pointerMove(a, { pointerId: 1, buttons: 0 })
+
+    expect(onStop).not.toHaveBeenCalled()
+  })
+
   // On macOS a Ctrl+click is a main-button press that opens the context
   // menu, and the menu swallows the release
   it("does not start on Ctrl+click", () => {
