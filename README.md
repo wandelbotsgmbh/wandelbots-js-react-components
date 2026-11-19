@@ -69,6 +69,15 @@ Browse the full icon set at https://wandelbotsgmbh.github.io/nova-design-system/
 - **`/core`** — The parts without 3D (jogging, `SafetyBar`, `AppHeader`, `LoadingCover`, `NoMotionGroupModal`), the NOVA connections and `JoggingStore`, the motion state helpers and `i18n`.
 - **`/3d`** — The 3D parts (`Robot`, `MotionGroupVisualizer`, `SafetyZonesRenderer`, …). Requires in addition three, three-stdlib, @react-three/fiber and @react-three/drei.
 - **`/SafetyBar`** — Only `SafetyBar` (also as the default export).
+- **`/JoggingGizmo`** — Only `JoggingGizmo` (also as the default export) and `JoggingGizmoOrientation`. Requires in addition three and @react-three/fiber.
+- **`/JoggingButtons`** — Only `JoggingButtons` (also as the default export). No 3D packages needed.
+- **`/JoggingJointSlider`** — Only `JoggingJointSlider` (also as the default export). No 3D packages needed.
+
+A component's own entry point brings only what that component needs, e.g. `/JoggingButtons` no three.js and no NOVA client, unlike `/core`. The entry points share their common code, so an app that imports a component from both `/core` and its own entry point gets one copy of it:
+
+```tsx
+import JoggingJointSlider from "@wandelbots/wandelbots-js-react-components/JoggingJointSlider"
+```
 
 ### Peer dependencies
 
@@ -80,9 +89,9 @@ Browse the full icon set at https://wandelbotsgmbh.github.io/nova-design-system/
 | `@wandelbots/mui` | ^2 |
 | `mobx` | ^6.13.6 |
 | `mobx-react-lite` | ^4.1.0 |
-| `three` (only `/3d`) | >=0.182 |
+| `three` (only `/3d`, `/JoggingGizmo`) | >=0.182 |
 | `three-stdlib` (only `/3d`) | >=2 |
-| `@react-three/fiber` (only `/3d`) | ^9 |
+| `@react-three/fiber` (only `/3d`, `/JoggingGizmo`) | ^9 |
 | `@react-three/drei` (only `/3d`) | ^10 |
 
 These packages are peer dependencies because the app and the library must use the same copy: React, the MUI theme of the app, the MobX stores that the app reads with its own `observer`, and the `<Canvas>` of React Three Fiber.
@@ -165,7 +174,7 @@ Manual robot control interfaces.
 - **VelocitySlider** (and **VelocitySliderLabel**) - Speed adjustment interface
 - **JoggingStore** - The state of the jogging (velocity, coordinate system, the jogging connection). `JoggingPanel` gives it to `onSetup`, and `JoggingStore.loadFor` creates one for your own controls.
 
-**JoggingGizmo** and **JoggingGizmoOrientation** (from `/3d`) - Jogging by the axes of the jog frame as the camera of the 3D view sees them: orbit the view and the gizmo turns with it, so the arrow pointing right on screen moves the robot right on screen. Hold a handle to jog.
+**JoggingGizmo** and **JoggingGizmoOrientation** (from `/3d` or `/JoggingGizmo`) - Jogging by the axes of the jog frame as the camera of the 3D view sees them: orbit the view and the gizmo turns with it, so the arrow pointing right on screen moves the robot right on screen. Hold a handle to jog.
 
 - The gizmo draws in its own small canvas, so it can sit in a panel next to the 3D view. `JoggingGizmoOrientation` goes inside the app's `<Canvas>` and passes the camera's view to the gizmo through a shared ref. Until it has, the gizmo stays disabled.
 - `JoggingGizmoOrientation` goes anywhere in the scene. It follows the camera's up: in a scene that is Y up, like that of this library's robots, it translates NOVA's axes (Z up), so NOVA's Z is the scene's Y. In a scene that is Z up like NOVA's world, whose camera has Z up, it takes NOVA's axes as they are.
@@ -196,7 +205,7 @@ const orientation = useRef<Quaternion | null>(null)
 />
 ```
 
-**JoggingButtons** - Jogging by buttons: a row per axis with a minus and a plus button, held to jog (X-, X+; or Rx-, Rx+ when `motion` is `"rotate"`). It takes the same props as `JoggingGizmo` (`JogControlsProps`: `motion`, `onJogStart`, `onJogStop`, `activeHandle`, `disabled`), so an app wires both the same way and can offer both. Unlike the gizmo, the buttons do not turn with the 3D view: X+ is X+ of the jog frame, wherever the camera looks from. They draw nothing in 3D, so they need no `<Canvas>` and no `JoggingGizmoOrientation`.
+**JoggingButtons** (from `/core` or `/JoggingButtons`) - Jogging by buttons: a row per axis with a minus and a plus button, held to jog (X-, X+; or Rx-, Rx+ when `motion` is `"rotate"`). It takes the same props as `JoggingGizmo` (`JogControlsProps`: `motion`, `onJogStart`, `onJogStop`, `activeHandle`, `disabled`), so an app wires both the same way and can offer both. Unlike the gizmo, the buttons do not turn with the 3D view: X+ is X+ of the jog frame, wherever the camera looks from. They draw nothing in 3D, so they need no `<Canvas>` and no `JoggingGizmoOrientation`.
 
 ```tsx
 <JoggingButtons
@@ -210,7 +219,7 @@ const orientation = useRef<Quaternion | null>(null)
 />
 ```
 
-**JoggingJointSlider** - One joint as a slider across its limits, with the thumb at the joint's value and the limits below; an app shows one per joint. Hover the track to see the goal under the pointer, and press there to jog the joint toward it: it stops when it gets there or when the slider is let go. While held, the goal follows the pointer, and the joint turns around when the goal passes it. An arrow key held on the focused slider jogs toward that limit.
+**JoggingJointSlider** (from `/core` or `/JoggingJointSlider`) - One joint as a slider across its limits, with the thumb at the joint's value and the limits below; an app shows one per joint. Hover the track to see the goal under the pointer, and press there to jog the joint toward it: it stops when it gets there or when the slider is let go. While held, the goal follows the pointer, and the joint turns around when the goal passes it. An arrow key held on the focused slider jogs toward that limit.
 
 - `value`, `min` and `max` are in NOVA's units: radians, or mm with `linear`. A revolute joint with one limit spans one turn from it, and without limits the turn it stands in. A linear axis needs both limits to be jogged with the slider; without them it only shows its value. `angleUnit` shows degrees (default) or radians.
 - `onJogStart(direction)` and `onJogStop` leave the jogging to the app, as for `JoggingGizmo` and `JoggingButtons`. One press can bring several starts and stops, always in turn: the joint stops at the goal, and starts again when the goal moves on. When the goal passes the joint, `onJogStop` and the `onJogStart` of the other way come in the same event: an app with asynchronous jog commands must apply them in that order, and must not tear down its jogging connection on that stop.

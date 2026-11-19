@@ -16,7 +16,12 @@ const aggregateEntries: Record<string, string> = {
 // (matching e.g. `@mui/material/Button`). New components should migrate
 // into this list one at a time rather than being auto-globbed, so the
 // public API surface stays deliberate.
-export const componentNames = ["SafetyBar"] as const
+export const componentNames = [
+  "SafetyBar",
+  "JoggingGizmo",
+  "JoggingButtons",
+  "JoggingJointSlider",
+] as const
 
 // Public API entry names (used by api-extractor, consumer tests, and the
 // generated package.json exports wildcard).
