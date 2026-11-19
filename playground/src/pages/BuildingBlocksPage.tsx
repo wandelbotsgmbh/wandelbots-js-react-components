@@ -66,10 +66,14 @@ export function BuildingBlocksPage({ instance, motionGroup }: PageProps) {
   const panel = (
     <Section
       title="RobotControlPanel"
-      description="The whole Robot control panel of the design, built from the parts below. Translate and Rotate: the TCP and the frame to jog along, Continuous (jog while held) or Increment (one step per click), the velocity, the step size, and the gizmo or the buttons (the switch at the top right of the jog area). Joint: a JoggingJointSlider per joint, one joint at a time, and the joint velocity. It is wired to the JoggingStore of the motion group. The 3D view next to it turns its gizmo: orbit the view, and the gizmo turns with it."
+      description="The whole Robot control panel of the design, built from the parts below. Translate and Rotate: the TCP and the frame to jog along, Continuous (jog while held) or Increment (one step per click), the velocity, the step size, and the gizmo or the buttons (the switch at the top right of the jog area). Joint: a JoggingJointSlider per joint, one joint at a time, and the joint velocity. Move to: type a pose or take the current one, and hold the button to move there (planned as the pose changes, paused on release). It is wired to the JoggingStore of the motion group. The 3D view next to it turns its gizmo: orbit the view, and the gizmo turns with it."
     >
       {withStore((store) => (
-        <RobotControlPanelDemo store={store} motionGroup={motionGroup} />
+        <RobotControlPanelDemo
+          instance={instance}
+          store={store}
+          motionGroup={motionGroup}
+        />
       ))}
     </Section>
   )

@@ -328,6 +328,58 @@ test("jogs a joint with RobotControlPanel's Joint tab, one joint at a time, and 
   await screenshot(page, "building-blocks-robot-control-panel-joint")
 })
 
+test("moves the TCP to a typed pose with RobotControlPanel's Move to tab while the button is held, and pauses on release", async ({
+  page,
+}) => {
+  await openPage(page, "building-blocks")
+  const panel = section(page, "RobotControlPanel")
+  await panel.getByRole("tab", { name: "Move to" }).click()
+
+  // The current pose, 20 mm higher
+  await panel.getByRole("button", { name: "Use current pose" }).click()
+  const coordinates = panel.getByRole("textbox", {
+    name: "Coordinates XYZ (mm) · Rotation vector (rad)",
+  })
+  await expect(coordinates).toHaveValue(/^\(.+\)$/)
+  const values = (await coordinates.inputValue())
+    .slice(1, -1)
+    .split(",")
+    .map(Number)
+  const start = await tcpZ()
+  const target = Math.round((start + 20) * 10) / 10
+  values[2] = target
+  await coordinates.fill(`(${values.join(", ")})`)
+
+  // Planned: the button can be held
+  const move = panel.getByRole("button", { name: "Move to pose" })
+  await expect(move).toBeEnabled({ timeout: 30_000 })
+  await jogPress(page, move, async () => (await tcpZ()) > start + 3)
+  await expect(move).toHaveAttribute("aria-pressed", "false")
+
+  // Released: the TCP stands still, short of the target or at it
+  let last = await tcpZ()
+  await expect
+    .poll(
+      async () => {
+        const now = await tcpZ()
+        const still = Math.abs(now - last) < 0.01
+        last = now
+        return still
+      },
+      { message: "The TCP stands still after the release", timeout: 30_000 },
+    )
+    .toBe(true)
+  expect(last).toBeLessThan(target + 0.5)
+
+  // Held again: it goes on to the target
+  await jogPress(
+    page,
+    move,
+    async () => Math.abs((await tcpZ()) - target) < 0.5,
+  )
+  await screenshot(page, "building-blocks-robot-control-panel-move-to")
+})
+
 /** The numbers of a text, e.g. of the TCP orientation in degrees */
 function numbersOf(text: string) {
   return (text.match(/-?\d+(\.\d+)?/g) ?? []).map(Number)

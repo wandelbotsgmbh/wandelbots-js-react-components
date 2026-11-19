@@ -76,5 +76,14 @@
   "RobotControl.JogArea.Hint.HoldButton.lb": "Hold a button to jog · Release to stop",
   "RobotControl.JogArea.Hint.ClickHandle.lb": "Click a handle to jog one step",
   "RobotControl.JogArea.Hint.ClickButton.lb": "Click a button to jog one step",
-  "RobotControl.Tab.Joint.bt": "Joint"
+  "RobotControl.Tab.Joint.bt": "Joint",
+  "RobotControl.Tab.MoveTo.bt": "Move to",
+  "RobotControl.MoveTo.TargetPose.lb": "Target pose",
+  "RobotControl.MoveTo.UseCurrentPose.bt": "Use current pose",
+  "RobotControl.MoveTo.RelativeTo.lb": "Relative to",
+  "RobotControl.MoveTo.Coordinates.lb": "Coordinates XYZ (mm) · Rotation vector (rad)",
+  "RobotControl.MoveTo.InvalidPose.lb": "Enter six numbers: (x, y, z, rx, ry, rz)",
+  "RobotControl.MoveTo.EnterPose.lb": "Enter a target pose first",
+  "RobotControl.MoveTo.MoveToPose.bt": "Move to pose",
+  "RobotControl.MoveTo.HoldToMove.lb": "Hold to move · Release to stop"
 }

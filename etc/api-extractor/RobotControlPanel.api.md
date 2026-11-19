@@ -51,6 +51,17 @@ export type RobotControlJoints = {
 };
 
 // @public
+export type RobotControlMoveTo = {
+    getCurrentPose: () => RobotControlPose | null;
+    frame?: RobotControlSelect;
+    onTargetChange: (pose: RobotControlPose | null) => void;
+    planning?: boolean;
+    error?: string | null;
+    onMoveStart: (pose: RobotControlPose) => void;
+    onMoveStop: () => void;
+};
+
+// @public
 export type RobotControlOption = {
     id: string;
     label: string;
@@ -75,7 +86,14 @@ export type RobotControlPanelProps = {
     gizmoOrientation?: RefObject<Quaternion | null>;
     gizmoFrameQuaternion?: Quaternion | (() => Quaternion);
     joints?: RobotControlJoints;
+    moveTo?: RobotControlMoveTo;
     sx?: SxProps<Theme>;
+};
+
+// @public
+export type RobotControlPose = {
+    position: [number, number, number];
+    orientation: [number, number, number];
 };
 
 // @public

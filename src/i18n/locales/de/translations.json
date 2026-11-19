@@ -75,5 +75,14 @@
   "RobotControl.JogArea.Hint.HoldButton.lb": "Taste halten zum Verfahren · Loslassen zum Stoppen",
   "RobotControl.JogArea.Hint.ClickHandle.lb": "Griff klicken für einen Schritt",
   "RobotControl.JogArea.Hint.ClickButton.lb": "Taste klicken für einen Schritt",
-  "RobotControl.Tab.Joint.bt": "Gelenk"
+  "RobotControl.Tab.Joint.bt": "Gelenk",
+  "RobotControl.Tab.MoveTo.bt": "Bewegen zu",
+  "RobotControl.MoveTo.TargetPose.lb": "Zielpose",
+  "RobotControl.MoveTo.UseCurrentPose.bt": "Aktuelle Pose übernehmen",
+  "RobotControl.MoveTo.RelativeTo.lb": "Relativ zu",
+  "RobotControl.MoveTo.Coordinates.lb": "Koordinaten XYZ (mm) · Rotationsvektor (rad)",
+  "RobotControl.MoveTo.InvalidPose.lb": "Sechs Zahlen eingeben: (x, y, z, rx, ry, rz)",
+  "RobotControl.MoveTo.EnterPose.lb": "Zuerst eine Zielpose eingeben",
+  "RobotControl.MoveTo.MoveToPose.bt": "Zur Pose fahren",
+  "RobotControl.MoveTo.HoldToMove.lb": "Halten zum Fahren · Loslassen zum Stoppen"
 }

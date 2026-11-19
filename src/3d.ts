@@ -30,8 +30,10 @@ export {
   type RobotControlIncrements,
   type RobotControlJoint,
   type RobotControlJoints,
+  type RobotControlMoveTo,
   type RobotControlOption,
   type RobotControlPanelProps,
+  type RobotControlPose,
   type RobotControlSelect,
   type RobotControlVelocity,
 } from "./components/robotControl/RobotControlPanel"

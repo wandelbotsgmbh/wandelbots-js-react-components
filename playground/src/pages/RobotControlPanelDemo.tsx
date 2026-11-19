@@ -11,7 +11,9 @@ import { observer } from "mobx-react-lite"
 import { useRef } from "react"
 import type { Quaternion } from "three"
 import { jogStep, startJogging, stopJogging } from "../connections"
+import type { PlaygroundInstance } from "../instance"
 import { cannotJog, useToolFrame } from "../jogging"
+import { useMoveTo } from "../moveTo"
 import { FitCamera, MotionGroupModel, Viewport } from "../scene"
 
 const toRadians = (degrees: number) => (degrees * Math.PI) / 180
@@ -39,15 +41,18 @@ const STEPS = {
  */
 export const RobotControlPanelDemo = observer(
   ({
+    instance,
     store,
     motionGroup,
   }: {
+    instance: PlaygroundInstance
     store: JoggingStore
     motionGroup: ConnectedMotionGroup
   }) => {
     const orientation = useRef<Quaternion | null>(null)
     const toolFrame = useToolFrame(store)
     const tool = store.selectedOrientation === "tool"
+    const moveTo = useMoveTo(instance.nova, instance.cellId, store)
     // A prismatic joint (a linear axis) is in mm, and jogs in mm/s
     const linear = store.jointType !== JointTypeEnum.RevoluteJoint
     const jointValues =
@@ -130,14 +135,16 @@ export const RobotControlPanelDemo = observer(
           onVelocityChange={(motion, value) =>
             setVelocity(motion === "rotate", value)
           }
-          onJogStart={(motion, axis, direction) =>
+          // Jogging takes the robot from a Move to session
+          onJogStart={(motion, axis, direction) => {
+            moveTo.release()
             startJogging(store, {
               axis,
               direction,
               rotate: motion === "rotate",
               tool,
             })
-          }
+          }}
           onJogStop={() => stopJogging(store)}
           // A step runs along the world's axes only, as in JoggingPanel
           increments={
@@ -145,13 +152,15 @@ export const RobotControlPanelDemo = observer(
               ? undefined
               : {
                   steps: STEPS,
-                  onStep: (motion, axis, direction, distance) =>
+                  onStep: (motion, axis, direction, distance) => {
+                    moveTo.release()
                     jogStep(store, {
                       axis,
                       direction,
                       rotate: motion === "rotate",
                       distance,
-                    }),
+                    })
+                  },
                   running: store.incrementJogInProgress,
                 }
           }
@@ -170,9 +179,25 @@ export const RobotControlPanelDemo = observer(
             linear,
             velocity: linear ? translateVelocity : rotateVelocity,
             onVelocityChange: (value) => setVelocity(!linear, value),
-            onJogStart: (joint, direction) =>
-              startJogging(store, { joint, direction }),
+            onJogStart: (joint, direction) => {
+              moveTo.release()
+              startJogging(store, { joint, direction })
+            },
             onJogStop: () => stopJogging(store),
+          }}
+          // Move to along a planned trajectory: see useMoveTo
+          moveTo={{
+            getCurrentPose: moveTo.getCurrentPose,
+            frame: {
+              options: [{ id: "world", label: "World" }],
+              value: "world",
+              onChange: () => {},
+            },
+            onTargetChange: moveTo.onTargetChange,
+            planning: moveTo.planning,
+            error: moveTo.error,
+            onMoveStart: moveTo.onMoveStart,
+            onMoveStop: moveTo.onMoveStop,
           }}
         />
       </Stack>

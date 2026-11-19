@@ -12,6 +12,7 @@ import { externalizeComponent } from "../../externalizeComponent"
 import type { JogAxis, JogDirection, JogHandle } from "../jogging/jogHandle"
 import { type CartesianJogSettings, CartesianJogTab } from "./CartesianJogTab"
 import { JointJogTab } from "./JointJogTab"
+import { MoveToTab } from "./MoveToTab"
 
 /** Whether a jog moves the TCP along the axes or turns it about them */
 export type JogMotion = "translate" | "rotate"
@@ -89,6 +90,40 @@ export type RobotControlJoints = {
 }
 
 /**
+ * A pose of the TCP: the position in mm and the orientation as a rotation
+ * vector in rad, as NOVA gives it
+ */
+export type RobotControlPose = {
+  position: [number, number, number]
+  orientation: [number, number, number]
+}
+
+/** The Move to tab: what the app gives to move the TCP to a typed pose */
+export type RobotControlMoveTo = {
+  /**
+   * The TCP's pose now, relative to the chosen `frame`: "Use current pose"
+   * fills it in. A function, read on the click: the pose changes too fast
+   * for a prop.
+   */
+  getCurrentPose: () => RobotControlPose | null
+  /** The frame the typed pose is relative to ("Relative to"). Without it, no select. */
+  frame?: RobotControlSelect
+  /**
+   * The typed pose changed: a pose, or null while the text is none. The app
+   * plans the move to it, so that the button can start it at once.
+   */
+  onTargetChange: (pose: RobotControlPose | null) => void
+  /** While the app plans the move: the button waits */
+  planning?: boolean
+  /** Why the TCP cannot move to the pose, e.g. it is out of reach */
+  error?: string | null
+  /** The button was pressed: move to `pose` until `onMoveStop` */
+  onMoveStart: (pose: RobotControlPose) => void
+  /** The button was let go, or the tab changed while it was held */
+  onMoveStop: () => void
+}
+
+/**
  * Props of {@link RobotControlPanel}
  */
 export type RobotControlPanelProps = {
@@ -136,18 +171,24 @@ export type RobotControlPanelProps = {
   gizmoFrameQuaternion?: Quaternion | (() => Quaternion)
   /** The Joint tab. Without it, the panel has none. */
   joints?: RobotControlJoints
+  /**
+   * The Move to tab. Without it, the panel has none. It moves with the
+   * translation velocity (`velocity.translate`).
+   */
+  moveTo?: RobotControlMoveTo
   /** Styles of the panel's box, e.g. its width */
   sx?: SxProps<Theme>
 }
 
 /** A tab of the panel */
-type PanelTab = JogMotion | "joint"
+type PanelTab = JogMotion | "joint" | "moveTo"
 
 /**
  * The Robot control panel of the design: a header, the tabs Translate and
  * Rotate, and in them the TCP and the frame to jog along, Continuous or
- * Increment, the velocity, the step size, and the gizmo or the buttons; and
- * the tab Joint, with a slider per joint and the joint velocity.
+ * Increment, the velocity, the step size, and the gizmo or the buttons; the
+ * tab Joint, with a slider per joint and the joint velocity; and the tab
+ * Move to, with a target pose and a button to hold to move there.
  *
  * It moves nothing itself: the app gets the presses (`onJogStart`,
  * `onJogStop`, `increments.onStep`) and keeps the velocity and the selects
@@ -155,11 +196,16 @@ type PanelTab = JogMotion | "joint"
  * size and whether it shows the gizmo or the buttons.
  */
 export const RobotControlPanel = externalizeComponent(
-  ({ onClose, sx, joints, ...props }: RobotControlPanelProps) => {
+  ({ onClose, sx, joints, moveTo, ...props }: RobotControlPanelProps) => {
     const { t } = useTranslation()
     const [chosenTab, setTab] = useState<PanelTab>("translate")
-    // The Joint tab goes when the app no longer gives joints
-    const tab = chosenTab === "joint" && !joints ? "translate" : chosenTab
+    // A tab goes when the app no longer gives what it needs
+    const tab =
+      (chosenTab === "joint" && !joints) || (chosenTab === "moveTo" && !moveTo)
+        ? "translate"
+        : chosenTab
+    // The typed target pose stays while other tabs show
+    const [moveToText, setMoveToText] = useState("")
     const [settings, setSettings] = useState<CartesianJogSettings>({
       mode: "continuous",
       view: "gizmo",
@@ -240,15 +286,34 @@ export const RobotControlPanel = externalizeComponent(
               sx={{ minWidth: 0, paddingX: "12px", textTransform: "none" }}
             />
           )}
+          {moveTo && (
+            <Tab
+              value="moveTo"
+              label={t("RobotControl.Tab.MoveTo.bt")}
+              sx={{ minWidth: 0, paddingX: "12px", textTransform: "none" }}
+            />
+          )}
         </Tabs>
 
         <Stack sx={{ flexGrow: 1, overflowY: "auto", overflowX: "hidden" }}>
           {tab === "joint" && joints ? (
             <JointJogTab joints={joints} disabled={props.disabled ?? false} />
+          ) : tab === "moveTo" && moveTo ? (
+            <MoveToTab
+              moveTo={moveTo}
+              text={moveToText}
+              onTextChange={setMoveToText}
+              tcp={props.tcp}
+              velocity={props.velocity.translate}
+              onVelocityChange={(value) =>
+                props.onVelocityChange("translate", value)
+              }
+              disabled={props.disabled ?? false}
+            />
           ) : (
             <CartesianJogTab
               {...props}
-              motion={tab === "joint" ? "translate" : tab}
+              motion={tab === "rotate" ? "rotate" : "translate"}
               settings={settings}
               onSettingsChange={setSettings}
             />

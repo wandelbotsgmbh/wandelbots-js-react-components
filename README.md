@@ -255,13 +255,14 @@ const [active, setActive] = useState<number | null>(null)
 ))}
 ```
 
-**RobotControlPanel** (from `/3d` or `/RobotControlPanel`) - The Robot control panel of the design, built from the parts above: the tabs Translate and Rotate, with the TCP and the frame to jog along, Continuous or Increment, the velocity, the step size, and the gizmo or the buttons with a switch between them; and the tab Joint, with a `JoggingJointSlider` per joint and the joint velocity. An app that wants the whole panel imports this; an app that wants one part imports that part.
+**RobotControlPanel** (from `/3d` or `/RobotControlPanel`) - The Robot control panel of the design, built from the parts above: the tabs Translate and Rotate, with the TCP and the frame to jog along, Continuous or Increment, the velocity, the step size, and the gizmo or the buttons with a switch between them; the tab Joint, with a `JoggingJointSlider` per joint and the joint velocity; and the tab Move to, with a typed target pose (or the current one), the frame it is relative to, and a button to hold to move there. An app that wants the whole panel imports this; an app that wants one part imports that part.
 
 - It moves nothing itself, as its parts: `onJogStart(motion, axis, direction)` and `onJogStop` for jogging while held, and `increments.onStep(motion, axis, direction, distance)` for one step per press. The app keeps the velocity and the selects in its own store; the panel keeps the tab, the mode, the step size and the view.
 - Velocities and step sizes are in NOVA's units: mm and mm/s to translate, rad and rad/s to rotate. The panel shows mm/s and °/s.
 - `tcp` and `jogFrame` show a select each, filled by the app. Without `increments`, there is no Continuous/Increment toggle. Without `gizmoOrientation` (from a `JoggingGizmoOrientation` in the app's 3D scene), it jogs with buttons only.
 - `onJogStop` also comes when the tab, the mode or the view changes while a control is held: the jog of that press must not go on.
 - `joints` gives the Joint tab: the joints' values and limits (rad, or mm with `linear`), their names, the joint velocity, and `onJogStart(index, direction)` and `onJogStop`. The panel jogs one joint at a time; the turn-around of a slider brings `onJogStop` and `onJogStart` in the same event, as described for `JoggingJointSlider`. Without `joints`, there is no Joint tab.
+- `moveTo` gives the Move to tab. The panel keeps the typed text `(x, y, z, rx, ry, rz)` (mm, rotation vector in rad: the format RobotPad copies and pastes) and reports each change as a pose, or null, in `onTargetChange`: the app plans the move then, and gives back `planning` and an `error` (e.g. out of reach). Holding the button calls `onMoveStart(pose)`, the release `onMoveStop`: the app starts and pauses its trajectory. `getCurrentPose` fills in "Use current pose", and `frame` is the "Relative to" select. It moves with `velocity.translate`. Without `moveTo`, there is no Move to tab.
 
 ```tsx
 const orientation = useRef<Quaternion | null>(null)
@@ -292,6 +293,14 @@ const orientation = useRef<Quaternion | null>(null)
     onVelocityChange: setJointVelocity,
     onJogStart: (index, direction) => startJointJogging(index, direction),
     onJogStop: () => stopJogging(),
+  }}
+  moveTo={{
+    getCurrentPose: () => currentTcpPose(),
+    onTargetChange: (pose) => planMoveTo(pose), // sets planning and error
+    planning,
+    error,
+    onMoveStart: () => startTrajectory(),
+    onMoveStop: () => pauseTrajectory(),
   }}
 />
 ```
