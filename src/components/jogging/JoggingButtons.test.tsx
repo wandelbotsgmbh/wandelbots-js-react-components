@@ -27,6 +27,25 @@ function setup(props: Props = {}) {
 const button = (name: string) =>
   screen.getByRole("button", { name: `Jog ${name}` })
 
+/** Where a button's turn icon is, and whether it is mirrored: null without one */
+function turnIconOf(element: HTMLElement) {
+  const icons = element.querySelectorAll("svg")
+  if (icons.length === 0) return null
+  const label = [...element.childNodes].find(
+    (node) => node.nodeType === Node.TEXT_NODE,
+  )
+  const beforeLabel =
+    !!label &&
+    !!(
+      icons[0].compareDocumentPosition(label) & Node.DOCUMENT_POSITION_FOLLOWING
+    )
+  return {
+    count: icons.length,
+    side: beforeLabel ? "before the label" : "after the label",
+    mirrored: icons[0].style.transform.includes("scaleX(-1)"),
+  }
+}
+
 describe("JoggingButtons", () => {
   it("has a button for each direction of each axis, named like the gizmo's handles", () => {
     setup()
@@ -71,6 +90,31 @@ describe("JoggingButtons", () => {
     expect(onJogStart).toHaveBeenCalledWith("x", "+")
   })
 
+  it("shows which way a rotate button turns: a mirrored turn icon before minus, a plain one after plus", () => {
+    setup({ motion: "rotate" })
+
+    for (const axis of ["x", "y", "z"]) {
+      expect(turnIconOf(button(`R${axis}-`))).toMatchObject({
+        count: 1,
+        side: "before the label",
+        mirrored: true,
+      })
+      expect(turnIconOf(button(`R${axis}+`))).toMatchObject({
+        count: 1,
+        side: "after the label",
+        mirrored: false,
+      })
+    }
+  })
+
+  it("has no turn icons when it translates", () => {
+    setup({ motion: "translate" })
+
+    for (const name of ["X-", "X+", "Z-", "Z+"]) {
+      expect(turnIconOf(button(name))).toBeNull()
+    }
+  })
+
   it("stops a running jog when the motion changes, so a translation never goes on as a rotation", () => {
     const { onJogStop, rerender } = setup({ motion: "translate" })
 
@@ -81,8 +125,8 @@ describe("JoggingButtons", () => {
     expect(button("Rx+")).toHaveAttribute("aria-pressed", "false")
   })
 
-  it("shows the active handle as pressed while no button is held, e.g. a running step", () => {
-    setup({ activeHandle: { axis: "x", direction: "+" } })
+  it("shows the active handle as pressed while no button is held, also while disabled for a running step", () => {
+    setup({ activeHandle: { axis: "x", direction: "+" }, disabled: true })
 
     expect(button("X+")).toHaveAttribute("aria-pressed", "true")
     expect(button("X-")).toHaveAttribute("aria-pressed", "false")

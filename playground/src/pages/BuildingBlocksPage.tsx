@@ -476,7 +476,8 @@ const Buttons = observer(({ store }: { store: JoggingStore }) => {
         disabled={cannotJog(store)}
       />
       <Typography variant="caption" color="text.secondary">
-        Disabled, and with activeHandle X+ (Rx+ when rotating)
+        Disabled, and disabled with activeHandle X+ (Rx+ when rotating), as
+        while a step runs
       </Typography>
       <Stack direction="row" gap={3} flexWrap="wrap">
         <JoggingButtons
@@ -489,6 +490,7 @@ const Buttons = observer(({ store }: { store: JoggingStore }) => {
           motion={motion}
           onJogStart={() => {}}
           onJogStop={() => {}}
+          disabled
           activeHandle={{ axis: "x", direction: "+" }}
         />
       </Stack>

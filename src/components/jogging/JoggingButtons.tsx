@@ -1,4 +1,5 @@
 import Box from "@mui/material/Box"
+import { buttonClasses } from "@mui/material/Button"
 import Stack from "@mui/material/Stack"
 import { alpha } from "@mui/material/styles"
 import Typography from "@mui/material/Typography"
@@ -21,19 +22,25 @@ import { type JogControlsProps, useJogControls } from "./useJogControls"
  */
 export type JoggingButtonsProps = JogControlsProps
 
-/** The label of a row: its axis, in the axis color */
+/**
+ * The label of a row: its axis, in the axis color. Dimmed while the buttons
+ * are disabled, as the gizmo dims its axis labels.
+ */
 function AxisLabel({
   axis,
   motion,
+  disabled,
 }: {
   axis: JogAxis
   motion: "translate" | "rotate"
+  disabled: boolean
 }) {
   const color = jogAxisColors[axis]
   return (
     <Box
       aria-hidden
       sx={{
+        opacity: disabled ? 0.4 : 1,
         width: 30,
         height: 30,
         flexShrink: 0,
@@ -86,12 +93,16 @@ export const JoggingButtons = externalizeComponent(
             direction="row"
             sx={{ alignItems: "center", gap: "16px" }}
           >
-            <AxisLabel axis={axis} motion={motion} />
+            <AxisLabel axis={axis} motion={motion} disabled={disabled} />
             {JOG_DIRECTIONS.map((direction) => {
               const handle = { axis, direction }
               const pressed = isPressed(handle)
               const icon = motion === "rotate" ? turnIcon(handle) : undefined
               const color = jogAxisColors[axis]
+              const pressedLook = {
+                backgroundColor: alpha(color, 0.25),
+                borderColor: alpha(color, 0.4),
+              }
               return (
                 <SecondaryButton
                   key={direction}
@@ -107,14 +118,17 @@ export const JoggingButtons = externalizeComponent(
                     // A held button must not scroll the page or select text
                     touchAction: "none",
                     userSelect: "none",
-                    // The turn icon as the design has it: 24 px, taking the
-                    // room of an 18 px one, so the label stays where it is
+                    // The turn icon as the design has it: 24 px, in the 18 px
+                    // wide slot of its icon, so the label stays where it is
                     "& svg": { width: 24, height: 24 },
-                    "& .MuiButton-startIcon": { marginLeft: "-6px" },
-                    "& .MuiButton-endIcon": { marginRight: "-6px" },
+                    [`& .${buttonClasses.startIcon}`]: { marginLeft: "-6px" },
+                    [`& .${buttonClasses.endIcon}`]: { marginRight: "-6px" },
+                    // Pressed also while disabled: an app disables the
+                    // buttons while a step runs, and shows that step with
+                    // activeHandle
                     ...(pressed && {
-                      backgroundColor: alpha(color, 0.25),
-                      borderColor: alpha(color, 0.4),
+                      ...pressedLook,
+                      [`&.${buttonClasses.disabled}`]: pressedLook,
                     }),
                   }}
                 >

@@ -4,16 +4,19 @@ import { I18nextProvider } from "react-i18next"
 import { Quaternion } from "three"
 import { afterEach, describe, expect, it, vi } from "vitest"
 import { i18n } from "../../../i18n/config"
+import type { JogHandle } from "../jogHandle"
 import { JoggingGizmo } from "./JoggingGizmo"
 
 function setup({
   disabled = false,
   orientation = { current: new Quaternion() },
   motion,
+  activeHandle,
 }: {
   disabled?: boolean
   orientation?: RefObject<Quaternion | null>
   motion?: "translate" | "rotate"
+  activeHandle?: JogHandle
 } = {}) {
   const onJogStart = vi.fn()
   const onJogStop = vi.fn()
@@ -24,6 +27,7 @@ function setup({
         onJogStart={onJogStart}
         onJogStop={onJogStop}
         disabled={disabled}
+        activeHandle={activeHandle}
         {...props}
       />
     </I18nextProvider>
@@ -92,6 +96,19 @@ describe("JoggingGizmo", () => {
 
     expect(onJogStop).toHaveBeenCalledTimes(1)
     expect(screen.getByRole("button", { name: "Jog Rx+" })).toHaveAttribute(
+      "aria-pressed",
+      "false",
+    )
+  })
+
+  it("shows the running step's handle as pressed, also while disabled for the step", () => {
+    setup({ activeHandle: { axis: "x", direction: "+" }, disabled: true })
+
+    expect(screen.getByRole("button", { name: "Jog X+" })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    )
+    expect(screen.getByRole("button", { name: "Jog X-" })).toHaveAttribute(
       "aria-pressed",
       "false",
     )

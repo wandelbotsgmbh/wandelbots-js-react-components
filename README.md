@@ -196,12 +196,16 @@ const orientation = useRef<Quaternion | null>(null)
 />
 ```
 
-**JoggingButtons** - Jogging by buttons: a row per axis with a minus and a plus button, held to jog (X-, X+; or Rx-, Rx+ when `motion` is `"rotate"`). It takes the same props as `JoggingGizmo` (`JogControlsProps`: `motion`, `onJogStart`, `onJogStop`, `activeHandle`, `disabled`), so an app wires both the same way and can offer both. Unlike the gizmo, the buttons do not turn with the 3D view: X+ is X+ of the jog frame, wherever the camera looks from. It needs no three.js.
+**JoggingButtons** - Jogging by buttons: a row per axis with a minus and a plus button, held to jog (X-, X+; or Rx-, Rx+ when `motion` is `"rotate"`). It takes the same props as `JoggingGizmo` (`JogControlsProps`: `motion`, `onJogStart`, `onJogStop`, `activeHandle`, `disabled`), so an app wires both the same way and can offer both. Unlike the gizmo, the buttons do not turn with the 3D view: X+ is X+ of the jog frame, wherever the camera looks from. They draw nothing in 3D, so they need no `<Canvas>` and no `JoggingGizmoOrientation`.
 
 ```tsx
 <JoggingButtons
-  motion={motion}
-  onJogStart={(axis, direction) => startJogging(axis, direction)}
+  motion={motion} // "translate" or "rotate"
+  onJogStart={(axis, direction) =>
+    motion === "rotate"
+      ? startRotating(axis, direction)
+      : startJogging(axis, direction)
+  }
   onJogStop={() => stopJogging()}
 />
 ```
