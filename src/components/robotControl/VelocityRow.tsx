@@ -53,12 +53,14 @@ export function VelocityRow({
           if (typeof next === "number") onChange(novaValue(motion, next))
         }}
         sx={(theme) => ({
+          // The rail and the hollow thumb of the joint sliders, as in the
+          // design: a 4 px rail (the small slider's is 2 px)
+          height: 4,
           "& .MuiSlider-rail": { opacity: 0.38 },
-          // A hollow thumb, as in the design
           "& .MuiSlider-thumb": {
             width: 16,
             height: 16,
-            border: `2px solid ${theme.palette.primary.main}`,
+            border: `3px solid ${theme.palette.primary.main}`,
             backgroundColor: theme.palette.backgroundPaperElevation?.[5],
           },
         })}
