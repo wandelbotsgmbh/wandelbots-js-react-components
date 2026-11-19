@@ -38,12 +38,7 @@ import { observer } from "mobx-react-lite"
 import { type ReactNode, useMemo, useRef, useState } from "react"
 import { Quaternion, Vector3 } from "three"
 import { startJogging, stopJogging, useJoggingStore } from "../connections"
-import {
-  FitCamera,
-  MotionGroupModel,
-  NovaCoordinates,
-  Viewport,
-} from "../scene"
+import { FitCamera, MotionGroupModel, Viewport } from "../scene"
 import type { PageProps } from "."
 
 /**
@@ -418,11 +413,8 @@ const Gizmos = observer(
                   />
                 )}
               </FitCamera>
-              {/* In NOVA's coordinates, so the gizmo's axes are NOVA's world
-                frame, the frame the store jogs in */}
-              <NovaCoordinates>
-                <JoggingGizmoOrientation target={orientation} />
-              </NovaCoordinates>
+              {/* Anywhere in the 3D view: it translates NOVA's Z up itself */}
+              <JoggingGizmoOrientation target={orientation} />
             </Viewport>
           </Box>
           <JoggingGizmo
@@ -472,7 +464,7 @@ const Gizmos = observer(
  * JoggingGizmo calls it every animation frame, so it turns with the tool
  * while it jogs. NOVA gives it as a rotation vector in
  * the world frame (the response coordinate system of the motion state, not
- * set here), the frame of NovaCoordinates.
+ * set here), the frame of the gizmo's frameQuaternion.
  */
 function useToolFrame(store: JoggingStore) {
   return useMemo(() => {

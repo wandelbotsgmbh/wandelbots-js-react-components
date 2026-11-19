@@ -316,7 +316,7 @@ export const JoggingCartesianAxisControl: ((input: JoggingCartesianAxisControlPr
 export const JoggingGizmo: (input: JoggingGizmoProps) => JSX.Element;
 
 // @beta
-export function JoggingGizmoOrientation(input: JoggingGizmoOrientationProps): JSX.Element;
+export function JoggingGizmoOrientation(input: JoggingGizmoOrientationProps): null;
 
 // @beta
 export type JoggingGizmoOrientationProps = {

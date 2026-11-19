@@ -1,4 +1,4 @@
-import { type Object3D, Quaternion, Vector3 } from "three"
+import { Matrix4, type Object3D, Quaternion, Vector3 } from "three"
 import {
   JOG_AXES,
   JOG_DIRECTIONS,
@@ -44,28 +44,35 @@ export function jogFrameInCamera(
     .multiply(frameWorldQuaternion)
 }
 
-const cameraWorld = new Quaternion()
-const anchorWorld = new Quaternion()
-
 /**
- * The axes of `anchor`, the place in the scene where it sits, as `camera`
- * sees them. In a group that turns NOVA's Z up into the scene's Y up, they
- * are NOVA's world axes, as the robot there has them.
+ * The dictionary from NOVA's axes to the 3D scene's: NOVA has Z up, the
+ * scene (as that of this library's robots) Y up. NOVA's X is the scene's X,
+ * its Y the scene's -Z, its Z the scene's Y. The teaching app's gizmo uses
+ * the same table.
  */
-export function axesSeenBy(
+export const NOVA_AXES_IN_SCENE = new Quaternion().setFromRotationMatrix(
+  new Matrix4().makeBasis(
+    new Vector3(1, 0, 0),
+    new Vector3(0, 0, -1),
+    new Vector3(0, 1, 0),
+  ),
+)
+
+const cameraWorld = new Quaternion()
+
+/** NOVA's axes as `camera` sees them, in a scene that is Y up */
+export function novaAxesSeenBy(
   camera: Object3D,
-  anchor: Object3D,
   target = new Quaternion(),
 ): Quaternion {
   camera.getWorldQuaternion(cameraWorld)
-  anchor.getWorldQuaternion(anchorWorld)
-  return jogFrameInCamera(cameraWorld, anchorWorld, target)
+  return jogFrameInCamera(cameraWorld, NOVA_AXES_IN_SCENE, target)
 }
 
 /**
- * The jog frame as the camera sees it: `view`, axes as the camera sees them
- * (see {@link axesSeenBy}), turned by `frame`, the jog frame in the
- * coordinates of those axes
+ * The jog frame as the camera sees it: `view`, NOVA's axes as the camera
+ * sees them (see {@link novaAxesSeenBy}), turned by `frame`, the jog frame
+ * in NOVA's coordinates
  */
 export function jogFrameInView(
   view: Quaternion,

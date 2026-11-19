@@ -14,9 +14,10 @@ import {
   grabAreasOf,
   hasTurned,
   type JogGrabSizes,
-  axesSeenBy,
   jogFrameInCamera,
   jogFrameInView,
+  NOVA_AXES_IN_SCENE,
+  novaAxesSeenBy,
   type ProjectedJogHandle,
   projectJogHandles,
   UNIT_VECTOR,
@@ -80,7 +81,7 @@ describe("jogFrameInCamera", () => {
   })
 })
 
-describe("axesSeenBy and jogFrameInView", () => {
+describe("novaAxesSeenBy and jogFrameInView", () => {
   /** The playground's camera: Y up, at (2, 1.5, 2), looking at the robot */
   function playgroundCamera() {
     const camera = new PerspectiveCamera()
@@ -90,24 +91,24 @@ describe("axesSeenBy and jogFrameInView", () => {
     return camera
   }
 
-  /** An empty object in a group that turns NOVA's Z up into the scene's Y up */
-  function inNovaCoordinates() {
+  /**
+   * Where this library draws a robot: in a group that turns NOVA's Z up into
+   * the scene's Y up
+   */
+  function robotInScene() {
     const nova = new Group()
     nova.rotation.x = -Math.PI / 2
-    const anchor = new Object3D()
-    nova.add(anchor)
+    const robot = new Object3D()
+    nova.add(robot)
     nova.updateMatrixWorld()
-    return anchor
+    return robot
   }
 
-  /** Where a small move along `direction` (in `anchor`'s coordinates) goes on screen, y down */
-  function onScreen(
-    camera: PerspectiveCamera,
-    anchor: Object3D,
-    direction: Vector3,
-  ) {
-    const from = anchor.localToWorld(new Vector3()).project(camera)
-    const to = anchor
+  /** Where a small move along `direction` (in NOVA's coordinates) goes on screen, y down */
+  function onScreen(camera: PerspectiveCamera, direction: Vector3) {
+    const robot = robotInScene()
+    const from = robot.localToWorld(new Vector3()).project(camera)
+    const to = robot
       .localToWorld(direction.clone().multiplyScalar(1e-3))
       .project(camera)
     return new Vector2(to.x - from.x, from.y - to.y).normalize()
@@ -116,12 +117,11 @@ describe("axesSeenBy and jogFrameInView", () => {
   /** Every handle points on screen where the robot goes when jogged along it */
   function expectHandlesPointWhereTheRobotGoes(
     camera: PerspectiveCamera,
-    anchor: Object3D,
     frame: Quaternion,
   ) {
     // As JoggingGizmoOrientation and JoggingGizmo do it together: the 3D
-    // view sees the axes of its group, and the gizmo turns them to its frame
-    const view = axesSeenBy(camera, anchor)
+    // view sees NOVA's axes, and the gizmo turns them to its frame
+    const view = novaAxesSeenBy(camera)
     for (const handle of projectJogHandles(jogFrameInView(view, frame))) {
       const move = UNIT_VECTOR[handle.axis]
         .clone()
@@ -129,29 +129,29 @@ describe("axesSeenBy and jogFrameInView", () => {
         .applyQuaternion(frame)
       const drawn = new Vector2(handle.x, handle.y).normalize()
       const degreesOff =
-        (Math.acos(Math.min(1, drawn.dot(onScreen(camera, anchor, move)))) *
-          180) /
+        (Math.acos(Math.min(1, drawn.dot(onScreen(camera, move)))) * 180) /
         Math.PI
       expect(degreesOff, `${handle.axis}${handle.direction}`).toBeLessThan(1)
     }
   }
 
-  it("sees the axes of the group it sits in, e.g. NOVA's Z up in a Y-up scene", () => {
-    expectHandlesPointWhereTheRobotGoes(
-      playgroundCamera(),
-      inNovaCoordinates(),
-      new Quaternion(),
-    )
+  it("translates NOVA's axes into the scene's as the teaching app's gizmo does: X to X, Y to -Z, Z to Y", () => {
+    const seen = (axis: Vector3) =>
+      axis.clone().applyQuaternion(NOVA_AXES_IN_SCENE)
+
+    expect(seen(UNIT_VECTOR.x).distanceTo(new Vector3(1, 0, 0))).toBeCloseTo(0)
+    expect(seen(UNIT_VECTOR.y).distanceTo(new Vector3(0, 0, -1))).toBeCloseTo(0)
+    expect(seen(UNIT_VECTOR.z).distanceTo(new Vector3(0, 1, 0))).toBeCloseTo(0)
   })
 
-  it("turns them to a jog frame given in that group's coordinates, e.g. the tool's", () => {
+  it("points every arrow where the robot goes, reading only the camera: no group needed", () => {
+    expectHandlesPointWhereTheRobotGoes(playgroundCamera(), new Quaternion())
+  })
+
+  it("turns them to a jog frame in NOVA's coordinates, e.g. the tool's", () => {
     const tool = about([0, 0, 1], 90).multiply(about([1, 0, 0], 30))
 
-    expectHandlesPointWhereTheRobotGoes(
-      playgroundCamera(),
-      inNovaCoordinates(),
-      tool,
-    )
+    expectHandlesPointWhereTheRobotGoes(playgroundCamera(), tool)
   })
 })
 
