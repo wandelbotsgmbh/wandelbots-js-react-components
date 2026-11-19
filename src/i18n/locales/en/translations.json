@@ -64,7 +64,7 @@
   "RobotControl.Tab.Translate.bt": "Translate",
   "RobotControl.Tab.Rotate.bt": "Rotate",
   "RobotControl.Tcp.lb": "TCP",
-  "RobotControl.JogFrame.lb": "Move along axis of",
+  "RobotControl.JogFrame.lb": "Move relative to",
   "RobotControl.JogMode.lb": "Jog mode",
   "RobotControl.JogMode.Continuous.bt": "Continuous",
   "RobotControl.JogMode.Increment.bt": "Increment",

@@ -123,7 +123,7 @@ describe("RobotControlPanel", () => {
     const { rerender } = setup()
     expect(screen.queryByRole("combobox", { name: "TCP" })).toBeNull()
     expect(
-      screen.queryByRole("combobox", { name: "Move along axis of" }),
+      screen.queryByRole("combobox", { name: "Move relative to" }),
     ).toBeNull()
 
     const onTcpChange = vi.fn()
@@ -152,7 +152,7 @@ describe("RobotControlPanel", () => {
     )
     choose("TCP", "Gripper")
     expect(onTcpChange).toHaveBeenCalledWith("gripper")
-    choose("Move along axis of", "Tool")
+    choose("Move relative to", "Tool")
     expect(onFrameChange).toHaveBeenCalledWith("tool")
   })
 

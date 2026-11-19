@@ -98,7 +98,10 @@ export type RobotControlPanelProps = {
   disabled?: boolean
   /** The TCP to jog. Without it, the panel has no TCP select. */
   tcp?: RobotControlSelect
-  /** The frame whose axes the TCP jogs along. Without it, no select. */
+  /**
+   * The frame the TCP jogs relative to ("Move relative to"), e.g. a
+   * coordinate system or the selected TCP. Without it, no select.
+   */
   jogFrame?: RobotControlSelect
   /** The velocity of each motion: see {@link RobotControlVelocity} */
   velocity: Record<JogMotion, RobotControlVelocity>

@@ -119,7 +119,8 @@ export const RobotControlPanelDemo = observer(
           jogFrame={{
             options: [
               { id: "coordsys", label: "World" },
-              { id: "tool", label: "Tool" },
+              // As RobotPad names the tool's frame
+              { id: "tool", label: "Selected TCP" },
             ],
             value: store.selectedOrientation,
             onChange: (id) =>

@@ -63,7 +63,7 @@
   "RobotControl.Tab.Translate.bt": "Verschieben",
   "RobotControl.Tab.Rotate.bt": "Drehen",
   "RobotControl.Tcp.lb": "TCP",
-  "RobotControl.JogFrame.lb": "Verfahren entlang der Achsen von",
+  "RobotControl.JogFrame.lb": "Bewegen relativ zu",
   "RobotControl.JogMode.lb": "Verfahrmodus",
   "RobotControl.JogMode.Continuous.bt": "Fortlaufend",
   "RobotControl.JogMode.Increment.bt": "Schrittweise",
