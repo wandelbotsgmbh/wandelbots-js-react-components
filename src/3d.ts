@@ -23,6 +23,7 @@ export type {
   JogDirection,
   JogHandle,
 } from "./components/jogging/jogHandle"
+export type { JogControlsProps } from "./components/jogging/useJogControls"
 export * from "./components/robots/LinearAxis"
 export * from "./components/robots/MotionGroupVisualizer"
 export * from "./components/robots/Robot"

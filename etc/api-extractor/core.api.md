@@ -166,6 +166,21 @@ export interface InterpolationOptions {
     threshold?: number;
 }
 
+// @public
+export type JogAxis = "x" | "y" | "z";
+
+// @public
+export type JogControlsProps = {
+    motion?: "translate" | "rotate";
+    onJogStart: (axis: JogAxis, direction: JogDirection) => void;
+    onJogStop: () => void;
+    activeHandle?: JogHandle | null;
+    disabled?: boolean;
+};
+
+// @public
+export type JogDirection = "+" | "-";
+
 // @public (undocumented)
 export class JoggerConnection {
     constructor(motionStream: MotionStreamConnection, options?: JoggerConnectionOptions | undefined);
@@ -264,6 +279,12 @@ export type JoggerMode = "jogging" | "trajectory" | "off";
 
 // @public (undocumented)
 export type JoggerOrientation = "coordsys" | "tool";
+
+// @public
+export const JoggingButtons: (props: JoggingButtonsProps) => JSX.Element;
+
+// @public
+export type JoggingButtonsProps = JogControlsProps;
 
 // @public
 export const JoggingCartesianAxisControl: ((input: JoggingCartesianAxisControlProps) => JSX.Element) & {
@@ -440,6 +461,12 @@ export class JoggingStore {
     velocityInDisplayUnits(useDegree: boolean): number;
     withMotionLock(fn: () => Promise<void>): Promise<void>;
 }
+
+// @public
+export type JogHandle = {
+    axis: JogAxis;
+    direction: JogDirection;
+};
 
 // @public (undocumented)
 export function jointValuesEqual(oldJointValues: number[], newJointValues: number[], changeDeltaThreshold: number): boolean;

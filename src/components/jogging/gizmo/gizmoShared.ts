@@ -3,7 +3,7 @@ import type { RefObject } from "react"
 import { type Quaternion, Vector3 } from "three"
 import { isSameJogHandle, type JogAxis, type JogHandle } from "../jogHandle"
 import { cartesianAxisColors } from "../joggingColors"
-import type { useHoldToJog } from "../useHoldToJog"
+import type { useJogControls } from "../useJogControls"
 import type { JogArcGrabSizes } from "./arcGrabAreas"
 import type { JogGrabSizes } from "./arrows"
 
@@ -162,14 +162,14 @@ export type GizmoSceneProps = {
 
 /** What the handle half of a gizmo (laid over the canvas) gets */
 export type GizmoHandlesProps = {
-  held: JogHandle | null
-  activeHandle?: JogHandle | null
+  /** Whether a handle shows as pressed: held or shown as active */
+  isPressed: (handle: JogHandle) => boolean
   /** The handle the pointer is over */
   hovered: JogHandle | null
   disabled: boolean
   size: number
   onHover: (handle: JogHandle | null) => void
-  handlersFor: ReturnType<typeof useHoldToJog>["handlersFor"]
+  handlersFor: ReturnType<typeof useJogControls>["handlersFor"]
   /** The accessible name of a handle, e.g. "Jog X+" */
   label: (handle: JogHandle) => string
   overlay: RefObject<GizmoOverlay>
@@ -182,14 +182,12 @@ export type GizmoHandlesProps = {
 export function handleState(
   handle: JogHandle,
   {
-    held,
-    activeHandle,
+    isPressed,
     hovered,
     disabled,
-  }: Pick<GizmoHandlesProps, "held" | "activeHandle" | "hovered" | "disabled">,
+  }: Pick<GizmoHandlesProps, "isPressed" | "hovered" | "disabled">,
 ) {
-  const pressed =
-    isSameJogHandle(held, handle) || isSameJogHandle(activeHandle, handle)
+  const pressed = isPressed(handle)
   const lit = !disabled && (pressed || isSameJogHandle(hovered, handle))
   return { pressed, lit }
 }

@@ -196,6 +196,16 @@ const orientation = useRef<Quaternion | null>(null)
 />
 ```
 
+**JoggingButtons** - Jogging by buttons: a row per axis with a minus and a plus button, held to jog (X-, X+; or Rx-, Rx+ when `motion` is `"rotate"`). It takes the same props as `JoggingGizmo` (`JogControlsProps`: `motion`, `onJogStart`, `onJogStop`, `activeHandle`, `disabled`), so an app wires both the same way and can offer both. Unlike the gizmo, the buttons do not turn with the 3D view: X+ is X+ of the jog frame, wherever the camera looks from. It needs no three.js.
+
+```tsx
+<JoggingButtons
+  motion={motion}
+  onJogStart={(axis, direction) => startJogging(axis, direction)}
+  onJogStop={() => stopJogging()}
+/>
+```
+
 ### 3D Visualization & Robotics
 
 3D components for robot visualization. They render inside the `<Canvas>` of React Three Fiber.

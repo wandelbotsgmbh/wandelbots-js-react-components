@@ -33,6 +33,7 @@ test("shows the sections and the states of LoadingCover", async ({ page }) => {
     "JoggingJointValueControl",
     "VelocitySlider and VelocitySliderLabel",
     "JoggingGizmo and JoggingGizmoOrientation",
+    "JoggingButtons",
     "LoadingCover and LoadingErrorMessage",
     "NoMotionGroupModal",
   ]) {
@@ -110,6 +111,31 @@ test("jogs the TCP up along Z with JoggingGizmo", async ({ page }) => {
     async () => millimeters(await z.innerText()) > before + 3,
   )
   await screenshot(page, "building-blocks-gizmo-z")
+})
+
+test("jogs the TCP up along Z with JoggingButtons", async ({ page }) => {
+  await openPage(page, "building-blocks")
+  // The first buttons jog; the two sets below show the disabled and the
+  // active state
+  const zPlus = section(page, "JoggingButtons")
+    .getByRole("button", { name: "Jog Z+" })
+    .first()
+  await expect(zPlus).toBeEnabled()
+  // The TCP position in the control of Z, which uses the same JoggingStore
+  const z = section(page, "JoggingCartesianAxisControl")
+    .getByRole("button")
+    .nth(4)
+    .locator("..")
+  await expect(z).toContainText(/\d mm/)
+  const before = millimeters(await z.innerText())
+
+  await jogPress(
+    page,
+    zPlus,
+    async () => millimeters(await z.innerText()) > before + 3,
+  )
+  await expect(zPlus).toHaveAttribute("aria-pressed", "false")
+  await screenshot(page, "building-blocks-buttons-z")
 })
 
 /** The numbers of a text, e.g. of the TCP orientation in degrees */

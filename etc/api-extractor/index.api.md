@@ -206,6 +206,15 @@ export interface InterpolationOptions {
 export type JogAxis = "x" | "y" | "z";
 
 // @public
+export type JogControlsProps = {
+    motion?: "translate" | "rotate";
+    onJogStart: (axis: JogAxis, direction: JogDirection) => void;
+    onJogStop: () => void;
+    activeHandle?: JogHandle | null;
+    disabled?: boolean;
+};
+
+// @public
 export type JogDirection = "+" | "-";
 
 // @public (undocumented)
@@ -308,6 +317,12 @@ export type JoggerMode = "jogging" | "trajectory" | "off";
 export type JoggerOrientation = "coordsys" | "tool";
 
 // @public
+export const JoggingButtons: (props: JoggingButtonsProps) => JSX.Element;
+
+// @public
+export type JoggingButtonsProps = JogControlsProps;
+
+// @public
 export const JoggingCartesianAxisControl: ((input: JoggingCartesianAxisControlProps) => JSX.Element) & {
     displayName: string;
 };
@@ -324,14 +339,9 @@ export type JoggingGizmoOrientationProps = {
 };
 
 // @public
-export type JoggingGizmoProps = {
+export type JoggingGizmoProps = JogControlsProps & {
     orientation: RefObject<Quaternion | null>;
     frameQuaternion?: Quaternion | (() => Quaternion);
-    motion?: "translate" | "rotate";
-    onJogStart: (axis: JogAxis, direction: JogDirection) => void;
-    onJogStop: () => void;
-    activeHandle?: JogHandle | null;
-    disabled?: boolean;
     size?: number;
 };
 

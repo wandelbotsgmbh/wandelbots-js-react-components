@@ -6,11 +6,21 @@
 import "@wandelbots/mui"
 
 export * from "./components/AppHeader"
+export {
+  JoggingButtons,
+  type JoggingButtonsProps,
+} from "./components/jogging/JoggingButtons"
 export * from "./components/jogging/JoggingCartesianAxisControl"
 export type { AxisControlComponentColors } from "./components/jogging/joggingColors"
 export * from "./components/jogging/JoggingJointValueControl"
 export * from "./components/jogging/JoggingPanel"
 export { JoggingStore } from "./components/jogging/JoggingStore"
+export type {
+  JogAxis,
+  JogDirection,
+  JogHandle,
+} from "./components/jogging/jogHandle"
+export type { JogControlsProps } from "./components/jogging/useJogControls"
 export * from "./components/LoadingCover"
 export * from "./components/modal/NoMotionGroupModal"
 export * from "./components/utils/interpolation"
