@@ -5,8 +5,6 @@ import { novaAxesSeenBy } from "./gizmoView"
 
 /**
  * Props of {@link JoggingGizmoOrientation}
- *
- * @beta
  */
 export type JoggingGizmoOrientationProps = {
   /**
@@ -26,8 +24,6 @@ export type JoggingGizmoOrientationProps = {
  * It translates NOVA's axes (Z up) into those of a scene that is Y up, like
  * that of this library's robots: NOVA's Z is the scene's Y. Where it sits in
  * the scene does not matter.
- *
- * @beta
  */
 export function JoggingGizmoOrientation({
   target,

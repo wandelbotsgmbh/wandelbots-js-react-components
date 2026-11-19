@@ -24,8 +24,6 @@ import { TranslationScene } from "./TranslationScene"
 
 /**
  * Props of {@link JoggingGizmo}
- *
- * @beta
  */
 export type JoggingGizmoProps = {
   /**
@@ -136,8 +134,6 @@ function useHasOrientation(orientation: RefObject<Quaternion | null>) {
  * The gizmo is drawn in 3D; the handles are laid over it as buttons, so it
  * works from the keyboard and tests can find a handle by its name. It draws
  * only when it turns or its state changes, not every frame.
- *
- * @beta
  */
 export const JoggingGizmo = externalizeComponent(
   ({

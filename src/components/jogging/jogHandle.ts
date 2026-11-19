@@ -1,21 +1,15 @@
 /**
  * An axis of a cartesian jog
- *
- * @beta
  */
 export type JogAxis = "x" | "y" | "z"
 
 /**
  * Which way along an axis
- *
- * @beta
  */
 export type JogDirection = "+" | "-"
 
 /**
  * One jog control, e.g. +X
- *
- * @beta
  */
 export type JogHandle = { axis: JogAxis; direction: JogDirection }
 

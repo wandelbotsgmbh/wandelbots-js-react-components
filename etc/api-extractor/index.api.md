@@ -202,10 +202,10 @@ export interface InterpolationOptions {
     threshold?: number;
 }
 
-// @beta
+// @public
 export type JogAxis = "x" | "y" | "z";
 
-// @beta
+// @public
 export type JogDirection = "+" | "-";
 
 // @public (undocumented)
@@ -312,18 +312,18 @@ export const JoggingCartesianAxisControl: ((input: JoggingCartesianAxisControlPr
     displayName: string;
 };
 
-// @beta
+// @public
 export const JoggingGizmo: (input: JoggingGizmoProps) => JSX.Element;
 
-// @beta
+// @public
 export function JoggingGizmoOrientation(input: JoggingGizmoOrientationProps): null;
 
-// @beta
+// @public
 export type JoggingGizmoOrientationProps = {
     target: RefObject<Quaternion | null>;
 };
 
-// @beta
+// @public
 export type JoggingGizmoProps = {
     orientation: RefObject<Quaternion | null>;
     frameQuaternion?: Quaternion | (() => Quaternion);
@@ -506,7 +506,7 @@ export class JoggingStore {
     withMotionLock(fn: () => Promise<void>): Promise<void>;
 }
 
-// @beta
+// @public
 export type JogHandle = {
     axis: JogAxis;
     direction: JogDirection;

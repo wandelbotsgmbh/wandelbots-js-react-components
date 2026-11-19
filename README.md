@@ -165,7 +165,7 @@ Manual robot control interfaces.
 - **VelocitySlider** (and **VelocitySliderLabel**) - Speed adjustment interface
 - **JoggingStore** - The state of the jogging (velocity, coordinate system, the jogging connection). `JoggingPanel` gives it to `onSetup`, and `JoggingStore.loadFor` creates one for your own controls.
 
-**JoggingGizmo** and **JoggingGizmoOrientation** (from `/3d`, beta) - Jogging by the axes of the jog frame as the camera of the 3D view sees them: orbit the view and the gizmo turns with it, so the arrow pointing right on screen moves the robot right on screen. Hold a handle to jog.
+**JoggingGizmo** and **JoggingGizmoOrientation** (from `/3d`) - Jogging by the axes of the jog frame as the camera of the 3D view sees them: orbit the view and the gizmo turns with it, so the arrow pointing right on screen moves the robot right on screen. Hold a handle to jog.
 
 - The gizmo draws in its own small canvas, so it can sit in a panel next to the 3D view. `JoggingGizmoOrientation` goes inside the app's `<Canvas>` and passes the camera's view to the gizmo through a shared ref. Until it has, the gizmo stays disabled.
 - `JoggingGizmoOrientation` goes anywhere in the scene. It translates NOVA's axes (Z up) into those of a scene that is Y up, like that of this library's robots: NOVA's Z is the scene's Y.
