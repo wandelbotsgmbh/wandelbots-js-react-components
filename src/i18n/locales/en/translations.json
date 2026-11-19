@@ -58,5 +58,22 @@
   "Jogging.Cartesian.bt": "Cartesian",
   "Jogging.Joints.bt": "Joints",
   "Jogging.Velocity.bt": "Velocity",
-  "Jogging.Handle.lb": "Jog {{handle}}"
+  "Jogging.Handle.lb": "Jog {{handle}}",
+  "RobotControl.Title.ti": "Robot control",
+  "RobotControl.Close.bt": "Close",
+  "RobotControl.Tab.Translate.bt": "Translate",
+  "RobotControl.Tab.Rotate.bt": "Rotate",
+  "RobotControl.Tcp.lb": "TCP",
+  "RobotControl.JogFrame.lb": "Move along axis of",
+  "RobotControl.JogMode.lb": "Jog mode",
+  "RobotControl.JogMode.Continuous.bt": "Continuous",
+  "RobotControl.JogMode.Increment.bt": "Increment",
+  "RobotControl.Velocity.lb": "Velocity",
+  "RobotControl.StepSize.lb": "Step size",
+  "RobotControl.JogArea.ShowGizmo.bt": "Gizmo controls",
+  "RobotControl.JogArea.ShowButtons.bt": "Button controls",
+  "RobotControl.JogArea.Hint.HoldHandle.lb": "Hold a handle to jog · Release to stop",
+  "RobotControl.JogArea.Hint.HoldButton.lb": "Hold a button to jog · Release to stop",
+  "RobotControl.JogArea.Hint.ClickHandle.lb": "Click a handle to jog one step",
+  "RobotControl.JogArea.Hint.ClickButton.lb": "Click a button to jog one step"
 }

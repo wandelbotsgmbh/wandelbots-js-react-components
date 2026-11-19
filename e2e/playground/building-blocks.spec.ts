@@ -1,5 +1,6 @@
 import { expect, type Locator, type Page, test } from "@playwright/test"
 import {
+  controllerState,
   expectModelDrawn,
   jogPress,
   jointPositions,
@@ -8,6 +9,7 @@ import {
   screenshot,
   screenshotOnFailure,
 } from "./helpers"
+import { testData } from "./testData"
 
 // The page Building blocks: the small parts alone
 
@@ -20,6 +22,17 @@ function section(page: Page, title: string) {
     .filter({ has: page.getByRole("heading", { name: title, exact: true }) })
 }
 
+/** The height of the test robot's TCP, in mm, from the NOVA API */
+async function tcpZ(): Promise<number> {
+  const { motionGroup } = testData()
+  const group = (await controllerState()).motion_groups.find(
+    (group) => group.motion_group === motionGroup,
+  )
+  const z = group?.tcp_pose?.position?.[2]
+  if (z === undefined) throw new Error("The controller state has no TCP pose")
+  return z
+}
+
 /** The center of an element on the page, in px */
 async function centerOf(locator: Locator) {
   const box = await locator.boundingBox()
@@ -30,6 +43,7 @@ async function centerOf(locator: Locator) {
 test("shows the sections and the states of LoadingCover", async ({ page }) => {
   await openPage(page, "building-blocks")
   for (const title of [
+    "RobotControlPanel",
     "JoggingCartesianAxisControl",
     "JoggingJointValueControl",
     "VelocitySlider and VelocitySliderLabel",
@@ -91,7 +105,10 @@ test("jogs the TCP with JoggingCartesianAxisControl", async ({ page }) => {
 
 test("jogs the TCP up along Z with JoggingGizmo", async ({ page }) => {
   await openPage(page, "building-blocks")
-  await expectModelDrawn(page)
+  // The gizmo section's 3D view: the RobotControlPanel section has one too
+  await expectModelDrawn(
+    section(page, "JoggingGizmo and JoggingGizmoOrientation"),
+  )
   // The first gizmo jogs; the two small ones show the disabled and the
   // active state
   const zPlus = section(page, "JoggingGizmo and JoggingGizmoOrientation")
@@ -209,6 +226,53 @@ test("jogs the TCP up along Z with JoggingButtons", async ({ page }) => {
   await screenshot(page, "building-blocks-buttons-z")
 })
 
+test("jogs the TCP with RobotControlPanel: up while Z+ is held, and one step of 10 mm down in Increment mode", async ({
+  page,
+}) => {
+  await openPage(page, "building-blocks")
+  const panel = section(page, "RobotControlPanel")
+  // The gizmo is enabled once the 3D view next to it gave it the camera's
+  // orientation
+  await expect(panel.getByTestId("jogging-gizmo")).toBeVisible()
+  await expect(panel.getByRole("button", { name: "Jog Z+" })).toBeEnabled({
+    timeout: 30_000,
+  })
+  await screenshot(page, "building-blocks-robot-control-panel")
+
+  await panel.getByRole("button", { name: "Button controls" }).click()
+  const zPlus = panel.getByRole("button", { name: "Jog Z+" })
+  await expect(zPlus).toBeEnabled()
+  const before = await tcpZ()
+  await jogPress(page, zPlus, async () => (await tcpZ()) > before + 3)
+  await expect(zPlus).toHaveAttribute("aria-pressed", "false")
+  // The jog has stopped: the TCP stands still
+  let last = await tcpZ()
+  await expect
+    .poll(
+      async () => {
+        const now = await tcpZ()
+        const still = Math.abs(now - last) < 0.01
+        last = now
+        return still
+      },
+      { message: "The TCP stands still after the release", timeout: 30_000 },
+    )
+    .toBe(true)
+
+  await panel.getByRole("button", { name: "Increment" }).click()
+  await panel.getByRole("combobox", { name: "Step size" }).click()
+  await page.getByRole("option", { name: "10 mm" }).click()
+  const top = await tcpZ()
+  await panel.getByRole("button", { name: "Jog Z-" }).click()
+  await expect
+    .poll(tcpZ, {
+      message: "The TCP went down by one step of 10 mm",
+      timeout: 30_000,
+    })
+    .toBeCloseTo(top - 10, 0)
+  await screenshot(page, "building-blocks-robot-control-panel-increment")
+})
+
 /** The numbers of a text, e.g. of the TCP orientation in degrees */
 function numbersOf(text: string) {
   return (text.match(/-?\d+(\.\d+)?/g) ?? []).map(Number)
@@ -218,7 +282,10 @@ test("turns the TCP about Z with JoggingGizmo in rotate mode", async ({
   page,
 }) => {
   await openPage(page, "building-blocks")
-  await expectModelDrawn(page)
+  // The gizmo section's 3D view: the RobotControlPanel section has one too
+  await expectModelDrawn(
+    section(page, "JoggingGizmo and JoggingGizmoOrientation"),
+  )
   const gizmos = section(page, "JoggingGizmo and JoggingGizmoOrientation")
   await gizmos.getByRole("button", { name: "Rotate" }).click()
   // The first gizmo jogs, as in translate mode. Its handle is the round
@@ -245,7 +312,10 @@ test("turns JoggingGizmo like the tool when it jogs along the tool's axes", asyn
   page,
 }) => {
   await openPage(page, "building-blocks")
-  await expectModelDrawn(page)
+  // The gizmo section's 3D view: the RobotControlPanel section has one too
+  await expectModelDrawn(
+    section(page, "JoggingGizmo and JoggingGizmoOrientation"),
+  )
   const gizmos = section(page, "JoggingGizmo and JoggingGizmoOrientation")
   const handles = ["Jog X+", "Jog Y+", "Jog Z+"].map((name) =>
     gizmos.getByRole("button", { name }).first(),
@@ -310,11 +380,17 @@ test("turns JoggingGizmo like the tool when it jogs along the tool's axes", asyn
 
 test("turns JoggingGizmo with the camera of the 3D view", async ({ page }) => {
   await openPage(page, "building-blocks")
-  await expectModelDrawn(page)
+  // The gizmo section's 3D view: the RobotControlPanel section has one too
+  await expectModelDrawn(
+    section(page, "JoggingGizmo and JoggingGizmoOrientation"),
+  )
   const xPlus = section(page, "JoggingGizmo and JoggingGizmoOrientation")
     .getByRole("button", { name: "Jog X+" })
     .first()
-  const viewport = page.getByTestId("viewport")
+  const viewport = section(
+    page,
+    "JoggingGizmo and JoggingGizmoOrientation",
+  ).getByTestId("viewport")
   await viewport.scrollIntoViewIfNeeded()
   const before = await centerOf(xPlus)
 

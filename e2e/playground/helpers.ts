@@ -63,9 +63,10 @@ async function moveToStartPose() {
 
 /**
  * Waits until the 3D view has drawn the robot model: the marker
- * data-model-drawn of Viewport (playground/src/scene.tsx)
+ * data-model-drawn of Viewport (playground/src/scene.tsx). On a page with
+ * more than one 3D view, pass the part of the page with the one to wait for.
  */
-export async function expectModelDrawn(page: Page) {
+export async function expectModelDrawn(page: Page | Locator) {
   await expect(page.getByTestId("viewport")).toHaveAttribute(
     "data-model-drawn",
     "true",

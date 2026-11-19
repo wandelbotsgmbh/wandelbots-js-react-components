@@ -30,6 +30,7 @@ import { RobotTcp } from '@wandelbots/nova-js/v2';
 import type { SafetyStateType } from '@wandelbots/nova-js/v2';
 import Stack from '@mui/material/Stack';
 import { SxProps } from '@mui/material/styles';
+import type { Theme } from '@mui/material/styles';
 import * as THREE from 'three';
 import type { ThreeElements } from '@react-three/fiber';
 
@@ -540,6 +541,9 @@ export type JogHandle = {
 };
 
 // @public
+export type JogMotion = "translate" | "rotate";
+
+// @public
 export function JointLimitGizmo(input: JointLimitGizmoProps): JSX.Element;
 
 // @public (undocumented)
@@ -659,6 +663,52 @@ export function PresetEnvironment(): JSX.Element;
 
 // @public
 export function Robot(input: RobotProps): JSX.Element | null;
+
+// @public
+export type RobotControlIncrements = {
+    steps: Record<JogMotion, number[]>;
+    onStep: (motion: JogMotion, axis: JogAxis, direction: JogDirection, distance: number) => void;
+    running?: JogHandle | null;
+};
+
+// @public
+export type RobotControlOption = {
+    id: string;
+    label: string;
+};
+
+// @public
+export const RobotControlPanel: (input: RobotControlPanelProps) => JSX.Element;
+
+// @public
+export type RobotControlPanelProps = {
+    onClose?: () => void;
+    disabled?: boolean;
+    tcp?: RobotControlSelect;
+    jogFrame?: RobotControlSelect;
+    velocity: Record<JogMotion, RobotControlVelocity>;
+    onVelocityChange: (motion: JogMotion, value: number) => void;
+    onJogStart: (motion: JogMotion, axis: JogAxis, direction: JogDirection) => void;
+    onJogStop: () => void;
+    increments?: RobotControlIncrements;
+    gizmoOrientation?: RefObject<Quaternion | null>;
+    gizmoFrameQuaternion?: Quaternion | (() => Quaternion);
+    sx?: SxProps<Theme>;
+};
+
+// @public
+export type RobotControlSelect = {
+    options: RobotControlOption[];
+    value: string;
+    onChange: (id: string) => void;
+};
+
+// @public
+export type RobotControlVelocity = {
+    value: number;
+    min: number;
+    max: number;
+};
 
 // @public (undocumented)
 export type RobotProps = {

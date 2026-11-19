@@ -72,6 +72,7 @@ Browse the full icon set at https://wandelbotsgmbh.github.io/nova-design-system/
 - **`/JoggingGizmo`** — Only `JoggingGizmo` (also as the default export) and `JoggingGizmoOrientation`. Requires in addition three and @react-three/fiber.
 - **`/JoggingButtons`** — Only `JoggingButtons` (also as the default export). No 3D packages needed.
 - **`/JoggingJointSlider`** — Only `JoggingJointSlider` (also as the default export). No 3D packages needed.
+- **`/RobotControlPanel`** — The whole Robot control panel, `RobotControlPanel` (also as the default export). It shows the jog gizmo, so it requires in addition three and @react-three/fiber, as `/JoggingGizmo` does.
 
 A component's own entry point brings only what that component needs, e.g. `/JoggingButtons` no three.js and no NOVA client, unlike `/core`. The entry points share their common code, so an app that imports a component from both `/core` and its own entry point gets one copy of it:
 
@@ -89,9 +90,9 @@ import JoggingJointSlider from "@wandelbots/wandelbots-js-react-components/Joggi
 | `@wandelbots/mui` | ^2 |
 | `mobx` | ^6.13.6 |
 | `mobx-react-lite` | ^4.1.0 |
-| `three` (only `/3d`, `/JoggingGizmo`) | >=0.182 |
+| `three` (only `/3d`, `/JoggingGizmo`, `/RobotControlPanel`) | >=0.182 |
 | `three-stdlib` (only `/3d`) | >=2 |
-| `@react-three/fiber` (only `/3d`, `/JoggingGizmo`) | ^9 |
+| `@react-three/fiber` (only `/3d`, `/JoggingGizmo`, `/RobotControlPanel`) | ^9 |
 | `@react-three/drei` (only `/3d`) | ^10 |
 
 These packages are peer dependencies because the app and the library must use the same copy: React, the MUI theme of the app, the MobX stores that the app reads with its own `observer`, and the `<Canvas>` of React Three Fiber.
@@ -252,6 +253,35 @@ const [active, setActive] = useState<number | null>(null)
     disabled={active !== null && active !== index}
   />
 ))}
+```
+
+**RobotControlPanel** (from `/3d` or `/RobotControlPanel`) - The Robot control panel of the design, built from the parts above: the tabs Translate and Rotate, the TCP and the frame to jog along, Continuous or Increment, the velocity, the step size, and the gizmo or the buttons with a switch between them. An app that wants the whole panel imports this; an app that wants one part imports that part.
+
+- It moves nothing itself, as its parts: `onJogStart(motion, axis, direction)` and `onJogStop` for jogging while held, and `increments.onStep(motion, axis, direction, distance)` for one step per press. The app keeps the velocity and the selects in its own store; the panel keeps the tab, the mode, the step size and the view.
+- Velocities and step sizes are in NOVA's units: mm and mm/s to translate, rad and rad/s to rotate. The panel shows mm/s and °/s.
+- `tcp` and `jogFrame` show a select each, filled by the app. Without `increments`, there is no Continuous/Increment toggle. Without `gizmoOrientation` (from a `JoggingGizmoOrientation` in the app's 3D scene), it jogs with buttons only.
+- `onJogStop` also comes when the tab, the mode or the view changes while a control is held: the jog of that press must not go on.
+
+```tsx
+const orientation = useRef<Quaternion | null>(null)
+
+<RobotControlPanel
+  gizmoOrientation={orientation}
+  tcp={{ options: tcps, value: tcp, onChange: setTcp }}
+  jogFrame={{ options: frames, value: frame, onChange: setFrame }}
+  velocity={{
+    translate: { value: mmPerSec, min: 1, max: 250 },
+    rotate: { value: radPerSec, min: 0.02, max: 1 },
+  }}
+  onVelocityChange={(motion, value) => setVelocity(motion, value)}
+  onJogStart={(motion, axis, direction) => startJogging(motion, axis, direction)}
+  onJogStop={() => stopJogging()}
+  increments={{
+    steps: { translate: [0.1, 1, 5, 10], rotate: [0.001, 0.01, 0.05] },
+    onStep: (motion, axis, direction, distance) =>
+      jogStep(motion, axis, direction, distance),
+  }}
+/>
 ```
 
 ### 3D Visualization & Robotics
