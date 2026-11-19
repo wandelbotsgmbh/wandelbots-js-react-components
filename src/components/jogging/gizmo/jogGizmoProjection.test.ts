@@ -14,8 +14,9 @@ import {
   grabAreasOf,
   hasTurned,
   type JogGrabSizes,
+  axesSeenBy,
   jogFrameInCamera,
-  jogFrameSeenBy,
+  jogFrameInView,
   type ProjectedJogHandle,
   projectJogHandles,
   UNIT_VECTOR,
@@ -79,7 +80,7 @@ describe("jogFrameInCamera", () => {
   })
 })
 
-describe("jogFrameSeenBy", () => {
+describe("axesSeenBy and jogFrameInView", () => {
   /** The playground's camera: Y up, at (2, 1.5, 2), looking at the robot */
   function playgroundCamera() {
     const camera = new PerspectiveCamera()
@@ -118,9 +119,10 @@ describe("jogFrameSeenBy", () => {
     anchor: Object3D,
     frame: Quaternion,
   ) {
-    for (const handle of projectJogHandles(
-      jogFrameSeenBy(camera, anchor, frame),
-    )) {
+    // As JoggingGizmoOrientation and JoggingGizmo do it together: the 3D
+    // view sees the axes of its group, and the gizmo turns them to its frame
+    const view = axesSeenBy(camera, anchor)
+    for (const handle of projectJogHandles(jogFrameInView(view, frame))) {
       const move = UNIT_VECTOR[handle.axis]
         .clone()
         .multiplyScalar(handle.direction === "+" ? 1 : -1)
@@ -134,7 +136,7 @@ describe("jogFrameSeenBy", () => {
     }
   }
 
-  it("takes the frame in the coordinates of the group it sits in, e.g. NOVA's Z up in a Y-up scene", () => {
+  it("sees the axes of the group it sits in, e.g. NOVA's Z up in a Y-up scene", () => {
     expectHandlesPointWhereTheRobotGoes(
       playgroundCamera(),
       inNovaCoordinates(),
@@ -142,7 +144,7 @@ describe("jogFrameSeenBy", () => {
     )
   })
 
-  it("turns with a frame of its own there, e.g. the tool's", () => {
+  it("turns them to a jog frame given in that group's coordinates, e.g. the tool's", () => {
     const tool = about([0, 0, 1], 90).multiply(about([1, 0, 0], 30))
 
     expectHandlesPointWhereTheRobotGoes(

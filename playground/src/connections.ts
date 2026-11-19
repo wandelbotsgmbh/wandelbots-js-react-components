@@ -115,10 +115,18 @@ export function useJoggingStore(
   )
 }
 
-/** What a jog button moves: a joint, or the TCP along an axis or about it */
+/**
+ * What a jog button moves: a joint, or the TCP along an axis or about it, of
+ * the world frame or (with `tool`) of the tool
+ */
 export type JogCommand =
   | { joint: number; direction: "-" | "+" }
-  | { axis: "x" | "y" | "z"; direction: "-" | "+"; rotate?: boolean }
+  | {
+      axis: "x" | "y" | "z"
+      direction: "-" | "+"
+      rotate?: boolean
+      tool?: boolean
+    }
 
 /** The number of the last press per store (see startJogging) */
 const jogPresses = new WeakMap<JoggingStore, number>()
@@ -158,18 +166,23 @@ export async function startJogging(store: JoggingStore, command: JogCommand) {
           ? store.rotationVelocityRadsPerSec
           : store.translationVelocityMmPerSec,
       })
-    } else if (command.rotate) {
-      await store.jogger.rotateTCP({
-        axis: command.axis,
-        direction: command.direction,
-        velocityRadsPerSec: store.rotationVelocityRadsPerSec,
-      })
     } else {
-      await store.jogger.translateTCP({
-        axis: command.axis,
-        direction: command.direction,
-        velocityMmPerSec: store.translationVelocityMmPerSec,
-      })
+      // The jogger reads it at each request: with "tool", NOVA moves along
+      // the tool's axes
+      store.jogger.orientation = command.tool ? "tool" : "coordsys"
+      if (command.rotate) {
+        await store.jogger.rotateTCP({
+          axis: command.axis,
+          direction: command.direction,
+          velocityRadsPerSec: store.rotationVelocityRadsPerSec,
+        })
+      } else {
+        await store.jogger.translateTCP({
+          axis: command.axis,
+          direction: command.direction,
+          velocityMmPerSec: store.translationVelocityMmPerSec,
+        })
+      }
     }
   } catch (error) {
     console.error("Jogging failed:", error)

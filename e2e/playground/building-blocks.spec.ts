@@ -144,6 +144,73 @@ test("turns the TCP about Z with JoggingGizmo in rotate mode", async ({
   await screenshot(page, "building-blocks-gizmo-rz")
 })
 
+test("turns JoggingGizmo like the tool when it jogs along the tool's axes", async ({
+  page,
+}) => {
+  await openPage(page, "building-blocks")
+  await expectModelDrawn(page)
+  const gizmos = section(page, "JoggingGizmo and JoggingGizmoOrientation")
+  const handles = ["Jog X+", "Jog Y+", "Jog Z+"].map((name) =>
+    gizmos.getByRole("button", { name }).first(),
+  )
+  await expect(handles[0]).toBeEnabled()
+  const alongWorld = await Promise.all(handles.map(centerOf))
+
+  // The tool of the start pose is turned against the world frame, so its
+  // axes show elsewhere on screen
+  await gizmos.getByRole("button", { name: "Tool" }).click()
+  await expect
+    .poll(
+      async () => {
+        const alongTool = await Promise.all(handles.map(centerOf))
+        return Math.max(
+          ...alongTool.map((p, i) =>
+            Math.hypot(p.x - alongWorld[i].x, p.y - alongWorld[i].y),
+          ),
+        )
+      },
+      { message: "The handles turned like the tool", timeout: 15_000 },
+    )
+    .toBeGreaterThan(20)
+
+  // Holding Z+ moves the TCP along the tool's Z. By keyboard: in a turned
+  // frame, Z can point at the viewer, and then a press reaches no handle.
+  const axisControls = section(page, "JoggingCartesianAxisControl")
+  const position = async () =>
+    Promise.all(
+      [0, 2, 4].map(async (i) =>
+        millimeters(
+          await axisControls
+            .getByRole("button")
+            .nth(i)
+            .locator("..")
+            .innerText(),
+        ),
+      ),
+    )
+  const before = await position()
+  await handles[2].focus()
+  await page.keyboard.down(" ")
+  try {
+    await expect
+      .poll(
+        async () => {
+          const now = await position()
+          return now.reduce((sum, v, i) => sum + Math.abs(v - before[i]), 0)
+        },
+        {
+          message: "The TCP moves while Z+ is held",
+          // On a CI runner, the jogging connection can need more than 10 s
+          timeout: 30_000,
+        },
+      )
+      .toBeGreaterThan(3)
+  } finally {
+    await page.keyboard.up(" ")
+  }
+  await screenshot(page, "building-blocks-gizmo-tool")
+})
+
 test("turns JoggingGizmo with the camera of the 3D view", async ({ page }) => {
   await openPage(page, "building-blocks")
   await expectModelDrawn(page)

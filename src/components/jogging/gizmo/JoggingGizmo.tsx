@@ -1,8 +1,8 @@
 import Box from "@mui/material/Box"
 import { Canvas } from "@react-three/fiber"
-import { type RefObject, useEffect, useRef, useState } from "react"
+import { type RefObject, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
-import type { Quaternion } from "three"
+import { Quaternion } from "three"
 import { externalizeComponent } from "../../../externalizeComponent"
 import {
   type JogAxis,
@@ -14,7 +14,7 @@ import { useHoldToJog } from "../useHoldToJog"
 import { RotationHandles, RotationScene } from "./gizmoRotation"
 import { type GizmoOverlay, gizmoMeasures } from "./gizmoShared"
 import { TranslationHandles, TranslationScene } from "./gizmoTranslation"
-import { fitGizmoRadiusPx } from "./jogGizmoProjection"
+import { fitGizmoRadiusPx, jogFrameInView } from "./jogGizmoProjection"
 
 /**
  * Props of {@link JoggingGizmo}
@@ -23,13 +23,23 @@ import { fitGizmoRadiusPx } from "./jogGizmoProjection"
  */
 export type JoggingGizmoProps = {
   /**
-   * The jog frame as the camera sees it, read every frame. Fill it with a
-   * {@link JoggingGizmoOrientation} inside the app's 3D scene. Start it
-   * empty (`useRef<Quaternion | null>(null)`): until a first orientation
-   * arrives, the gizmo stays disabled rather than point its arrows a way the
-   * 3D view does not.
+   * NOVA's axes as the camera of the app's 3D view sees them, read every
+   * animation frame. Fill it with a {@link JoggingGizmoOrientation} inside
+   * the app's 3D scene. Start it empty (`useRef<Quaternion | null>(null)`):
+   * until a first orientation arrives, the gizmo stays disabled rather than
+   * point its arrows a way the 3D view does not.
    */
   orientation: RefObject<Quaternion | null>
+  /**
+   * Orientation of the frame the handles jog along, in NOVA's coordinates
+   * (those of the group that {@link JoggingGizmoOrientation} sits in).
+   * Defaults to NOVA's world frame.
+   *
+   * A frame that turns, such as the tool's, can be a function: the gizmo
+   * calls it every animation frame, so it turns with the tool without
+   * re-rendering React.
+   */
+  frameQuaternion?: Quaternion | (() => Quaternion)
   /**
    * Whether the handles move the robot along the axes (arrows) or turn it
    * about them (arcs). Defaults to `"translate"`. A jog that runs when it
@@ -48,6 +58,31 @@ export type JoggingGizmoProps = {
   disabled?: boolean
   /** Side of the square the gizmo takes, in px. Defaults to 200. */
   size?: number
+}
+
+const WORLD = new Quaternion()
+
+/**
+ * The jog frame as the camera sees it: `orientation` turned to the frame,
+ * worked out anew each time it is read, so a frame that turns is followed
+ */
+function useJogFrameInView(
+  orientation: RefObject<Quaternion | null>,
+  frameQuaternion: Quaternion | (() => Quaternion) = WORLD,
+): RefObject<Quaternion | null> {
+  const frame = useRef(frameQuaternion)
+  frame.current = frameQuaternion
+  return useMemo(() => {
+    const seen = new Quaternion()
+    return {
+      get current() {
+        const view = orientation.current
+        if (!view) return null
+        const f = frame.current
+        return jogFrameInView(view, typeof f === "function" ? f() : f, seen)
+      },
+    }
+  }, [orientation])
 }
 
 /** How long the gizmo waits for its first orientation before it says so, in ms */
@@ -101,6 +136,7 @@ function useHasOrientation(orientation: RefObject<Quaternion | null>) {
 export const JoggingGizmo = externalizeComponent(
   ({
     orientation,
+    frameQuaternion,
     motion = "translate",
     onJogStart,
     onJogStop,
@@ -111,6 +147,7 @@ export const JoggingGizmo = externalizeComponent(
     const { t } = useTranslation()
     const hasOrientation = useHasOrientation(orientation)
     const disabled = disabledByApp || !hasOrientation
+    const jogFrame = useJogFrameInView(orientation, frameQuaternion)
     const { held, handlersFor, stop } = useHoldToJog({
       onJogStart,
       onJogStop,
@@ -154,7 +191,7 @@ export const JoggingGizmo = externalizeComponent(
           style={{ position: "absolute", inset: 0, pointerEvents: "none" }}
         >
           <Scene
-            orientation={orientation}
+            orientation={jogFrame}
             lit={held ?? activeHandle ?? hovered}
             disabled={disabled}
             size={size}

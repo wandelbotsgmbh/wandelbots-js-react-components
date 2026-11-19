@@ -45,23 +45,34 @@ export function jogFrameInCamera(
 }
 
 const cameraWorld = new Quaternion()
-const frameWorld = new Quaternion()
+const anchorWorld = new Quaternion()
 
 /**
- * The jog frame as `camera` sees it, for a `frame` given in the coordinates
- * of `anchor`, the place in the scene where it sits. In a group that turns
- * NOVA's Z up into the scene's Y up, an unturned `frame` is NOVA's world
- * frame, as the robot there has it.
+ * The axes of `anchor`, the place in the scene where it sits, as `camera`
+ * sees them. In a group that turns NOVA's Z up into the scene's Y up, they
+ * are NOVA's world axes, as the robot there has them.
  */
-export function jogFrameSeenBy(
+export function axesSeenBy(
   camera: Object3D,
   anchor: Object3D,
-  frame: Quaternion,
   target = new Quaternion(),
 ): Quaternion {
   camera.getWorldQuaternion(cameraWorld)
-  anchor.getWorldQuaternion(frameWorld).multiply(frame)
-  return jogFrameInCamera(cameraWorld, frameWorld, target)
+  anchor.getWorldQuaternion(anchorWorld)
+  return jogFrameInCamera(cameraWorld, anchorWorld, target)
+}
+
+/**
+ * The jog frame as the camera sees it: `view`, axes as the camera sees them
+ * (see {@link axesSeenBy}), turned by `frame`, the jog frame in the
+ * coordinates of those axes
+ */
+export function jogFrameInView(
+  view: Quaternion,
+  frame: Quaternion,
+  target = new Quaternion(),
+): Quaternion {
+  return target.copy(view).multiply(frame)
 }
 
 /**
