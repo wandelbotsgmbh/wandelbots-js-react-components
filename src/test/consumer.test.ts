@@ -19,6 +19,7 @@ import { execFileSync } from "node:child_process"
 import {
   existsSync,
   mkdirSync,
+  readFileSync,
   rmSync,
   symlinkSync,
   writeFileSync,
@@ -147,7 +148,12 @@ describe("package exports — deep component imports", () => {
   // directory under `src/` with an `index.ts` barrel and is exposed at
   // `@wandelbots/.../<Name>` (matching `@mui/material/Button`). The set
   // is deliberately small — see scripts/entry-points.ts.
-  const specs = ["SafetyBar"]
+  const specs = [
+    "SafetyBar",
+    "JoggingGizmo",
+    "JoggingButtons",
+    "JoggingJointSlider",
+  ]
 
   it.each(specs)("%s resolves ESM, CJS, and types", (sub) => {
     const spec = `${pkgName}/${sub}`
@@ -166,7 +172,12 @@ describe("MUI-style default + named exports", () => {
   // that downstream apps will import directly. Each must expose both a
   // named export (preserving the existing API) and a matching `default`
   // export (the MUI-style convention).
-  const cases = [{ sub: "SafetyBar", name: "SafetyBar" }]
+  const cases = [
+    { sub: "SafetyBar", name: "SafetyBar" },
+    { sub: "JoggingGizmo", name: "JoggingGizmo" },
+    { sub: "JoggingButtons", name: "JoggingButtons" },
+    { sub: "JoggingJointSlider", name: "JoggingJointSlider" },
+  ]
 
   it.each(cases)("$sub exposes $name as both named and default", async ({
     sub,
@@ -195,6 +206,79 @@ describe("aggregate barrel preserves named exports", () => {
   }, 30_000)
 })
 
+/**
+ * The packages that an ESM file of dist/ imports, with every relative import
+ * followed: what an app needs installed to import it
+ */
+function packagesImportedBy(esmPath: string): Set<string> {
+  const seen = new Set<string>()
+  const packages = new Set<string>()
+  const visit = (file: string) => {
+    if (seen.has(file)) return
+    seen.add(file)
+    const code = readFileSync(file, "utf8")
+    for (const [, spec] of code.matchAll(
+      /(?:from|import)\s*\(?\s*"([^"]+)"/g,
+    )) {
+      if (spec.startsWith(".")) visit(resolve(dirname(file), spec))
+      else {
+        const parts = spec.split("/")
+        packages.add(
+          spec.startsWith("@") ? parts.slice(0, 2).join("/") : parts[0],
+        )
+      }
+    }
+  }
+  visit(esmPath)
+  return packages
+}
+
+describe("component imports bring only what the component needs", () => {
+  // An app that shows only jog buttons or joint sliders needs no 3D: their
+  // imports must not reach three.js, React Three Fiber, or the NOVA
+  // connection code that /core carries
+  it.each([
+    "JoggingButtons",
+    "JoggingJointSlider",
+  ])("%s pulls in no three.js, no React Three Fiber, no NOVA client", (sub) => {
+    const packages = packagesImportedBy(resolveEsm(`${pkgName}/${sub}`))
+    for (const heavy of [
+      "three",
+      "@react-three/fiber",
+      "@react-three/drei",
+      "@wandelbots/nova-js",
+      "axios",
+    ]) {
+      expect(packages, `${sub} imports ${heavy}`).not.toContain(heavy)
+    }
+  })
+
+  // One copy: the component and its aggregate entry share the same module,
+  // so an app that imports both gets one component and one i18n instance
+  it.each([
+    { sub: "JoggingGizmo", aggregate: "3d", name: "JoggingGizmo" },
+    { sub: "JoggingGizmo", aggregate: "3d", name: "JoggingGizmoOrientation" },
+    { sub: "JoggingButtons", aggregate: "core", name: "JoggingButtons" },
+    {
+      sub: "JoggingJointSlider",
+      aggregate: "core",
+      name: "JoggingJointSlider",
+    },
+  ])("$sub and /$aggregate share one $name", async ({
+    sub,
+    aggregate,
+    name,
+  }) => {
+    const deep = (await import(`${pkgName}/${sub}`)) as Record<string, unknown>
+    const all = (await import(`${pkgName}/${aggregate}`)) as Record<
+      string,
+      unknown
+    >
+    expect(deep[name], `missing ${name}`).toBeDefined()
+    expect(deep[name]).toBe(all[name])
+  }, 30_000)
+})
+
 describe("CJS interop", () => {
   it("require() returns the same symbols as import", async () => {
     const esm = (await import(`${pkgName}/SafetyBar`)) as Record<
@@ -216,6 +300,9 @@ describe("CJS interop", () => {
   // under strict resolution.
   it.each([
     "SafetyBar",
+    "JoggingGizmo",
+    "JoggingButtons",
+    "JoggingJointSlider",
   ])("Node strict ESM can import %s and its transitive deps", (sub) => {
     // Redirect stderr to stdout so the assertion message surfaces any
     // "Cannot find module" errors from the child process.
