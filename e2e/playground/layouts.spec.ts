@@ -1,16 +1,19 @@
 import { expect, test } from "@playwright/test"
 import {
+  controllerState,
   expectModelDrawn,
   jogPress,
   jointPositions,
+  nova,
   openPage,
   screenshot,
   screenshotOnFailure,
   tcpZ,
 } from "./helpers"
+import { CELL, testData } from "./testData"
 
-// The page Layouts: RobotControlPanel and CurrentPoseBar over the robot's 3D
-// view, as in the Figma design
+// The page Layouts: RobotHeader on top, RobotControlPanel and CurrentPoseBar
+// over the robot's 3D view, as in the Figma design
 
 test.afterEach(screenshotOnFailure("layouts"))
 
@@ -33,6 +36,60 @@ test("shows the robot's 3D view with RobotControlPanel at its top right and Curr
   // The panel ends above the bar, on any height of the window
   expect(panel.y + panel.height).toBeLessThan(bar.y)
   await screenshot(page, "layouts")
+})
+
+test("shows RobotHeader above the 3D view with the robot's motion group, and its app menu opens the playground's pages", async ({
+  page,
+}) => {
+  await openPage(page, "layouts")
+  const header = page.getByTestId("robot-header")
+  await expect(header.getByRole("heading", { name: "Robot Pad" })).toBeVisible()
+  await expect(
+    header.getByRole("combobox", { name: "Motion group" }),
+  ).toHaveText(testData().motionGroup)
+  const headerBox = await header.boundingBox()
+  const viewBox = await page.getByTestId("viewport").boundingBox()
+  if (!headerBox || !viewBox)
+    throw new Error("The header or the view is missing")
+  expect(headerBox.y + headerBox.height).toBeLessThanOrEqual(viewBox.y + 0.5)
+  await screenshot(page, "layouts-robot-header")
+
+  await header.getByRole("button", { name: "Apps" }).click()
+  await page.getByRole("menuitem", { name: "Building blocks" }).click()
+  await expect(page).toHaveURL(/page=building-blocks/)
+})
+
+test("activates and deactivates the robot with RobotHeader's switch, as RobotPad does: the controller's mode", async ({
+  page,
+}) => {
+  await openPage(page, "layouts")
+  const activation = page
+    .getByTestId("robot-header")
+    .getByRole("switch", { name: /Activat|Deactivat/ })
+  // openPage waits for MODE_MONITOR: nothing controls the robot
+  await expect(activation).not.toBeChecked()
+  await expect(activation).toHaveAccessibleName("Activate")
+
+  try {
+    await activation.click()
+    await expect(activation).toBeChecked({ timeout: 30_000 })
+    await expect(activation).toHaveAccessibleName("Activated")
+    expect((await controllerState()).mode).toBe("MODE_CONTROL")
+
+    await activation.click()
+    await expect(activation).not.toBeChecked({ timeout: 30_000 })
+    await expect(activation).toHaveAccessibleName("Activate")
+  } finally {
+    // The next test needs the robot in MODE_MONITOR
+    await nova().api.controller.setDefaultMode(
+      CELL,
+      testData().controller,
+      "ROBOT_SYSTEM_MODE_MONITOR",
+    )
+  }
+  await expect
+    .poll(async () => (await controllerState()).mode, { timeout: 30_000 })
+    .toBe("MODE_MONITOR")
 })
 
 test("shows the TCP's pose in CurrentPoseBar as NOVA reports it, Running while a jog runs, and the orientation as a quaternion", async ({

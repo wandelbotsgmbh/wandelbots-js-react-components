@@ -849,6 +849,33 @@ export type RobotControlVelocity = {
     max: number;
 };
 
+// @public
+export const RobotHeader: (input: RobotHeaderProps) => JSX.Element;
+
+// @public
+export type RobotHeaderActivation = {
+    state: RobotHeaderActivationState;
+    disabled?: boolean;
+    onToggle: () => void;
+};
+
+// @public
+export type RobotHeaderActivationState = "inactive" | "activating" | "active" | "deactivating";
+
+// @public
+export type RobotHeaderProps = {
+    appIcon?: ReactNode;
+    appName: string;
+    apps?: AppItem[];
+    onAppSelect?: (app: AppItem) => void;
+    onSearch?: () => void;
+    motionGroup?: RobotControlSelect;
+    safety?: Pick<SafetyBarProps, "isVirtual" | "motionGroupId" | "operationMode" | "safetyState">;
+    activation?: RobotHeaderActivation;
+    actions?: ReactNode;
+    sx?: SxProps<Theme>;
+};
+
 // @public (undocumented)
 export type RobotProps = {
     connectedMotionGroup: ConnectedMotionGroup;

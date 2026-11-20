@@ -118,5 +118,8 @@
   "CurrentPose.EulerConvention.Intrinsic.hlb": "Intrinsische Rotationen",
   "CurrentPose.EulerConvention.Extrinsic.hlb": "Extrinsische Rotationen",
   "CurrentPose.EulerConvention.Intrinsic.lb": "Intrinsisch {{axes}}",
-  "CurrentPose.EulerConvention.Extrinsic.lb": "Extrinsisch {{axes}}"
+  "CurrentPose.EulerConvention.Extrinsic.lb": "Extrinsisch {{axes}}",
+  "RobotHeader.Apps.bt": "Apps",
+  "RobotHeader.Search.bt": "Suchen",
+  "RobotHeader.MotionGroup.lb": "Bewegungsgruppe"
 }

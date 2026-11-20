@@ -1,27 +1,24 @@
-import Box from "@mui/material/Box"
 import Divider from "@mui/material/Divider"
 import IconButton from "@mui/material/IconButton"
-import MenuItem from "@mui/material/MenuItem"
 import Stack from "@mui/material/Stack"
 import type { SxProps, Theme } from "@mui/material/styles"
 import Tooltip from "@mui/material/Tooltip"
 import Typography from "@mui/material/Typography"
 import { ContentCopyFilled } from "@wandelbots/icons/ContentCopyFilled"
 import { Settings } from "@wandelbots/icons/Settings"
-import { AdornedSelect } from "@wandelbots/mui"
 import type {
   JoggingDetailsState,
   TrajectoryDetailsState,
 } from "@wandelbots/nova-js/v2"
-import { memo, useCallback, useId, useRef, useState } from "react"
+import { useCallback, useId, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { externalizeComponent } from "../../externalizeComponent"
 import { poseToText } from "../robotControl/poseText"
 import type {
-  RobotControlOption,
   RobotControlPose,
   RobotControlSelect,
 } from "../robotControl/RobotControlPanel"
+import { SmallSelect } from "../robotControl/SmallSelect"
 import { useCopyText } from "../robotControl/useCopyText"
 import { useEveryFrame } from "../robotControl/useEveryFrame"
 import type { EulerConvention } from "./orientation"
@@ -102,71 +99,19 @@ function Label({ children, id }: { children: string; id?: string }) {
   )
 }
 
-/** The same options: the same ids and labels in the same order */
-function sameOptions(a: RobotControlOption[], b: RobotControlOption[]) {
+/** A select of the bar with its label to the left, e.g. the TCP */
+function BarSelect({
+  label,
+  ...select
+}: RobotControlSelect & { label: string }) {
+  const labelId = useId()
   return (
-    a.length === b.length &&
-    a.every(
-      (option, i) => option.id === b[i]?.id && option.label === b[i]?.label,
-    )
+    <Stack direction="row" sx={{ gap: "8px", alignItems: "center" }}>
+      <Label id={labelId}>{label}</Label>
+      <SmallSelect labelId={labelId} width="172px" {...select} />
+    </Stack>
   )
 }
-
-/**
- * A select of the bar with its label to the left, e.g. the TCP. It renders
- * again only for other options or another value: an open menu measures its
- * place on every render, and an app may render on every update of the robot.
- */
-const BarSelect = memo(
-  function BarSelect({
-    label,
-    options,
-    value,
-    onChange,
-  }: RobotControlSelect & { label: string }) {
-    const labelId = useId()
-    return (
-      <Stack direction="row" sx={{ gap: "8px", alignItems: "center" }}>
-        <Label id={labelId}>{label}</Label>
-        <Box sx={{ width: "172px", flexShrink: 0 }}>
-          <AdornedSelect
-            labelId={labelId}
-            adornedSize="small"
-            // Figma's select of the bar: 36 px high, its value as input/value
-            // (14 px), smaller than the design system's small select (41 px)
-            sx={{
-              // Two classes: the small select sets its padding with two too
-              "& .MuiInputBase-input.MuiSelect-select": {
-                // 36 px with the 1 px border of the select
-                paddingY: "5px",
-                fontSize: "14px",
-                lineHeight: "24px",
-                letterSpacing: "0.15px",
-                minHeight: "24px",
-              },
-            }}
-            value={value}
-            renderValue={(id) =>
-              options.find((option) => option.id === id)?.label ?? String(id)
-            }
-            onChange={(event) => onChange(String(event.target.value))}
-          >
-            {options.map((option) => (
-              <MenuItem key={option.id} value={option.id}>
-                {option.label}
-              </MenuItem>
-            ))}
-          </AdornedSelect>
-        </Box>
-      </Stack>
-    )
-  },
-  (a, b) =>
-    a.label === b.label &&
-    a.value === b.value &&
-    a.onChange === b.onChange &&
-    sameOptions(a.options, b.options),
-)
 
 const BarDivider = () => (
   <Divider orientation="vertical" flexItem={false} sx={{ height: "16px" }} />

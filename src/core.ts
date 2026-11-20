@@ -33,6 +33,12 @@ export type {
 } from "./components/jogging/jogHandle"
 export type { JogControlsProps } from "./components/jogging/useJogControls"
 export * from "./components/LoadingCover"
+export {
+  RobotHeader,
+  type RobotHeaderActivation,
+  type RobotHeaderActivationState,
+  type RobotHeaderProps,
+} from "./components/robotHeader/RobotHeader"
 // Also in /3d, with the panel: the bar takes them without three.js
 export type {
   RobotControlOption,
