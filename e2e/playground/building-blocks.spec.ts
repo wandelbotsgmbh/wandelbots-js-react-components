@@ -1,6 +1,5 @@
 import { expect, type Locator, type Page, test } from "@playwright/test"
 import {
-  controllerState,
   expectModelDrawn,
   jogPress,
   jointPositions,
@@ -9,7 +8,6 @@ import {
   screenshot,
   screenshotOnFailure,
 } from "./helpers"
-import { testData } from "./testData"
 
 // The page Building blocks: the small parts alone
 
@@ -22,17 +20,6 @@ function section(page: Page, title: string) {
     .filter({ has: page.getByRole("heading", { name: title, exact: true }) })
 }
 
-/** The height of the test robot's TCP, in mm, from the NOVA API */
-async function tcpZ(): Promise<number> {
-  const { motionGroup } = testData()
-  const group = (await controllerState()).motion_groups.find(
-    (group) => group.motion_group === motionGroup,
-  )
-  const z = group?.tcp_pose?.position?.[2]
-  if (z === undefined) throw new Error("The controller state has no TCP pose")
-  return z
-}
-
 /** The center of an element on the page, in px */
 async function centerOf(locator: Locator) {
   const box = await locator.boundingBox()
@@ -43,8 +30,6 @@ async function centerOf(locator: Locator) {
 test("shows the sections and the states of LoadingCover", async ({ page }) => {
   await openPage(page, "building-blocks")
   for (const title of [
-    "RobotControlPanel",
-    "CurrentPoseBar",
     "JoggingCartesianAxisControl",
     "JoggingJointValueControl",
     "VelocitySlider and VelocitySliderLabel",
@@ -102,54 +87,6 @@ test("jogs the TCP with JoggingCartesianAxisControl", async ({ page }) => {
     async () => millimeters(await x.innerText()) > before + 3,
   )
   await screenshot(page, "building-blocks-tcp-x")
-})
-
-test("shows the TCP's pose in CurrentPoseBar as NOVA reports it, Running while a jog runs, and the orientation as a quaternion", async ({
-  page,
-}) => {
-  await openPage(page, "building-blocks")
-  const bar = section(page, "CurrentPoseBar")
-  const values = bar.getByTestId("current-pose-values")
-  /** The bar's Z, in mm */
-  const barZ = async () =>
-    Number(/Z\s*(-?\d+(\.\d+)?)/.exec(await values.innerText())?.[1])
-
-  // The bar shows the pose in world, where NOVA reports it
-  await expect
-    .poll(async () => Math.abs((await barZ()) - (await tcpZ())), {
-      message: "The bar shows the TCP's height",
-      timeout: 30_000,
-    })
-    .toBeLessThan(0.2)
-  await expect(bar.getByTestId("KIND_UNKNOWN")).toHaveText("Ready")
-
-  // Jogging Z up: the bar follows, and says Running while the jog runs
-  const zPlus = section(page, "JoggingCartesianAxisControl")
-    .getByRole("button")
-    .nth(5)
-  await expect(zPlus).toBeEnabled()
-  const before = await barZ()
-  let running = false
-  await jogPress(page, zPlus, async () => {
-    running ||= await bar.getByTestId("RUNNING").isVisible()
-    return running && (await barZ()) > before + 3
-  })
-  await expect(bar.getByTestId("KIND_UNKNOWN")).toHaveText("Ready", {
-    timeout: 30_000,
-  })
-
-  // The orientation as a quaternion: four values, no angle unit
-  await bar.getByRole("button", { name: "Orientation format" }).click()
-  const dialog = page.getByRole("dialog", { name: "Orientation format" })
-  await dialog.getByRole("combobox", { name: "Format" }).click()
-  await page.getByRole("option", { name: "Quaternion" }).click()
-  await expect(
-    dialog.getByRole("combobox", { name: "Angle unit" }),
-  ).toHaveCount(0)
-  await page.keyboard.press("Escape")
-  await expect(values).toContainText(/Qx.*Qy.*Qz.*Qw/)
-  await expect(values).not.toContainText("rad")
-  await screenshot(page, "building-blocks-current-pose-bar")
 })
 
 test("jogs the TCP up along Z with JoggingGizmo", async ({ page }) => {
@@ -273,187 +210,6 @@ test("jogs the TCP up along Z with JoggingButtons", async ({ page }) => {
   )
   await expect(zPlus).toHaveAttribute("aria-pressed", "false")
   await screenshot(page, "building-blocks-buttons-z")
-})
-
-test("jogs the TCP with RobotControlPanel: up while Z+ is held, and one step of 10 mm down in Increment mode", async ({
-  page,
-}) => {
-  await openPage(page, "building-blocks")
-  const panel = section(page, "RobotControlPanel")
-  // The gizmo is enabled once the 3D view next to it gave it the camera's
-  // orientation
-  await expect(panel.getByTestId("jogging-gizmo")).toBeVisible()
-  await expect(panel.getByRole("button", { name: "Jog Z+" })).toBeEnabled({
-    timeout: 30_000,
-  })
-  await screenshot(page, "building-blocks-robot-control-panel")
-
-  await panel.getByRole("button", { name: "Button controls" }).click()
-  const zPlus = panel.getByRole("button", { name: "Jog Z+" })
-  await expect(zPlus).toBeEnabled()
-  const before = await tcpZ()
-  await jogPress(page, zPlus, async () => (await tcpZ()) > before + 3)
-  await expect(zPlus).toHaveAttribute("aria-pressed", "false")
-  // The jog has stopped: the TCP stands still
-  let last = await tcpZ()
-  await expect
-    .poll(
-      async () => {
-        const now = await tcpZ()
-        const still = Math.abs(now - last) < 0.01
-        last = now
-        return still
-      },
-      { message: "The TCP stands still after the release", timeout: 30_000 },
-    )
-    .toBe(true)
-
-  await panel.getByRole("button", { name: "Increment" }).click()
-  await panel.getByRole("combobox", { name: "Step size" }).click()
-  await page.getByRole("option", { name: "10 mm" }).click()
-  const top = await tcpZ()
-  await panel.getByRole("button", { name: "Jog Z-" }).click()
-  await expect
-    .poll(tcpZ, {
-      message: "The TCP went down by one step of 10 mm",
-      timeout: 30_000,
-    })
-    .toBeCloseTo(top - 10, 0)
-  await screenshot(page, "building-blocks-robot-control-panel-increment")
-})
-
-test("jogs a joint with RobotControlPanel's Joint tab, one joint at a time, and stops it on release", async ({
-  page,
-}) => {
-  await openPage(page, "building-blocks")
-  const panel = section(page, "RobotControlPanel")
-  await panel.getByRole("tab", { name: "Joint" }).click()
-  const j2 = panel.getByRole("slider", { name: "J2 Shoulder" })
-  const j3 = panel.getByRole("slider", { name: "J3 Elbow" })
-  await expect(j2).not.toHaveAttribute("aria-disabled", "true")
-  const before = (await jointPositions())[1]
-
-  // A goal 20° above joint 2, along a track from aria-valuemin to
-  // aria-valuemax (in degrees) that spans the slider's width
-  const min = Number(await j2.getAttribute("aria-valuemin"))
-  const max = Number(await j2.getAttribute("aria-valuemax"))
-  await j2.scrollIntoViewIfNeeded()
-  const box = await j2.boundingBox()
-  if (!box) throw new Error("No slider J2")
-  const goal = (before * 180) / Math.PI + 20
-  await page.mouse.move(
-    box.x + (box.width * (goal - min)) / (max - min),
-    box.y + box.height / 2,
-  )
-  await page.mouse.down()
-  try {
-    await expect
-      .poll(async () => (await jointPositions())[1], {
-        message: "Joint 2 turns toward the goal while its track is pressed",
-        // On a CI runner, the jogging connection can need more than 10 s
-        timeout: 30_000,
-      })
-      .toBeGreaterThan(before + 0.01)
-    // The other joints wait
-    await expect(j3).toHaveAttribute("aria-disabled", "true")
-  } finally {
-    await page.mouse.up()
-  }
-
-  // Released: joint 2 stands still, two readings in a row the same
-  let last = Number.NaN
-  await expect
-    .poll(
-      async () => {
-        const now = (await jointPositions())[1]
-        const still = Math.abs(now - last) < 1e-5
-        last = now
-        return still
-      },
-      { message: "Joint 2 stops on release", timeout: 30_000 },
-    )
-    .toBe(true)
-  await expect(j3).not.toHaveAttribute("aria-disabled", "true")
-  await screenshot(page, "building-blocks-robot-control-panel-joint")
-})
-
-test("moves the TCP to a typed pose with RobotControlPanel's Move to tab as RobotPad: Moving… while held, paused on release, back to the live pose and Move to off at the target", async ({
-  page,
-}) => {
-  await openPage(page, "building-blocks")
-  const panel = section(page, "RobotControlPanel")
-  await panel.getByRole("tab", { name: "Move to" }).click()
-
-  // Edit the current pose: 60 mm higher, saved with Enter. Far enough that
-  // the hold of at least 1 s ends on the way at 25 mm/s, the store's default
-  const coordinates = panel.getByRole("textbox", {
-    name: "Coordinates XYZ (mm) · Rotation vector (rad)",
-  })
-  await expect(coordinates).toHaveValue(/^\(.+\)$/)
-  await panel.getByRole("button", { name: "Edit pose" }).click()
-  const values = (await coordinates.inputValue())
-    .slice(1, -1)
-    .split(",")
-    .map(Number)
-  const start = await tcpZ()
-  const target = Math.round((start + 60) * 10) / 10
-  values[2] = target
-  await coordinates.fill(`(${values.join(", ")})`)
-  await coordinates.press("Enter")
-
-  // Planned and loaded: the button can be held
-  const move = panel.getByRole("button", {
-    name: /^(Move to|Moving…|Stopping…)$/,
-  })
-  await expect(move).toHaveText("Move to")
-  await expect(move).toBeEnabled({ timeout: 30_000 })
-  await jogPress(
-    page,
-    move,
-    async () =>
-      (await move.textContent()) === "Moving…" && (await tcpZ()) > start + 3,
-  )
-
-  // Let go on the way: the TCP stands still short of the target, which
-  // stays, to go on
-  let last = await tcpZ()
-  await expect
-    .poll(
-      async () => {
-        const now = await tcpZ()
-        const still = Math.abs(now - last) < 0.01
-        last = now
-        return still
-      },
-      { message: "The TCP stands still after the release", timeout: 30_000 },
-    )
-    .toBe(true)
-  expect(last).toBeLessThan(target - 0.5)
-  await expect(move).toHaveText("Move to", { timeout: 10_000 })
-  await expect(move).toBeEnabled()
-
-  // Held again to the target: the field shows the current pose again
-  await jogPress(
-    page,
-    move,
-    async () => Math.abs((await tcpZ()) - target) < 0.5,
-  )
-  await expect(move).toHaveText("Move to", { timeout: 10_000 })
-  await expect(move).toBeDisabled()
-  await expect(
-    panel.getByRole("button", { name: "Reset pose to previous one" }),
-  ).toHaveCount(0)
-  await expect
-    .poll(
-      async () =>
-        Math.abs(
-          Number((await coordinates.inputValue()).slice(1, -1).split(",")[2]) -
-            target,
-        ),
-      { message: "The field shows the current pose, at the target" },
-    )
-    .toBeLessThan(0.5)
-  await screenshot(page, "building-blocks-robot-control-panel-move-to")
 })
 
 /** The numbers of a text, e.g. of the TCP orientation in degrees */

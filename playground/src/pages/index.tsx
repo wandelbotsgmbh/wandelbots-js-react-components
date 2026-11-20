@@ -2,6 +2,7 @@ import { Jog } from "@wandelbots/icons/Jog"
 import { JointKinematics } from "@wandelbots/icons/JointKinematics"
 import { RobotArm } from "@wandelbots/icons/RobotArm"
 import { SafetyStateNormal } from "@wandelbots/icons/SafetyStateNormal"
+import { SpaceDashboardFilled } from "@wandelbots/icons/SpaceDashboardFilled"
 import { ViewModuleFilled } from "@wandelbots/icons/ViewModuleFilled"
 import type { ConnectedMotionGroup } from "@wandelbots/wandelbots-js-react-components"
 import type { FC, ReactNode } from "react"
@@ -9,6 +10,7 @@ import type { PlaygroundInstance } from "../instance"
 import { BuildingBlocksPage } from "./BuildingBlocksPage"
 import { JoggingPage } from "./JoggingPage"
 import { JointLimitsPage } from "./JointLimitsPage"
+import { LayoutsPage } from "./LayoutsPage"
 import { ModelsPage } from "./ModelsPage"
 import { SafetyPage } from "./SafetyPage"
 
@@ -46,6 +48,12 @@ export const PAGES = [
     name: "Robot models",
     icon: <RobotArm />,
     Component: ModelsPage,
+  },
+  {
+    id: "layouts",
+    name: "Layouts",
+    icon: <SpaceDashboardFilled />,
+    Component: LayoutsPage,
   },
   {
     id: "building-blocks",
