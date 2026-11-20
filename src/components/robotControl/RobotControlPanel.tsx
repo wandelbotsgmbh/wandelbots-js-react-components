@@ -144,7 +144,8 @@ export type RobotControlMoveTo = {
   /**
    * A typed pose became the target: plan the move to it and load it, so that
    * the button can start it at once. null: the field shows the current pose
-   * again (Reset, the TCP arrived, or another tab was chosen): drop the plan.
+   * again (Reset, the TCP arrived, another tab was chosen, or the TCP or the
+   * frame changed): drop the plan. A held move gets its `onMoveStop` first.
    */
   onTargetChange: (pose: RobotControlPose | null) => void
   /** Where the move is: the button waits, says Moving… or Stopping… */
@@ -154,8 +155,8 @@ export type RobotControlMoveTo = {
   /** The button was held 200 ms while the move was "planned": start it */
   onMoveStart: (pose: RobotControlPose) => void
   /**
-   * The button was let go after a start, or the tab changed while it was
-   * held: pause the move
+   * The button was let go after a start, or the hold ended otherwise (e.g.
+   * another tab, or editing another pose): pause the move
    */
   onMoveStop: () => void
 }

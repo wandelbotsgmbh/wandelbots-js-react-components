@@ -27,6 +27,7 @@ function setup(
   const onMoveStop = vi.fn()
   const onVelocityChange = vi.fn()
   let latest: Partial<RobotControlMoveTo> = moveTo ?? {}
+  let latestPanel = panel
   const props = (
     m: Partial<RobotControlMoveTo> | null,
   ): RobotControlPanelProps => ({
@@ -48,16 +49,20 @@ function setup(
             onMoveStop,
             ...m,
           },
-    ...panel,
+    ...latestPanel,
   })
   const view = render(
     <I18nextProvider i18n={i18n}>
       <RobotControlPanel {...props(moveTo)} />
     </I18nextProvider>,
   )
-  /** The app's side changed, e.g. the state of the move */
-  const rerender = (m: Partial<RobotControlMoveTo>) => {
+  /** The app's side changed, e.g. the state of the move or the TCP */
+  const rerender = (
+    m: Partial<RobotControlMoveTo>,
+    p: Partial<RobotControlPanelProps> = {},
+  ) => {
     latest = { ...latest, ...m }
+    latestPanel = { ...latestPanel, ...p }
     view.rerender(
       <I18nextProvider i18n={i18n}>
         <RobotControlPanel {...props(latest)} />
@@ -81,6 +86,24 @@ const press = (element: HTMLElement) =>
 const release = (element: HTMLElement) =>
   fireEvent.pointerUp(element, { pointerId: 1 })
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
+
+const frame = (value: string) => ({
+  options: [
+    { id: "world", label: "World" },
+    { id: "table", label: "Table" },
+  ],
+  value,
+  onChange: vi.fn(),
+})
+const tcpSelect = (value: string) => ({
+  options: [
+    { id: "flange", label: "Flange" },
+    { id: "gripper", label: "Gripper" },
+  ],
+  value,
+  onChange: vi.fn(),
+})
+const LIVE_TEXT = "(539.9, 0, 895, -3.14, -0.04, 0.8)"
 
 /** Edit the field, type `text` and save it with Enter, as in RobotPad */
 function confirmPose(text: string) {
@@ -302,6 +325,77 @@ describe("RobotControlPanel's Move to tab, as RobotPad's pose field", () => {
 
     fireEvent.click(tab("Move to"))
     expect(coordinates()).toHaveValue("(539.9, 0, 895, -3.14, -0.04, 0.8)")
+  })
+
+  it("cannot move to the saved target while another pose is being edited, as RobotPad", async () => {
+    const { onMoveStart } = setup({ state: "planned" })
+    fireEvent.click(tab("Move to"))
+    confirmPose("(1, 2, 3, 0, 0, 0)")
+
+    fireEvent.click(button("Edit pose"))
+    fireEvent.change(coordinates(), { target: { value: "(9, 9, 9, 0, 0, 0)" } })
+    expect(moveButton()).toBeDisabled()
+    expect(queryButton("Reset pose to previous one")).toBeNull()
+    press(moveButton())
+    await sleep(300)
+    expect(onMoveStart).not.toHaveBeenCalled()
+
+    // Cancelled, the saved target is the one to move to again
+    fireEvent.keyDown(coordinates(), { key: "Escape" })
+    expect(moveButton()).toBeEnabled()
+  })
+
+  it("stops a held move when editing starts", async () => {
+    const { onMoveStart, onMoveStop } = setup({ state: "planned" })
+    fireEvent.click(tab("Move to"))
+    confirmPose("(1, 2, 3, 0, 0, 0)")
+    await holdUntilStarted(onMoveStart)
+
+    fireEvent.click(button("Edit pose"))
+    expect(onMoveStop).toHaveBeenCalledTimes(1)
+  })
+
+  it("shows the live pose again when the frame or the TCP changes: the target meant the old one", () => {
+    const { onTargetChange, rerender } = setup(
+      { frame: frame("world"), state: "planned" },
+      { tcp: tcpSelect("flange") },
+    )
+    fireEvent.click(tab("Move to"))
+    confirmPose("(1, 2, 3, 0, 0, 0)")
+    // The app's other changes keep it
+    rerender({ state: "planned", frame: frame("world") })
+    expect(coordinates()).toHaveValue("(1, 2, 3, 0, 0, 0)")
+
+    rerender({ frame: frame("table") })
+    expect(onTargetChange).toHaveBeenLastCalledWith(null)
+    expect(coordinates()).toHaveValue(LIVE_TEXT)
+    expect(queryButton("Reset pose to previous one")).toBeNull()
+
+    confirmPose("(1, 2, 3, 0, 0, 0)")
+    rerender({}, { tcp: tcpSelect("gripper") })
+    expect(onTargetChange).toHaveBeenLastCalledWith(null)
+    expect(coordinates()).toHaveValue(LIVE_TEXT)
+  })
+
+  it("stops a held move before it drops the target, on a new frame or another tab", async () => {
+    const calls: string[] = []
+    const { onMoveStart, rerender } = setup({
+      state: "planned",
+      frame: frame("world"),
+      onTargetChange: (pose) => calls.push(pose ? "target" : "no target"),
+      onMoveStop: () => calls.push("stop"),
+    })
+    fireEvent.click(tab("Move to"))
+    confirmPose("(1, 2, 3, 0, 0, 0)")
+    await holdUntilStarted(onMoveStart)
+    rerender({ frame: frame("table") })
+    expect(calls).toEqual(["target", "stop", "no target"])
+
+    confirmPose("(1, 2, 3, 0, 0, 0)")
+    press(moveButton())
+    await waitFor(() => expect(onMoveStart).toHaveBeenCalledTimes(2))
+    fireEvent.click(tab("Translate"))
+    expect(calls.slice(-2)).toEqual(["stop", "no target"])
   })
 
   it("copies the shown pose", async () => {

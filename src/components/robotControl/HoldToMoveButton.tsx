@@ -1,7 +1,7 @@
 import Tooltip from "@mui/material/Tooltip"
 import { NorthEastFilled } from "@wandelbots/icons/NorthEastFilled"
 import { PrimaryButton } from "@wandelbots/mui"
-import { useEffect, useRef, useState } from "react"
+import { type RefObject, useEffect, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useHold } from "../jogging/useHold"
 import type { RobotControlMoveState } from "./RobotControlPanel"
@@ -19,6 +19,8 @@ type HoldToMoveButtonProps = {
   disabled: boolean
   onMoveStart: () => void
   onMoveStop: () => void
+  /** Gets the function that ends a hold, e.g. before the target goes */
+  stopRef?: RefObject<(() => void) | null>
 }
 
 /**
@@ -37,6 +39,7 @@ export function HoldToMoveButton({
   disabled,
   onMoveStart,
   onMoveStop,
+  stopRef,
 }: HoldToMoveButtonProps) {
   const { t } = useTranslation()
   const [holding, setHolding] = useState(false)
@@ -47,7 +50,7 @@ export function HoldToMoveButton({
 
   const planned = state === "planned"
   const running = planned || state === "moving"
-  const { handlersFor } = useHold<typeof MOVE>({
+  const { handlersFor, stop } = useHold<typeof MOVE>({
     onStart: () => {
       setHolding(true)
       timer.current = setTimeout(() => {
@@ -70,6 +73,8 @@ export function HoldToMoveButton({
       : disabled || !ready || atPose || !planned,
     isSame: () => true,
   })
+
+  if (stopRef) stopRef.current = stop
 
   useEffect(() => () => clearTimeout(timer.current), [])
 

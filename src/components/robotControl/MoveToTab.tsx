@@ -57,9 +57,11 @@ export function MoveToTab({
     target === null && draft === null,
   )
   const shown = target?.text ?? live
+  const editing = draft !== null
   const draftPose = draft === null ? null : parsePoseText(draft)
-  // A target the app could plan, as RobotPad's staged pose
-  const ready = target !== null && !moveTo.error
+  // A target the app could plan, as RobotPad's staged pose. Not while
+  // another pose is typed: the button would move to a pose not shown.
+  const ready = target !== null && !moveTo.error && !editing
   const atPose =
     useEveryFrame(
       () => target !== null && isAtPose(moveTo.getCurrentPose(), target.pose),
@@ -68,8 +70,12 @@ export function MoveToTab({
 
   // The move to the target has run: arriving there ends it
   const moveStarted = useRef(false)
+  // Ends a held move: before the target goes, so the app pauses the move
+  // while it still has it
+  const stopHold = useRef<(() => void) | null>(null)
 
   function showLivePose() {
+    stopHold.current?.()
     moveStarted.current = false
     setTarget(null)
     setDraft(null)
@@ -99,11 +105,21 @@ export function MoveToTab({
     }
   }, [ready, moveTo.state, atPose])
 
+  // The typed pose is relative to the TCP and the frame: another one makes
+  // the target a different pose
+  const frameKey = [tcp?.value, moveTo.frame?.value].join("\u0000")
+  // biome-ignore lint/correctness/useExhaustiveDependencies: on a new TCP or frame only
+  useEffect(() => {
+    if (target) showLivePose()
+  }, [frameKey])
+
   // Another tab: the plan is of no use there
   const latest = useRef({ target, onTargetChange: moveTo.onTargetChange })
   latest.current = { target, onTargetChange: moveTo.onTargetChange }
   useEffect(
     () => () => {
+      // This cleanup runs before the button's: end its hold first
+      stopHold.current?.()
       if (latest.current.target) latest.current.onTargetChange(null)
     },
     [],
@@ -142,7 +158,7 @@ export function MoveToTab({
         )}
         <PoseField
           text={draft ?? shown}
-          editing={draft !== null}
+          editing={editing}
           onEdit={() => {
             if (!disabled) setDraft(shown)
           }}
@@ -164,9 +180,10 @@ export function MoveToTab({
         disabled={disabled}
       />
 
-      {/* Move to stays, off without a target; Reset shows with one */}
+      {/* Move to stays, off without a target; Reset shows with one, as
+          RobotPad's, not while another pose is typed */}
       <Stack direction="row" sx={{ gap: "12px", alignItems: "center" }}>
-        {target && (
+        {target && !editing && (
           <Tooltip title={t("RobotControl.MoveTo.Reset.lb")} placement="top">
             <span>
               <RoundedIconButton
@@ -186,6 +203,7 @@ export function MoveToTab({
             if (target) moveTo.onMoveStart(target.pose)
           }}
           onMoveStop={moveTo.onMoveStop}
+          stopRef={stopHold}
         />
       </Stack>
     </Section>
