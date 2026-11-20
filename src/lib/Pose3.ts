@@ -1,4 +1,4 @@
-import type { CoordinateSystem, Pose } from "@wandelbots/nova-js/v2"
+import type { CoordinateSystem, Pose, RobotTcp } from "@wandelbots/nova-js/v2"
 import { Quaternion, Vector3 } from "three"
 import {
   parseRotationToQuaternion,
@@ -19,6 +19,24 @@ export class Pose3 {
       ? parseRotationToQuaternion(apiPose.orientation, "ROTATION_VECTOR")
       : new Quaternion()
     const position = apiPose.position ?? [0, 0, 0]
+
+    return new Pose3(
+      new Vector3(position[0] ?? 0, position[1] ?? 0, position[2] ?? 0),
+      quaternion,
+    )
+  }
+
+  /** A TCP's offset from the flange */
+  static fromRobotTcp(
+    robotTcp: Pick<RobotTcp, "position" | "orientation" | "orientation_type">,
+  ) {
+    const quaternion = robotTcp.orientation
+      ? parseRotationToQuaternion(
+          robotTcp.orientation,
+          robotTcp.orientation_type ?? "ROTATION_VECTOR",
+        )
+      : new Quaternion()
+    const position = robotTcp.position ?? [0, 0, 0]
 
     return new Pose3(
       new Vector3(position[0] ?? 0, position[1] ?? 0, position[2] ?? 0),

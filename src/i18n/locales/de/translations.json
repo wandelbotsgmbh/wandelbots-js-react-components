@@ -101,5 +101,22 @@
   "RobotControl.MoveTo.Moving.bt": "Bewegung aktiv…",
   "RobotControl.MoveTo.Stopping.bt": "Anhalten",
   "RobotControl.MoveTo.HoldToMove.lb": "Zum Bewegen gedrückt halten",
-  "RobotControl.MoveTo.AtPose.lb": "Der Roboter befindet sich bereits in dieser Pose"
+  "RobotControl.MoveTo.AtPose.lb": "Der Roboter befindet sich bereits in dieser Pose",
+  "CurrentPose.Title.lb": "Aktuelle Position",
+  "CurrentPose.RelativeTo.lb": "Relativ zu",
+  "CurrentPose.Copy.bt": "Kopieren",
+  "CurrentPose.Copied.lb": "Pose kopiert",
+  "CurrentPose.OrientationFormat.ti": "Orientierungsformat",
+  "CurrentPose.Format.lb": "Format",
+  "CurrentPose.Format.RotationVector.lb": "Rotationsvektor",
+  "CurrentPose.Format.EulerAngles.lb": "Euler-Winkel",
+  "CurrentPose.Format.Quaternion.lb": "Quaternion",
+  "CurrentPose.AngleUnit.lb": "Winkeleinheit",
+  "CurrentPose.AngleUnit.Radians.lb": "Radiant",
+  "CurrentPose.AngleUnit.Degrees.lb": "Grad",
+  "CurrentPose.EulerConvention.lb": "Euler-Konvention",
+  "CurrentPose.EulerConvention.Intrinsic.hlb": "Intrinsische Rotationen",
+  "CurrentPose.EulerConvention.Extrinsic.hlb": "Extrinsische Rotationen",
+  "CurrentPose.EulerConvention.Intrinsic.lb": "Intrinsisch {{axes}}",
+  "CurrentPose.EulerConvention.Extrinsic.lb": "Extrinsisch {{axes}}"
 }

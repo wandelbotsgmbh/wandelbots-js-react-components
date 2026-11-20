@@ -13,6 +13,7 @@ import { Dictionary } from 'lodash';
 import type { Group } from 'three';
 import type { i18n as i18n_2 } from 'i18next';
 import { IReactionDisposer } from 'mobx';
+import type { JoggingDetailsState } from '@wandelbots/nova-js/v2';
 import { JointTypeEnum } from '@wandelbots/nova-js/v2';
 import { JSX } from 'react/jsx-runtime';
 import { KinematicModel } from '@wandelbots/nova-js/v2';
@@ -20,6 +21,7 @@ import type { LimitRange } from '@wandelbots/nova-js/v2';
 import { MotionGroupDescription } from '@wandelbots/nova-js/v2';
 import type { MotionGroupState } from '@wandelbots/nova-js/v2';
 import type { OperationMode } from '@wandelbots/nova-js/v2';
+import type { OrientationType as OrientationType_2 } from '@wandelbots/nova-js/v2';
 import type { PopoverOrigin } from '@mui/material/Popover';
 import { Pose } from '@wandelbots/nova-js/v2';
 import { Quaternion } from 'three';
@@ -34,6 +36,7 @@ import { SxProps } from '@mui/material/styles';
 import type { Theme } from '@mui/material/styles';
 import * as THREE from 'three';
 import type { ThreeElements } from '@react-three/fiber';
+import type { TrajectoryDetailsState } from '@wandelbots/nova-js/v2';
 
 // @public
 export const AppHeader: ((props: AppHeaderProps) => JSX.Element) & {
@@ -174,6 +177,24 @@ export type ConnectionLogger = {
 };
 
 // @public
+export const CurrentPoseBar: (input: CurrentPoseBarProps) => JSX.Element;
+
+// @public
+export type CurrentPoseBarProps = {
+    getCurrentPose: () => RobotControlPose | null;
+    tcp?: RobotControlSelect;
+    frame?: RobotControlSelect;
+    state?: CurrentPoseBarState | null;
+    error?: string | null;
+    orientationFormat?: OrientationFormat;
+    onOrientationFormatChange?: (format: OrientationFormat) => void;
+    sx?: SxProps<Theme>;
+};
+
+// @public
+export type CurrentPoseBarState = JoggingDetailsState["kind"] | TrajectoryDetailsState["kind"];
+
+// @public
 export function defaultGetModel(modelFromController: string, connection?: NovaConnection): Promise<string>;
 
 // @public (undocumented)
@@ -189,6 +210,9 @@ export type DHRobotProps = {
     rapidlyChangingMotionState: MotionGroupState;
     dhParameters: Array<DHParameter>;
 } & ThreeElements["group"];
+
+// @public
+export type EulerConvention = Extract<OrientationType_2, `EULER_ANGLES_${string}`>;
 
 // @public (undocumented)
 export type GizmoChainOffset = Pose;
@@ -543,6 +567,7 @@ export class JoggingStore {
     // (undocumented)
     get tabsById(): Dictionary<JoggingTab>;
     tcpChangeInProgress: boolean;
+    tcpPoseIn(tcpId: string, coordinateSystemId: string): Pose | undefined;
     get tcpPoseInSelectedCoordSystem(): Pose | undefined;
     // (undocumented)
     readonly tcps: RobotTcp[];
@@ -684,6 +709,13 @@ export type NovaConnection = string | {
         readonly cellId?: string;
     };
     readonly accessToken?: string | null;
+};
+
+// @public
+export type OrientationFormat = {
+    type: "rotationVector" | "eulerAngles" | "quaternion";
+    angleUnit: "rad" | "deg";
+    eulerConvention: EulerConvention;
 };
 
 // @public

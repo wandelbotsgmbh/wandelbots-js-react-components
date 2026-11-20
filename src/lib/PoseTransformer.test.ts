@@ -5,6 +5,7 @@ import { Pose3 } from "./Pose3"
 import {
   resolveCoordinateSystemInWorld,
   transformPoseToCoordinateSystem,
+  transformPoseToTcp,
 } from "./PoseTransformer"
 
 const world: CoordinateSystem = {
@@ -141,5 +142,61 @@ describe("transformPoseToCoordinateSystem", () => {
         rotated,
       ]),
     ).toBe(inputPose)
+  })
+})
+
+// Ported from RobotPad (unit/PoseTransformer.test.ts)
+describe("transformPoseToTcp", () => {
+  test("turns a TCP's pose into the flange's (regression RPS-1590)", () => {
+    const flangePose = transformPoseToTcp(
+      {
+        position: [445.8445870131073, 8.543116867448944, -102.44259543449492],
+        orientation: [
+          -2.2200715682868584, -2.2204911643877585, -0.000058320795199238045,
+        ],
+      },
+      {
+        id: "tcp_frame_3",
+        name: "",
+        position: [15.04, 0, 159],
+        orientation: [0, -0.785, 0],
+        orientation_type: "ROTATION_VECTOR",
+      },
+      {
+        id: "Flange",
+        name: "Default-Flange",
+        position: [0, 0, 0],
+        orientation: [0, 0, 0],
+        orientation_type: "ROTATION_VECTOR",
+      },
+    )
+
+    expectVectorCloseTo(
+      flangePose.position,
+      [445.9832385471837, -114.6019304795401, -0.7446127128109623],
+    )
+    expectVectorCloseTo(
+      flangePose.orientation,
+      [-1.7593623643757612, -1.7588689904693675, -0.728395574353933],
+    )
+  })
+
+  test("turns it back into the TCP's pose", () => {
+    const tool = {
+      id: "tool",
+      position: [10, 20, 150],
+      orientation: [0.3, -0.2, 0.1],
+    }
+    const flange = { id: "Flange", position: [0, 0, 0], orientation: [0, 0, 0] }
+    const pose = { position: [400, -100, 300], orientation: [3, 0.1, -0.2] }
+
+    const back = transformPoseToTcp(
+      transformPoseToTcp(pose, tool, flange),
+      flange,
+      tool,
+    )
+
+    expectVectorCloseTo(back.position, pose.position)
+    expectVectorCloseTo(back.orientation, pose.orientation)
   })
 })

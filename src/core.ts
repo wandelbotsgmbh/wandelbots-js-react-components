@@ -7,6 +7,13 @@ import "@wandelbots/mui"
 
 export * from "./components/AppHeader"
 export {
+  CurrentPoseBar,
+  type CurrentPoseBarProps,
+  type CurrentPoseBarState,
+  type EulerConvention,
+  type OrientationFormat,
+} from "./components/currentPoseBar/CurrentPoseBar"
+export {
   JoggingButtons,
   type JoggingButtonsProps,
 } from "./components/jogging/JoggingButtons"
@@ -26,6 +33,12 @@ export type {
 } from "./components/jogging/jogHandle"
 export type { JogControlsProps } from "./components/jogging/useJogControls"
 export * from "./components/LoadingCover"
+// Also in /3d, with the panel: the bar takes them without three.js
+export type {
+  RobotControlOption,
+  RobotControlPose,
+  RobotControlSelect,
+} from "./components/robotControl/RobotControlPanel"
 export * from "./components/modal/NoMotionGroupModal"
 export * from "./components/utils/interpolation"
 export * from "./components/utils/useSmoothedMotionState"

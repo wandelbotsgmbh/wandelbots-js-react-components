@@ -43,6 +43,7 @@ import { startJogging, stopJogging, useJoggingStore } from "../connections"
 import { cannotJog, useToolFrame } from "../jogging"
 import { FitCamera, MotionGroupModel, Viewport } from "../scene"
 import type { PageProps } from "."
+import { CurrentPoseBarDemo } from "./CurrentPoseBarDemo"
 import { RobotControlPanelDemo } from "./RobotControlPanelDemo"
 
 /**
@@ -74,6 +75,16 @@ export function BuildingBlocksPage({ instance, motionGroup }: PageProps) {
           store={store}
           motionGroup={motionGroup}
         />
+      ))}
+    </Section>
+  )
+  const poseBar = (
+    <Section
+      title="CurrentPoseBar"
+      description="The bar under the 3D view: the current position of the TCP in a TCP and a frame of the bar's own (not the panel's), the button to copy it as Move to reads it, Orientation format (the gear: rotation vector, Euler angles in any of NOVA's 24 conventions, or quaternion; radians or degrees), and the state of the motion stream, or the last jog error. Jog with the panel above to see the values change."
+    >
+      {withStore((store) => (
+        <CurrentPoseBarDemo store={store} />
       ))}
     </Section>
   )
@@ -168,6 +179,7 @@ export function BuildingBlocksPage({ instance, motionGroup }: PageProps) {
       >
         {/* The whole panel first, across both columns */}
         <Box sx={{ gridColumn: "1 / -1" }}>{panel}</Box>
+        <Box sx={{ gridColumn: "1 / -1" }}>{poseBar}</Box>
         <Stack gap={3}>
           {cartesian}
           {velocity}

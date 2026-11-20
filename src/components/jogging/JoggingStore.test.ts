@@ -93,16 +93,18 @@ function createStore({
   coordinateSystems = [worldFrame, rotatedFrame, chainedFrame],
   description = ur5eDescription,
   jogger = createMockJogger(),
+  tcps = [{ id: "Flange", readable_name: "Flange" } as unknown as RobotTcp],
 }: {
   coordinateSystems?: CoordinateSystem[]
   description?: MotionGroupDescription
   jogger?: JoggerConnection
+  tcps?: RobotTcp[]
 } = {}) {
   return new JoggingStore(
     jogger,
     structuredClone(coordinateSystems),
     description,
-    [{ id: "Flange", readable_name: "Flange" } as unknown as RobotTcp],
+    tcps,
     "some-solver",
   )
 }
@@ -424,6 +426,79 @@ describe("TCP pose in the selected coordinate system", () => {
   it("is undefined without a TCP pose", () => {
     const store = storeWithReadout({ tcp_pose: undefined }, "rotated-90-z")
     expect(store.tcpPoseInSelectedCoordSystem).toBeUndefined()
+  })
+})
+
+describe("TCP pose in a TCP and coordinate system of their own", () => {
+  const flange = {
+    id: "Flange",
+    position: [0, 0, 0],
+    orientation: [0, 0, 0],
+  } as RobotTcp
+  /** 100 mm out along the flange's Z */
+  const gripper = {
+    id: "gripper",
+    position: [0, 0, 100],
+    orientation: [0, 0, 0],
+  } as RobotTcp
+
+  function storeWithReadout(readout: Partial<MotionGroupState>) {
+    return createStore({
+      jogger: createMockJogger(
+        createMockMotionStream({
+          ...ur5eMotionGroupState,
+          tcp: "Flange",
+          coordinate_system: "world",
+          ...readout,
+        }),
+      ),
+      tcps: [flange, gripper],
+    })
+  }
+
+  it("is the pose of another TCP than the streamed one", () => {
+    const store = storeWithReadout({
+      // Turned 180° about X: the flange's Z points down
+      tcp_pose: { position: [400, 0, 300], orientation: [Math.PI, 0, 0] },
+    })
+
+    const pose = store.tcpPoseIn("gripper", "world")
+    expectVectorCloseTo(pose?.position, [400, 0, 200])
+    expectVectorCloseTo(pose?.orientation, [Math.PI, 0, 0])
+  })
+
+  it("takes the TCP that the stream reports the pose of", () => {
+    const store = storeWithReadout({
+      tcp: "gripper",
+      tcp_pose: { position: [400, 0, 200], orientation: [Math.PI, 0, 0] },
+    })
+
+    expectVectorCloseTo(
+      store.tcpPoseIn("Flange", "world")?.position,
+      [400, 0, 300],
+    )
+  })
+
+  it("is relative to the coordinate system asked for, not the selected one", () => {
+    const store = storeWithReadout({
+      tcp_pose: { position: [10, 0, 0], orientation: [0, 0, 0] },
+    })
+    store.setSelectedCoordSystemId("world")
+
+    // rotated-90-z is at world (500, 0, 0), its X along world +Y
+    expectVectorCloseTo(
+      store.tcpPoseIn("Flange", "rotated-90-z")?.position,
+      [0, 490, 0],
+    )
+  })
+
+  it("is undefined for an unknown TCP or coordinate system, or without a pose", () => {
+    const store = storeWithReadout({})
+    expect(store.tcpPoseIn("unknown", "world")).toBeUndefined()
+    expect(store.tcpPoseIn("gripper", "unknown")).toBeUndefined()
+    expect(
+      storeWithReadout({ tcp_pose: undefined }).tcpPoseIn("Flange", "world"),
+    ).toBeUndefined()
   })
 })
 

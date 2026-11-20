@@ -25,6 +25,7 @@ import type {
 import {
   resolveCoordinateSystemInWorld,
   transformPoseToCoordinateSystem,
+  transformPoseToTcp,
 } from "../../lib/PoseTransformer"
 import { extractJogErrorMessage, getJogErrorTranslationKey } from "./jogError"
 import {
@@ -549,6 +550,35 @@ export class JoggingStore {
 
   get tcpsById() {
     return keyBy(this.tcps, (tcp) => tcp.id)
+  }
+
+  /**
+   * The streamed TCP pose (its readout) as the pose of a TCP, relative to a
+   * coordinate system: for a pose display with a TCP and frame of its own,
+   * like CurrentPoseBar. Undefined without a pose, or for an unknown TCP or
+   * coordinate system.
+   */
+  tcpPoseIn(tcpId: string, coordinateSystemId: string): Pose | undefined {
+    const { tcp_pose, tcp, coordinate_system } =
+      this.jogger.motionStream.readoutState
+    const poseTcp = this.tcpsById[tcp || this.selectedTcpId]
+    const targetTcp = this.tcpsById[tcpId]
+    if (!tcp_pose?.position || !tcp_pose.orientation) return undefined
+    if (!poseTcp || !targetTcp) return undefined
+
+    try {
+      return transformPoseToCoordinateSystem(
+        {
+          pose: transformPoseToTcp(tcp_pose, poseTcp, targetTcp),
+          coordinateSystemId: coordinate_system || "world",
+        },
+        coordinateSystemId,
+        this.coordSystems,
+      ).pose
+    } catch {
+      // An unknown coordinate system
+      return undefined
+    }
   }
 
   /**

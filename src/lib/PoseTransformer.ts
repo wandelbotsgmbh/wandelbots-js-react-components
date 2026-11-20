@@ -1,9 +1,9 @@
-import type { CoordinateSystem, Pose } from "@wandelbots/nova-js/v2"
+import type { CoordinateSystem, Pose, RobotTcp } from "@wandelbots/nova-js/v2"
 import keyBy from "lodash-es/keyBy.js"
 import { Pose3 } from "./Pose3"
 
-// Ported from RobotPad (src/util/PoseTransformer.ts): the coordinate system
-// part, which the jogging store uses. RobotPad's TCP transforms are not here.
+// Ported from RobotPad (src/util/PoseTransformer.ts): the coordinate systems
+// and the TCPs.
 
 /** A pose and the coordinate system that it is relative to */
 export type ReferencedPose = {
@@ -214,5 +214,31 @@ export function transformPoseToCoordinateSystem(
       ],
     },
     coordinateSystemId: targetCoordinateSystem.coordinate_system,
+  }
+}
+
+/** A TCP's offset from the flange, as `RobotTcp` has it */
+export type TcpOffset = Pick<
+  RobotTcp,
+  "position" | "orientation" | "orientation_type"
+>
+
+/**
+ * The pose of one TCP as the pose of another TCP of the same flange, both
+ * relative to the same coordinate system: back to the flange, then out to
+ * the other TCP
+ */
+export function transformPoseToTcp(
+  pose: Pose,
+  poseTcp: TcpOffset,
+  targetTcp: TcpOffset,
+): Required<Pose> {
+  const transformed = Pose3.fromPose(pose)
+    .multiply(Pose3.fromRobotTcp(poseTcp).inverse())
+    .multiply(Pose3.fromRobotTcp(targetTcp))
+  const { position, orientation } = transformed
+  return {
+    position: [position.x, position.y, position.z],
+    orientation: [orientation.x, orientation.y, orientation.z],
   }
 }
