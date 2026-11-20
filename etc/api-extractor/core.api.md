@@ -591,6 +591,23 @@ export type NovaConnection = string | {
     readonly accessToken?: string | null;
 };
 
+// @public
+export function planErrorTranslationKey(errorFeedbackName: string): string;
+
+// @public
+export type PlannedTrajectory = {
+    startJoints: number[];
+    endJoints: number[];
+};
+
+// @public
+export type PlanTrajectoryResult = {
+    ok: true;
+} | {
+    ok: false;
+    errorFeedbackName: string;
+};
+
 // @public (undocumented)
 export function poseEqual(oldTcp: Pose | undefined, newTcp: Pose | undefined, changeDeltaThreshold: number): boolean;
 
@@ -633,6 +650,43 @@ export interface SafetyBarProps {
 
 // @public (undocumented)
 export function tcpMotionEqual(oldMotionState: MotionGroupState, newMotionState: MotionGroupState, changeDeltaThreshold: number): boolean;
+
+// @public
+export class TrajectoryExecutionStore {
+    constructor(options: TrajectoryExecutionStoreOptions);
+    clearError(): void;
+    dispose(): void;
+    get executionState(): "PAUSED_BY_USER" | "PAUSED_NEAR_COLLISION" | "PAUSED_NEAR_JOINT_LIMIT" | "PAUSED_NEAR_SINGULARITY" | "PAUSED_ON_IO" | "RUNNING" | "END_OF_TRAJECTORY" | "WAIT_FOR_IO" | undefined;
+    lastError: string | null;
+    pause(): Promise<void>;
+    plannedTrajectory: PlannedTrajectory | null;
+    planTrajectory(target: TrajectoryTarget): Promise<PlanTrajectoryResult>;
+    reset(): void;
+    start(): void;
+    stopAndReset(): Promise<void>;
+    trajectoryState: TrajectoryState;
+}
+
+// @public
+export type TrajectoryExecutionStoreOptions = {
+    joggingStore: JoggingStore;
+    isLocked?: () => boolean;
+    ensureMovementOwnership?: () => Promise<void>;
+    logger?: ConnectionLogger;
+};
+
+// @public
+export type TrajectoryState = "idle" | "planning" | "planned" | "moving" | "stopping";
+
+// @public
+export type TrajectoryTarget = {
+    type: "cartesian";
+    pose: Pose;
+    coordinateSystemId?: string;
+} | {
+    type: "joint";
+    joints: number[];
+};
 
 // @public (undocumented)
 export function unwrapRotationVector(newRotationVectorApi: Vector3Simple, currentRotationVectorApi: Vector3Simple): Vector3Simple;
