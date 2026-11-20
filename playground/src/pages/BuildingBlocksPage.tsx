@@ -37,11 +37,13 @@ import {
   VelocitySliderLabel,
 } from "@wandelbots/wandelbots-js-react-components"
 import { observer } from "mobx-react-lite"
-import { type ReactNode, useMemo, useRef, useState } from "react"
-import { Quaternion, Vector3 } from "three"
+import { type ReactNode, useRef, useState } from "react"
+import type { Quaternion } from "three"
 import { startJogging, stopJogging, useJoggingStore } from "../connections"
+import { cannotJog, useToolFrame } from "../jogging"
 import { FitCamera, MotionGroupModel, Viewport } from "../scene"
 import type { PageProps } from "."
+import { RobotControlPanelDemo } from "./RobotControlPanelDemo"
 
 /**
  * The small parts alone, to check their look. The parts that move the robot
@@ -61,6 +63,20 @@ export function BuildingBlocksPage({ instance, motionGroup }: PageProps) {
     )
   }
 
+  const panel = (
+    <Section
+      title="RobotControlPanel"
+      description="The whole Robot control panel of the design, built from the parts below. Translate and Rotate: the TCP and the frame to jog along, Continuous (jog while held) or Increment (one step per click), the velocity, the step size, and the gizmo or the buttons (the switch at the top right of the jog area). Joint: a JoggingJointSlider per joint, one joint at a time, and the joint velocity. Move to: type a pose or take the current one, and hold the button to move there (planned as the pose changes, paused on release). It is wired to the JoggingStore of the motion group. The 3D view next to it turns its gizmo: orbit the view, and the gizmo turns with it."
+    >
+      {withStore((store) => (
+        <RobotControlPanelDemo
+          instance={instance}
+          store={store}
+          motionGroup={motionGroup}
+        />
+      ))}
+    </Section>
+  )
   const cartesian = (
     <Section
       title="JoggingCartesianAxisControl"
@@ -150,6 +166,8 @@ export function BuildingBlocksPage({ instance, motionGroup }: PageProps) {
           p: 3,
         }}
       >
+        {/* The whole panel first, across both columns */}
+        <Box sx={{ gridColumn: "1 / -1" }}>{panel}</Box>
         <Stack gap={3}>
           {cartesian}
           {velocity}
@@ -571,10 +589,6 @@ const Buttons = observer(({ store }: { store: JoggingStore }) => {
 type Motion = "translate" | "rotate"
 type Frame = "world" | "tool"
 
-/** Without an inverse solver, the TCP cannot move along an axis */
-const cannotJog = (store: JoggingStore) =>
-  store.isLocked || store.inverseSolver === null
-
 /**
  * Translate or rotate, along the world's or the tool's axes: what an app's
  * jogging panel lets pick for the gizmo and the buttons
@@ -622,31 +636,6 @@ function JogOptions({
       {children}
     </Stack>
   )
-}
-
-/**
- * The orientation of the TCP: the frame of jogging along the tool's axes.
- * JoggingGizmo calls it every animation frame, so it turns with the tool
- * while it jogs. NOVA gives it as a rotation vector in
- * the world frame (the response coordinate system of the motion state, not
- * set here), the frame of the gizmo's frameQuaternion.
- */
-function useToolFrame(store: JoggingStore) {
-  return useMemo(() => {
-    const turn = new Quaternion()
-    const axis = new Vector3()
-    return () => {
-      const [x = 0, y = 0, z = 0] =
-        store.jogger.motionStream.rapidlyChangingMotionState.tcp_pose
-          ?.orientation ?? []
-      const angle = Math.hypot(x, y, z)
-      if (angle < 1e-9) return turn.identity()
-      return turn.setFromAxisAngle(
-        axis.set(x / angle, y / angle, z / angle),
-        angle,
-      )
-    }
-  }, [store])
 }
 
 /** The TCP's orientation, as NOVA gives it: a rotation vector, in degrees */

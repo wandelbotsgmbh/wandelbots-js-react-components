@@ -72,6 +72,7 @@ Browse the full icon set at https://wandelbotsgmbh.github.io/nova-design-system/
 - **`/JoggingGizmo`** — Only `JoggingGizmo` (also as the default export) and `JoggingGizmoOrientation`. Requires in addition three and @react-three/fiber.
 - **`/JoggingButtons`** — Only `JoggingButtons` (also as the default export). No 3D packages needed.
 - **`/JoggingJointSlider`** — Only `JoggingJointSlider` (also as the default export). No 3D packages needed.
+- **`/RobotControlPanel`** — The whole Robot control panel, `RobotControlPanel` (also as the default export). It shows the jog gizmo, so it requires in addition three and @react-three/fiber, as `/JoggingGizmo` does.
 
 A component's own entry point brings only what that component needs, e.g. `/JoggingButtons` no three.js and no NOVA client, unlike `/core`. The entry points share their common code, so an app that imports a component from both `/core` and its own entry point gets one copy of it:
 
@@ -89,9 +90,9 @@ import JoggingJointSlider from "@wandelbots/wandelbots-js-react-components/Joggi
 | `@wandelbots/mui` | ^2 |
 | `mobx` | ^6.13.6 |
 | `mobx-react-lite` | ^4.1.0 |
-| `three` (only `/3d`, `/JoggingGizmo`) | >=0.182 |
+| `three` (only `/3d`, `/JoggingGizmo`, `/RobotControlPanel`) | >=0.182 |
 | `three-stdlib` (only `/3d`) | >=2 |
-| `@react-three/fiber` (only `/3d`, `/JoggingGizmo`) | ^9 |
+| `@react-three/fiber` (only `/3d`, `/JoggingGizmo`, `/RobotControlPanel`) | ^9 |
 | `@react-three/drei` (only `/3d`) | ^10 |
 
 These packages are peer dependencies because the app and the library must use the same copy: React, the MUI theme of the app, the MobX stores that the app reads with its own `observer`, and the `<Canvas>` of React Three Fiber.
@@ -252,6 +253,58 @@ const [active, setActive] = useState<number | null>(null)
     disabled={active !== null && active !== index}
   />
 ))}
+```
+
+**RobotControlPanel** (from `/3d` or `/RobotControlPanel`) - The Robot control panel of the design, built from the parts above: the tabs Translate and Rotate, with the TCP and the frame to jog along, Continuous or Increment, the velocity, the step size, and the gizmo or the buttons with a switch between them; the tab Joint, with a `JoggingJointSlider` per joint and the joint velocity; and the tab Move to, with a typed target pose (or the current one), the frame it is relative to, and a button to hold to move there. An app that wants the whole panel imports this; an app that wants one part imports that part.
+
+- It moves nothing itself, as its parts: `onJogStart(motion, axis, direction)` and `onJogStop` for jogging while held, and `increments.onStep(motion, axis, direction, distance)` for one step per press. The app keeps the velocity and the selects in its own store; the panel keeps the tab, the mode, the step size and the view.
+- Velocities and step sizes are in NOVA's units: mm and mm/s to translate, rad and rad/s to rotate. The panel shows mm/s and °/s.
+- `tcp` and `jogFrame` show a select each, filled by the app. Without `increments`, there is no Continuous/Increment toggle. Without `gizmoOrientation` (from a `JoggingGizmoOrientation` in the app's 3D scene), it jogs with buttons only.
+- `onJogStop` also comes when the tab, the mode or the view changes while a control is held: the jog of that press must not go on.
+- `disabled` turns off every control: nothing may move. `jogDisabled` turns off only the jogging of Translate, Rotate and Joint, e.g. while a trajectory moves the robot; Move to stays usable, so a move of its own does not end when the app locks jogging during it.
+- The panel keeps its tab, jog mode and step size itself. An app that keeps them in its own store (to remember them, or because its jogging depends on them) gives `tab`, `jogMode` and `increments.step`, and gets `onTabChange`, `onJogModeChange` and `increments.onStepChange`; each also works alone, to follow a choice without keeping it.
+- `joints` gives the Joint tab: the joints' values and limits (rad, or mm with `linear`), their names, the joint velocity, and `onJogStart(index, direction)` and `onJogStop`. The panel jogs one joint at a time; the turn-around of a slider brings `onJogStop` and `onJogStart` in the same event, as described for `JoggingJointSlider`. Without `joints`, there is no Joint tab.
+- `moveTo` gives the Move to tab. It works as RobotPad's pose field: the coordinates `(x, y, z, rx, ry, rz)` (mm, rotation vector in rad: the format RobotPad copies and pastes) show the TCP's current pose (`getCurrentPose`, read every animation frame), with Copy and Edit pose, and Move to, off until a pose is the target. Edit pose, or a click on the field, makes it editable; Save pose edit (Enter) makes the typed pose the target (`onTargetChange(pose)`): the app plans the move and loads it, and reports `state` (`"planning"`, `"planned"`, `"moving"`, `"stopping"` or `"idle"`, as RobotPad's trajectory) and an `error` (e.g. out of reach). Then Reset shows. Held for 200 ms while `"planned"`, Move to calls `onMoveStart(pose)`, the release `onMoveStop`: the app starts and pauses its trajectory; the button says Moving… and Stopping…. At the target (within 0.5 mm and 0.01 rad) it turns off; once the move no longer runs, the field shows the current pose again (`onTargetChange(null)`), as do Reset, another tab and another TCP or frame (a held move gets its `onMoveStop` first). While another pose is typed, Move to stays off. `frame` is the "Relative to" select. It moves with `velocity.translate`. Without `moveTo`, there is no Move to tab.
+
+```tsx
+const orientation = useRef<Quaternion | null>(null)
+
+<RobotControlPanel
+  gizmoOrientation={orientation}
+  tcp={{ options: tcps, value: tcp, onChange: setTcp }}
+  jogFrame={{ options: frames, value: frame, onChange: setFrame }}
+  velocity={{
+    translate: { value: mmPerSec, min: 1, max: 250 },
+    rotate: { value: radPerSec, min: 0.02, max: 1 },
+  }}
+  onVelocityChange={(motion, value) => setVelocity(motion, value)}
+  onJogStart={(motion, axis, direction) => startJogging(motion, axis, direction)}
+  onJogStop={() => stopJogging()}
+  increments={{
+    steps: { translate: [0.1, 1, 5, 10], rotate: [0.001, 0.01, 0.05] },
+    onStep: (motion, axis, direction, distance) =>
+      jogStep(motion, axis, direction, distance),
+  }}
+  joints={{
+    joints: jointValues.map((value, index) => ({
+      value,
+      min: limits[index].lower_limit,
+      max: limits[index].upper_limit,
+    })),
+    velocity: { value: jointRadPerSec, min: 0.02, max: 1 },
+    onVelocityChange: setJointVelocity,
+    onJogStart: (index, direction) => startJointJogging(index, direction),
+    onJogStop: () => stopJogging(),
+  }}
+  moveTo={{
+    getCurrentPose: () => currentTcpPose(),
+    onTargetChange: (pose) => planAndLoad(pose), // or drop the plan (null)
+    state: trajectoryState, // "planning" | "planned" | "moving" | "stopping" | "idle"
+    error,
+    onMoveStart: () => startTrajectory(),
+    onMoveStop: () => pauseTrajectory(),
+  }}
+/>
 ```
 
 ### 3D Visualization & Robotics

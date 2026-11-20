@@ -3,7 +3,9 @@ import {
   ConnectedMotionGroup,
   JoggerConnection,
   JoggingStore,
+  type Vector3Simple,
 } from "@wandelbots/wandelbots-js-react-components"
+import { when } from "mobx"
 import { useEffect, useState } from "react"
 import type { PlaygroundInstance } from "./instance"
 
@@ -199,4 +201,65 @@ export async function stopJogging(store: JoggingStore) {
   await store.jogger.stop()
   if (press !== jogPresses.get(store)) return
   await store.deactivate()
+}
+
+/**
+ * Jogs the TCP one step along an axis of the world frame, or about it, as
+ * the Increment mode of JoggingPanel does: a short trajectory, with the
+ * velocity of the store. The store is locked while it runs, and its
+ * `incrementJogInProgress` names the handle. An error goes to the console.
+ */
+export async function jogStep(
+  store: JoggingStore,
+  step: {
+    axis: "x" | "y" | "z"
+    direction: "-" | "+"
+    rotate: boolean
+    /** In mm, or in rad with `rotate` */
+    distance: number
+  },
+) {
+  const state = store.jogger.motionStream.rapidlyChangingMotionState
+  const tcpPose = state.tcp_pose
+  if (!tcpPose || store.isLocked) return
+
+  await store.withMotionLock(async () => {
+    try {
+      store.setCurrentIncrementJog({
+        axis: step.axis,
+        direction: step.direction,
+      })
+      await store.jogger.setJoggingMode("trajectory")
+      await store.jogger.runIncrementalCartesianMotion({
+        currentTcpPose: tcpPose,
+        currentJoints: state.joint_position as Vector3Simple,
+        coordSystemId: "world",
+        velocityInRelevantUnits: step.rotate
+          ? store.rotationVelocityRadsPerSec
+          : store.translationVelocityMmPerSec,
+        axis: step.axis,
+        direction: step.direction,
+        motion: step.rotate
+          ? { type: "rotate", distanceRads: step.distance }
+          : { type: "translate", distanceMm: step.distance },
+      })
+      // It returns once the trajectory is sent: wait until the robot has
+      // moved and stands still again, so that the store stays locked (the
+      // handle shown pressed) while the step runs, and steps do not overlap
+      const motion = store.jogger.motionStream
+      await when(() => !motion.rapidlyChangingMotionState.standstill, {
+        timeout: 2000,
+      }).catch(() => {
+        // a tiny step may be over before this looks
+      })
+      await when(() => motion.rapidlyChangingMotionState.standstill, {
+        timeout: 60_000,
+      })
+    } catch (error) {
+      console.error("Jogging a step failed:", error)
+    } finally {
+      store.setCurrentIncrementJog(null)
+      await store.deactivate()
+    }
+  })
 }

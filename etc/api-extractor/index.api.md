@@ -30,6 +30,7 @@ import { RobotTcp } from '@wandelbots/nova-js/v2';
 import type { SafetyStateType } from '@wandelbots/nova-js/v2';
 import Stack from '@mui/material/Stack';
 import { SxProps } from '@mui/material/styles';
+import type { Theme } from '@mui/material/styles';
 import * as THREE from 'three';
 import type { ThreeElements } from '@react-three/fiber';
 
@@ -540,6 +541,9 @@ export type JogHandle = {
 };
 
 // @public
+export type JogMotion = "translate" | "rotate";
+
+// @public
 export function JointLimitGizmo(input: JointLimitGizmoProps): JSX.Element;
 
 // @public (undocumented)
@@ -659,6 +663,105 @@ export function PresetEnvironment(): JSX.Element;
 
 // @public
 export function Robot(input: RobotProps): JSX.Element | null;
+
+// @public
+export type RobotControlIncrements = {
+    steps: Record<JogMotion, number[]>;
+    onStep: (motion: JogMotion, axis: JogAxis, direction: JogDirection, distance: number) => void;
+    running?: JogHandle | null;
+    step?: Partial<Record<JogMotion, number>>;
+    onStepChange?: (motion: JogMotion, distance: number) => void;
+};
+
+// @public
+export type RobotControlJogMode = "continuous" | "increment";
+
+// @public
+export type RobotControlJoint = {
+    value: number;
+    min?: number;
+    max?: number;
+    name?: string;
+};
+
+// @public
+export type RobotControlJoints = {
+    joints: RobotControlJoint[];
+    linear?: boolean;
+    velocity: RobotControlVelocity;
+    onVelocityChange: (value: number) => void;
+    onJogStart: (index: number, direction: JogDirection) => void;
+    onJogStop: () => void;
+};
+
+// @public
+export type RobotControlMoveState = "idle" | "planning" | "planned" | "moving" | "stopping";
+
+// @public
+export type RobotControlMoveTo = {
+    getCurrentPose: () => RobotControlPose | null;
+    frame?: RobotControlSelect;
+    onTargetChange: (pose: RobotControlPose | null) => void;
+    state: RobotControlMoveState;
+    error?: string | null;
+    onMoveStart: (pose: RobotControlPose) => void;
+    onMoveStop: () => void;
+};
+
+// @public
+export type RobotControlOption = {
+    id: string;
+    label: string;
+};
+
+// @public
+export const RobotControlPanel: (input: RobotControlPanelProps) => JSX.Element;
+
+// @public
+export type RobotControlPanelProps = {
+    onClose?: () => void;
+    disabled?: boolean;
+    jogDisabled?: boolean;
+    tab?: RobotControlTab;
+    onTabChange?: (tab: RobotControlTab) => void;
+    jogMode?: RobotControlJogMode;
+    onJogModeChange?: (mode: RobotControlJogMode) => void;
+    tcp?: RobotControlSelect;
+    jogFrame?: RobotControlSelect;
+    velocity: Record<JogMotion, RobotControlVelocity>;
+    onVelocityChange: (motion: JogMotion, value: number) => void;
+    onJogStart: (motion: JogMotion, axis: JogAxis, direction: JogDirection) => void;
+    onJogStop: () => void;
+    increments?: RobotControlIncrements;
+    gizmoOrientation?: RefObject<Quaternion | null>;
+    gizmoFrameQuaternion?: Quaternion | (() => Quaternion);
+    joints?: RobotControlJoints;
+    moveTo?: RobotControlMoveTo;
+    sx?: SxProps<Theme>;
+};
+
+// @public
+export type RobotControlPose = {
+    position: [number, number, number];
+    orientation: [number, number, number];
+};
+
+// @public
+export type RobotControlSelect = {
+    options: RobotControlOption[];
+    value: string;
+    onChange: (id: string) => void;
+};
+
+// @public
+export type RobotControlTab = JogMotion | "joint" | "moveTo";
+
+// @public
+export type RobotControlVelocity = {
+    value: number;
+    min: number;
+    max: number;
+};
 
 // @public (undocumented)
 export type RobotProps = {

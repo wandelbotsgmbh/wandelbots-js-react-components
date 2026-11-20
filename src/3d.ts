@@ -24,6 +24,22 @@ export type {
   JogHandle,
 } from "./components/jogging/jogHandle"
 export type { JogControlsProps } from "./components/jogging/useJogControls"
+export {
+  type JogMotion,
+  RobotControlPanel,
+  type RobotControlIncrements,
+  type RobotControlJogMode,
+  type RobotControlJoint,
+  type RobotControlJoints,
+  type RobotControlMoveState,
+  type RobotControlMoveTo,
+  type RobotControlOption,
+  type RobotControlPanelProps,
+  type RobotControlPose,
+  type RobotControlSelect,
+  type RobotControlTab,
+  type RobotControlVelocity,
+} from "./components/robotControl/RobotControlPanel"
 export * from "./components/robots/LinearAxis"
 export * from "./components/robots/MotionGroupVisualizer"
 export * from "./components/robots/Robot"
