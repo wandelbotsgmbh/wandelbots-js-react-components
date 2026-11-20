@@ -1,4 +1,4 @@
-import type { CoordinateSystem } from "@wandelbots/nova-js/v2"
+import type { CoordinateSystem, Pose } from "@wandelbots/nova-js/v2"
 import { Quaternion, Vector3 } from "three"
 import {
   parseRotationToQuaternion,
@@ -10,9 +10,22 @@ import {
  * us to avoid a network roundtrip for fast animation stuff
  * See https://code.wabo.run/robotics/wb-robotix/-/blob/develop/src/math/core/include/wb/math/space/Pose.h
  *
- * Ported from RobotPad (src/util/Pose3.ts), only what the jogger uses.
+ * Ported from RobotPad (src/util/Pose3.ts), only what the jogger and the
+ * jogging store use.
  */
 export class Pose3 {
+  static fromPose(apiPose: Pose) {
+    const quaternion = apiPose.orientation
+      ? parseRotationToQuaternion(apiPose.orientation, "ROTATION_VECTOR")
+      : new Quaternion()
+    const position = apiPose.position ?? [0, 0, 0]
+
+    return new Pose3(
+      new Vector3(position[0] ?? 0, position[1] ?? 0, position[2] ?? 0),
+      quaternion,
+    )
+  }
+
   static fromCoordinateSystem(coordinateSystem: CoordinateSystem) {
     const quaternion = coordinateSystem.orientation
       ? parseRotationToQuaternion(
@@ -32,6 +45,23 @@ export class Pose3 {
     readonly position: Vector3,
     readonly quaternion: Quaternion,
   ) {}
+
+  inverse() {
+    const inverseQuat = this.quaternion.clone().invert()
+    return new Pose3(
+      this.position.clone().applyQuaternion(inverseQuat).multiplyScalar(-1),
+      inverseQuat,
+    )
+  }
+
+  multiply(other: Pose3) {
+    return new Pose3(
+      this.position
+        .clone()
+        .add(other.position.clone().applyQuaternion(this.quaternion)),
+      this.quaternion.clone().multiply(other.quaternion).normalize(),
+    )
+  }
 
   get orientation(): Vector3 {
     return quaternionToRotationVector(this.quaternion)

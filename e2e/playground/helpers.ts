@@ -148,7 +148,8 @@ export async function jogPress(
 /**
  * Raises the velocity of a VelocitySlider by 10 with the key Page Up, so
  * that a jog press moves the robot clearly (the JoggingStore starts with
- * 1 °/s and 10 mm/s). Returns the new velocity.
+ * 5 °/s and 10 % of the robot's T1 limit, mostly 25 mm/s). Returns the new
+ * velocity.
  */
 export async function raiseVelocity(velocitySlider: Locator) {
   const slider = velocitySlider.getByRole("slider")
