@@ -154,6 +154,13 @@ export type ConnectedMotionGroupOptions = {
     cellId?: string;
 };
 
+// @public
+export type ConnectionLogger = {
+    info: (message: string, data?: unknown) => void;
+    debug: (message: string, data?: unknown) => void;
+    warn: (message: string, data?: unknown) => void;
+};
+
 // @public (undocumented)
 export const i18n: i18n_2;
 
@@ -485,8 +492,11 @@ export type JogHandle = {
     direction: JogDirection;
 };
 
-// @public (undocumented)
+// @public
 export function jointValuesEqual(oldJointValues: number[], newJointValues: number[], changeDeltaThreshold: number): boolean;
+
+// @public
+export function jointValuesUnchanged(oldJointValues: number[], newJointValues: number[], changeDeltaThreshold: number): boolean;
 
 // @public (undocumented)
 export const LoadingCover: (props: {
@@ -506,9 +516,12 @@ export type MotionGroupOption = {
     selectionId: string;
 };
 
+// @public
+export type MotionStateReadout = Pick<MotionGroupState, "joint_position" | "tcp_pose" | "tcp" | "coordinate_system">;
+
 // @public (undocumented)
 export class MotionStreamConnection {
-    constructor(connection: NovaConnection, controller: RobotControllerState, motionGroup: MotionGroupState, description: MotionGroupDescription, initialMotionState: MotionGroupState, motionStateSocket: AutoReconnectingWebsocket, cellId?: string);
+    constructor(connection: NovaConnection, controller: RobotControllerState, motionGroup: MotionGroupState, description: MotionGroupDescription, initialMotionState: MotionGroupState, motionStateSocket: AutoReconnectingWebsocket, cellId?: string, options?: Pick<MotionStreamConnectionOptions, "logger">);
     // (undocumented)
     readonly cellId: string;
     // (undocumented)
@@ -535,11 +548,13 @@ export class MotionStreamConnection {
     static open(connection: NovaConnection, motionGroupId: string, options?: MotionStreamConnectionOptions): Promise<MotionStreamConnection>;
     // (undocumented)
     rapidlyChangingMotionState: MotionGroupState;
+    get readoutState(): MotionStateReadout;
 }
 
 // @public
 export type MotionStreamConnectionOptions = {
     cellId?: string;
+    logger?: ConnectionLogger;
 };
 
 // @public (undocumented)
@@ -562,6 +577,12 @@ export type NovaConnection = string | {
 
 // @public (undocumented)
 export function poseEqual(oldTcp: Pose | undefined, newTcp: Pose | undefined, changeDeltaThreshold: number): boolean;
+
+// @public
+export function readoutOf(motionState: MotionGroupState): MotionStateReadout;
+
+// @public
+export function readoutsEqual(shown: MotionStateReadout, next: MotionStateReadout): boolean;
 
 // @public (undocumented)
 export type RobotTcpLike = {

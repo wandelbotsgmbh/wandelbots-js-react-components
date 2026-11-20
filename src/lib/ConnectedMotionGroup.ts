@@ -14,7 +14,7 @@ import type {
 import { makeAutoObservable, runInAction } from "mobx"
 import * as THREE from "three"
 import type { Vector3Simple } from "./JoggerConnection"
-import { jointValuesEqual, tcpMotionEqual } from "./motionStateUpdate"
+import { jointValuesUnchanged, tcpMotionEqual } from "./motionStateUpdate"
 import {
   cellIdOf,
   createNovaClient,
@@ -247,7 +247,7 @@ export class ConnectedMotionGroup {
 
       // handle joint position changes
       if (
-        !jointValuesEqual(
+        !jointValuesUnchanged(
           this.rapidlyChangingMotionState.joint_position,
           latestMotionState.joint_position,
           MOTION_DELTA_THRESHOLD,
