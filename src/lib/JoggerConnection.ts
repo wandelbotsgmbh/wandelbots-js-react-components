@@ -1,23 +1,93 @@
 import {
   tryParseJson,
-  XYZ_TO_VECTOR,
   type AutoReconnectingWebsocket,
 } from "@wandelbots/nova-js"
 import {
   JointTypeEnum,
+  type CoordinateSystem,
   type InitializeMovementResponse,
+  type JointTrajectory,
   type MotionCommand,
   type Pose,
   type StartMovementResponse,
 } from "@wandelbots/nova-js/v2"
 import { when } from "mobx"
-import { Vector3 } from "three/src/math/Vector3.js"
+import { type Quaternion, Vector3 } from "three"
+import type { ConnectionLogger } from "./connectionLogger"
+import {
+  computeIncrementalTargetPose,
+  type IncrementalMotion,
+} from "./incrementalCartesianMotion"
 import { MotionStreamConnection } from "./MotionStreamConnection"
 import type { NovaConnection } from "./novaConnection"
+import { Pose3 } from "./Pose3"
+
+export type { IncrementalMotion } from "./incrementalCartesianMotion"
 
 export type Vector3Simple = [number, number, number]
 
 const API_ERROR_CONNECTION_BLOCKED = `Movement request rejected. Another client is currently executing a 'Jogging' motion!`
+
+/**
+ * How long to wait for the robot to actually start moving after the controller
+ * acknowledged the start of an incremental jog. A short increment can be over
+ * before the motion stream reports any movement, so this is a grace period,
+ * not a requirement.
+ */
+const MOTION_START_GRACE_MS = 500
+
+/**
+ * Slack added on top of a jog's planned duration by {@link motionTimeoutMs}:
+ * covers the two websocket round trips of the start handshake and the lag until
+ * the motion stream reports standstill again.
+ */
+const MOTION_HANDSHAKE_ALLOWANCE_MS = 5_000
+
+/**
+ * Watchdog for a single incremental jog, after which the caller is released
+ * even though the motion never reported completion. Without it, a lost
+ * standstill update would leave the jogging UI locked for good.
+ *
+ * Derived from the planned trajectory rather than fixed, so that a 0.1mm jog is
+ * not given the same budget as a 5° one at the slowest 1°/s. Doubling the planned duration
+ * is deliberately generous: firing early disposes the execution socket
+ * mid-motion, which truncates the jog and re-opens the very race that makes
+ * waiting for the motion necessary in the first place.
+ */
+function motionTimeoutMs(trajectory: JointTrajectory) {
+  const plannedSeconds = trajectory.times?.[trajectory.times.length - 1] ?? 0
+  return plannedSeconds * 2000 + MOTION_HANDSHAKE_ALLOWANCE_MS
+}
+
+/** A step jog: see `JoggerConnection.runIncrementalCartesianMotion` */
+export type IncrementalCartesianMotionRequest = {
+  currentTcpPose: Pose
+  currentJoints: Vector3Simple
+  /**
+   * @deprecated Not used: a step follows the jogger's `orientation` and
+   * `coordinateSystem`
+   */
+  coordSystemId?: string
+  velocityInRelevantUnits: number
+  axis: "x" | "y" | "z"
+  direction: "-" | "+"
+  motion: IncrementalMotion
+}
+
+/**
+ * The trajectory-execution messages this client acts on. Each generated
+ * response type declares its own single-value `kind`, so there is no ready-made
+ * union to use; the kinds without a dedicated response type are listed here.
+ */
+type TrajectoryExecutionResult = {
+  kind:
+    | InitializeMovementResponse["kind"]
+    | StartMovementResponse["kind"]
+    | "PAUSE_RECEIVED"
+    | "MOTION_ERROR"
+  message?: string
+  add_trajectory_error?: InitializeMovementResponse["add_trajectory_error"]
+}
 
 export type JoggerConnectionOptions = {
   // The mode of the jogger connection - see type description of JoggerMode for details
@@ -27,23 +97,42 @@ export type JoggerConnectionOptions = {
   timeout?: number
 
   /**
-   * When an error message is received from the jogging websocket, it
-   * will be passed here. If this handler is not provided, the error will
-   * instead be thrown as an unhandled error.
+   * Gets the errors of the jogging websocket and of step jogs (a refused
+   * or failed plan, a refused trajectory, a motion that does not end). Without
+   * it, the initialization of the jogging websocket and the step jog reject
+   * with the error.
    */
   onError?: (err: unknown) => void
 
   // The TCP to use for jogging motions.
   tcp?: string
 
-  // The coordinate system in which jogging takes place in
-  // coordinateSystem?: string,
+  /**
+   * The coordinate system whose axes cartesian jogging moves along, unless in
+   * tool orientation. Its pose has to be relative to world (a coordinate
+   * system that refers to another one has to be resolved first). Defaults to
+   * world.
+   */
+  coordinateSystem?: CoordinateSystem
 
   // If set to "tool", jogging TcpVelocityRequest will use `use_tool_coordinate_system` option
   orientation?: JoggerOrientation
 
   /** Cell id on the Nova instance. Defaults to "cell". */
   cellId?: string
+
+  /**
+   * Model name sent to the planner for incremental motions. Defaults to the
+   * model in the motion group description; pass the resolved name for a robot
+   * whose data lives in a custom copy.
+   */
+  motionGroupModel?: string
+
+  /**
+   * Where the jogger logs, and the motion stream that `open()` opens.
+   * Defaults to the console.
+   */
+  logger?: ConnectionLogger
 }
 
 // Three modes are supported:
@@ -59,7 +148,6 @@ export class JoggerConnection {
   DEFAULT_MODE = "off" as JoggerMode
   DEFAULT_TCP: string | undefined = "Flange"
   NO_TCP: string | undefined = undefined
-  // DEFAULT_COORDINATE_SYSTEM = "world"
   DEFAULT_INIT_TIMEOUT = 5000
   DEFAULT_ORIENTATION = "coordsys" as JoggerOrientation
 
@@ -68,10 +156,25 @@ export class JoggerConnection {
   trajectorySocket: AutoReconnectingWebsocket | null = null
   timeout: number = this.DEFAULT_INIT_TIMEOUT
   tcp: string | undefined
-  // coordinateSystem?: string
+  /** See {@link JoggerConnectionOptions.coordinateSystem}. Applies to the next jog command. */
+  coordinateSystem: CoordinateSystem | undefined
   orientation: JoggerOrientation
   onError?: (err: unknown) => void
   onBlocked?: () => void
+
+  private readonly logger: ConnectionLogger
+
+  /**
+   * Set from planning an incremental jog until the robot has come to a
+   * standstill again. Jogs requested in between are dropped: their trajectory
+   * would be planned from a joint position the robot has already left, and the
+   * controller refuses that with "Motion group is not at expected location on
+   * trajectory. Please move to the trajectory!".
+   */
+  private incrementalMotionInFlight = false
+
+  /** Ends an incremental jog that still waits for the robot */
+  private endIncrementalMotion?: () => void
 
   /**
    * Whether the jogger opened its motion stream itself (in `open()`): then
@@ -95,9 +198,11 @@ export class JoggerConnection {
    *   - "off": No jogging enabled, all websockets closed (default)
    * @param options.timeout - Timeout in milliseconds for websocket initialization (default: 5000ms)
    * @param options.tcp - TCP frame to use for motions (default: from motion group)
-   * //param options.coordinateSystem - Coordinate system for jogging commands (default: "world"). Please note: Currently not implemented
+   * @param options.coordinateSystem - Coordinate system whose axes cartesian jogging moves along, relative to world (default: world)
    * @param options.orientation - If set to "tool", jogging TcpVelocityRequest will use `use_tool_coordinate_system` option (default: "coordsys")
-   * @param options.onError - Error handler for websocket errors
+   * @param options.onError - Error handler for websocket errors and step jogs
+   * @param options.motionGroupModel - Model name for planning step jogs (default: from the motion group description)
+   * @param options.logger - Where the jogger and its motion stream log (default: the console)
    * @returns Promise resolving to initialized JoggerConnection instance. Its
    *   `dispose()` also closes the motion stream that this function opens.
    */
@@ -112,6 +217,7 @@ export class JoggerConnection {
       motionGroupId,
       {
         cellId: options.cellId,
+        logger: options.logger,
       },
     )
 
@@ -140,11 +246,12 @@ export class JoggerConnection {
       options?.tcp ||
       motionStream.motionGroup.tcp ||
       this.getDefaultTcp(motionStream)
-    // this.coordinateSystem = options?.coordinateSystem || this.DEFAULT_COORDINATE_SYSTEM
+    this.coordinateSystem = options?.coordinateSystem
     this.orientation = options?.orientation || this.DEFAULT_ORIENTATION
     this.timeout = options?.timeout || this.DEFAULT_INIT_TIMEOUT
     this.mode = options?.mode || this.DEFAULT_MODE
     this.onError = options?.onError
+    this.logger = options?.logger ?? console
   }
 
   getDefaultTcp(motionStream: MotionStreamConnection) {
@@ -169,9 +276,10 @@ export class JoggerConnection {
       this.orientation = options.orientation
     }
 
-    // if (options.coordinateSystem) {
-    //   this.coordinateSystem = options.coordinateSystem
-    // }
+    // Also undefined: back to world
+    if ("coordinateSystem" in options) {
+      this.coordinateSystem = options.coordinateSystem
+    }
 
     if (options.timeout) {
       this.timeout = options.timeout
@@ -248,8 +356,10 @@ export class JoggerConnection {
 
   /** Closes the jogging and trajectory websockets */
   private closeJoggingSockets() {
-    // An initialization that still waits has nothing to wait for any more
+    // An initialization or a step that still waits has nothing to wait for
+    // any more
     this.endJoggingInit?.()
+    this.endIncrementalMotion?.()
 
     // Collect all initialized sockets
     const sockets = [this.joggingSocket, this.trajectorySocket].filter(
@@ -425,15 +535,13 @@ export class JoggerConnection {
         "Continuous jogging websocket not connected; create one by setting jogging mode to 'jogging'",
       )
     }
-    const rotation = [0, 0, 0]
-    const translation = [0, 0, 0]
-    translation[XYZ_TO_VECTOR[axis]] =
-      direction === "-" ? -velocityMmPerSec : velocityMmPerSec
-
     this.joggingSocket.sendJson({
       message_type: "TcpVelocityRequest",
-      translation,
-      rotation,
+      translation: this.velocityAlongAxis(
+        axis,
+        direction === "-" ? -velocityMmPerSec : velocityMmPerSec,
+      ),
+      rotation: [0, 0, 0],
       use_tool_coordinate_system: this.orientation === "tool",
     })
   }
@@ -455,17 +563,45 @@ export class JoggerConnection {
         "Continuous jogging websocket not connected; create one by setting jogging mode to 'jogging'",
       )
     }
-    const rotation = [0, 0, 0]
-    const translation = [0, 0, 0]
-    rotation[XYZ_TO_VECTOR[axis]] =
-      direction === "-" ? -velocityRadsPerSec : velocityRadsPerSec
-
     this.joggingSocket.sendJson({
       message_type: "TcpVelocityRequest",
-      translation,
-      rotation,
+      translation: [0, 0, 0],
+      rotation: this.velocityAlongAxis(
+        axis,
+        direction === "-" ? -velocityRadsPerSec : velocityRadsPerSec,
+      ),
       use_tool_coordinate_system: this.orientation === "tool",
     })
+  }
+
+  /**
+   * Rotation from {@link JoggerConnection.coordinateSystem} into world,
+   * while jogging along its axes. Undefined when jogging along world or tool
+   * axes.
+   */
+  private get coordinateSystemRotation(): Quaternion | undefined {
+    if (this.orientation === "tool" || !this.coordinateSystem) {
+      return undefined
+    }
+    return Pose3.fromCoordinateSystem(this.coordinateSystem).quaternion
+  }
+
+  /**
+   * Velocity vector along one axis of the jogging frame. The API takes TCP
+   * velocities in either the tool frame or world, so an axis of
+   * {@link JoggerConnection.coordinateSystem} is rotated into world here.
+   */
+  private velocityAlongAxis(
+    axis: "x" | "y" | "z",
+    velocity: number,
+  ): Vector3Simple {
+    const vector = new Vector3()
+    vector[axis] = velocity
+    const rotation = this.coordinateSystemRotation
+    if (rotation) {
+      vector.applyQuaternion(rotation)
+    }
+    return [vector.x, vector.y, vector.z]
   }
 
   /**
@@ -473,154 +609,113 @@ export class JoggerConnection {
    *
    * Move the robot by a fixed distance in a single cartesian
    * axis, either rotating or translating relative to the TCP.
-   * Promise resolves only after the motion has completed.
+   * The axis is one of the tool in tool orientation, else one of
+   * {@link JoggerConnection.coordinateSystem} (default: world).
+   *
+   * Promise resolves only after the motion has completed: once the robot
+   * stands still again, or after a watchdog of twice the planned duration
+   * plus 5 s. A step requested while another one runs is dropped (resolves
+   * at once). Every error (a refused or failed plan, a refused trajectory, an
+   * error of the controller, the watchdog) goes to `onError`, or without it
+   * rejects the promise.
    */
-  async runIncrementalCartesianMotion({
-    currentTcpPose,
-    currentJoints,
-    // coordSystemId,
-    velocityInRelevantUnits,
-    axis,
-    direction,
-    motion,
-  }: {
-    currentTcpPose: Pose
-    currentJoints: Vector3Simple
-    coordSystemId: string
-    velocityInRelevantUnits: number
-    axis: "x" | "y" | "z"
-    direction: "-" | "+"
-    motion:
-      | {
-          type: "rotate"
-          distanceRads: number
-        }
-      | {
-          type: "translate"
-          distanceMm: number
-        }
-  }) {
-    const commands: MotionCommand[] = []
-
+  async runIncrementalCartesianMotion(
+    request: IncrementalCartesianMotionRequest,
+  ) {
     if (this.mode !== "trajectory") {
       throw new Error(
         "Set jogging mode to 'trajectory' to run incremental cartesian motions",
       )
     }
 
-    if (motion.type === "translate") {
-      if (!currentTcpPose.position) {
-        throw new Error(
-          "Current pose has no position, cannot perform translation",
-        )
-      }
-
-      const targetTcpPosition = [...currentTcpPose.position]
-      targetTcpPosition[XYZ_TO_VECTOR[axis]] +=
-        motion.distanceMm * (direction === "-" ? -1 : 1)
-
-      commands.push({
-        limits_override: {
-          tcp_velocity_limit: velocityInRelevantUnits,
-        },
-        path: {
-          path_definition_name: "PathLine",
-          target_pose: {
-            position: targetTcpPosition,
-            orientation: currentTcpPose.orientation,
-          },
-        },
-      })
-    } else if (motion.type === "rotate") {
-      // Concatenate rotations expressed by rotation vectors
-      // Equations taken from https://physics.stackexchange.com/a/287819
-
-      if (!currentTcpPose.orientation) {
-        throw new Error(
-          "Current pose has no orientation, cannot perform rotation",
-        )
-      }
-
-      // Compute axis and angle of current rotation vector
-      const currentRotationVector = new Vector3(
-        currentTcpPose.orientation[0],
-        currentTcpPose.orientation[1],
-        currentTcpPose.orientation[2],
-      )
-
-      const currentRotationRad = currentRotationVector.length()
-      const currentRotationDirection = currentRotationVector.clone().normalize()
-
-      // Compute axis and angle of difference rotation vector
-      const differenceRotationRad =
-        motion.distanceRads * (direction === "-" ? -1 : 1)
-
-      const differenceRotationDirection = new Vector3(0.0, 0.0, 0.0)
-      differenceRotationDirection[axis] = 1.0
-
-      // Some abbreviations to make the following equations more readable
-      const f1 =
-        Math.cos(0.5 * differenceRotationRad) *
-        Math.cos(0.5 * currentRotationRad)
-      const f2 =
-        Math.sin(0.5 * differenceRotationRad) *
-        Math.sin(0.5 * currentRotationRad)
-      const f3 =
-        Math.sin(0.5 * differenceRotationRad) *
-        Math.cos(0.5 * currentRotationRad)
-      const f4 =
-        Math.cos(0.5 * differenceRotationRad) *
-        Math.sin(0.5 * currentRotationRad)
-
-      const dotProduct = differenceRotationDirection.dot(
-        currentRotationDirection,
-      )
-
-      const crossProduct = differenceRotationDirection
-        .clone()
-        .cross(currentRotationDirection)
-
-      // Compute angle of concatenated rotation
-      const newRotationRad = 2.0 * Math.acos(f1 - f2 * dotProduct)
-
-      // Compute rotation vector of concatenated rotation
-      const f5 = newRotationRad / Math.sin(0.5 * newRotationRad)
-
-      const targetTcpOrientation = new Vector3()
-        .addScaledVector(crossProduct, f2)
-        .addScaledVector(differenceRotationDirection, f3)
-        .addScaledVector(currentRotationDirection, f4)
-        .multiplyScalar(f5)
-
-      commands.push({
-        limits_override: {
-          tcp_orientation_velocity_limit: velocityInRelevantUnits,
-        },
-        path: {
-          path_definition_name: "PathLine",
-          target_pose: {
-            position: currentTcpPose.position,
-            orientation: [...targetTcpOrientation],
-          },
-        },
-      })
+    // Dropped, not queued -- see incrementalMotionInFlight
+    if (this.incrementalMotionInFlight) {
+      return
     }
+    this.incrementalMotionInFlight = true
+
+    try {
+      const trajectory = await this.planIncrementalCartesianMotion(request)
+      if (trajectory) {
+        await this.executeTrajectory(trajectory)
+      }
+    } finally {
+      this.incrementalMotionInFlight = false
+    }
+  }
+
+  /**
+   * Plan the trajectory for a single incremental jog. Returns undefined when
+   * no trajectory could be produced; the reason (a planner rejection such as a
+   * singularity, or a motion group without a cycle time) is reported through
+   * {@link JoggerConnection.onError} or logged.
+   */
+  private async planIncrementalCartesianMotion({
+    currentTcpPose,
+    currentJoints,
+    velocityInRelevantUnits,
+    axis,
+    direction,
+    motion,
+  }: IncrementalCartesianMotionRequest) {
+    const commands: MotionCommand[] = []
+
+    // Resolve the absolute target pose to plan towards. The axis is interpreted
+    // relative to the tool when the jogger is in tool orientation, matching the
+    // `use_tool_coordinate_system` flag used for continuous jogging, and along
+    // the jogging coordinate system otherwise.
+    const targetPose = computeIncrementalTargetPose({
+      currentTcpPose,
+      axis,
+      direction,
+      motion,
+      useToolCoordinateSystem: this.orientation === "tool",
+      coordinateSystemRotation: this.coordinateSystemRotation,
+    })
+
+    commands.push({
+      limits_override:
+        motion.type === "translate"
+          ? { tcp_velocity_limit: velocityInRelevantUnits }
+          : { tcp_orientation_velocity_limit: velocityInRelevantUnits },
+      path: {
+        path_definition_name: "PathLine",
+        target_pose: {
+          position: targetPose.position,
+          orientation: targetPose.orientation,
+        },
+      },
+    })
 
     // Plan the motion https://portal.wandelbots.io/docs/api/v2/ui/#/operations/planTrajectory
     const description = this.motionStream.description
     if (description.cycle_time === undefined) {
-      console.warn(
+      this.logger.warn(
         "Current motion group has no cycle time, cannot plan jogging motion",
       )
       return
     }
 
+    // currentTcpPose (and thus the target pose) is the streamed pose of the
+    // controller's active TCP. The planner interprets target_pose as the
+    // flange pose unless given the flange-to-TCP offset, so without it the
+    // planned motion would drive the flange to the TCP's target position --
+    // a jump by the whole TCP offset instead of the requested increment.
+    // Some controllers (e.g. UR) report an active TCP that has no entry in
+    // the description's tcps map; there the streamed pose is the flange pose
+    // and no offset must be applied.
+    const activeTcpId = this.motionStream.rapidlyChangingMotionState.tcp
+    const tcpOffset = activeTcpId
+      ? description.tcps?.[activeTcpId]?.pose
+      : undefined
+
     const motion_group_setup = {
-      motion_group_model: description.motion_group_model,
+      motion_group_model:
+        this.options?.motionGroupModel ?? description.motion_group_model,
       cycle_time: description.cycle_time,
       mounting: description.mounting,
+      tcp_offset: tcpOffset,
 
-      // tcp_offset: description.tcp_offset, TODO: implement tcp_offset handling
       // FIXME use proper mode's limits if set
       global: description.operation_limits.auto_limits,
     }
@@ -641,137 +736,193 @@ export class JoggerConnection {
       )
     }
 
-    if (this.trajectorySocket) {
-      console.warn("Trajectory jogging websocket already open; will close")
-      this.trajectorySocket.dispose()
-    }
-
-    // Execute the planned motion https://portal.wandelbots.io/docs/api/v2/ui/#/operations/executeTrajectory
-    this.trajectorySocket = this.nova.openReconnectingWebsocket(
-      `/cells/${this.cellId}/controllers/${this.motionStream.controllerId}/execution/trajectory`,
-    )
-
-    const messageInitializeMovementResponse = (
-      result: InitializeMovementResponse | undefined,
-    ) => {
-      // Handle errorous response
-      if (!result || result.add_trajectory_error || result.message) {
-        if (this.onError) {
-          this.onError(result)
-        } else {
-          throw new Error(
-            result?.add_trajectory_error?.message ||
-              result?.message ||
-              "Failed to execute trajectory, unknown error",
-          )
-        }
-      }
-
-      // Handle socket gone
-      if (!this.trajectorySocket) {
-        throw new Error(
-          `Failed to execute trajectory, websocket not available anymore`,
-        )
-      }
-
-      // Trajectory locked, now start movement
-      this.trajectorySocket.sendJson({
-        message_type: "StartMovementRequest",
-        direction: "DIRECTION_FORWARD",
-      })
-    }
-
-    const waitForMovementToStartAndFinish = async () => {
-      // Wait for robot to start moving (standstill becomes false)
-      await when(() => !this.motionStream.rapidlyChangingMotionState.standstill)
-
-      // Then wait for robot to stop moving (standstill becomes true)
-      await when(() => this.motionStream.rapidlyChangingMotionState.standstill)
-
-      // Close connection and free robot
-      this.trajectorySocket?.dispose()
-      this.trajectorySocket = null
-    }
-
-    const waitForMovementToFinish = async () => {
-      // Wait for robot to stop moving (standstill becomes true)
-      await when(() => this.motionStream.rapidlyChangingMotionState.standstill)
-
-      // Close connection and free robot
-      this.trajectorySocket?.dispose()
-      this.trajectorySocket = null
-    }
-
-    const messageStartMovementResponse = async (
-      data: StartMovementResponse,
-    ) => {
-      if (data?.message) {
-        if (this.onError) {
-          this.onError(data)
-          return
-        } else {
-          throw new Error(
-            data.message || "Failed to execute trajectory, unknown error",
-          )
-        }
-      }
-
-      // Movement started we now wait to verify the robot is moving
-      // by observing changes to motion state
-      if (this.motionStream.rapidlyChangingMotionState.standstill) {
-        await waitForMovementToStartAndFinish()
-      } else {
-        await waitForMovementToFinish()
-      }
-    }
-
-    this.trajectorySocket.addEventListener("message", (ev: MessageEvent) => {
-      const data = tryParseJson(ev.data)
-
-      if (!data?.result?.kind) {
-        throw new Error(
-          `Failed to execute trajectory: Received invalid message ${ev.data}`,
-        )
-      }
-
-      if (
-        this.onBlocked &&
-        data.result.message?.includes(API_ERROR_CONNECTION_BLOCKED)
-      ) {
-        this.onBlocked()
+    // A failed plan comes back as a regular response object carrying
+    // error_feedback with the actual failure reason (singularity, joint
+    // limit, out of workspace, ...). It must not be sent to the execution
+    // endpoint -- that would just produce a confusing follow-up error about
+    // the trajectory having no samples.
+    if ("error_feedback" in trajectoryData) {
+      if (this.onError) {
+        this.onError(trajectoryData)
         return
       }
+      throw new Error(
+        `Failed to plan jogging increment motion: ${JSON.stringify(trajectoryData.error_feedback)}`,
+      )
+    }
 
-      if (data.result.kind === "INITIALIZE_RECEIVED") {
-        messageInitializeMovementResponse(data.result)
-      } else if (data.result.kind === "START_RECEIVED") {
-        messageStartMovementResponse(data)
-      } else if (data.result.kind === "PAUSE_RECEIVED") {
-        // do nothing
-      } else if (data.result.kind === "MOTION_ERROR" && data.result.message) {
-        if (this.onError) {
-          this.onError(data)
-          return
-        } else {
-          throw new Error(data.result.message)
+    return trajectoryData
+  }
+
+  /**
+   * Execute a planned trajectory https://portal.wandelbots.io/docs/api/v2/ui/#/operations/executeTrajectory
+   * and resolve once the robot has come to a standstill again, so that the
+   * caller -- and with it the jogging UI's motion lock -- stays blocked for the
+   * whole motion. It also resolves when the jogger closes the websocket
+   * (`setJoggingMode`, `dispose`).
+   *
+   * Each call owns its own websocket. Sharing
+   * {@link JoggerConnection.trajectorySocket} across motions meant a finishing
+   * motion closed the socket of a later one.
+   */
+  private async executeTrajectory(trajectory: JointTrajectory) {
+    const socket = this.nova.openReconnectingWebsocket(
+      `/cells/${this.cellId}/controllers/${this.motionStream.controllerId}/execution/trajectory`,
+    )
+    this.trajectorySocket = socket
+
+    // Lets the cleanup below drop the standstill observers of an abandoned
+    // motion instead of leaving them behind for the rest of the session
+    const abortWaiting = new AbortController()
+    let timeout: ReturnType<typeof setTimeout> | undefined
+    let endWithoutError: (() => void) | undefined
+
+    try {
+      await new Promise<void>((resolve, reject) => {
+        let settled = false
+
+        const succeed = () => {
+          if (settled) return
+          settled = true
+          resolve()
         }
-      } else {
-        throw new Error(
-          `Failed to execute trajectory, cannot handle message type "${data.result.kind}"`,
-        )
-      }
-    })
 
-    // Send initialization/movement request
-    this.trajectorySocket.sendJson({
-      message_type: "InitializeMovementRequest",
-      trajectory: {
-        message_type: "TrajectoryData",
-        motion_group: this.motionGroupId,
-        data: trajectoryData,
-        tcp: this.tcp,
-      },
-    })
+        // Every failure path has to settle this promise: the jogging UI keeps
+        // its axis buttons disabled for as long as it is pending.
+        const fail = (err: unknown) => {
+          if (settled) return
+          settled = true
+
+          if (this.onError) {
+            this.onError(err)
+            resolve()
+            return
+          }
+
+          reject(
+            err instanceof Error
+              ? err
+              : new Error(
+                  `Failed to execute trajectory: ${JSON.stringify(err)}`,
+                ),
+          )
+        }
+
+        // For the jogger: it closes the websocket, which ends the motion
+        endWithoutError = succeed
+        this.endIncrementalMotion = succeed
+
+        const timeoutMs = motionTimeoutMs(trajectory)
+        timeout = setTimeout(() => {
+          fail(
+            new Error(`Jogging motion did not complete within ${timeoutMs}ms`),
+          )
+        }, timeoutMs)
+
+        socket.addEventListener("message", (ev: MessageEvent) => {
+          const result = tryParseJson(ev.data)?.result as
+            | TrajectoryExecutionResult
+            | undefined
+
+          if (!result?.kind) {
+            fail(
+              new Error(
+                `Failed to execute trajectory: Received invalid message ${ev.data}`,
+              ),
+            )
+            return
+          }
+
+          if (
+            this.onBlocked &&
+            result.message?.includes(API_ERROR_CONNECTION_BLOCKED)
+          ) {
+            this.onBlocked()
+            succeed()
+            return
+          }
+
+          if (result.kind === "INITIALIZE_RECEIVED") {
+            // A refusal arrives as an INITIALIZE_RECEIVED carrying a message,
+            // e.g. "Motion group is not at expected location on trajectory"
+            // when the robot moved on after the trajectory was planned.
+            // Starting the movement anyway would ask the controller to execute
+            // exactly the trajectory it just refused.
+            if (result.add_trajectory_error || result.message) {
+              fail(result)
+              return
+            }
+
+            // Trajectory locked, now start movement
+            socket.sendJson({
+              message_type: "StartMovementRequest",
+              direction: "DIRECTION_FORWARD",
+            })
+          } else if (result.kind === "START_RECEIVED") {
+            if (result.message) {
+              fail(result)
+              return
+            }
+
+            this.waitForMotionToFinish(abortWaiting.signal).then(succeed, fail)
+          } else if (result.kind === "PAUSE_RECEIVED") {
+            // do nothing
+          } else if (result.kind === "MOTION_ERROR" && result.message) {
+            fail(result)
+          } else {
+            fail(
+              new Error(
+                `Failed to execute trajectory, cannot handle message type "${result.kind}"`,
+              ),
+            )
+          }
+        })
+
+        // Send initialization/movement request
+        socket.sendJson({
+          message_type: "InitializeMovementRequest",
+          trajectory: {
+            message_type: "TrajectoryData",
+            motion_group: this.motionGroupId,
+            data: trajectory,
+            tcp: this.tcp,
+          },
+        })
+      })
+    } finally {
+      clearTimeout(timeout)
+      abortWaiting.abort()
+      if (this.endIncrementalMotion === endWithoutError) {
+        this.endIncrementalMotion = undefined
+      }
+
+      // Close connection and free robot
+      socket.dispose()
+      if (this.trajectorySocket === socket) {
+        this.trajectorySocket = null
+      }
+    }
+  }
+
+  /**
+   * Resolve once the robot has finished executing a trajectory.
+   *
+   * `standstill` from the motion stream is the only completion signal we get.
+   * The robot is still at standstill for a moment after the controller
+   * acknowledges the start, and a short increment can be over before the stream
+   * reports any movement at all -- so movement is waited for as a grace period,
+   * never required.
+   */
+  private async waitForMotionToFinish(signal: AbortSignal) {
+    const atStandstill = () =>
+      this.motionStream.rapidlyChangingMotionState.standstill
+
+    await when(() => !atStandstill(), {
+      timeout: MOTION_START_GRACE_MS,
+      signal,
+    }).catch(() => {})
+
+    await when(atStandstill, { signal })
   }
 }
 
