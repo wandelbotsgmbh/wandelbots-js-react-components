@@ -8,10 +8,14 @@ import type {
   Nova,
   RobotControllerState,
 } from "@wandelbots/nova-js/v2"
-import { makeAutoObservable, runInAction } from "mobx"
+import { computed, makeAutoObservable, runInAction } from "mobx"
+import type { ConnectionLogger } from "./connectionLogger"
 import type { Vector3Simple } from "./JoggerConnection"
 import {
-  jointValuesEqual,
+  jointValuesUnchanged,
+  type MotionStateReadout,
+  readoutOf,
+  readoutsEqual,
   tcpMotionEqual,
   unwrapRotationVector,
 } from "./motionStateUpdate"
@@ -29,6 +33,8 @@ const MOTION_DELTA_THRESHOLD = 0.0001
 export type MotionStreamConnectionOptions = {
   /** Cell id on the Nova instance. Defaults to "cell". */
   cellId?: string
+  /** Where the stream logs. Defaults to the console. */
+  logger?: ConnectionLogger
 }
 
 export class MotionStreamConnection {
@@ -72,10 +78,11 @@ export class MotionStreamConnection {
       )
     }
 
-    console.log(
-      `Connected motion state websocket to motion group ${motionGroup.motion_group}. Initial state:\n  `,
+    const logger = options.logger ?? console
+    logger.info("Connected motion state websocket to motion group", {
+      motionGroup: motionGroup.motion_group,
       initialMotionState,
-    )
+    })
 
     // Get the motion group description for later usage in jogging
     const description = await nova.api.motionGroup.getMotionGroupDescription(
@@ -92,6 +99,7 @@ export class MotionStreamConnection {
       initialMotionState,
       motionStateSocket,
       cellId,
+      { logger },
     )
   }
 
@@ -105,6 +113,8 @@ export class MotionStreamConnection {
    */
   readonly nova: Nova
 
+  private readonly logger: ConnectionLogger
+
   constructor(
     connection: NovaConnection,
     readonly controller: RobotControllerState,
@@ -113,8 +123,10 @@ export class MotionStreamConnection {
     readonly initialMotionState: MotionGroupState,
     readonly motionStateSocket: AutoReconnectingWebsocket,
     readonly cellId: string = "cell",
+    options: Pick<MotionStreamConnectionOptions, "logger"> = {},
   ) {
     this.nova = createNovaClient(connection)
+    this.logger = options.logger ?? console
     this.rapidlyChangingMotionState = initialMotionState
 
     motionStateSocket.addEventListener("message", (event) => {
@@ -126,20 +138,6 @@ export class MotionStreamConnection {
         throw new Error(
           `Failed to get motion state for ${this.motionGroupId}: ${event.data}`,
         )
-      }
-
-      // handle joint position changes
-      if (
-        !jointValuesEqual(
-          this.rapidlyChangingMotionState.joint_position,
-          latestMotionState.joint_position,
-          MOTION_DELTA_THRESHOLD,
-        )
-      ) {
-        runInAction(() => {
-          this.rapidlyChangingMotionState.joint_position =
-            latestMotionState.joint_position
-        })
       }
 
       // handle tcp pose changes
@@ -168,11 +166,26 @@ export class MotionStreamConnection {
               ),
             }
           } else {
-            console.warn(
-              "Received incomplete tcp_pose, ignoring",
-              latestMotionState.tcp_pose,
-            )
+            // Happens per message during motion, and is not actionable
+            this.logger.debug("Received incomplete tcp_pose, ignoring", {
+              tcpPose: latestMotionState.tcp_pose,
+            })
           }
+        })
+      }
+
+      // handle joint position changes. After the pose: the readout switches
+      // on the joints, so it has to find the matching pose already stored.
+      if (
+        !jointValuesUnchanged(
+          this.rapidlyChangingMotionState.joint_position,
+          latestMotionState.joint_position,
+          MOTION_DELTA_THRESHOLD,
+        )
+      ) {
+        runInAction(() => {
+          this.rapidlyChangingMotionState.joint_position =
+            latestMotionState.joint_position
         })
       }
 
@@ -217,7 +230,22 @@ export class MotionStreamConnection {
         })
       }
     })
-    makeAutoObservable(this)
+    makeAutoObservable<this, "logger">(this, {
+      logger: false,
+      // keepAlive: pose readouts poll it from requestAnimationFrame, which
+      // MobX does not track, and a computed nobody observes is recomputed on
+      // every read without consulting `equals`
+      readoutState: computed({ equals: readoutsEqual, keepAlive: true }),
+    })
+  }
+
+  /**
+   * What pose readouts show (joints, TCP pose): it holds the previous reading
+   * while the joints only jitter, see {@link readoutsEqual}. Kept alive, so it
+   * also holds for untracked reads, e.g. from requestAnimationFrame.
+   */
+  get readoutState(): MotionStateReadout {
+    return readoutOf(this.rapidlyChangingMotionState)
   }
 
   get motionGroupId() {
