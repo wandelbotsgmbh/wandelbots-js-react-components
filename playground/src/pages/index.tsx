@@ -18,6 +18,12 @@ import { SafetyPage } from "./SafetyPage"
 export type PageProps = {
   instance: PlaygroundInstance
   motionGroup: ConnectedMotionGroup
+  /** All motion groups of the cell, for a page with a select of its own */
+  motionGroupIds: string[]
+  /** Selects another motion group, as the top bar's select does */
+  onMotionGroupChange: (motionGroupId: string) => void
+  /** Opens another page, as the top bar's app menu does */
+  onPageChange: (page: PageId) => void
 }
 
 type Page = {

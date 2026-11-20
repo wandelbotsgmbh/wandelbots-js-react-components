@@ -67,6 +67,11 @@ function Playground({ instance }: { instance: PlaygroundInstance }) {
         key={motionGroupId}
         instance={instance}
         motionGroup={motionGroup.value}
+        motionGroupIds={motionGroupIds.value}
+        onMotionGroupChange={(id) =>
+          setLocation({ ...location, motionGroup: id })
+        }
+        onPageChange={(page) => setLocation({ ...location, page })}
       />
     )
   }
