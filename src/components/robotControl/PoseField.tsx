@@ -5,8 +5,9 @@ import { CloseFilled } from "@wandelbots/icons/CloseFilled"
 import { ContentCopyFilled } from "@wandelbots/icons/ContentCopyFilled"
 import { EditFilled } from "@wandelbots/icons/EditFilled"
 import { AdornedTextField, RoundedIconButton } from "@wandelbots/mui"
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useRef } from "react"
 import { useTranslation } from "react-i18next"
+import { useCopyText } from "./useCopyText"
 
 type PoseFieldProps = {
   /** The text shown: the draft while editing, else the target or the live pose */
@@ -41,7 +42,7 @@ export function PoseField({
 }: PoseFieldProps) {
   const { t } = useTranslation()
   const input = useRef<HTMLInputElement>(null)
-  const [copied, setCopied] = useState(false)
+  const { copied, copy: copyText } = useCopyText()
 
   // Editing puts the caret at the end; saved or cancelled, the field shows
   // the pose from its start again, as RobotPad's
@@ -57,31 +58,8 @@ export function PoseField({
     }
   }, [editing])
 
-  useEffect(() => {
-    if (!copied) return
-    const timeout = setTimeout(() => setCopied(false), 3000)
-    return () => clearTimeout(timeout)
-  }, [copied])
-
-  async function copy() {
-    // The clipboard API needs a secure context; NOVA instances are often
-    // reached over plain http, as RobotPad notes. Then the legacy command
-    // copies the selected text, or leaves it selected to copy by hand.
-    try {
-      if (navigator.clipboard) {
-        await navigator.clipboard.writeText(text)
-        setCopied(true)
-        return
-      }
-    } catch {
-      // the legacy command below
-    }
-    input.current?.select()
-    try {
-      if (document.execCommand("copy")) setCopied(true)
-    } catch {
-      // the text stays selected
-    }
+  function copy() {
+    return copyText(text, () => input.current?.select())
   }
 
   return (

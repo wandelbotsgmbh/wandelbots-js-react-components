@@ -22,6 +22,7 @@ export const componentNames = [
   "JoggingButtons",
   "JoggingJointSlider",
   "RobotControlPanel",
+  "CurrentPoseBar",
 ] as const
 
 // Public API entry names (used by api-extractor, consumer tests, and the

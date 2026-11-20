@@ -102,5 +102,22 @@
   "RobotControl.MoveTo.Moving.bt": "Moving…",
   "RobotControl.MoveTo.Stopping.bt": "Stopping…",
   "RobotControl.MoveTo.HoldToMove.lb": "Click and hold to move",
-  "RobotControl.MoveTo.AtPose.lb": "Robot is already at this pose"
+  "RobotControl.MoveTo.AtPose.lb": "Robot is already at this pose",
+  "CurrentPose.Title.lb": "Current position",
+  "CurrentPose.RelativeTo.lb": "Relative to",
+  "CurrentPose.Copy.bt": "Copy",
+  "CurrentPose.Copied.lb": "Pose copied",
+  "CurrentPose.OrientationFormat.ti": "Orientation format",
+  "CurrentPose.Format.lb": "Format",
+  "CurrentPose.Format.RotationVector.lb": "Rotation vector",
+  "CurrentPose.Format.EulerAngles.lb": "Euler angles",
+  "CurrentPose.Format.Quaternion.lb": "Quaternion",
+  "CurrentPose.AngleUnit.lb": "Angle unit",
+  "CurrentPose.AngleUnit.Radians.lb": "Radians",
+  "CurrentPose.AngleUnit.Degrees.lb": "Degrees",
+  "CurrentPose.EulerConvention.lb": "Euler convention",
+  "CurrentPose.EulerConvention.Intrinsic.hlb": "Intrinsic rotations",
+  "CurrentPose.EulerConvention.Extrinsic.hlb": "Extrinsic rotations",
+  "CurrentPose.EulerConvention.Intrinsic.lb": "Intrinsic {{axes}}",
+  "CurrentPose.EulerConvention.Extrinsic.lb": "Extrinsic {{axes}}"
 }

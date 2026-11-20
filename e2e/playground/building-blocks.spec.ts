@@ -44,6 +44,7 @@ test("shows the sections and the states of LoadingCover", async ({ page }) => {
   await openPage(page, "building-blocks")
   for (const title of [
     "RobotControlPanel",
+    "CurrentPoseBar",
     "JoggingCartesianAxisControl",
     "JoggingJointValueControl",
     "VelocitySlider and VelocitySliderLabel",
@@ -101,6 +102,54 @@ test("jogs the TCP with JoggingCartesianAxisControl", async ({ page }) => {
     async () => millimeters(await x.innerText()) > before + 3,
   )
   await screenshot(page, "building-blocks-tcp-x")
+})
+
+test("shows the TCP's pose in CurrentPoseBar as NOVA reports it, Running while a jog runs, and the orientation as a quaternion", async ({
+  page,
+}) => {
+  await openPage(page, "building-blocks")
+  const bar = section(page, "CurrentPoseBar")
+  const values = bar.getByTestId("current-pose-values")
+  /** The bar's Z, in mm */
+  const barZ = async () =>
+    Number(/Z\s*(-?\d+(\.\d+)?)/.exec(await values.innerText())?.[1])
+
+  // The bar shows the pose in world, where NOVA reports it
+  await expect
+    .poll(async () => Math.abs((await barZ()) - (await tcpZ())), {
+      message: "The bar shows the TCP's height",
+      timeout: 30_000,
+    })
+    .toBeLessThan(0.2)
+  await expect(bar.getByTestId("KIND_UNKNOWN")).toHaveText("Ready")
+
+  // Jogging Z up: the bar follows, and says Running while the jog runs
+  const zPlus = section(page, "JoggingCartesianAxisControl")
+    .getByRole("button")
+    .nth(5)
+  await expect(zPlus).toBeEnabled()
+  const before = await barZ()
+  let running = false
+  await jogPress(page, zPlus, async () => {
+    running ||= await bar.getByTestId("RUNNING").isVisible()
+    return running && (await barZ()) > before + 3
+  })
+  await expect(bar.getByTestId("KIND_UNKNOWN")).toHaveText("Ready", {
+    timeout: 30_000,
+  })
+
+  // The orientation as a quaternion: four values, no angle unit
+  await bar.getByRole("button", { name: "Orientation format" }).click()
+  const dialog = page.getByRole("dialog", { name: "Orientation format" })
+  await dialog.getByRole("combobox", { name: "Format" }).click()
+  await page.getByRole("option", { name: "Quaternion" }).click()
+  await expect(
+    dialog.getByRole("combobox", { name: "Angle unit" }),
+  ).toHaveCount(0)
+  await page.keyboard.press("Escape")
+  await expect(values).toContainText(/Qx.*Qy.*Qz.*Qw/)
+  await expect(values).not.toContainText("rad")
+  await screenshot(page, "building-blocks-current-pose-bar")
 })
 
 test("jogs the TCP up along Z with JoggingGizmo", async ({ page }) => {
@@ -335,7 +384,8 @@ test("moves the TCP to a typed pose with RobotControlPanel's Move to tab as Robo
   const panel = section(page, "RobotControlPanel")
   await panel.getByRole("tab", { name: "Move to" }).click()
 
-  // Edit the current pose: 20 mm higher, saved with Enter
+  // Edit the current pose: 60 mm higher, saved with Enter. Far enough that
+  // the hold of at least 1 s ends on the way at 25 mm/s, the store's default
   const coordinates = panel.getByRole("textbox", {
     name: "Coordinates XYZ (mm) · Rotation vector (rad)",
   })
@@ -346,7 +396,7 @@ test("moves the TCP to a typed pose with RobotControlPanel's Move to tab as Robo
     .split(",")
     .map(Number)
   const start = await tcpZ()
-  const target = Math.round((start + 20) * 10) / 10
+  const target = Math.round((start + 60) * 10) / 10
   values[2] = target
   await coordinates.fill(`(${values.join(", ")})`)
   await coordinates.press("Enter")

@@ -10,12 +10,14 @@ import { CoordinateSystem } from '@wandelbots/nova-js/v2';
 import { Dictionary } from 'lodash';
 import type { i18n as i18n_2 } from 'i18next';
 import { IReactionDisposer } from 'mobx';
+import type { JoggingDetailsState } from '@wandelbots/nova-js/v2';
 import { JointTypeEnum } from '@wandelbots/nova-js/v2';
 import { JSX } from 'react/jsx-runtime';
 import { KinematicModel } from '@wandelbots/nova-js/v2';
 import { MotionGroupDescription } from '@wandelbots/nova-js/v2';
 import type { MotionGroupState } from '@wandelbots/nova-js/v2';
 import type { OperationMode } from '@wandelbots/nova-js/v2';
+import type { OrientationType as OrientationType_2 } from '@wandelbots/nova-js/v2';
 import type { PopoverOrigin } from '@mui/material/Popover';
 import { Pose } from '@wandelbots/nova-js/v2';
 import { default as React_2 } from 'react';
@@ -25,7 +27,9 @@ import { RobotTcp } from '@wandelbots/nova-js/v2';
 import type { SafetyStateType } from '@wandelbots/nova-js/v2';
 import Stack from '@mui/material/Stack';
 import { SxProps } from '@mui/material/styles';
+import type { Theme } from '@mui/material/styles';
 import * as THREE from 'three';
+import type { TrajectoryDetailsState } from '@wandelbots/nova-js/v2';
 
 // @public
 export const AppHeader: ((props: AppHeaderProps) => JSX.Element) & {
@@ -161,6 +165,27 @@ export type ConnectionLogger = {
     debug: (message: string, data?: unknown) => void;
     warn: (message: string, data?: unknown) => void;
 };
+
+// @public
+export const CurrentPoseBar: (input: CurrentPoseBarProps) => JSX.Element;
+
+// @public
+export type CurrentPoseBarProps = {
+    getCurrentPose: () => RobotControlPose | null;
+    tcp?: RobotControlSelect;
+    frame?: RobotControlSelect;
+    state?: CurrentPoseBarState | null;
+    error?: string | null;
+    orientationFormat?: OrientationFormat;
+    onOrientationFormatChange?: (format: OrientationFormat) => void;
+    sx?: SxProps<Theme>;
+};
+
+// @public
+export type CurrentPoseBarState = JoggingDetailsState["kind"] | TrajectoryDetailsState["kind"];
+
+// @public
+export type EulerConvention = Extract<OrientationType_2, `EULER_ANGLES_${string}`>;
 
 // @public (undocumented)
 export const i18n: i18n_2;
@@ -488,6 +513,7 @@ export class JoggingStore {
     // (undocumented)
     get tabsById(): Dictionary<JoggingTab>;
     tcpChangeInProgress: boolean;
+    tcpPoseIn(tcpId: string, coordinateSystemId: string): Pose | undefined;
     get tcpPoseInSelectedCoordSystem(): Pose | undefined;
     // (undocumented)
     readonly tcps: RobotTcp[];
@@ -592,6 +618,13 @@ export type NovaConnection = string | {
 };
 
 // @public
+export type OrientationFormat = {
+    type: "rotationVector" | "eulerAngles" | "quaternion";
+    angleUnit: "rad" | "deg";
+    eulerConvention: EulerConvention;
+};
+
+// @public
 export function planErrorTranslationKey(errorFeedbackName: string): string;
 
 // @public
@@ -616,6 +649,25 @@ export function readoutOf(motionState: MotionGroupState): MotionStateReadout;
 
 // @public
 export function readoutsEqual(shown: MotionStateReadout, next: MotionStateReadout): boolean;
+
+// @public
+export type RobotControlOption = {
+    id: string;
+    label: string;
+};
+
+// @public
+export type RobotControlPose = {
+    position: [number, number, number];
+    orientation: [number, number, number];
+};
+
+// @public
+export type RobotControlSelect = {
+    options: RobotControlOption[];
+    value: string;
+    onChange: (id: string) => void;
+};
 
 // @public (undocumented)
 export type RobotTcpLike = {
