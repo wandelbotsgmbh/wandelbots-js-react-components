@@ -50,7 +50,6 @@ function resolveCoordinateSystem(
   return resolvedId ? coordinateSystemsById[resolvedId] : undefined
 }
 
-/** Every coordinate system by its id, with its pose relative to world */
 /** The world frame: the origin of every other coordinate system */
 const WORLD: CoordinateSystem = {
   coordinate_system: "world",
@@ -61,6 +60,7 @@ const WORLD: CoordinateSystem = {
   orientation_type: "ROTATION_VECTOR",
 }
 
+/** Every coordinate system by its id, with its pose relative to world */
 function normalizeCoordinateSystems(
   coordinateSystems: CoordinateSystem[],
 ): Record<string, CoordinateSystem> {
