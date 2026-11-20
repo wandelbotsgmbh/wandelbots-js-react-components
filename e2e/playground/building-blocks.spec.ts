@@ -335,7 +335,8 @@ test("moves the TCP to a typed pose with RobotControlPanel's Move to tab as Robo
   const panel = section(page, "RobotControlPanel")
   await panel.getByRole("tab", { name: "Move to" }).click()
 
-  // Edit the current pose: 20 mm higher, saved with Enter
+  // Edit the current pose: 60 mm higher, saved with Enter. Far enough that
+  // the hold of at least 1 s ends on the way at 25 mm/s, the store's default
   const coordinates = panel.getByRole("textbox", {
     name: "Coordinates XYZ (mm) · Rotation vector (rad)",
   })
@@ -346,7 +347,7 @@ test("moves the TCP to a typed pose with RobotControlPanel's Move to tab as Robo
     .split(",")
     .map(Number)
   const start = await tcpZ()
-  const target = Math.round((start + 20) * 10) / 10
+  const target = Math.round((start + 60) * 10) / 10
   values[2] = target
   await coordinates.fill(`(${values.join(", ")})`)
   await coordinates.press("Enter")
