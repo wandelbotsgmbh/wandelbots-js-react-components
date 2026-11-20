@@ -61,6 +61,17 @@ async function moveToStartPose() {
     .toBeLessThan(0.001)
 }
 
+/** The height of the test robot's TCP, in mm, from the NOVA API */
+export async function tcpZ(): Promise<number> {
+  const { motionGroup } = testData()
+  const group = (await controllerState()).motion_groups.find(
+    (group) => group.motion_group === motionGroup,
+  )
+  const z = group?.tcp_pose?.position?.[2]
+  if (z === undefined) throw new Error("The controller state has no TCP pose")
+  return z
+}
+
 /**
  * Waits until the 3D view has drawn the robot model: the marker
  * data-model-drawn of Viewport (playground/src/scene.tsx). On a page with
