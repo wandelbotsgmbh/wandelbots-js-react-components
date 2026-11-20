@@ -172,7 +172,7 @@ export function readoutOf(motionState: MotionGroupState): MotionStateReadout {
 
 /**
  * The `equals` of a computed readout: it keeps showing the reading it holds
- * until a joint moved more than {@link JOINT_NOISE_THRESHOLD} from it, or the
+ * until a joint moved more than `JOINT_NOISE_THRESHOLD` (0.0002 rad) from it, or the
  * TCP or coordinate system changed. Slow movement adds up against the held
  * reading, so it still shows.
  */
