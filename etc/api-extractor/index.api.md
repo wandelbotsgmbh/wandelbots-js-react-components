@@ -202,6 +202,26 @@ export type GizmoJointLimit = LimitRange;
 export const i18n: i18n_2;
 
 // @public
+export type IncrementalCartesianMotionRequest = {
+    currentTcpPose: Pose;
+    currentJoints: Vector3Simple;
+    coordSystemId?: string;
+    velocityInRelevantUnits: number;
+    axis: "x" | "y" | "z";
+    direction: "-" | "+";
+    motion: IncrementalMotion;
+};
+
+// @public
+export type IncrementalMotion = {
+    type: "rotate";
+    distanceRads: number;
+} | {
+    type: "translate";
+    distanceMm: number;
+};
+
+// @public
 export interface InterpolationOptions {
     friction?: number;
     onChange?: (values: number[]) => void;
@@ -230,6 +250,7 @@ export class JoggerConnection {
     constructor(motionStream: MotionStreamConnection, options?: JoggerConnectionOptions | undefined);
     // (undocumented)
     get cellId(): string;
+    coordinateSystem: CoordinateSystem | undefined;
     // (undocumented)
     DEFAULT_INIT_TIMEOUT: number;
     // (undocumented)
@@ -274,21 +295,7 @@ export class JoggerConnection {
         direction: "-" | "+";
         velocityRadsPerSec: number;
     }): Promise<void>;
-    runIncrementalCartesianMotion(input: {
-        currentTcpPose: Pose;
-        currentJoints: Vector3Simple;
-        coordSystemId: string;
-        velocityInRelevantUnits: number;
-        axis: "x" | "y" | "z";
-        direction: "-" | "+";
-        motion: {
-            type: "rotate";
-            distanceRads: number;
-        } | {
-            type: "translate";
-            distanceMm: number;
-        };
-    }): Promise<void>;
+    runIncrementalCartesianMotion(request: IncrementalCartesianMotionRequest): Promise<void>;
     // (undocumented)
     setJoggingMode(mode: JoggerMode, skipReinitializeIfSameMode?: boolean): Promise<void>;
     // (undocumented)
@@ -314,8 +321,11 @@ export type JoggerConnectionOptions = {
     timeout?: number;
     onError?: (err: unknown) => void;
     tcp?: string;
+    coordinateSystem?: CoordinateSystem;
     orientation?: JoggerOrientation;
     cellId?: string;
+    motionGroupModel?: string;
+    logger?: ConnectionLogger;
 };
 
 // @public (undocumented)
