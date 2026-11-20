@@ -4,6 +4,7 @@ import {
   type CoordinateSystem,
   type KinematicModel,
   type MotionGroupDescription,
+  type Pose,
   type RobotTcp,
 } from "@wandelbots/nova-js/v2"
 import { countBy } from "lodash-es"
@@ -21,6 +22,15 @@ import type {
   JoggerOrientation,
   Vector3Simple,
 } from "../../lib/JoggerConnection"
+import {
+  resolveCoordinateSystemInWorld,
+  transformPoseToCoordinateSystem,
+} from "../../lib/PoseTransformer"
+import { extractJogErrorMessage, getJogErrorTranslationKey } from "./jogError"
+import {
+  DEFAULT_ROTATION_VELOCITY_DEG_PER_SEC,
+  getDefaultTranslationVelocityMmPerSec,
+} from "./joggingVelocity"
 
 const discreteIncrementOptions = [
   { id: "0.1", mm: 0.1, degrees: 0.05 },
@@ -49,6 +59,7 @@ export type IncrementJogInProgress = {
 }
 
 type TabType = "cartesian" | "joint" | "debug"
+type JoggingTab = { id: TabType; label: string }
 export type CartesianMotionType = "translate" | "rotate"
 
 export class JoggingStore {
@@ -61,9 +72,18 @@ export class JoggingStore {
   blocked: boolean = false
 
   /**
-   * Id of selected coordinate system from among those defined on the API side
+   * Id of selected coordinate system from among those defined on the API side.
+   * The cartesian values are shown in it ("Values relative to"), see
+   * {@link JoggingStore.tcpPoseInSelectedCoordSystem}.
    */
   selectedCoordSystemId: string = "world"
+
+  /**
+   * Id of the coordinate system whose axes the jog buttons move along unless
+   * in tool orientation ("Move relative to"). Starts at the first coordinate
+   * system, like {@link JoggingStore.selectedCoordSystemId}.
+   */
+  jogCoordSystemId: string = "world"
 
   /** Id of selected tool center point from among the options available on the robot */
   selectedTcpId: string = ""
@@ -97,14 +117,35 @@ export class JoggingStore {
    */
   incrementJogInProgress: IncrementJogInProgress | null = null
 
-  /** How fast the robot goes when doing cartesian translate jogging in mm/s */
-  translationVelocityMmPerSec: number = 10
-  /** How fast the robot goes when doing cartesian or joint rotation jogging in °/s */
-  rotationVelocityDegPerSec: number = 1
+  /**
+   * Human-readable message from the most recent jogging/trajectory error
+   * (e.g. a collision that stopped an incremental jog). The state stream
+   * itself resets to a normal state (e.g. "Ready") as soon as the motion
+   * stops, so this is latched here to stay visible until the next jog
+   * attempt is made.
+   */
+  lastJogError: string | null = null
 
-  /** Minimum translation velocity user can choose on the velocity slider in °/s */
-  minTranslationVelocityMmPerSec: number = 5
-  /** Maximum translation velocity user can choose on the velocity slider in °/s */
+  /**
+   * Awaited by {@link JoggingStore.activate} before the jogger claims the
+   * robot for a jog, e.g. to end another motion that holds the controller's
+   * execution session. When it rejects, the jog does not start.
+   */
+  onBeforeActivate: (() => void | Promise<void>) | null = null
+
+  /**
+   * How fast the robot goes when doing cartesian translate and prismatic joint
+   * jogging in mm/s. Starts at 10 % of the motion group's T1 max (the lowest
+   * manual TCP velocity limit it reports, at most 250 mm/s), so 25 mm/s for
+   * most robots, and is overwritten by the slider.
+   */
+  translationVelocityMmPerSec: number
+  /** How fast the robot goes when doing cartesian or joint rotation jogging in °/s. Starts at 5 °/s. */
+  rotationVelocityDegPerSec: number = DEFAULT_ROTATION_VELOCITY_DEG_PER_SEC
+
+  /** Minimum translation velocity user can choose on the velocity slider in mm/s */
+  minTranslationVelocityMmPerSec: number = 1
+  /** Maximum translation velocity user can choose on the velocity slider in mm/s */
   maxTranslationVelocityMmPerSec: number = 250
 
   /** Minimum rotation velocity user can choose on the velocity slider in °/s */
@@ -178,6 +219,29 @@ export class JoggingStore {
         description.motion_group_model,
       )
 
+    return JoggingStore.create(jogger, {
+      coordinateSystems: coordinatesystems || [],
+      description,
+      kinematicModel,
+    })
+  }
+
+  /**
+   * Make a jogging store from data that was loaded before: the coordinate
+   * systems of the controller, the description and the kinematic model of the
+   * motion group. An app that loads them once for several stores uses this
+   * instead of {@link JoggingStore.loadFor}.
+   */
+  static create(
+    jogger: JoggerConnection,
+    data: {
+      coordinateSystems: CoordinateSystem[]
+      description: MotionGroupDescription
+      kinematicModel: KinematicModel
+    },
+  ) {
+    const { coordinateSystems, description, kinematicModel } = data
+
     const tcps = Object.entries(description.tcps || {}).map(([id, tcp]) => ({
       id,
       readable_name: tcp.name,
@@ -187,7 +251,7 @@ export class JoggingStore {
 
     return new JoggingStore(
       jogger,
-      coordinatesystems || [],
+      coordinateSystems,
       description,
       tcps,
       kinematicModel.inverse_solver,
@@ -210,6 +274,7 @@ export class JoggingStore {
       }
     }
     this.selectedCoordSystemId = coordSystems[0]?.coordinate_system || "world"
+    this.jogCoordSystemId = this.selectedCoordSystemId
     // Only trust the server-reported active TCP; don't guess from defaults
     this.selectedTcpId =
       jogger.motionStream.rapidlyChangingMotionState.tcp ?? ""
@@ -217,6 +282,9 @@ export class JoggingStore {
     // until the autorun below picks up the server value
     this.tcpChangeInProgress = this.tcps.length > 0 && !this.selectedTcpId
     this.inverseSolver = inverseSolverValue
+    this.translationVelocityMmPerSec = getDefaultTranslationVelocityMmPerSec(
+      motionGroupDescription?.operation_limits,
+    )
     this.jointType =
       motionGroupDescription?.dh_parameters?.[0]?.type ??
       JointTypeEnum.RevoluteJoint
@@ -227,6 +295,15 @@ export class JoggingStore {
     // Register blocked watching
     this.jogger.onBlocked = () => {
       this.block()
+    }
+
+    // Latch a human-readable message for the most recent jogging error,
+    // without displacing any error handler already registered on the jogger
+    // (e.g. the app's own error recording)
+    const previousOnError = this.jogger.onError
+    this.jogger.onError = (err: unknown) => {
+      this.setLastJogError(extractJogErrorMessage(err))
+      previousOnError?.(err)
     }
 
     // Load user settings from local storage if available
@@ -277,6 +354,15 @@ export class JoggingStore {
    * (`deactivate`).
    */
   async activate() {
+    // Clear any latched error from a previous jog now that the user is
+    // starting a new one
+    this.lastJogError = null
+
+    // Let the owner hand back a competing motion flow first, e.g. one that
+    // keeps the controller's execution session open: the controller refuses
+    // to jog while that session is alive
+    await this.onBeforeActivate?.()
+
     if (this.currentTab.id === "cartesian") {
       // Ensure jogger has the correct TCP and orientation before starting
       if (
@@ -288,6 +374,10 @@ export class JoggingStore {
           orientation: this.selectedOrientation as JoggerOrientation,
         })
       }
+
+      // "Move relative to" a coordinate system. Applied to each jog command,
+      // so it needs no reconnect.
+      this.jogger.coordinateSystem = this.jogCoordSystem
 
       if (this.activeDiscreteIncrement) {
         await this.jogger.setJoggingMode("trajectory")
@@ -311,6 +401,10 @@ export class JoggingStore {
 
     if (this.coordSystemsById[save.selectedCoordSystemId]) {
       this.selectedCoordSystemId = save.selectedCoordSystemId
+    }
+
+    if (this.coordSystemsById[save.jogCoordSystemId]) {
+      this.jogCoordSystemId = save.jogCoordSystemId
     }
 
     if (this.incrementOptionsById[save.selectedIncrementId]) {
@@ -337,18 +431,32 @@ export class JoggingStore {
     return this.locks.size > 0
   }
 
+  /**
+   * Translation key for a friendlier version of
+   * {@link JoggingStore.lastJogError}, if the raw backend message is
+   * recognized. `null` when there's no latched error or the message isn't one
+   * we have a friendlier version for (in which case the raw message should be
+   * shown as-is).
+   */
+  get lastJogErrorTranslationKey() {
+    return this.lastJogError
+      ? getJogErrorTranslationKey(this.lastJogError)
+      : null
+  }
+
   get localStorageSave() {
     return {
       selectedTabId: this.selectedTabId,
       selectedCoordSystemId: this.selectedCoordSystemId,
+      jogCoordSystemId: this.jogCoordSystemId,
       selectedOrientation: this.selectedOrientation,
       selectedIncrementId: this.selectedIncrementId,
       selectedCartesianMotionType: this.selectedCartesianMotionType,
     }
   }
 
-  get tabs() {
-    const tempTabs: { id: TabType; label: string }[] = [
+  get tabs(): [JoggingTab, ...JoggingTab[]] {
+    const tempTabs: [JoggingTab, ...JoggingTab[]] = [
       {
         id: "joint",
         label: "Joints",
@@ -383,8 +491,7 @@ export class JoggingStore {
   }
 
   get currentTab() {
-    // biome-ignore lint/style/noNonNullAssertion: pre-biome code
-    return this.tabsById[this.selectedTabId] || this.tabs[0]!
+    return this.tabsById[this.selectedTabId] || this.tabs[0]
   }
 
   get tabIndex() {
@@ -406,14 +513,52 @@ export class JoggingStore {
       : this.selectedCoordSystemId
   }
 
+  /** The coordinate system to jog along, resolved relative to world */
+  get jogCoordSystem(): CoordinateSystem {
+    return resolveCoordinateSystemInWorld(
+      this.jogCoordSystemId,
+      this.coordSystems,
+    )
+  }
+
+  /**
+   * The streamed TCP pose (its readout, see
+   * {@link MotionStreamConnection.readoutState}) expressed in the selected
+   * coordinate system, for values that show what a pose field in that
+   * coordinate system shows.
+   */
+  get tcpPoseInSelectedCoordSystem(): Pose | undefined {
+    const { tcp_pose, coordinate_system } =
+      this.jogger.motionStream.readoutState
+    if (!tcp_pose?.position || !tcp_pose.orientation) {
+      return tcp_pose
+    }
+
+    return transformPoseToCoordinateSystem(
+      {
+        pose: {
+          position: tcp_pose.position,
+          orientation: tcp_pose.orientation,
+        },
+        coordinateSystemId: coordinate_system || "world",
+      },
+      this.selectedCoordSystemId,
+      this.coordSystems,
+    ).pose
+  }
+
   get tcpsById() {
     return keyBy(this.tcps, (tcp) => tcp.id)
   }
 
+  /**
+   * The step of the selected increment, or undefined for continuous jogging.
+   * In tool orientation, a step moves along the tool's axes.
+   */
   get activeDiscreteIncrement() {
-    return this.selectedOrientation === "tool"
-      ? undefined
-      : discreteIncrementOptions.find((d) => d.id === this.selectedIncrementId)
+    return discreteIncrementOptions.find(
+      (d) => d.id === this.selectedIncrementId,
+    )
   }
 
   /** The selected rotation velocity converted to radians per second */
@@ -443,8 +588,7 @@ export class JoggingStore {
   }
 
   onTabChange(_event: React.SyntheticEvent, newValue: number) {
-    // biome-ignore lint/style/noNonNullAssertion: pre-biome code
-    const tab = this.tabs[newValue] || this.tabs[0]!
+    const tab = this.tabs[newValue] || this.tabs[0]
     this.selectedTabId = tab.id
   }
 
@@ -559,6 +703,17 @@ export class JoggingStore {
     this.selectedOrientation = orientation
   }
 
+  /** "Move relative to" the selected TCP: jog along its own axes */
+  setMoveRelativeToSelectedTcp() {
+    this.selectedOrientation = "tool"
+  }
+
+  /** "Move relative to" a coordinate system: jog along its axes */
+  setMoveRelativeToCoordSystem(coordSystemId: string) {
+    this.selectedOrientation = "coordsys"
+    this.jogCoordSystemId = coordSystemId
+  }
+
   setSelectedIncrementId(id: IncrementOptionId) {
     this.selectedIncrementId = id
   }
@@ -567,7 +722,24 @@ export class JoggingStore {
     this.incrementJogInProgress = incrementJog
   }
 
+  setLastJogError(message: string | null) {
+    this.lastJogError = message
+  }
+
+  /**
+   * Set the selected velocity in mm/s or °/s, from the slider or a velocity
+   * text field. Values outside the slider range (and values that are not a
+   * finite number) are ignored; a text field reports them to the user
+   * instead of applying them.
+   */
   setVelocityFromSlider(velocity: number, useDegree: boolean) {
+    if (
+      !Number.isFinite(velocity) ||
+      velocity < this.minVelocityInDisplayUnits(useDegree) ||
+      velocity > this.maxVelocityInDisplayUnits(useDegree)
+    ) {
+      return
+    }
     if (useDegree) {
       this.rotationVelocityDegPerSec = velocity
     } else {

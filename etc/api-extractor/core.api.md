@@ -12,6 +12,7 @@ import type { i18n as i18n_2 } from 'i18next';
 import { IReactionDisposer } from 'mobx';
 import { JointTypeEnum } from '@wandelbots/nova-js/v2';
 import { JSX } from 'react/jsx-runtime';
+import { KinematicModel } from '@wandelbots/nova-js/v2';
 import { MotionGroupDescription } from '@wandelbots/nova-js/v2';
 import type { MotionGroupState } from '@wandelbots/nova-js/v2';
 import type { OperationMode } from '@wandelbots/nova-js/v2';
@@ -355,7 +356,6 @@ export class JoggingStore {
     constructor(jogger: JoggerConnection, coordSystems: CoordinateSystem[], motionGroupDescription: MotionGroupDescription, tcps: RobotTcp[], inverseSolverValue: string | null | undefined);
     activate(): Promise<JoggerConnection>;
     get activeCoordSystemId(): string;
-    // (undocumented)
     get activeDiscreteIncrement(): {
         id: string;
         mm: number;
@@ -370,11 +370,13 @@ export class JoggingStore {
     readonly coordSystems: CoordinateSystem[];
     // (undocumented)
     get coordSystemsById(): Dictionary<CoordinateSystem>;
+    static create(jogger: JoggerConnection, data: {
+        coordinateSystems: CoordinateSystem[];
+        description: MotionGroupDescription;
+        kinematicModel: KinematicModel;
+    }): JoggingStore;
     // (undocumented)
-    get currentTab(): {
-        id: TabType;
-        label: string;
-    };
+    get currentTab(): JoggingTab;
     // (undocumented)
     deactivate(): Promise<void>;
     // (undocumented)
@@ -409,9 +411,13 @@ export class JoggingStore {
     readonly inverseSolverValue: string | null | undefined;
     // (undocumented)
     get isLocked(): boolean;
+    get jogCoordSystem(): CoordinateSystem;
+    jogCoordSystemId: string;
     // (undocumented)
     readonly jogger: JoggerConnection;
     jointType: JointTypeEnum;
+    lastJogError: string | null;
+    get lastJogErrorTranslationKey(): string | null;
     static loadFor(jogger: JoggerConnection): Promise<JoggingStore>;
     // (undocumented)
     loadFromLocalStorage(): void;
@@ -419,6 +425,7 @@ export class JoggingStore {
     get localStorageSave(): {
         selectedTabId: TabType;
         selectedCoordSystemId: string;
+        jogCoordSystemId: string;
         selectedOrientation: string;
         selectedIncrementId: string;
         selectedCartesianMotionType: CartesianMotionType;
@@ -434,6 +441,7 @@ export class JoggingStore {
     minVelocityInDisplayUnits(useDegree: boolean): number;
     // (undocumented)
     readonly motionGroupDescription: MotionGroupDescription;
+    onBeforeActivate: (() => void | Promise<void>) | null;
     // (undocumented)
     onTabChange(_event: React.SyntheticEvent, newValue: number): void;
     requestTcpChange(tcpId: string): Promise<void>;
@@ -451,6 +459,10 @@ export class JoggingStore {
     // (undocumented)
     setCurrentIncrementJog(incrementJog: IncrementJogInProgress | null): void;
     // (undocumented)
+    setLastJogError(message: string | null): void;
+    setMoveRelativeToCoordSystem(coordSystemId: string): void;
+    setMoveRelativeToSelectedTcp(): void;
+    // (undocumented)
     setSelectedCartesianMotionType(type: CartesianMotionType): void;
     // (undocumented)
     setSelectedCoordSystemId(id: string): void;
@@ -460,7 +472,6 @@ export class JoggingStore {
     setSelectedOrientation(orientation: OrientationId): void;
     // @deprecated (undocumented)
     setSelectedTcpId(id: string): void;
-    // (undocumented)
     setVelocityFromSlider(velocity: number, useDegree: boolean): void;
     showCoordSystemSelect: boolean;
     showIncrementSelect: boolean;
@@ -473,16 +484,11 @@ export class JoggingStore {
     // (undocumented)
     get tabIndex(): number;
     // (undocumented)
-    get tabs(): {
-        id: TabType;
-        label: string;
-    }[];
+    get tabs(): [JoggingTab, ...JoggingTab[]];
     // (undocumented)
-    get tabsById(): Dictionary<    {
-    id: TabType;
-    label: string;
-    }>;
+    get tabsById(): Dictionary<JoggingTab>;
     tcpChangeInProgress: boolean;
+    get tcpPoseInSelectedCoordSystem(): Pose | undefined;
     // (undocumented)
     readonly tcps: RobotTcp[];
     // (undocumented)

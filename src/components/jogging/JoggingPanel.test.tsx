@@ -23,6 +23,7 @@ import {
 } from "./__fixtures__/motionStreamMockData"
 import { JoggingCartesianTab } from "./JoggingCartesianTab"
 import { JoggingJointTab } from "./JoggingJointTab"
+import { JoggingOptions } from "./JoggingOptions"
 import { JoggingPanel } from "./JoggingPanel"
 import { JoggingStore } from "./JoggingStore"
 import { StreamStateSection } from "./StreamStateSection"
@@ -378,14 +379,14 @@ describe("JoggingPanel", () => {
   // ---- Velocity settings ----
 
   describe("Velocity settings", () => {
-    it("has default translation velocity", () => {
+    it("defaults translation velocity to 25 mm/s when the robot reports no lower T1 limit", () => {
       const store = createUr5eStore()
-      expect(store.translationVelocityMmPerSec).toBe(10)
+      expect(store.translationVelocityMmPerSec).toBe(25)
     })
 
     it("has default rotation velocity", () => {
       const store = createUr5eStore()
-      expect(store.rotationVelocityDegPerSec).toBe(1)
+      expect(store.rotationVelocityDegPerSec).toBe(5)
     })
 
     it("converts rotation velocity to radians correctly", () => {
@@ -463,11 +464,26 @@ describe("JoggingPanel", () => {
       expect(store.activeDiscreteIncrement?.mm).toBe(1)
     })
 
-    it("disables discrete increment when in tool orientation", () => {
+    it("keeps discrete increment active in tool orientation", () => {
       const store = createUr5eStore()
       store.setSelectedIncrementId("1")
       store.setSelectedOrientation("tool")
-      expect(store.activeDiscreteIncrement).toBeUndefined()
+      expect(store.activeDiscreteIncrement).toBeDefined()
+      expect(store.activeDiscreteIncrement?.mm).toBe(1)
+    })
+
+    it("offers the increments in tool orientation", () => {
+      const store = createUr5eStore()
+      store.setSelectedOrientation("tool")
+      renderWithI18n(<JoggingOptions store={store} useDegree={false} />)
+
+      fireEvent.mouseDown(screen.getByRole("combobox", { name: /Increment/ }))
+
+      expect(
+        within(screen.getByRole("listbox"))
+          .getAllByRole("option")
+          .map((option) => option.textContent),
+      ).toEqual(["Continuous", "0.1mm", "1mm", "5mm", "10mm"])
     })
   })
 
@@ -550,6 +566,38 @@ describe("JoggingPanel", () => {
       renderWithI18n(<StreamStateSection store={store} />)
       expect(screen.getByTestId("END_OF_TRAJECTORY")).toBeInTheDocument()
     })
+
+    // Ported from RobotPad (unit/JoggingPanel.test.tsx)
+    it("shows the latched jog error instead of the live state, when present", () => {
+      const store = createUr5eStore()
+      store.jogger.motionStream.rapidlyChangingMotionState.execute = {
+        joint_position: [],
+        details: {
+          kind: "JOGGING",
+          state: { kind: "RUNNING" },
+        },
+      } as unknown as typeof store.jogger.motionStream.rapidlyChangingMotionState.execute
+      store.setLastJogError("Collision detected")
+
+      renderWithI18n(<StreamStateSection store={store} />)
+
+      expect(screen.getByTestId("JOG_ERROR")).toHaveTextContent(
+        "Collision detected",
+      )
+      expect(screen.queryByTestId("RUNNING")).not.toBeInTheDocument()
+    })
+
+    it("shows a friendly message instead of the raw cause for known plan failures", () => {
+      const store = createUr5eStore()
+      store.setLastJogError("FeedbackSingularity")
+
+      renderWithI18n(<StreamStateSection store={store} />)
+
+      expect(screen.getByTestId("JOG_ERROR")).toHaveTextContent(
+        "the path passes through a singularity",
+      )
+      expect(screen.queryByText("FeedbackSingularity")).not.toBeInTheDocument()
+    })
   })
 
   // ---- Dispose ----
@@ -581,8 +629,8 @@ describe("JoggingPanel", () => {
     it("rotationVelocityRadsPerSec converts degrees to radians correctly", () => {
       const store = createUr5eStore("solver")
 
-      // Default is 1 °/s
-      expect(store.rotationVelocityRadsPerSec).toBeCloseTo(Math.PI / 180)
+      // Default is 5 °/s
+      expect(store.rotationVelocityRadsPerSec).toBeCloseTo((5 * Math.PI) / 180)
 
       store.rotationVelocityDegPerSec = 180
       expect(store.rotationVelocityRadsPerSec).toBeCloseTo(Math.PI)
@@ -606,7 +654,7 @@ describe("JoggingPanel", () => {
 
       store.setVelocityFromSlider(50, false)
       expect(store.translationVelocityMmPerSec).toBe(50)
-      expect(store.rotationVelocityDegPerSec).toBe(1)
+      expect(store.rotationVelocityDegPerSec).toBe(5)
 
       store.setVelocityFromSlider(30, true)
       expect(store.rotationVelocityDegPerSec).toBe(30)
