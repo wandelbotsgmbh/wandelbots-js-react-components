@@ -1,61 +1,122 @@
 import Stack from "@mui/material/Stack"
+import Tooltip from "@mui/material/Tooltip"
 import Typography from "@mui/material/Typography"
-import { Pose } from "@wandelbots/icons/Pose"
-import { AdornedTextField, SecondaryButton } from "@wandelbots/mui"
+import { Undo } from "@wandelbots/icons/Undo"
+import { RoundedIconButton } from "@wandelbots/mui"
+import { useEffect, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
+import { isAtPose } from "./atPose"
 import { HoldToMoveButton } from "./HoldToMoveButton"
 import { PanelSelect } from "./PanelSelect"
+import { PoseField } from "./PoseField"
 import { parsePoseText, poseToText } from "./poseText"
 import type {
   RobotControlMoveTo,
+  RobotControlPose,
   RobotControlSelect,
   RobotControlVelocity,
 } from "./RobotControlPanel"
 import { Section } from "./Section"
+import { useEveryFrame } from "./useEveryFrame"
 import { VelocityRow } from "./VelocityRow"
 
 type MoveToTabProps = {
   moveTo: RobotControlMoveTo
-  /** The typed coordinates, kept by the panel while other tabs show */
-  text: string
-  onTextChange: (text: string) => void
   tcp?: RobotControlSelect
   velocity: RobotControlVelocity
   onVelocityChange: (value: number) => void
   disabled: boolean
 }
 
+type Target = { pose: RobotControlPose; text: string }
+
 /**
- * The Move to tab: the TCP, the target pose (typed, or the current pose) and
- * the frame it is relative to, the velocity, and a button to hold to move
- * there. The app plans the move when the pose changes (`onTargetChange`),
- * so the button can start it at once.
+ * The Move to tab: the TCP, the target pose and the frame it is relative to,
+ * the velocity, and the Move to button, off until a typed pose is the
+ * target; Reset shows with a target. It works as RobotPad's pose field and its TargetPoseStore: the
+ * field shows the TCP's current pose until a typed pose is saved; a move
+ * that took the TCP there ends with the current pose shown again, once the
+ * button is let go; another tab shows it again as well.
  */
 export function MoveToTab({
   moveTo,
-  text,
-  onTextChange,
   tcp,
   velocity,
   onVelocityChange,
   disabled,
 }: MoveToTabProps) {
   const { t } = useTranslation()
-  const pose = parsePoseText(text)
-  const invalid = text.trim() !== "" && pose === null
-  const message = invalid
-    ? t("RobotControl.MoveTo.InvalidPose.lb")
-    : (moveTo.error ?? undefined)
+  const [target, setTarget] = useState<Target | null>(null)
+  // The text while editing, else null
+  const [draft, setDraft] = useState<string | null>(null)
+  const live = useEveryFrame(
+    () => {
+      const current = moveTo.getCurrentPose()
+      return current ? poseToText(current) : ""
+    },
+    target === null && draft === null,
+  )
+  const shown = target?.text ?? live
+  const draftPose = draft === null ? null : parsePoseText(draft)
+  // A target the app could plan, as RobotPad's staged pose
+  const ready = target !== null && !moveTo.error
+  const atPose =
+    useEveryFrame(
+      () => target !== null && isAtPose(moveTo.getCurrentPose(), target.pose),
+      ready,
+    ) && ready
 
-  function edit(next: string) {
-    onTextChange(next)
-    moveTo.onTargetChange(parsePoseText(next))
+  // The move to the target has run: arriving there ends it
+  const moveStarted = useRef(false)
+
+  function showLivePose() {
+    moveStarted.current = false
+    setTarget(null)
+    setDraft(null)
+    moveTo.onTargetChange(null)
   }
 
-  function fillInCurrentPose() {
-    const current = moveTo.getCurrentPose()
-    if (current) edit(poseToText(current))
+  function confirm() {
+    if (draftPose === null || disabled) return
+    moveStarted.current = false
+    setTarget({ pose: draftPose, text: poseToText(draftPose) })
+    setDraft(null)
+    moveTo.onTargetChange(draftPose)
   }
+
+  // As RobotPad: a move that took the TCP to the target is over once it no
+  // longer runs. Let go at the target, the move pauses a hair before its
+  // end, so the TCP standing there is the signal.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: on these changes only
+  useEffect(() => {
+    if (!ready) return
+    if (moveTo.state === "moving") {
+      moveStarted.current = true
+      return
+    }
+    if (moveStarted.current && atPose && moveTo.state !== "stopping") {
+      showLivePose()
+    }
+  }, [ready, moveTo.state, atPose])
+
+  // Another tab: the plan is of no use there
+  const latest = useRef({ target, onTargetChange: moveTo.onTargetChange })
+  latest.current = { target, onTargetChange: moveTo.onTargetChange }
+  useEffect(
+    () => () => {
+      if (latest.current.target) latest.current.onTargetChange(null)
+    },
+    [],
+  )
+
+  const error =
+    draft !== null
+      ? draftPose === null
+        ? t("RobotControl.MoveTo.InvalidPose.lb")
+        : null
+      : target
+        ? (moveTo.error ?? null)
+        : null
 
   return (
     <Section>
@@ -67,21 +128,9 @@ export function MoveToTab({
         />
       )}
 
-      <Stack
-        direction="row"
-        sx={{ alignItems: "center", justifyContent: "space-between", gap: 1 }}
-      >
-        <Typography variant="body1" color="text.primary">
-          {t("RobotControl.MoveTo.TargetPose.lb")}
-        </Typography>
-        <SecondaryButton
-          startIcon={<Pose />}
-          onClick={fillInCurrentPose}
-          disabled={disabled}
-        >
-          {t("RobotControl.MoveTo.UseCurrentPose.bt")}
-        </SecondaryButton>
-      </Stack>
+      <Typography variant="body1" color="text.primary">
+        {t("RobotControl.MoveTo.TargetPose.lb")}
+      </Typography>
 
       <Stack sx={{ gap: "8px" }}>
         {moveTo.frame && (
@@ -91,17 +140,20 @@ export function MoveToTab({
             disabled={disabled}
           />
         )}
-        <AdornedTextField
-          label={t("RobotControl.MoveTo.Coordinates.lb")}
-          value={text}
-          onChange={(event) => edit(event.target.value)}
+        <PoseField
+          text={draft ?? shown}
+          editing={draft !== null}
+          onEdit={() => {
+            if (!disabled) setDraft(shown)
+          }}
+          onDraftChange={setDraft}
+          onCancel={() => setDraft(null)}
+          onConfirm={confirm}
+          canConfirm={
+            draftPose !== null && !disabled && moveTo.state !== "planning"
+          }
+          error={error}
           disabled={disabled}
-          error={!!message}
-          helperText={message}
-          fullWidth
-          autoComplete="off"
-          slotProps={{ htmlInput: { spellCheck: false } }}
-          sx={{ "& input": { fontVariantNumeric: "tabular-nums" } }}
         />
       </Stack>
 
@@ -112,18 +164,30 @@ export function MoveToTab({
         disabled={disabled}
       />
 
-      <HoldToMoveButton
-        onMoveStart={() => {
-          if (pose) moveTo.onMoveStart(pose)
-        }}
-        onMoveStop={moveTo.onMoveStop}
-        disabled={disabled || pose === null || !!moveTo.error}
-        disabledReason={
-          moveTo.error ??
-          (pose ? undefined : t("RobotControl.MoveTo.EnterPose.lb"))
-        }
-        loading={moveTo.planning ?? false}
-      />
+      {/* Move to stays, off without a target; Reset shows with one */}
+      <Stack direction="row" sx={{ gap: "12px", alignItems: "center" }}>
+        {target && (
+          <Tooltip title={t("RobotControl.MoveTo.Reset.lb")} placement="top">
+            <span>
+              <RoundedIconButton
+                icon={<Undo />}
+                ariaLabel={t("RobotControl.MoveTo.Reset.lb")}
+                onClick={showLivePose}
+              />
+            </span>
+          </Tooltip>
+        )}
+        <HoldToMoveButton
+          state={target ? moveTo.state : "idle"}
+          ready={ready}
+          atPose={atPose}
+          disabled={disabled}
+          onMoveStart={() => {
+            if (target) moveTo.onMoveStart(target.pose)
+          }}
+          onMoveStop={moveTo.onMoveStop}
+        />
+      </Stack>
     </Section>
   )
 }

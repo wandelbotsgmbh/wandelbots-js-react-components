@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react"
+import { fireEvent, render, screen, waitFor } from "@testing-library/react"
 import { I18nextProvider } from "react-i18next"
 import { describe, expect, it, vi } from "vitest"
 import { i18n } from "../../i18n/config"
@@ -6,11 +6,16 @@ import {
   RobotControlPanel,
   type RobotControlMoveTo,
   type RobotControlPanelProps,
+  type RobotControlPose,
 } from "./RobotControlPanel"
 
-const CURRENT_POSE = {
-  position: [539.94, 0, 895] as [number, number, number],
-  orientation: [-3.14, -0.04, 0.8] as [number, number, number],
+const CURRENT_POSE: RobotControlPose = {
+  position: [539.94, 0, 895],
+  orientation: [-3.14, -0.04, 0.8],
+}
+const TARGET: RobotControlPose = {
+  position: [1, 2, 3],
+  orientation: [0, 0, 0],
 }
 
 function setup(
@@ -21,6 +26,7 @@ function setup(
   const onMoveStart = vi.fn()
   const onMoveStop = vi.fn()
   const onVelocityChange = vi.fn()
+  let latest: Partial<RobotControlMoveTo> = moveTo ?? {}
   const props = (
     m: Partial<RobotControlMoveTo> | null,
   ): RobotControlPanelProps => ({
@@ -37,6 +43,7 @@ function setup(
         : {
             getCurrentPose: () => CURRENT_POSE,
             onTargetChange,
+            state: "idle",
             onMoveStart,
             onMoveStop,
             ...m,
@@ -48,12 +55,15 @@ function setup(
       <RobotControlPanel {...props(moveTo)} />
     </I18nextProvider>,
   )
-  const rerender = (m: Partial<RobotControlMoveTo>) =>
+  /** The app's side changed, e.g. the state of the move */
+  const rerender = (m: Partial<RobotControlMoveTo>) => {
+    latest = { ...latest, ...m }
     view.rerender(
       <I18nextProvider i18n={i18n}>
-        <RobotControlPanel {...props({ ...moveTo, ...m })} />
+        <RobotControlPanel {...props(latest)} />
       </I18nextProvider>,
     )
+  }
   return { onTargetChange, onMoveStart, onMoveStop, onVelocityChange, rerender }
 }
 
@@ -62,100 +72,250 @@ const coordinates = () =>
   screen.getByRole("textbox", {
     name: "Coordinates XYZ (mm) · Rotation vector (rad)",
   })
-const type = (text: string) =>
-  fireEvent.change(coordinates(), { target: { value: text } })
-const moveButton = () => screen.getByRole("button", { name: "Move to pose" })
+const button = (name: string) => screen.getByRole("button", { name })
+const queryButton = (name: string) => screen.queryByRole("button", { name })
+const moveButton = () =>
+  screen.getByRole("button", { name: /^(Move to|Moving…|Stopping…)$/ })
 const press = (element: HTMLElement) =>
   fireEvent.pointerDown(element, { button: 0, pointerId: 1 })
 const release = (element: HTMLElement) =>
   fireEvent.pointerUp(element, { pointerId: 1 })
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
-describe("RobotControlPanel's Move to tab", () => {
+/** Edit the field, type `text` and save it with Enter, as in RobotPad */
+function confirmPose(text: string) {
+  fireEvent.click(button("Edit pose"))
+  fireEvent.change(coordinates(), { target: { value: text } })
+  fireEvent.keyDown(coordinates(), { key: "Enter" })
+}
+
+/** Hold the Move to button until the move starts (after 200 ms) */
+async function holdUntilStarted(onMoveStart: ReturnType<typeof vi.fn>) {
+  press(moveButton())
+  await waitFor(() => expect(onMoveStart).toHaveBeenCalledTimes(1))
+}
+
+describe("RobotControlPanel's Move to tab, as RobotPad's pose field", () => {
   it("is there only when the app gives moveTo", () => {
     setup(null)
     expect(screen.queryByRole("tab", { name: "Move to" })).toBeNull()
   })
 
-  it("fills in the current pose, and reports a typed pose for the app to plan", () => {
+  it("shows the TCP's current pose, live, with Copy and Edit pose, Move to off, and nothing to reset", async () => {
+    let pose: RobotControlPose = CURRENT_POSE
+    setup({ getCurrentPose: () => pose })
+    fireEvent.click(tab("Move to"))
+
+    expect(coordinates()).toHaveValue("(539.9, 0, 895, -3.14, -0.04, 0.8)")
+    pose = { position: [540, 0, 900], orientation: [-3.14, -0.04, 0.8] }
+    await waitFor(() =>
+      expect(coordinates()).toHaveValue("(540, 0, 900, -3.14, -0.04, 0.8)"),
+    )
+    expect(button("Copy")).toBeEnabled()
+    expect(button("Edit pose")).toBeEnabled()
+    // RobotPad's hint, as its button gives it without a target
+    expect(moveButton()).toHaveTextContent("Move to")
+    expect(moveButton()).toBeDisabled()
+    expect(screen.getByLabelText("Click and hold to move")).toContainElement(
+      moveButton(),
+    )
+    expect(queryButton("Reset pose to previous one")).toBeNull()
+  })
+
+  it("edits the shown pose on a click of the field or of Edit pose, and Escape or Cancel go back without a target", () => {
     const { onTargetChange } = setup()
     fireEvent.click(tab("Move to"))
 
-    fireEvent.click(screen.getByRole("button", { name: "Use current pose" }))
+    fireEvent.click(coordinates())
+    expect(coordinates()).not.toHaveAttribute("readonly")
     expect(coordinates()).toHaveValue("(539.9, 0, 895, -3.14, -0.04, 0.8)")
-    expect(onTargetChange).toHaveBeenLastCalledWith({
-      position: [539.9, 0, 895],
-      orientation: [-3.14, -0.04, 0.8],
-    })
+    fireEvent.change(coordinates(), { target: { value: "(1, 2" } })
+    fireEvent.keyDown(coordinates(), { key: "Escape" })
+    expect(coordinates()).toHaveValue("(539.9, 0, 895, -3.14, -0.04, 0.8)")
+    expect(coordinates()).toHaveAttribute("readonly")
 
-    type("(1, 2, 3, 0.1, 0.2, 0.3)")
-    expect(onTargetChange).toHaveBeenLastCalledWith({
-      position: [1, 2, 3],
-      orientation: [0.1, 0.2, 0.3],
-    })
+    fireEvent.click(button("Edit pose"))
+    fireEvent.click(button("Cancel"))
+    expect(coordinates()).toHaveAttribute("readonly")
+    expect(onTargetChange).not.toHaveBeenCalled()
   })
 
-  it("says what a text that is no pose lacks, reports no pose, and does not move", () => {
-    const { onTargetChange, onMoveStart } = setup()
+  it("says when the typed text is no pose, and cannot save it", () => {
+    const { onTargetChange } = setup()
     fireEvent.click(tab("Move to"))
 
-    type("(1, 2, 3)")
+    fireEvent.click(button("Edit pose"))
+    fireEvent.change(coordinates(), { target: { value: "(1, 2, 3)" } })
     expect(
-      screen.getByText("Enter six numbers: (x, y, z, rx, ry, rz)"),
+      screen.getByText("Please enter valid pose coordinates."),
     ).toBeVisible()
-    expect(onTargetChange).toHaveBeenLastCalledWith(null)
-    expect(moveButton()).toBeDisabled()
-    press(moveButton())
-    expect(onMoveStart).not.toHaveBeenCalled()
+    expect(button("Save pose edit")).toBeDisabled()
+    fireEvent.keyDown(coordinates(), { key: "Enter" })
+    expect(onTargetChange).not.toHaveBeenCalled()
   })
 
-  it("moves to the target while the button is held, and stops on release", () => {
-    const { onMoveStart, onMoveStop } = setup()
+  it("makes a saved pose the target: the app plans it, and Reset and Move to show", () => {
+    const { onTargetChange, rerender } = setup()
     fireEvent.click(tab("Move to"))
-    type("(1, 2, 3, 0, 0, 0)")
+
+    fireEvent.click(button("Edit pose"))
+    fireEvent.change(coordinates(), {
+      target: { value: "(1, 2, 3, 0, 0, 0)" },
+    })
+    fireEvent.click(button("Save pose edit"))
+    expect(onTargetChange).toHaveBeenLastCalledWith(TARGET)
+    expect(coordinates()).toHaveValue("(1, 2, 3, 0, 0, 0)")
+    expect(coordinates()).toHaveAttribute("readonly")
+    expect(button("Reset pose to previous one")).toBeEnabled()
+
+    // While the app plans, Move to waits
+    rerender({ state: "planning" })
+    expect(moveButton()).toBeDisabled()
+    rerender({ state: "planned" })
+    expect(moveButton()).toBeEnabled()
+    expect(screen.getByLabelText("Click and hold to move")).toContainElement(
+      moveButton(),
+    )
+  })
+
+  it("starts the move after 200 ms of holding, and a shorter click moves nothing", async () => {
+    const { onMoveStart, onMoveStop } = setup({ state: "planned" })
+    fireEvent.click(tab("Move to"))
+    confirmPose("(1, 2, 3, 0, 0, 0)")
 
     press(moveButton())
-    expect(onMoveStart).toHaveBeenCalledWith({
-      position: [1, 2, 3],
-      orientation: [0, 0, 0],
-    })
+    await sleep(50)
+    release(moveButton())
+    await sleep(300)
+    expect(onMoveStart).not.toHaveBeenCalled()
+    expect(onMoveStop).not.toHaveBeenCalled()
+
+    await holdUntilStarted(onMoveStart)
+    expect(onMoveStart).toHaveBeenCalledWith(TARGET)
     release(moveButton())
     expect(onMoveStop).toHaveBeenCalledTimes(1)
   })
 
-  it("cannot be held while the app plans or when it cannot move there, and says why", () => {
-    const { onMoveStart, rerender } = setup()
+  it("says Moving… while the robot moves and Stopping… while it stops, and keeps the target when let go on the way", async () => {
+    let pose: RobotControlPose = CURRENT_POSE
+    const { onMoveStart, onMoveStop, onTargetChange, rerender } = setup({
+      getCurrentPose: () => pose,
+      state: "planned",
+    })
     fireEvent.click(tab("Move to"))
-    type("(1, 2, 3, 0, 0, 0)")
+    confirmPose("(1, 2, 3, 0, 0, 0)")
 
-    rerender({ planning: true })
-    press(moveButton())
-    expect(onMoveStart).not.toHaveBeenCalled()
-
-    rerender({ planning: false, error: "The robot cannot reach this pose" })
-    expect(screen.getByText("The robot cannot reach this pose")).toBeVisible()
-    expect(moveButton()).toBeDisabled()
-  })
-
-  it("stops a held move when the tab changes", () => {
-    const { onMoveStop } = setup()
-    fireEvent.click(tab("Move to"))
-    type("(1, 2, 3, 0, 0, 0)")
-
-    press(moveButton())
-    fireEvent.click(tab("Translate"))
-
+    await holdUntilStarted(onMoveStart)
+    rerender({ state: "moving" })
+    expect(moveButton()).toHaveTextContent("Moving…")
+    pose = { position: [200, 2, 3], orientation: [0, 0, 0] }
+    release(moveButton())
     expect(onMoveStop).toHaveBeenCalledTimes(1)
+    rerender({ state: "stopping" })
+    expect(moveButton()).toHaveTextContent("Stopping…")
+    expect(moveButton()).toBeDisabled()
+
+    rerender({ state: "planned" })
+    await sleep(50)
+    expect(moveButton()).toHaveTextContent("Move to")
+    expect(moveButton()).toBeEnabled()
+    expect(coordinates()).toHaveValue("(1, 2, 3, 0, 0, 0)")
+    expect(onTargetChange).toHaveBeenCalledTimes(1)
   })
 
-  it("keeps the typed pose while another tab is shown", () => {
+  it("stays held at the target, then shows the live pose again on release", async () => {
+    let pose: RobotControlPose = CURRENT_POSE
+    const { onMoveStart, onMoveStop, onTargetChange, rerender } = setup({
+      getCurrentPose: () => pose,
+      state: "planned",
+    })
+    fireEvent.click(tab("Move to"))
+    confirmPose("(1, 2, 3, 0, 0, 0)")
+
+    await holdUntilStarted(onMoveStart)
+    rerender({ state: "moving" })
+    pose = { position: [1, 2, 3.2], orientation: [0, 0, 0] }
+    await waitFor(() => expect(moveButton()).toBeDisabled())
+    expect(moveButton()).toHaveTextContent("Moving…")
+    expect(
+      screen.getByLabelText("Robot is already at this pose"),
+    ).toContainElement(moveButton())
+    // Held on: the move goes on, the target stays
+    expect(onMoveStop).not.toHaveBeenCalled()
+    expect(coordinates()).toHaveValue("(1, 2, 3, 0, 0, 0)")
+
+    release(moveButton())
+    expect(onMoveStop).toHaveBeenCalledTimes(1)
+    rerender({ state: "stopping" })
+    rerender({ state: "planned" })
+    await waitFor(() =>
+      expect(coordinates()).toHaveValue("(1, 2, 3.2, 0, 0, 0)"),
+    )
+    expect(onTargetChange).toHaveBeenLastCalledWith(null)
+    expect(moveButton()).toHaveTextContent("Move to")
+    expect(moveButton()).toBeDisabled()
+    expect(queryButton("Reset pose to previous one")).toBeNull()
+  })
+
+  it("cannot move to a pose the TCP is at already, and keeps it as the target", async () => {
+    const { onMoveStart } = setup({ state: "planned" })
+    fireEvent.click(tab("Move to"))
+    confirmPose("(539.94, 0, 895, -3.14, -0.04, 0.8)")
+
+    await waitFor(() => expect(moveButton()).toBeDisabled())
+    expect(
+      screen.getByLabelText("Robot is already at this pose"),
+    ).toContainElement(moveButton())
+    press(moveButton())
+    await sleep(300)
+    expect(onMoveStart).not.toHaveBeenCalled()
+    expect(coordinates()).toHaveValue("(539.9, 0, 895, -3.14, -0.04, 0.8)")
+  })
+
+  it("shows why the app cannot move there, with Move to off, until Reset shows the live pose again", () => {
+    const { onTargetChange, rerender } = setup()
+    fireEvent.click(tab("Move to"))
+    confirmPose("(5000, 2, 3, 0, 0, 0)")
+
+    rerender({ state: "idle", error: "The current pose is not reachable." })
+    expect(screen.getByText("The current pose is not reachable.")).toBeVisible()
+    expect(moveButton()).toBeDisabled()
+
+    fireEvent.click(button("Reset pose to previous one"))
+    expect(onTargetChange).toHaveBeenLastCalledWith(null)
+    expect(coordinates()).toHaveValue("(539.9, 0, 895, -3.14, -0.04, 0.8)")
+    expect(moveButton()).toBeDisabled()
+    expect(queryButton("Reset pose to previous one")).toBeNull()
+  })
+
+  it("shows the live pose again when another tab is chosen, and stops a held move", async () => {
+    const { onMoveStart, onMoveStop, onTargetChange } = setup({
+      state: "planned",
+    })
+    fireEvent.click(tab("Move to"))
+    confirmPose("(1, 2, 3, 0, 0, 0)")
+    await holdUntilStarted(onMoveStart)
+
+    fireEvent.click(tab("Translate"))
+    expect(onMoveStop).toHaveBeenCalledTimes(1)
+    expect(onTargetChange).toHaveBeenLastCalledWith(null)
+
+    fireEvent.click(tab("Move to"))
+    expect(coordinates()).toHaveValue("(539.9, 0, 895, -3.14, -0.04, 0.8)")
+  })
+
+  it("copies the shown pose", async () => {
+    const writeText = vi.fn().mockResolvedValue(undefined)
+    Object.defineProperty(navigator, "clipboard", {
+      value: { writeText },
+      configurable: true,
+    })
     setup()
     fireEvent.click(tab("Move to"))
-    type("(1, 2, 3, 0, 0, 0)")
 
-    fireEvent.click(tab("Translate"))
-    fireEvent.click(tab("Move to"))
-
-    expect(coordinates()).toHaveValue("(1, 2, 3, 0, 0, 0)")
+    fireEvent.click(button("Copy"))
+    expect(writeText).toHaveBeenCalledWith("(539.9, 0, 895, -3.14, -0.04, 0.8)")
+    expect(await screen.findByText("Pose copied")).toBeVisible()
   })
 
   it("moves with the translation velocity", () => {
@@ -170,7 +330,6 @@ describe("RobotControlPanel's Move to tab", () => {
   })
 
   it("shows the TCP and the frame the pose is relative to", () => {
-    const onFrameChange = vi.fn()
     setup(
       {
         frame: {
@@ -179,7 +338,7 @@ describe("RobotControlPanel's Move to tab", () => {
             { id: "table", label: "Table" },
           ],
           value: "world",
-          onChange: onFrameChange,
+          onChange: vi.fn(),
         },
       },
       {
@@ -200,15 +359,12 @@ describe("RobotControlPanel's Move to tab", () => {
     ).toHaveTextContent("World")
   })
 
-  it("moves nothing while disabled", () => {
-    const { onMoveStart } = setup({}, { disabled: true })
+  it("edits and moves nothing while disabled", () => {
+    setup({ state: "planned" }, { disabled: true })
     fireEvent.click(tab("Move to"))
 
-    expect(
-      screen.getByRole("button", { name: "Use current pose" }),
-    ).toBeDisabled()
-    expect(moveButton()).toBeDisabled()
-    press(moveButton())
-    expect(onMoveStart).not.toHaveBeenCalled()
+    expect(button("Edit pose")).toBeDisabled()
+    fireEvent.click(coordinates())
+    expect(coordinates()).toHaveAttribute("readonly")
   })
 })

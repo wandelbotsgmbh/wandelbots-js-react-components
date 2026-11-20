@@ -194,7 +194,7 @@ export const RobotControlPanelDemo = observer(
               onChange: () => {},
             },
             onTargetChange: moveTo.onTargetChange,
-            planning: moveTo.planning,
+            state: moveTo.state,
             error: moveTo.error,
             onMoveStart: moveTo.onMoveStart,
             onMoveStop: moveTo.onMoveStop,

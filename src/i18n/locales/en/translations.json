@@ -79,11 +79,18 @@
   "RobotControl.Tab.Joint.bt": "Joint",
   "RobotControl.Tab.MoveTo.bt": "Move to",
   "RobotControl.MoveTo.TargetPose.lb": "Target pose",
-  "RobotControl.MoveTo.UseCurrentPose.bt": "Use current pose",
   "RobotControl.MoveTo.RelativeTo.lb": "Relative to",
   "RobotControl.MoveTo.Coordinates.lb": "Coordinates XYZ (mm) · Rotation vector (rad)",
-  "RobotControl.MoveTo.InvalidPose.lb": "Enter six numbers: (x, y, z, rx, ry, rz)",
-  "RobotControl.MoveTo.EnterPose.lb": "Enter a target pose first",
-  "RobotControl.MoveTo.MoveToPose.bt": "Move to pose",
-  "RobotControl.MoveTo.HoldToMove.lb": "Hold to move · Release to stop"
+  "RobotControl.MoveTo.Copy.bt": "Copy",
+  "RobotControl.MoveTo.Copied.lb": "Pose copied",
+  "RobotControl.MoveTo.Edit.bt": "Edit pose",
+  "RobotControl.MoveTo.Cancel.bt": "Cancel",
+  "RobotControl.MoveTo.ConfirmEdit.lb": "Save pose edit",
+  "RobotControl.MoveTo.InvalidPose.lb": "Please enter valid pose coordinates.",
+  "RobotControl.MoveTo.Reset.lb": "Reset pose to previous one",
+  "RobotControl.MoveTo.MoveTo.bt": "Move to",
+  "RobotControl.MoveTo.Moving.bt": "Moving…",
+  "RobotControl.MoveTo.Stopping.bt": "Stopping…",
+  "RobotControl.MoveTo.HoldToMove.lb": "Click and hold to move",
+  "RobotControl.MoveTo.AtPose.lb": "Robot is already at this pose"
 }

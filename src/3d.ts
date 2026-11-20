@@ -31,6 +31,7 @@ export {
   type RobotControlJogMode,
   type RobotControlJoint,
   type RobotControlJoints,
+  type RobotControlMoveState,
   type RobotControlMoveTo,
   type RobotControlOption,
   type RobotControlPanelProps,

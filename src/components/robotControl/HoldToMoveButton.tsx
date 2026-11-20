@@ -1,56 +1,112 @@
 import Tooltip from "@mui/material/Tooltip"
+import { NorthEastFilled } from "@wandelbots/icons/NorthEastFilled"
 import { PrimaryButton } from "@wandelbots/mui"
+import { useEffect, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useHold } from "../jogging/useHold"
+import type { RobotControlMoveState } from "./RobotControlPanel"
 
 const MOVE = "move" as const
+/** As RobotPad: a shorter click never moves the robot */
+const HOLD_BEFORE_MOVE_MS = 200
 
-/**
- * The Move to button: the robot moves while it is held and stops when it is
- * let go, however the hold ends (the safety rules of every hold-to-jog
- * control, see useHold)
- */
-export function HoldToMoveButton({
-  onMoveStart,
-  onMoveStop,
-  disabled,
-  disabledReason,
-  loading,
-}: {
+type HoldToMoveButtonProps = {
+  state: RobotControlMoveState
+  /** A target the app could plan */
+  ready: boolean
+  /** The TCP stands at the target */
+  atPose: boolean
+  disabled: boolean
   onMoveStart: () => void
   onMoveStop: () => void
-  disabled: boolean
-  /** Why the robot cannot move, shown over the disabled button */
-  disabledReason?: string
-  /** While the move is planned: the button cannot be held meanwhile */
-  loading: boolean
-}) {
+}
+
+/**
+ * The Move to button, as RobotPad's: held for 200 ms while the move is
+ * planned, it starts it, and the release pauses it. It says Moving… and
+ * Stopping…, and cannot move to the pose the TCP stands at. Every other way
+ * a hold ends stops the move as well (the safety rules of every hold-to-jog
+ * control, see useHold). At the target the hold goes on, as in RobotPad,
+ * until the release: the hold sits on the wrapper, which keeps the pointer
+ * while the button turns off.
+ */
+export function HoldToMoveButton({
+  state,
+  ready,
+  atPose,
+  disabled,
+  onMoveStart,
+  onMoveStop,
+}: HoldToMoveButtonProps) {
   const { t } = useTranslation()
-  const { held, handlersFor } = useHold<typeof MOVE>({
-    onStart: onMoveStart,
-    onStop: onMoveStop,
-    disabled: disabled || loading,
+  const [holding, setHolding] = useState(false)
+  const timer = useRef<ReturnType<typeof setTimeout>>(undefined)
+  const started = useRef(false)
+  const latest = useRef({ onMoveStart, onMoveStop })
+  latest.current = { onMoveStart, onMoveStop }
+
+  const planned = state === "planned"
+  const running = planned || state === "moving"
+  const { handlersFor } = useHold<typeof MOVE>({
+    onStart: () => {
+      setHolding(true)
+      timer.current = setTimeout(() => {
+        timer.current = undefined
+        started.current = true
+        latest.current.onMoveStart()
+      }, HOLD_BEFORE_MOVE_MS)
+    },
+    onStop: () => {
+      setHolding(false)
+      clearTimeout(timer.current)
+      timer.current = undefined
+      if (started.current) {
+        started.current = false
+        latest.current.onMoveStop()
+      }
+    },
+    disabled: holding
+      ? disabled || !ready || !running
+      : disabled || !ready || atPose || !planned,
     isSame: () => true,
   })
 
-  // A button that cannot move says why, or nothing; never "hold to move"
-  const hint = disabled
-    ? (disabledReason ?? "")
-    : t("RobotControl.MoveTo.HoldToMove.lb")
+  useEffect(() => () => clearTimeout(timer.current), [])
+
+  const label =
+    state === "moving"
+      ? t("RobotControl.MoveTo.Moving.bt")
+      : state === "stopping"
+        ? t("RobotControl.MoveTo.Stopping.bt")
+        : t("RobotControl.MoveTo.MoveTo.bt")
 
   return (
-    <Tooltip title={hint} placement="top">
-      {/* A disabled button gets no pointer events; the span still shows why */}
-      <span style={{ display: "block" }}>
+    <Tooltip
+      title={
+        atPose
+          ? t("RobotControl.MoveTo.AtPose.lb")
+          : t("RobotControl.MoveTo.HoldToMove.lb")
+      }
+      placement="top"
+    >
+      <span
+        {...handlersFor(MOVE)}
+        style={{
+          display: "block",
+          flexGrow: 1,
+          touchAction: "none",
+          userSelect: "none",
+        }}
+      >
         <PrimaryButton
           fullWidth
-          disabled={disabled}
-          loading={loading}
-          aria-pressed={held !== null}
-          {...handlersFor(MOVE)}
-          sx={{ touchAction: "none", userSelect: "none" }}
+          disabled={disabled || !ready || atPose || !running}
+          loading={state === "planning" || state === "stopping"}
+          loadingPosition="start"
+          startIcon={<NorthEastFilled />}
+          aria-pressed={holding}
         >
-          {t("RobotControl.MoveTo.MoveToPose.bt")}
+          {label}
         </PrimaryButton>
       </span>
     </Tooltip>

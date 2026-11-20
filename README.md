@@ -264,7 +264,7 @@ const [active, setActive] = useState<number | null>(null)
 - `disabled` turns off every control: nothing may move. `jogDisabled` turns off only the jogging of Translate, Rotate and Joint, e.g. while a trajectory moves the robot; Move to stays usable, so a move of its own does not end when the app locks jogging during it.
 - The panel keeps its tab, jog mode and step size itself. An app that keeps them in its own store (to remember them, or because its jogging depends on them) gives `tab`, `jogMode` and `increments.step`, and gets `onTabChange`, `onJogModeChange` and `increments.onStepChange`; each also works alone, to follow a choice without keeping it.
 - `joints` gives the Joint tab: the joints' values and limits (rad, or mm with `linear`), their names, the joint velocity, and `onJogStart(index, direction)` and `onJogStop`. The panel jogs one joint at a time; the turn-around of a slider brings `onJogStop` and `onJogStart` in the same event, as described for `JoggingJointSlider`. Without `joints`, there is no Joint tab.
-- `moveTo` gives the Move to tab. The panel keeps the typed text `(x, y, z, rx, ry, rz)` (mm, rotation vector in rad: the format RobotPad copies and pastes) and reports each change as a pose, or null, in `onTargetChange`: the app plans the move then, and gives back `planning` and an `error` (e.g. out of reach). Holding the button calls `onMoveStart(pose)`, the release `onMoveStop`: the app starts and pauses its trajectory. `getCurrentPose` fills in "Use current pose", and `frame` is the "Relative to" select. It moves with `velocity.translate`. Without `moveTo`, there is no Move to tab.
+- `moveTo` gives the Move to tab. It works as RobotPad's pose field: the coordinates `(x, y, z, rx, ry, rz)` (mm, rotation vector in rad: the format RobotPad copies and pastes) show the TCP's current pose (`getCurrentPose`, read every animation frame), with Copy and Edit pose, and Move to, off until a pose is the target. Edit pose, or a click on the field, makes it editable; Save pose edit (Enter) makes the typed pose the target (`onTargetChange(pose)`): the app plans the move and loads it, and reports `state` (`"planning"`, `"planned"`, `"moving"`, `"stopping"` or `"idle"`, as RobotPad's trajectory) and an `error` (e.g. out of reach). Then Reset shows. Held for 200 ms while `"planned"`, Move to calls `onMoveStart(pose)`, the release `onMoveStop`: the app starts and pauses its trajectory; the button says Moving… and Stopping…. At the target (within 0.5 mm and 0.01 rad) it turns off; once the move no longer runs, the field shows the current pose again (`onTargetChange(null)`), as do Reset and another tab. `frame` is the "Relative to" select. It moves with `velocity.translate`. Without `moveTo`, there is no Move to tab.
 
 ```tsx
 const orientation = useRef<Quaternion | null>(null)
@@ -298,8 +298,8 @@ const orientation = useRef<Quaternion | null>(null)
   }}
   moveTo={{
     getCurrentPose: () => currentTcpPose(),
-    onTargetChange: (pose) => planMoveTo(pose), // sets planning and error
-    planning,
+    onTargetChange: (pose) => planAndLoad(pose), // or drop the plan (null)
+    state: trajectoryState, // "planning" | "planned" | "moving" | "stopping" | "idle"
     error,
     onMoveStart: () => startTrajectory(),
     onMoveStop: () => pauseTrajectory(),

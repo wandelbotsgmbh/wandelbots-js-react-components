@@ -78,11 +78,18 @@
   "RobotControl.Tab.Joint.bt": "Gelenk",
   "RobotControl.Tab.MoveTo.bt": "Bewegen zu",
   "RobotControl.MoveTo.TargetPose.lb": "Zielpose",
-  "RobotControl.MoveTo.UseCurrentPose.bt": "Aktuelle Pose übernehmen",
   "RobotControl.MoveTo.RelativeTo.lb": "Relativ zu",
   "RobotControl.MoveTo.Coordinates.lb": "Koordinaten XYZ (mm) · Rotationsvektor (rad)",
-  "RobotControl.MoveTo.InvalidPose.lb": "Sechs Zahlen eingeben: (x, y, z, rx, ry, rz)",
-  "RobotControl.MoveTo.EnterPose.lb": "Zuerst eine Zielpose eingeben",
-  "RobotControl.MoveTo.MoveToPose.bt": "Zur Pose fahren",
-  "RobotControl.MoveTo.HoldToMove.lb": "Halten zum Fahren · Loslassen zum Stoppen"
+  "RobotControl.MoveTo.Copy.bt": "Kopieren",
+  "RobotControl.MoveTo.Copied.lb": "Pose kopiert",
+  "RobotControl.MoveTo.Edit.bt": "Pose bearbeiten",
+  "RobotControl.MoveTo.Cancel.bt": "Abbrechen",
+  "RobotControl.MoveTo.ConfirmEdit.lb": "Bearbeitete Pose übernehmen",
+  "RobotControl.MoveTo.InvalidPose.lb": "Bitte gültige Posen-Koordinaten eingeben.",
+  "RobotControl.MoveTo.Reset.lb": "Pose auf vorherige Position zurücksetzen",
+  "RobotControl.MoveTo.MoveTo.bt": "Hierhin bewegen",
+  "RobotControl.MoveTo.Moving.bt": "Bewegung aktiv…",
+  "RobotControl.MoveTo.Stopping.bt": "Anhalten",
+  "RobotControl.MoveTo.HoldToMove.lb": "Zum Bewegen gedrückt halten",
+  "RobotControl.MoveTo.AtPose.lb": "Der Roboter befindet sich bereits in dieser Pose"
 }

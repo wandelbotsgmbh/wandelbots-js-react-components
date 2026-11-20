@@ -111,28 +111,52 @@ export type RobotControlPose = {
   orientation: [number, number, number]
 }
 
-/** The Move to tab: what the app gives to move the TCP to a typed pose */
+/**
+ * Where the move to the typed pose is, as RobotPad's trajectory: "planning"
+ * the move, "planned" and loaded so that the button can start it, "moving",
+ * "stopping" after the release, or "idle" (no plan)
+ */
+export type RobotControlMoveState =
+  | "idle"
+  | "planning"
+  | "planned"
+  | "moving"
+  | "stopping"
+
+/**
+ * The Move to tab, as RobotPad's pose field: what the app gives to move the
+ * TCP to a typed pose. The field shows the TCP's current pose; Edit pose (or
+ * a click on the field) makes it editable, and Save pose edit (or Enter)
+ * makes the typed pose the target. Then Reset and the Move to button show:
+ * held for 200 ms, it starts the move; let go, it pauses it. Once a move has
+ * taken the TCP to the target and it stands still, the field shows the
+ * current pose again.
+ */
 export type RobotControlMoveTo = {
   /**
-   * The TCP's pose now, relative to the chosen `frame`: "Use current pose"
-   * fills it in. A function, read on the click: the pose changes too fast
-   * for a prop.
+   * The TCP's pose now, relative to the chosen `frame`. A function, read
+   * every animation frame while the field shows it: the pose changes too
+   * fast for a prop.
    */
   getCurrentPose: () => RobotControlPose | null
   /** The frame the typed pose is relative to ("Relative to"). Without it, no select. */
   frame?: RobotControlSelect
   /**
-   * The typed pose changed: a pose, or null while the text is none. The app
-   * plans the move to it, so that the button can start it at once.
+   * A typed pose became the target: plan the move to it and load it, so that
+   * the button can start it at once. null: the field shows the current pose
+   * again (Reset, the TCP arrived, or another tab was chosen): drop the plan.
    */
   onTargetChange: (pose: RobotControlPose | null) => void
-  /** While the app plans the move: the button waits */
-  planning?: boolean
-  /** Why the TCP cannot move to the pose, e.g. it is out of reach */
+  /** Where the move is: the button waits, says Moving… or Stopping… */
+  state: RobotControlMoveState
+  /** Why the TCP cannot move to the target, e.g. it is out of reach */
   error?: string | null
-  /** The button was pressed: move to `pose` until `onMoveStop` */
+  /** The button was held 200 ms while the move was "planned": start it */
   onMoveStart: (pose: RobotControlPose) => void
-  /** The button was let go, or the tab changed while it was held */
+  /**
+   * The button was let go after a start, or the tab changed while it was
+   * held: pause the move
+   */
   onMoveStop: () => void
 }
 
@@ -248,8 +272,6 @@ export const RobotControlPanel = externalizeComponent(
         ? "translate"
         : chosenTab
     const settings = withAppSettings(ownSettings, jogMode, props.increments)
-    // The typed target pose stays while other tabs show
-    const [moveToText, setMoveToText] = useState("")
     const title = t("RobotControl.Title.ti")
 
     function changeTab(next: RobotControlTab) {
@@ -359,8 +381,6 @@ export const RobotControlPanel = externalizeComponent(
           ) : tab === "moveTo" && moveTo ? (
             <MoveToTab
               moveTo={moveTo}
-              text={moveToText}
-              onTextChange={setMoveToText}
               tcp={props.tcp}
               velocity={props.velocity.translate}
               onVelocityChange={(value) =>

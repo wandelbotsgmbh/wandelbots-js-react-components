@@ -1,42 +1,78 @@
 import { tryParseJson } from "@wandelbots/nova-js"
 import type {
+  JointTrajectory,
   MotionCommand,
   Nova,
-  JointTrajectory,
 } from "@wandelbots/nova-js/v2"
 import type {
   JoggingStore,
+  RobotControlMoveState,
   RobotControlPose,
 } from "@wandelbots/wandelbots-js-react-components"
 import { useEffect, useMemo, useRef, useState } from "react"
 
-type MoveToState = { planning: boolean; error: string | null }
-
 type Socket = ReturnType<Nova["openReconnectingWebsocket"]>
 
+const PLANNING_FAILED =
+  "Planning a motion to this pose failed. Please change the pose coordinates."
+
+/** RobotPad's words for a pose the planner rejects (planErrorTranslation) */
+function planErrorMessage(errorFeedbackName: string): string {
+  if (errorFeedbackName === "FeedbackSingularity") {
+    return "The current pose would create a singularity. Please change the pose coordinates."
+  }
+  if (errorFeedbackName === "FeedbackCollision") {
+    return "Moving to the current pose would cause a collision. Please change the pose coordinates."
+  }
+  if (
+    [
+      "FeedbackOutOfWorkspace",
+      "FeedbackJointLimitExceeded",
+      "FeedbackAxisRangeExceeded",
+      "FeedbackNoSolutionInCurrentConfiguration",
+    ].includes(errorFeedbackName)
+  ) {
+    return "The current pose is not reachable. Please change the pose coordinates."
+  }
+  return PLANNING_FAILED
+}
+
 /**
- * The app's side of Move to, as RobotPad does it: a typed pose is planned at
- * once, to tell whether the TCP can get there; holding the button plans
- * from where the robot stands, loads the trajectory and starts it, and the
- * release pauses it. A press after a pause goes on along the same
- * trajectory, until jogging takes the robot (`release`).
+ * The app's side of Move to, as RobotPad's TrajectoryExecutionStore: a new
+ * target is planned and its trajectory loaded at once ("planning", then
+ * "planned"), so the button can start it. NOVA's start makes it "moving";
+ * the release pauses it: "stopping" until the robot stands still, then
+ * "planned" again, to go on along the same trajectory. A new target, or
+ * none, drops the trajectory, as `release` does before jogging: the
+ * controller does not jog while a trajectory session is open.
  */
 export function useMoveTo(nova: Nova, cellId: string, store: JoggingStore) {
-  const [state, setState] = useState<MoveToState>({
-    planning: false,
-    error: null,
-  })
+  const [view, setView] = useState<{
+    state: RobotControlMoveState
+    error: string | null
+  }>({ state: "idle", error: null })
+  // The state for the callbacks, which run outside of rendering
+  const state = useRef<RobotControlMoveState>("idle")
   const socket = useRef<Socket | null>(null)
-  // The press that runs: a newer one, or the release, makes an older
-  // press that still plans or loads move nothing
-  const press = useRef(0)
   const latestTarget = useRef(0)
+  // A start sent, and NOVA has not confirmed it yet
+  const startSent = useRef(false)
+  // The button was let go before NOVA confirmed the start: pause then
+  const pauseOnStart = useRef(false)
 
   const moveTo = useMemo(() => {
     const motion = store.jogger.motionStream
     const motionGroup = motion.motionGroupId
 
-    /** The trajectory to `pose`, from the joints the robot stands at */
+    function setState(next: RobotControlMoveState, error?: string | null) {
+      state.current = next
+      setView((view) => ({
+        state: next,
+        error: error === undefined ? view.error : error,
+      }))
+    }
+
+    /** The trajectory to `pose` from where the robot stands, or why not */
     async function plan(pose: RobotControlPose): Promise<JointTrajectory> {
       const description = motion.description
       // The offset of the TCP, when NOVA gives its orientation as a rotation
@@ -75,45 +111,90 @@ export function useMoveTo(nova: Nova, cellId: string, store: JoggingStore) {
       if ("error_feedback" in response) {
         const name =
           (response.error_feedback as { error_feedback_name?: string })
-            ?.error_feedback_name ?? "unknown"
-        throw new Error(`The TCP cannot move to this pose (${name})`)
+            ?.error_feedback_name ?? "FeedbackUnknown"
+        throw new PlanRejected(planErrorMessage(name))
       }
       return response
     }
 
     /** Ends the trajectory session: jogging needs the robot */
     function release() {
-      press.current++
+      latestTarget.current++
+      startSent.current = false
+      pauseOnStart.current = false
       socket.current?.close()
       socket.current = null
+      setState("idle")
     }
 
-    /** Opens a session and loads the trajectory; resolves once NOVA has it */
-    function load(trajectory: JointTrajectory): Promise<Socket> {
-      const next = nova.openReconnectingWebsocket(
+    /**
+     * Resolves once the robot stands still, as RobotPad's waitUntilStopped:
+     * the motion stream gives new joints only while they change
+     */
+    async function waitUntilStopped() {
+      let last = motion.rapidlyChangingMotionState.joint_position
+      for (let i = 0; i < 100; i++) {
+        await new Promise((resolve) => setTimeout(resolve, 100))
+        const now = motion.rapidlyChangingMotionState.joint_position
+        if (now === last) return
+        last = now
+      }
+    }
+
+    function pause(session: Socket) {
+      session.sendJson({ message_type: "PauseMovementRequest" })
+      void waitUntilStopped().then(() => {
+        if (socket.current === session) setState("planned")
+      })
+    }
+
+    /** Opens a session and loads the trajectory, as RobotPad on a new target */
+    function load(trajectory: JointTrajectory): Socket {
+      const session = nova.openReconnectingWebsocket(
         `/cells/${cellId}/controllers/${motion.controllerId}/execution/trajectory`,
       )
-      return new Promise((resolve, reject) => {
-        next.addEventListener("message", (event: MessageEvent) => {
-          const result = tryParseJson(event.data)?.result
-          if (result?.kind === "INITIALIZE_RECEIVED") {
+      session.addEventListener("message", (event: MessageEvent) => {
+        if (socket.current !== session) return
+        const result = tryParseJson(event.data)?.result
+        switch (result?.kind) {
+          case "INITIALIZE_RECEIVED":
             if (result.add_trajectory_error) {
-              reject(new Error(result.add_trajectory_error.message))
-            } else resolve(next)
-          } else if (result?.kind === "MOTION_ERROR") {
+              release()
+              setState("idle", PLANNING_FAILED)
+            } else {
+              setState("planned")
+            }
+            break
+          case "START_RECEIVED":
+            startSent.current = false
+            setState("moving")
+            if (pauseOnStart.current) {
+              pauseOnStart.current = false
+              pause(session)
+            }
+            break
+          case "PAUSE_RECEIVED":
+            // Only while the robot still slows down: one at its target
+            // stands still before this arrives
+            if (state.current === "moving") setState("stopping")
+            break
+          case "MOTION_ERROR":
             console.error("Move to failed:", result.message)
-          }
-        })
-        next.sendJson({
-          message_type: "InitializeMovementRequest",
-          trajectory: {
-            message_type: "TrajectoryData",
-            motion_group: motionGroup,
-            tcp: store.selectedTcpId,
-            data: trajectory,
-          },
-        })
+            release()
+            setState("idle", String(result.message))
+            break
+        }
       })
+      session.sendJson({
+        message_type: "InitializeMovementRequest",
+        trajectory: {
+          message_type: "TrajectoryData",
+          motion_group: motionGroup,
+          tcp: store.selectedTcpId,
+          data: trajectory,
+        },
+      })
+      return session
     }
 
     return {
@@ -127,54 +208,45 @@ export function useMoveTo(nova: Nova, cellId: string, store: JoggingStore) {
       },
 
       async onTargetChange(pose: RobotControlPose | null) {
-        // A new target: the loaded trajectory leads elsewhere
+        // A new target, or none: the loaded trajectory leads elsewhere
         release()
-        const mine = ++latestTarget.current
+        const mine = latestTarget.current
         if (!pose) {
-          setState({ planning: false, error: null })
+          setState("idle", null)
           return
         }
-        setState({ planning: true, error: null })
+        setState("planning", null)
         try {
-          await plan(pose)
-          if (mine === latestTarget.current) {
-            setState({ planning: false, error: null })
-          }
+          const trajectory = await plan(pose)
+          if (mine !== latestTarget.current) return
+          socket.current = load(trajectory)
         } catch (error) {
-          if (mine === latestTarget.current) {
-            setState({
-              planning: false,
-              error: String((error as Error).message),
-            })
+          if (mine !== latestTarget.current) return
+          if (!(error instanceof PlanRejected)) {
+            console.error("Planning the move failed:", error)
           }
+          setState(
+            "idle",
+            error instanceof PlanRejected ? error.message : PLANNING_FAILED,
+          )
         }
       },
 
-      async onMoveStart(pose: RobotControlPose) {
-        const mine = ++press.current
-        try {
-          if (!socket.current) {
-            const trajectory = await plan(pose)
-            if (mine !== press.current) return
-            const loaded = await load(trajectory)
-            if (mine !== press.current) {
-              loaded.close()
-              return
-            }
-            socket.current = loaded
-          }
-          socket.current.sendJson({
-            message_type: "StartMovementRequest",
-            direction: "DIRECTION_FORWARD",
-          })
-        } catch (error) {
-          console.error("Move to failed:", error)
-        }
+      onMoveStart() {
+        if (state.current !== "planned" || !socket.current) return
+        startSent.current = true
+        pauseOnStart.current = false
+        socket.current.sendJson({
+          message_type: "StartMovementRequest",
+          direction: "DIRECTION_FORWARD",
+        })
       },
 
       onMoveStop() {
-        press.current++
-        socket.current?.sendJson({ message_type: "PauseMovementRequest" })
+        const session = socket.current
+        if (!session) return
+        if (state.current === "moving") pause(session)
+        else if (startSent.current) pauseOnStart.current = true
       },
 
       release,
@@ -184,5 +256,8 @@ export function useMoveTo(nova: Nova, cellId: string, store: JoggingStore) {
   // The session ends with the page
   useEffect(() => () => moveTo.release(), [moveTo])
 
-  return { ...moveTo, ...state }
+  return { ...moveTo, ...view }
 }
+
+/** The planner cannot move the TCP there: the message says why */
+class PlanRejected extends Error {}

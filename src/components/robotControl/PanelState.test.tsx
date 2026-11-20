@@ -1,4 +1,10 @@
-import { fireEvent, render, screen, within } from "@testing-library/react"
+import {
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react"
 import { I18nextProvider } from "react-i18next"
 import { describe, expect, it, vi } from "vitest"
 import { i18n } from "../../i18n/config"
@@ -36,6 +42,15 @@ function setup(props: Props = {}) {
 
 const tab = (name: string) => screen.getByRole("tab", { name })
 const button = (name: string) => screen.getByRole("button", { name })
+/** Edit the Move to field, type `text` and save it with Enter */
+function confirmPose(text: string) {
+  fireEvent.click(button("Edit pose"))
+  const field = screen.getByRole("textbox", {
+    name: "Coordinates XYZ (mm) · Rotation vector (rad)",
+  })
+  fireEvent.change(field, { target: { value: text } })
+  fireEvent.keyDown(field, { key: "Enter" })
+}
 const press = (element: HTMLElement) =>
   fireEvent.pointerDown(element, { button: 0, pointerId: 1 })
 
@@ -102,7 +117,7 @@ describe("RobotControlPanel's state", () => {
     expect(steps.onStep).toHaveBeenCalledWith("translate", "z", "+", 5)
   })
 
-  it("with jogDisabled, jogs nothing but still moves to a pose", () => {
+  it("with jogDisabled, jogs nothing but still moves to a pose", async () => {
     const onMoveStart = vi.fn()
     const onMoveStop = vi.fn()
     const { onJogStart } = setup({
@@ -117,6 +132,7 @@ describe("RobotControlPanel's state", () => {
       moveTo: {
         getCurrentPose: () => null,
         onTargetChange: vi.fn(),
+        state: "planned",
         onMoveStart,
         onMoveStop,
       },
@@ -131,34 +147,27 @@ describe("RobotControlPanel's state", () => {
     )
 
     fireEvent.click(tab("Move to"))
-    fireEvent.change(
-      screen.getByRole("textbox", {
-        name: "Coordinates XYZ (mm) · Rotation vector (rad)",
-      }),
-      { target: { value: "(1, 2, 3, 0, 0, 0)" } },
-    )
-    press(button("Move to pose"))
-    expect(onMoveStart).toHaveBeenCalledTimes(1)
+    confirmPose("(1, 2, 3, 0, 0, 0)")
+    press(button("Move to"))
+    await waitFor(() => expect(onMoveStart).toHaveBeenCalledTimes(1))
   })
 
-  it("goes on moving to a pose when jogging becomes disabled meanwhile", () => {
+  it("goes on moving to a pose when jogging becomes disabled meanwhile", async () => {
+    const onMoveStart = vi.fn()
     const onMoveStop = vi.fn()
     const { rerender } = setup({
       tab: "moveTo",
       moveTo: {
         getCurrentPose: () => null,
         onTargetChange: vi.fn(),
-        onMoveStart: vi.fn(),
+        state: "planned",
+        onMoveStart,
         onMoveStop,
       },
     })
-    fireEvent.change(
-      screen.getByRole("textbox", {
-        name: "Coordinates XYZ (mm) · Rotation vector (rad)",
-      }),
-      { target: { value: "(1, 2, 3, 0, 0, 0)" } },
-    )
-    press(button("Move to pose"))
+    confirmPose("(1, 2, 3, 0, 0, 0)")
+    press(button("Move to"))
+    await waitFor(() => expect(onMoveStart).toHaveBeenCalledTimes(1))
 
     // As an app locks jogging while its trajectory moves
     rerender({ jogDisabled: true })

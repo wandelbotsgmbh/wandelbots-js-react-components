@@ -328,19 +328,19 @@ test("jogs a joint with RobotControlPanel's Joint tab, one joint at a time, and 
   await screenshot(page, "building-blocks-robot-control-panel-joint")
 })
 
-test("moves the TCP to a typed pose with RobotControlPanel's Move to tab while the button is held, and pauses on release", async ({
+test("moves the TCP to a typed pose with RobotControlPanel's Move to tab as RobotPad: Moving… while held, paused on release, back to the live pose and Move to off at the target", async ({
   page,
 }) => {
   await openPage(page, "building-blocks")
   const panel = section(page, "RobotControlPanel")
   await panel.getByRole("tab", { name: "Move to" }).click()
 
-  // The current pose, 20 mm higher
-  await panel.getByRole("button", { name: "Use current pose" }).click()
+  // Edit the current pose: 20 mm higher, saved with Enter
   const coordinates = panel.getByRole("textbox", {
     name: "Coordinates XYZ (mm) · Rotation vector (rad)",
   })
   await expect(coordinates).toHaveValue(/^\(.+\)$/)
+  await panel.getByRole("button", { name: "Edit pose" }).click()
   const values = (await coordinates.inputValue())
     .slice(1, -1)
     .split(",")
@@ -349,14 +349,23 @@ test("moves the TCP to a typed pose with RobotControlPanel's Move to tab while t
   const target = Math.round((start + 20) * 10) / 10
   values[2] = target
   await coordinates.fill(`(${values.join(", ")})`)
+  await coordinates.press("Enter")
 
-  // Planned: the button can be held
-  const move = panel.getByRole("button", { name: "Move to pose" })
+  // Planned and loaded: the button can be held
+  const move = panel.getByRole("button", {
+    name: /^(Move to|Moving…|Stopping…)$/,
+  })
+  await expect(move).toHaveText("Move to")
   await expect(move).toBeEnabled({ timeout: 30_000 })
-  await jogPress(page, move, async () => (await tcpZ()) > start + 3)
-  await expect(move).toHaveAttribute("aria-pressed", "false")
+  await jogPress(
+    page,
+    move,
+    async () =>
+      (await move.textContent()) === "Moving…" && (await tcpZ()) > start + 3,
+  )
 
-  // Released: the TCP stands still, short of the target or at it
+  // Let go on the way: the TCP stands still short of the target, which
+  // stays, to go on
   let last = await tcpZ()
   await expect
     .poll(
@@ -369,14 +378,31 @@ test("moves the TCP to a typed pose with RobotControlPanel's Move to tab while t
       { message: "The TCP stands still after the release", timeout: 30_000 },
     )
     .toBe(true)
-  expect(last).toBeLessThan(target + 0.5)
+  expect(last).toBeLessThan(target - 0.5)
+  await expect(move).toHaveText("Move to", { timeout: 10_000 })
+  await expect(move).toBeEnabled()
 
-  // Held again: it goes on to the target
+  // Held again to the target: the field shows the current pose again
   await jogPress(
     page,
     move,
     async () => Math.abs((await tcpZ()) - target) < 0.5,
   )
+  await expect(move).toHaveText("Move to", { timeout: 10_000 })
+  await expect(move).toBeDisabled()
+  await expect(
+    panel.getByRole("button", { name: "Reset pose to previous one" }),
+  ).toHaveCount(0)
+  await expect
+    .poll(
+      async () =>
+        Math.abs(
+          Number((await coordinates.inputValue()).slice(1, -1).split(",")[2]) -
+            target,
+        ),
+      { message: "The field shows the current pose, at the target" },
+    )
+    .toBeLessThan(0.5)
   await screenshot(page, "building-blocks-robot-control-panel-move-to")
 })
 
