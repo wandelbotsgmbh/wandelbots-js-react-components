@@ -16,7 +16,7 @@ import {
   ur5eDescription,
   ur5eMotionGroupState,
 } from "./__fixtures__/motionStreamMockData"
-import { JoggingStore } from "./JoggingStore"
+import { JoggingStore, type JoggingStoreStorage } from "./JoggingStore"
 
 const HALF_PI = Math.PI / 2
 
@@ -95,12 +95,14 @@ function createStore({
   jogger = createMockJogger(),
   tcps = [{ id: "Flange", readable_name: "Flange" } as unknown as RobotTcp],
   inverseSolver = "some-solver",
+  storage,
 }: {
   coordinateSystems?: CoordinateSystem[]
   description?: MotionGroupDescription
   jogger?: JoggerConnection
   tcps?: RobotTcp[]
   inverseSolver?: string | null | undefined
+  storage?: JoggingStoreStorage
 } = {}) {
   return new JoggingStore(
     jogger,
@@ -108,7 +110,20 @@ function createStore({
     description,
     tcps,
     inverseSolver,
+    { storage },
   )
+}
+
+/** A storage of the app's own, with what it holds to look into */
+function memoryStorage(entries: Record<string, string> = {}) {
+  const held = new Map(Object.entries(entries))
+  return {
+    getItem: (key: string) => held.get(key) ?? null,
+    setItem: (key: string, value: string) => {
+      held.set(key, value)
+    },
+    held,
+  }
 }
 
 function expectVectorCloseTo(actual: number[] | undefined, expected: number[]) {
@@ -582,5 +597,74 @@ describe("create", () => {
     ])
     // No inverse solver: no cartesian jogging
     expect(store.tabs.map((tab) => tab.id)).toEqual(["joint"])
+  })
+
+  it("keeps the jogging settings in the storage it is given", () => {
+    const storage = memoryStorage()
+    const store = JoggingStore.create(
+      createMockJogger(),
+      {
+        coordinateSystems: [worldFrame],
+        description: ur5eDescription,
+        kinematicModel: { inverse_solver: null } as unknown as KinematicModel,
+      },
+      { storage },
+    )
+
+    store.setSelectedOrientation("tool")
+
+    expect(
+      JSON.parse(storage.held.get("joggingToolStore") ?? "{}")
+        .selectedOrientation,
+    ).toBe("tool")
+  })
+})
+
+describe("jogging settings", () => {
+  it("start as the app's storage holds them", () => {
+    const storage = memoryStorage({
+      joggingToolStore: JSON.stringify({
+        selectedOrientation: "tool",
+        selectedCartesianMotionType: "rotate",
+      }),
+    })
+
+    const store = createStore({ storage })
+
+    expect(store.selectedOrientation).toBe("tool")
+    expect(store.selectedCartesianMotionType).toBe("rotate")
+  })
+
+  it("are kept in the app's storage, not in localStorage", () => {
+    const storage = memoryStorage()
+    const store = createStore({ storage })
+
+    store.setSelectedCartesianMotionType("rotate")
+
+    expect(
+      JSON.parse(storage.held.get("joggingToolStore") ?? "{}")
+        .selectedCartesianMotionType,
+    ).toBe("rotate")
+    expect(localStorage.getItem("joggingToolStore")).toBeNull()
+  })
+
+  it("are kept in localStorage when the app gives no storage", () => {
+    const store = createStore()
+
+    store.setSelectedOrientation("tool")
+
+    expect(
+      JSON.parse(localStorage.getItem("joggingToolStore") ?? "{}")
+        .selectedOrientation,
+    ).toBe("tool")
+  })
+
+  it("the store puts nothing on window", () => {
+    // biome-ignore lint/suspicious/noExplicitAny: window has no such property
+    delete (window as any).joggingStore
+
+    createStore()
+
+    expect("joggingStore" in window).toBe(false)
   })
 })

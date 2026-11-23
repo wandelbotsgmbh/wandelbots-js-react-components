@@ -387,7 +387,7 @@ export type JoggingPanelTabId = "cartesian" | "joint";
 
 // @public (undocumented)
 export class JoggingStore {
-    constructor(jogger: JoggerConnection, coordSystems: CoordinateSystem[], motionGroupDescription: MotionGroupDescription, tcps: RobotTcp[], inverseSolverValue: string | null | undefined);
+    constructor(jogger: JoggerConnection, coordSystems: CoordinateSystem[], motionGroupDescription: MotionGroupDescription, tcps: RobotTcp[], inverseSolverValue: string | null | undefined, options?: JoggingStoreOptions);
     activate(): Promise<JoggerConnection>;
     get activeCoordSystemId(): string;
     get activeDiscreteIncrement(): {
@@ -409,7 +409,7 @@ export class JoggingStore {
         coordinateSystems: CoordinateSystem[];
         description: MotionGroupDescription;
         kinematicModel: KinematicModel;
-    }): JoggingStore;
+    }, options?: JoggingStoreOptions): JoggingStore;
     // (undocumented)
     get currentTab(): JoggingTab;
     // (undocumented)
@@ -453,8 +453,7 @@ export class JoggingStore {
     jointType: JointTypeEnum;
     lastJogError: string | null;
     get lastJogErrorTranslationKey(): string | null;
-    static loadFor(jogger: JoggerConnection): Promise<JoggingStore>;
-    // (undocumented)
+    static loadFor(jogger: JoggerConnection, options?: JoggingStoreOptions): Promise<JoggingStore>;
     loadFromLocalStorage(): void;
     // (undocumented)
     get localStorageSave(): {
@@ -482,7 +481,6 @@ export class JoggingStore {
     requestTcpChange(tcpId: string): Promise<void>;
     rotationVelocityDegPerSec: number;
     get rotationVelocityRadsPerSec(): number;
-    // (undocumented)
     saveToLocalStorage(): void;
     selectedCartesianMotionType: CartesianMotionType;
     selectedCoordSystemId: string;
@@ -537,6 +535,14 @@ export class JoggingStore {
     velocityInDisplayUnits(useDegree: boolean): number;
     withMotionLock(fn: () => Promise<void>): Promise<void>;
 }
+
+// @public
+export type JoggingStoreOptions = {
+    storage?: JoggingStoreStorage;
+};
+
+// @public
+export type JoggingStoreStorage = Pick<Storage, "getItem" | "setItem">;
 
 // @public
 export type JogHandle = {

@@ -63,6 +63,31 @@ type TabType = "cartesian" | "joint" | "debug"
 type JoggingTab = { id: TabType; label: string }
 export type CartesianMotionType = "translate" | "rotate"
 
+/**
+ * Where a jogging store keeps the user's jogging settings between visits: the
+ * part of the Web Storage API that it uses, so `localStorage` itself fits, as
+ * does a storage of the app's own
+ */
+export type JoggingStoreStorage = Pick<Storage, "getItem" | "setItem">
+
+/** What an app can give a jogging store besides its robot's data */
+export type JoggingStoreOptions = {
+  /**
+   * Where to keep the jogging settings: the tab, the coordinate systems, the
+   * increment, the motion type and the orientation. Without it the store
+   * keeps them in `localStorage`, where the browser has one; the app decides
+   * where they belong, so pass it.
+   */
+  storage?: JoggingStoreStorage
+}
+
+/** The key of the jogging settings in the storage */
+const SETTINGS_KEY = "joggingToolStore"
+
+/** `localStorage`, where the environment has one (not in Node) */
+const defaultStorage = (): JoggingStoreStorage | undefined =>
+  typeof localStorage === "undefined" ? undefined : localStorage
+
 export class JoggingStore {
   selectedTabId: TabType = "cartesian"
 
@@ -195,7 +220,10 @@ export class JoggingStore {
    * Load a jogging store with the relevant data it needs
    * from the backend
    */
-  static async loadFor(jogger: JoggerConnection) {
+  static async loadFor(
+    jogger: JoggerConnection,
+    options: JoggingStoreOptions = {},
+  ) {
     const { nova, cellId } = jogger
 
     // Find out what TCPs this motion group has (we need it for jogging)
@@ -220,11 +248,15 @@ export class JoggingStore {
         description.motion_group_model,
       )
 
-    return JoggingStore.create(jogger, {
-      coordinateSystems: coordinatesystems || [],
-      description,
-      kinematicModel,
-    })
+    return JoggingStore.create(
+      jogger,
+      {
+        coordinateSystems: coordinatesystems || [],
+        description,
+        kinematicModel,
+      },
+      options,
+    )
   }
 
   /**
@@ -240,6 +272,7 @@ export class JoggingStore {
       description: MotionGroupDescription
       kinematicModel: KinematicModel
     },
+    options: JoggingStoreOptions = {},
   ) {
     const { coordinateSystems, description, kinematicModel } = data
 
@@ -256,8 +289,12 @@ export class JoggingStore {
       description,
       tcps,
       kinematicModel.inverse_solver,
+      options,
     )
   }
+
+  /** Where the jogging settings are kept, see {@link JoggingStoreOptions} */
+  private readonly storage: JoggingStoreStorage | undefined
 
   constructor(
     readonly jogger: JoggerConnection,
@@ -265,7 +302,9 @@ export class JoggingStore {
     readonly motionGroupDescription: MotionGroupDescription,
     readonly tcps: RobotTcp[],
     readonly inverseSolverValue: string | null | undefined,
+    options: JoggingStoreOptions = {},
   ) {
+    this.storage = options.storage ?? defaultStorage()
     // TODO workaround for default coord system on backend having a canonical id
     // of empty string. Can remove when fixed on API side
     for (const cs of coordSystems) {
@@ -291,7 +330,11 @@ export class JoggingStore {
       JointTypeEnum.RevoluteJoint
 
     // Make all properties observable and actions auto-bound
-    makeAutoObservable(this, {}, { autoBind: true })
+    makeAutoObservable<this, "storage">(
+      this,
+      { storage: false },
+      { autoBind: true },
+    )
 
     // Register blocked watching
     this.jogger.onBlocked = () => {
@@ -307,10 +350,10 @@ export class JoggingStore {
       previousOnError?.(err)
     }
 
-    // Load user settings from local storage if available
+    // Load the user's settings from the storage, if it holds them
     this.loadFromLocalStorage()
 
-    // Automatically save user settings to local storage when save changes
+    // Keep the user's settings in the storage whenever they change
     this.disposers.push(autorun(() => this.saveToLocalStorage()))
 
     // Sync server-reported TCP → UI (only when no user-initiated TCP change is in flight)
@@ -326,10 +369,6 @@ export class JoggingStore {
         }
       }),
     )
-
-    // Assign joggingStore to window
-    // biome-ignore lint/suspicious/noExplicitAny: pre-biome code
-    ;(window as any).joggingStore = this
   }
 
   dispose() {
@@ -392,8 +431,13 @@ export class JoggingStore {
     return this.jogger
   }
 
+  /**
+   * Takes the user's settings from the storage (see
+   * {@link JoggingStoreOptions}), which is `localStorage` only by default
+   */
   loadFromLocalStorage() {
-    const save = tryParseJson(localStorage.getItem("joggingToolStore"))
+    const saved = this.storage?.getItem(SETTINGS_KEY)
+    const save = saved ? tryParseJson(saved) : undefined
     if (!save) return
 
     if (this.tabsById[save.selectedTabId]) {
@@ -421,11 +465,12 @@ export class JoggingStore {
     }
   }
 
+  /**
+   * Keeps the user's settings in the storage (see
+   * {@link JoggingStoreOptions}), which is `localStorage` only by default
+   */
   saveToLocalStorage() {
-    localStorage.setItem(
-      "joggingToolStore",
-      JSON.stringify(this.localStorageSave),
-    )
+    this.storage?.setItem(SETTINGS_KEY, JSON.stringify(this.localStorageSave))
   }
 
   get isLocked() {

@@ -25,7 +25,11 @@ export {
   type JoggingJointSliderProps,
 } from "./components/jogging/joint/JoggingJointSlider"
 export * from "./components/jogging/JoggingPanel"
-export { JoggingStore } from "./components/jogging/JoggingStore"
+export {
+  JoggingStore,
+  type JoggingStoreOptions,
+  type JoggingStoreStorage,
+} from "./components/jogging/JoggingStore"
 export type {
   JogAxis,
   JogDirection,
