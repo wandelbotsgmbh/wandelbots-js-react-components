@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test"
+import { Quaternion, Vector3 } from "three"
 import {
   controllerState,
   expectModelDrawn,
@@ -8,6 +9,7 @@ import {
   openPage,
   screenshot,
   screenshotOnFailure,
+  tcpPose,
   tcpZ,
 } from "./helpers"
 import { CELL, testData } from "./testData"
@@ -189,6 +191,48 @@ test("jogs the TCP with RobotControlPanel: up while Z+ is held, and one step of 
     })
     .toBeCloseTo(top - 10, 0)
   await screenshot(page, "layouts-robot-control-panel-increment")
+})
+
+test("jogs the TCP one step along the tool's Z with RobotControlPanel, relative to the Selected TCP in Increment mode", async ({
+  page,
+}) => {
+  await openPage(page, "layouts")
+  const panel = page.getByTestId("robot-control-panel")
+  await expect(panel.getByRole("button", { name: "Jog Z+" })).toBeEnabled({
+    timeout: 30_000,
+  })
+
+  await panel.getByRole("combobox", { name: "Move relative to" }).click()
+  await page.getByRole("option", { name: "Selected TCP" }).click()
+  // The buttons: in the tool's frame, a gizmo handle can point at the viewer
+  await panel.getByRole("button", { name: "Button controls" }).click()
+  await panel.getByRole("button", { name: "Increment" }).click()
+  await panel.getByRole("combobox", { name: "Step size" }).click()
+  await page.getByRole("option", { name: "10 mm" }).click()
+
+  // The tool's Z in the world frame. In the start pose the tool points
+  // down, so a step along the world's Z would go the other way.
+  const start = await tcpPose()
+  const turn = new Vector3(...start.orientation)
+  const toolZ = new Vector3(0, 0, 1).applyQuaternion(
+    new Quaternion().setFromAxisAngle(turn.clone().normalize(), turn.length()),
+  )
+  expect(toolZ.distanceTo(new Vector3(0, 0, 1))).toBeGreaterThan(1)
+
+  await panel.getByRole("button", { name: "Jog Z+" }).click()
+  const moved = async () =>
+    new Vector3(...(await tcpPose()).position).sub(
+      new Vector3(...start.position),
+    )
+  await expect
+    .poll(async () => (await moved()).length(), {
+      message: "The TCP went one step of 10 mm",
+      timeout: 30_000,
+    })
+    .toBeCloseTo(10, 0)
+  // The whole step went along the tool's Z
+  expect((await moved()).dot(toolZ)).toBeCloseTo(10, 0)
+  await screenshot(page, "layouts-robot-control-panel-tool-step")
 })
 
 test("jogs a joint with RobotControlPanel's Joint tab, one joint at a time, and stops it on release", async ({

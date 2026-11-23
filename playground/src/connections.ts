@@ -204,10 +204,11 @@ export async function stopJogging(store: JoggingStore) {
 }
 
 /**
- * Jogs the TCP one step along an axis of the world frame, or about it, as
- * the Increment mode of JoggingPanel does: a short trajectory, with the
- * velocity of the store. The store is locked while it runs, and its
- * `incrementJogInProgress` names the handle. An error goes to the console.
+ * Jogs the TCP one step along an axis of the world frame or (with `tool`) of
+ * the tool, or about it, as the Increment mode of JoggingPanel does: a short
+ * trajectory, with the velocity of the store. The store is locked while it
+ * runs, and its `incrementJogInProgress` names the handle. An error goes to
+ * the console.
  */
 export async function jogStep(
   store: JoggingStore,
@@ -217,6 +218,7 @@ export async function jogStep(
     rotate: boolean
     /** In mm, or in rad with `rotate` */
     distance: number
+    tool?: boolean
   },
 ) {
   const state = store.jogger.motionStream.rapidlyChangingMotionState
@@ -230,10 +232,11 @@ export async function jogStep(
         direction: step.direction,
       })
       await store.jogger.setJoggingMode("trajectory")
+      // With "tool", the step runs along the tool's axes, as startJogging
+      store.jogger.orientation = step.tool ? "tool" : "coordsys"
       await store.jogger.runIncrementalCartesianMotion({
         currentTcpPose: tcpPose,
         currentJoints: state.joint_position as Vector3Simple,
-        coordSystemId: "world",
         velocityInRelevantUnits: step.rotate
           ? store.rotationVelocityRadsPerSec
           : store.translationVelocityMmPerSec,

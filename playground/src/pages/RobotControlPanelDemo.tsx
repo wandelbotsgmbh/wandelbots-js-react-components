@@ -118,24 +118,20 @@ export const RobotControlPanelDemo = observer(
           })
         }}
         onJogStop={() => stopJogging(store)}
-        // A step runs along the world's axes only, as in JoggingPanel
-        increments={
-          tool
-            ? undefined
-            : {
-                steps: STEPS,
-                onStep: (motion, axis, direction, distance) => {
-                  moveTo.release()
-                  jogStep(store, {
-                    axis,
-                    direction,
-                    rotate: motion === "rotate",
-                    distance,
-                  })
-                },
-                running: store.incrementJogInProgress,
-              }
-        }
+        increments={{
+          steps: STEPS,
+          onStep: (motion, axis, direction, distance) => {
+            moveTo.release()
+            jogStep(store, {
+              axis,
+              direction,
+              rotate: motion === "rotate",
+              distance,
+              tool,
+            })
+          },
+          running: store.incrementJogInProgress,
+        }}
         // A joint jogs with the store's rotation velocity (rad/s), or its
         // translation velocity (mm/s) when it is a linear axis
         joints={{
