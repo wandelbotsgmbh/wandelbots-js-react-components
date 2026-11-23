@@ -28,6 +28,26 @@ the migration from 6.x are in [README.md](README.md).
   the library's client stays out of the public API (`@internal`).
 - The public API is the entry points `.`, `/core`, `/3d` and `/SafetyBar`
   (`scripts/entry-points.ts`), recorded in `etc/api-extractor/*.api.md`.
+- A UI component takes props and reports through callbacks: it never imports
+  a store (such as `JoggingStore`), the connection code in `src/lib/` or a
+  provider. So an app can use any one of them without the library's stores,
+  e.g. only the gizmo or only a joint slider. Each one is importable on its
+  own: add it to `componentNames` in `scripts/entry-points.ts`. The older
+  parts that still take a store (`JoggingPanel` and its tabs,
+  `VelocitySlider`, `Robot`, `LinearAxis`) are to be moved to this.
+- A connected component, one that reads a store or session, is only its UI
+  component plus a hook that turns the store into that component's props,
+  and both are exported: e.g. `<RobotControl />` is
+  `<RobotControlPanel {...useRobotControlProps(session)} />`. An app can then
+  take the hook and replace single props, such as its own Move to.
+- No globals: a store or session reaches a component through a prop or a
+  provider, never through module state or `window`, so several robots can be
+  on one page.
+- Nothing assumes one app (RobotPad, the teaching app): no `localStorage`,
+  no `window` globals, no app's translation keys, routes or framework. What
+  to keep comes in as a storage adapter, errors and events go out through
+  callbacks, and a lock comes in as a `disabled` flag. `JoggingStore` still
+  breaks this (`localStorage`, `window.joggingStore`).
 
 ## NOVA instances
 
