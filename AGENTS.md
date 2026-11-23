@@ -16,7 +16,8 @@ that connects them to a NOVA instance. What it contains, its entry points and
 the migration from 6.x are in [README.md](README.md).
 
 - React, MUI, Emotion, the design system (`@wandelbots/mui`) and MobX stay peer
-  dependencies; three.js, React Three Fiber and drei stay optional peers. Never
+  dependencies; three.js, React Three Fiber, drei and nats.ws (only `/nats`
+  loads it) stay optional peers. Never
   make one of them a normal dependency: the app and the library must use the
   same copy.
 - No own theme and no own low-level parts (buttons, text fields, cards). Use
@@ -26,8 +27,9 @@ the migration from 6.x are in [README.md](README.md).
   library connects with its own client: a public function takes a
   `NovaConnection` (`src/lib/novaConnection.ts`), never the `Nova` class, and
   the library's client stays out of the public API (`@internal`).
-- The public API is the entry points `.`, `/core`, `/3d` and `/SafetyBar`
-  (`scripts/entry-points.ts`), recorded in `etc/api-extractor/*.api.md`.
+- The public API is the entry points `.`, `/core`, `/3d`, `/nats` and
+  `/SafetyBar` (`scripts/entry-points.ts`), recorded in
+  `etc/api-extractor/*.api.md`.
 - A UI component takes props and reports through callbacks: it never imports
   a store (such as `JoggingStore`), the connection code in `src/lib/` or a
   provider. So an app can use any one of them without the library's stores,

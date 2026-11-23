@@ -183,6 +183,7 @@ export type ControllerStateSource = {
     readonly readyState: number;
     addEventListener(type: "message", listener: (event: MessageEvent) => void): void;
     removeEventListener(type: "message", listener: (event: MessageEvent) => void): void;
+    firstMessage(): Promise<MessageEvent>;
     nextMessage(): Promise<MessageEvent>;
     reconnect(): void;
     close(): void;

@@ -88,6 +88,7 @@ describe("package exports — aggregate entries", () => {
     { spec: pkgName, esm: "dist/index.js", cjs: "dist/index.cjs" },
     { spec: `${pkgName}/core`, esm: "dist/core.js", cjs: "dist/core.cjs" },
     { spec: `${pkgName}/3d`, esm: "dist/3d.js", cjs: "dist/3d.cjs" },
+    { spec: `${pkgName}/nats`, esm: "dist/nats.js", cjs: "dist/nats.cjs" },
   ]
 
   it.each(entries)("$spec resolves ESM, CJS, and types", ({
@@ -102,6 +103,38 @@ describe("package exports — aggregate entries", () => {
     expect(existsSync(esmPath)).toBe(true)
     expect(existsSync(cjsPath)).toBe(true)
     expect(existsSync(typesFor(esmPath))).toBe(true)
+  })
+})
+
+/** Every file an ESM file of dist loads, following its relative imports */
+function loadedFiles(esmFile: string, seen = new Set<string>()): Set<string> {
+  if (seen.has(esmFile)) return seen
+  seen.add(esmFile)
+  const source = readFileSync(esmFile, "utf8")
+  for (const [, specifier] of source.matchAll(/from\s*"(\.[^"]+)"/g)) {
+    if (specifier) loadedFiles(resolve(dirname(esmFile), specifier), seen)
+  }
+  return seen
+}
+
+describe("the optional peer nats.ws", () => {
+  // An app without nats.ws must be able to use every other entry point
+  it.each([
+    "index.js",
+    "core.js",
+    "3d.js",
+  ])("is not loaded by dist/%s", (entryFile) => {
+    const loadingNats = [...loadedFiles(resolve(distDir, entryFile))].filter(
+      (file) => readFileSync(file, "utf8").includes('"nats.ws"'),
+    )
+    expect(loadingNats).toEqual([])
+  })
+
+  it("is loaded by dist/nats.js", () => {
+    const loadingNats = [...loadedFiles(resolve(distDir, "nats.js"))].filter(
+      (file) => readFileSync(file, "utf8").includes('"nats.ws"'),
+    )
+    expect(loadingNats).not.toEqual([])
   })
 })
 

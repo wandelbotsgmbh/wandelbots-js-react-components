@@ -9,10 +9,10 @@ import {
 
 /**
  * Where a robot's live controller state comes from: NOVA's websocket
- * ({@link controllerStateWebsocket}), NATS (the `/nats` entry point), or a
- * source of the app's own. It works like a WebSocket that reconnects itself:
- * a {@link ControllerStateStream} listens to its messages and asks it to
- * reconnect when they stop coming.
+ * (`controllerStateWebsocket` of `/core`), NATS (`natsControllerStateSource`
+ * of `/nats`), or a source of the app's own. It works like a WebSocket that
+ * reconnects itself: a `ControllerStateStream` listens to its messages and
+ * asks it to reconnect when they stop coming.
  */
 export type ControllerStateSource = {
   /** Where it connects, for error reports */
@@ -27,6 +27,8 @@ export type ControllerStateSource = {
     type: "message",
     listener: (event: MessageEvent) => void,
   ): void
+  /** Resolves with the first message, also when it came already */
+  firstMessage(): Promise<MessageEvent>
   /** Resolves with the next message */
   nextMessage(): Promise<MessageEvent>
   reconnect(): void
@@ -38,7 +40,7 @@ export type ControllerStateSource = {
 /** The part of a nova-js reconnecting websocket that a source uses */
 type StateSocket = Pick<
   AutoReconnectingWebsocket,
-  "url" | "readyState" | "nextMessage" | "reconnect" | "close"
+  "url" | "readyState" | "firstMessage" | "nextMessage" | "reconnect" | "close"
 > &
   Pick<ControllerStateSource, "addEventListener" | "removeEventListener">
 
@@ -62,6 +64,7 @@ export function websocketControllerStateSource(
       socket.addEventListener(type, listener),
     removeEventListener: (type, listener) =>
       socket.removeEventListener(type, listener),
+    firstMessage: () => socket.firstMessage(),
     nextMessage: () => socket.nextMessage(),
     reconnect: () => socket.reconnect(),
     close: () => socket.close(),

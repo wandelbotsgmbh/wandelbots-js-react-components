@@ -27,6 +27,11 @@
       "import": "./dist/3d.js",
       "require": "./dist/3d.cjs"
     },
+    "./nats": {
+      "types": "./dist/nats.d.ts",
+      "import": "./dist/nats.js",
+      "require": "./dist/nats.cjs"
+    },
     "./package.json": "./package.json",
     "./*": {
       "types": "./dist/*/index.d.ts",
@@ -96,6 +101,7 @@
     "jsdom": "^27.4.0",
     "mobx": "^6.13.6",
     "mobx-react-lite": "^4.1.0",
+    "nats.ws": "^1.30.3",
     "nodemon": "^3.1.9",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
@@ -120,6 +126,7 @@
     "@wandelbots/mui": "^2.0.0",
     "mobx": "^6.13.6",
     "mobx-react-lite": "^4.1.0",
+    "nats.ws": "^1.30.3",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "three": ">=0.182",
@@ -139,6 +146,9 @@
       "optional": true
     },
     "three-stdlib": {
+      "optional": true
+    },
+    "nats.ws": {
       "optional": true
     }
   },

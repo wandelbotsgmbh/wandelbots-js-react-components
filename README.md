@@ -68,6 +68,7 @@ Browse the full icon set at https://wandelbotsgmbh.github.io/nova-design-system/
 - **`.`** (Main) — All components. Requires the peer dependencies of `/core` and `/3d`.
 - **`/core`** — The parts without 3D (jogging, `SafetyBar`, `AppHeader`, `LoadingCover`, `NoMotionGroupModal`), the NOVA connections and `JoggingStore`, the motion state helpers and `i18n`.
 - **`/3d`** — The 3D parts (`Robot`, `MotionGroupVisualizer`, `SafetyZonesRenderer`, …). Requires in addition three, three-stdlib, @react-three/fiber and @react-three/drei.
+- **`/nats`** — A robot's live controller state over NOVA's NATS server (`natsControllerStateSource`, `natsUrlOf`), a source for `ControllerStateStream` of `/core` instead of its websocket (`controllerStateWebsocket`). Requires in addition nats.ws; no other entry point loads it.
 - **`/SafetyBar`** — Only `SafetyBar` (also as the default export).
 - **`/JoggingGizmo`** — Only `JoggingGizmo` (also as the default export) and `JoggingGizmoOrientation`. Requires in addition three and @react-three/fiber.
 - **`/JoggingButtons`** — Only `JoggingButtons` (also as the default export). No 3D packages needed.
@@ -94,6 +95,7 @@ import JoggingJointSlider from "@wandelbots/wandelbots-js-react-components/Joggi
 | `three-stdlib` (only `/3d`) | >=2 |
 | `@react-three/fiber` (only `/3d`, `/JoggingGizmo`, `/RobotControlPanel`) | ^9 |
 | `@react-three/drei` (only `/3d`) | ^10 |
+| `nats.ws` (only `/nats`) | ^1.30.3 |
 
 These packages are peer dependencies because the app and the library must use the same copy: React, the MUI theme of the app, the MobX stores that the app reads with its own `observer`, and the `<Canvas>` of React Three Fiber.
 

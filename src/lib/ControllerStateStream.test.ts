@@ -29,6 +29,7 @@ class FakeSource extends EventTarget implements ControllerStateSource {
         },
       ),
     )
+  firstMessage = this.nextMessage
   parse = (data: unknown) => JSON.parse(data as string) as RobotControllerState
 
   send(state: RobotControllerState) {
@@ -403,6 +404,7 @@ test("NOVA's websocket source reads the controller state out of its messages", (
   const socket = Object.assign(new EventTarget(), {
     readyState: 1,
     url: "ws://nova/api/v2/cells/cell/controllers/ur5e/state-stream",
+    firstMessage: vi.fn(),
     nextMessage: vi.fn(),
     reconnect: vi.fn(),
     close: vi.fn(),
