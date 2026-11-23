@@ -85,6 +85,7 @@ export type RobotControlPanelProps = {
     onClose?: () => void;
     disabled?: boolean;
     jogDisabled?: boolean;
+    cartesian?: boolean;
     tab?: RobotControlTab;
     onTabChange?: (tab: RobotControlTab) => void;
     jogMode?: RobotControlJogMode;

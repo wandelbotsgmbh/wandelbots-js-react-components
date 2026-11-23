@@ -175,6 +175,12 @@ export type RobotControlPanelProps = {
    * must not end because the app locks jogging while it runs.
    */
   jogDisabled?: boolean
+  /**
+   * The robot can jog its TCP along axes: the Translate and Rotate tabs.
+   * False for a motion group without an inverse solver, e.g. a linear axis
+   * or a turntable (see `JoggingStore.canJogCartesian`). Defaults to true.
+   */
+  cartesian?: boolean
   /** The tab to show. Without it, the panel keeps its own tab. */
   tab?: RobotControlTab
   /** A tab was chosen in the panel */
@@ -251,6 +257,7 @@ export const RobotControlPanel = externalizeComponent(
     joints,
     moveTo,
     jogDisabled = false,
+    cartesian = true,
     tab: appTab,
     onTabChange,
     jogMode,
@@ -266,12 +273,17 @@ export const RobotControlPanel = externalizeComponent(
       view: "gizmo",
       step: { translate: 0, rotate: 0 },
     })
+    // The tabs of what the robot can do and the app gives
+    const tabs: RobotControlTab[] = [
+      ...(cartesian ? (["translate", "rotate"] as const) : []),
+      ...(joints ? (["joint"] as const) : []),
+      ...(moveTo ? (["moveTo"] as const) : []),
+    ]
     const chosenTab = appTab ?? ownTab
-    // A tab goes when the app no longer gives what it needs
-    const tab =
-      (chosenTab === "joint" && !joints) || (chosenTab === "moveTo" && !moveTo)
-        ? "translate"
-        : chosenTab
+    // A tab that is not there gives way to the first one
+    const tab: RobotControlTab | undefined = tabs.includes(chosenTab)
+      ? chosenTab
+      : tabs[0]
     const settings = withAppSettings(ownSettings, jogMode, props.increments)
     const title = t("RobotControl.Title.ti")
 
@@ -334,7 +346,7 @@ export const RobotControlPanel = externalizeComponent(
         </Stack>
 
         <Tabs
-          value={tab}
+          value={tab ?? false}
           onChange={(_event, next: RobotControlTab) => changeTab(next)}
           aria-label={title}
           // The panel can get narrower than its tabs: scroll rather than
@@ -350,16 +362,20 @@ export const RobotControlPanel = externalizeComponent(
             background: "transparent",
           }}
         >
-          <Tab
-            value="translate"
-            label={t("RobotControl.Tab.Translate.bt")}
-            sx={{ minWidth: 0, paddingX: "12px", textTransform: "none" }}
-          />
-          <Tab
-            value="rotate"
-            label={t("RobotControl.Tab.Rotate.bt")}
-            sx={{ minWidth: 0, paddingX: "12px", textTransform: "none" }}
-          />
+          {cartesian && (
+            <Tab
+              value="translate"
+              label={t("RobotControl.Tab.Translate.bt")}
+              sx={{ minWidth: 0, paddingX: "12px", textTransform: "none" }}
+            />
+          )}
+          {cartesian && (
+            <Tab
+              value="rotate"
+              label={t("RobotControl.Tab.Rotate.bt")}
+              sx={{ minWidth: 0, paddingX: "12px", textTransform: "none" }}
+            />
+          )}
           {joints && (
             <Tab
               value="joint"
@@ -389,15 +405,15 @@ export const RobotControlPanel = externalizeComponent(
               }
               disabled={disabled}
             />
-          ) : (
+          ) : tab === "translate" || tab === "rotate" ? (
             <CartesianJogTab
               {...props}
               disabled={disabled || jogDisabled}
-              motion={tab === "rotate" ? "rotate" : "translate"}
+              motion={tab}
               settings={settings}
               onSettingsChange={changeSettings}
             />
-          )}
+          ) : null}
         </Stack>
       </Stack>
     )

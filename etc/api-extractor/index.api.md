@@ -443,6 +443,7 @@ export class JoggingStore {
     // (undocumented)
     block(): void;
     blocked: boolean;
+    get canJogCartesian(): boolean;
     // (undocumented)
     get coordSystemCountByName(): Dictionary<number>;
     // (undocumented)
@@ -808,6 +809,7 @@ export type RobotControlPanelProps = {
     onClose?: () => void;
     disabled?: boolean;
     jogDisabled?: boolean;
+    cartesian?: boolean;
     tab?: RobotControlTab;
     onTabChange?: (tab: RobotControlTab) => void;
     jogMode?: RobotControlJogMode;
