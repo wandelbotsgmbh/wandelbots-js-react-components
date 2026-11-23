@@ -7,6 +7,8 @@ import { NotificationsFilled } from "@wandelbots/icons/NotificationsFilled"
 import {
   RobotHeader,
   type RobotSession,
+  robotActivationOf,
+  robotSafetyOf,
 } from "@wandelbots/wandelbots-js-react-components"
 import { observer } from "mobx-react-lite"
 import { useState } from "react"
@@ -16,9 +18,8 @@ import { isPageId, PAGES, type PageId } from "."
 
 /**
  * RobotHeader as Robot Pad's top bar: the app menu opens the playground's
- * pages, the select picks the motion group, and the switch activates the
- * robot with the session's activation (the controller's default mode, as
- * RobotPad does)
+ * pages, the select picks the motion group, and the safety and the
+ * activation switch are the session's (robotSafetyOf, robotActivationOf)
  */
 export const RobotHeaderDemo = observer(
   ({
@@ -35,7 +36,6 @@ export const RobotHeaderDemo = observer(
     onPageChange: (page: PageId) => void
   }) => {
     const [notifications, setNotifications] = useState<HTMLElement | null>(null)
-    const { safety_state, operation_mode } = session.state.controllerState
 
     return (
       <RobotHeader
@@ -50,24 +50,8 @@ export const RobotHeaderDemo = observer(
           value: session.motionGroupId,
           onChange: onMotionGroupChange,
         }}
-        safety={{
-          isVirtual: session.description.isVirtual,
-          motionGroupId: session.motionGroupId,
-          operationMode: operation_mode,
-          safetyState: safety_state,
-        }}
-        activation={{
-          state: session.activation.state,
-          onToggle: () => {
-            // A refused change rejects: the switch shows the mode as it is
-            session.activation.toggle().catch((error: unknown) => {
-              console.error("Changing the controller's mode failed:", error)
-            })
-          },
-          // As RobotPad: not while NOVA would refuse it, e.g. at an
-          // emergency stop
-          disabled: session.safety.activationBlockedReason !== null,
-        }}
+        safety={robotSafetyOf(session)}
+        activation={robotActivationOf(session)}
         actions={
           <>
             <IconButton

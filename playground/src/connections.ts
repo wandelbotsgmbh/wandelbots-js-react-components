@@ -87,6 +87,9 @@ export function useLoadedSession(
       const load = loadRobotSession(instance.nova, id, {
         cellId: instance.cellId,
         storage: localStorage,
+        // What fails in the background or in a connected component, e.g. a
+        // refused activation: an app shows it, the playground logs it
+        onError: (error) => console.error(`${id}: ${error.message}`, error),
       })
       try {
         return await load.ready

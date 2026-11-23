@@ -5,6 +5,7 @@ import { AdornedSelect } from "@wandelbots/mui"
 import {
   AppHeader,
   type RobotSession,
+  robotSafetyOf,
   SafetyBar,
 } from "@wandelbots/wandelbots-js-react-components"
 import { observer } from "mobx-react-lite"
@@ -86,14 +87,7 @@ export const TopBar = observer(function TopBar({
         ))}
       </AdornedSelect>
 
-      {session && (
-        <SafetyBar
-          isVirtual={session.description.isVirtual}
-          motionGroupId={session.motionGroupId}
-          operationMode={session.state.controllerState.operation_mode}
-          safetyState={session.state.controllerState.safety_state}
-        />
-      )}
+      {session && <SafetyBar {...robotSafetyOf(session)} />}
     </Stack>
   )
 })
