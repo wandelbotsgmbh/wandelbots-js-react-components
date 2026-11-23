@@ -132,6 +132,53 @@ These packages are peer dependencies because the app and the library must use th
 - **Look:** `AppHeader` and `LoadingCover` use the styles of the design system, so they look a little different.
 - **Release asset:** `no-draco-models.zip` is gone. The models come from the NOVA API (since 4.0.0).
 
+### From ConnectedMotionGroup to RobotSession
+
+`ConnectedMotionGroup` is deprecated. `RobotSession` replaces it: one robot of a cell, loaded and connected, with its description, live state, safety, activation, jogging and Move to. `ConnectedMotionGroup` keeps working until a later major version removes it, and `Robot` and `LinearAxis` still take it.
+
+```tsx
+// Before
+const motionGroup = await ConnectedMotionGroup.connect(nova, "0@ur5e", { cellId })
+<Robot connectedMotionGroup={motionGroup} />
+motionGroup.dispose()
+
+// After
+const load = loadRobotSession(nova, "0@ur5e", { cellId })
+const session = await load.ready
+<Robot motionGroup={robotModelOf(session)} />
+load.dispose()
+```
+
+What changes besides the names:
+
+- **Loading:** `loadRobotSession` returns at once. `load.state` ("loading", "ready", "failed") and `load.progress` tell how far it is, `load.retry()` loads again after a failure, `await load.ready` gives the session. A failed step is retried on its own, after 1 and 2 seconds unless `retryDelaysMs` says otherwise.
+- **Jogging comes with it:** `session.jogging` is the robot's `JoggingStore`. An app no longer opens it with `JoggerConnection.open` and `JoggingStore.loadFor`.
+- **Nothing happens unasked:** without `storage` the jogging settings are not kept (pass `localStorage` to keep them), and a virtual robot is activated only with `autoActivateVirtual: true`.
+- **Errors:** what the app calls rejects (`session.activation.activate()` with a `RobotModeChangeError`); what fails in the background (a jog, a message of the live state) goes to `onError`.
+- **Several robots:** load one session per robot instead of `ConnectedMotionGroup.connectMultiple`.
+
+| `ConnectedMotionGroup` | `RobotSession` |
+| --- | --- |
+| `motionGroupId`, `controllerId` | `motionGroupId`, `controllerId` (and `cellId`) |
+| `modelFromController` | `description.motionGroupModel` |
+| `dhParameters` | `description.dhParameters` |
+| `safetyZones` | `description.safetyZones` |
+| `description` | `description.motionGroupDescription` |
+| `isVirtual` | `description.isVirtual` |
+| `tcps` | `description.tcps` (id and name), `description.tcpOffsetsById` (position and orientation) |
+| `joints` | One per joint: `description.dhParameters`, or the joint limits in `description.jointLimits` |
+| `mountingPosition`, `mountingQuaternion` | `robotModelOf(session)` of `/3d` (metres and a quaternion), or `description.mounting` (mm and a rotation vector) |
+| `rapidlyChangingMotionState` | `state.rapidlyChangingMotionState` |
+| `controllerState` | `state.controllerState` |
+| `initialMotionState`, `controller`, `motionGroup`, `motionStateSocket` | No replacement: the session keeps its connections. Read `state` instead. |
+| `activationState` | `activation.state` |
+| `activate()`, `deactivate()`, `toggleActivation()` | `activation.activate()`, `activation.deactivate()`, `activation.toggle()` |
+| `isEstopActive`, `isMoveableSafetyState`, `isMoveableOperationMode`, `canBeMoved` | `safety.isEstopActive`, `safety.isMoveableSafetyState`, `safety.isMoveableOperationMode`, `safety.canBeMoved`; why the robot may not move: `safety.notMoveableReason` |
+| `joggingVelocity`, `joggingVelocityRads`, `setJoggingVelocity()` | The velocities of `jogging`: `rotationVelocityDegPerSec`, `rotationVelocityRadsPerSec`, `translationVelocityMmPerSec`, `setVelocityFromSlider()` |
+| `connectedJoggingSocket`, `planData` | No replacement (unused) |
+| `dispose()` | `load.dispose()`, or `session.dispose()` |
+| `<Robot connectedMotionGroup={…}>`, `<LinearAxis connectedMotionGroup={…}>` | `<Robot motionGroup={robotModelOf(session)}>`, the same for `LinearAxis`. `motionGroup` also takes a `ConnectedMotionGroup`, or the app's own data (see `RobotModelSource`). |
+
 ### 4.x Core Changes
 
 Robot data is now fetched from a running nova instance. This eliminates the need of shipping every react application with the robot data attached.
@@ -315,12 +362,13 @@ const orientation = useRef<Quaternion | null>(null)
 
 **Robot** - Real-time 3D robot rendering
 
-- Live pose updates from a `ConnectedMotionGroup`
+- Takes the robot as plain data (`RobotModelSource`): `robotModelOf(session)` of a `RobotSession`, a `ConnectedMotionGroup`, or the app's own data
+- Live pose updates from its motion state, at its mounting
 - The model of the motion group from the NOVA instance (`defaultGetModel`)
 
 **LinearAxis** - The same for a linear axis
 
-**SupportedRobot**, **SupportedLinearAxis** and **MotionGroupVisualizer** - The same without a `ConnectedMotionGroup`: they take a motion state, the model name and the DH parameters. `MotionGroupVisualizer` picks the robot or the linear axis. The `…Exact` variants show the pose without smoothing.
+**SupportedRobot**, **SupportedLinearAxis** and **MotionGroupVisualizer** - The same with single props: they take a motion state, the model name and the DH parameters. `MotionGroupVisualizer` picks the robot or the linear axis. The `…Exact` variants show the pose without smoothing.
 
 **SafetyZonesRenderer** - 3D safety visualization
 
@@ -355,7 +403,8 @@ Safety components for production environments.
 
 ### Logic
 
-- **ConnectedMotionGroup** - A motion group with its live motion state, safety state and operation mode
+- **loadRobotSession** and **RobotSession** - A robot of a cell, loaded and connected: its description, live state, safety, activation, jogging and Move to
+- **ConnectedMotionGroup** (deprecated, see [From ConnectedMotionGroup to RobotSession](#from-connectedmotiongroup-to-robotsession)) - A motion group with its live motion state, safety state and operation mode
 - **MotionStreamConnection** and **JoggerConnection** - The motion state stream and the jogging connection of a motion group
 - **jointValuesEqual**, **poseEqual**, **tcpMotionEqual**, **unwrapRotationVector** - Helpers for the motion state
 - **ValueInterpolator**, **useInterpolation**, **useSmoothedMotionState** - Smooth joint values for the 3D view
@@ -367,9 +416,9 @@ Safety components for production environments.
 
 Components integrate with the Wandelbots Nova ecosystem:
 
-- **NovaConnection** - Where the library connects to NOVA (`nova` of `JoggingPanel`, `ConnectedMotionGroup.connect`, `MotionStreamConnection.open`, `JoggerConnection.open`, `defaultGetModel`), it takes a `NovaConnection`: the URL of the instance, or the NOVA client of the app (`Nova` of `@wandelbots/nova-js`, of any version). The library reads only the URL and the access token of the client, and connects with its own client (nova-js 4.13.0). So the app configures the connection in one place.
+- **NovaConnection** - Where the library connects to NOVA (`nova` of `JoggingPanel`, `loadRobotSession`, `ConnectedMotionGroup.connect`, `MotionStreamConnection.open`, `JoggerConnection.open`, `defaultGetModel`), it takes a `NovaConnection`: the URL of the instance, or the NOVA client of the app (`Nova` of `@wandelbots/nova-js`, of any version). The library reads only the URL and the access token of the client, and connects with its own client (nova-js 4.13.0). So the app configures the connection in one place.
 - **Real-time Updates** - WebSocket connections for live robot state updates
-- **Motion Group Management** - Direct integration with `ConnectedMotionGroup` objects
+- **Motion Group Management** - One `RobotSession` per robot (`ConnectedMotionGroup` in earlier versions)
 - **State Synchronization** - Automatic state management with MobX reactivity
 
 ### Technical Foundation

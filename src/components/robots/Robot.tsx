@@ -3,10 +3,29 @@ import { useCallback } from "react"
 import type { Group } from "three"
 import type { ConnectedMotionGroup } from "../../lib/ConnectedMotionGroup"
 import { defaultGetModel } from "./robotModelLogic"
+import type { RobotModelSource } from "./robotModelSource"
 import { SupportedRobot } from "./SupportedRobot"
 
-export type RobotProps = {
-  connectedMotionGroup: ConnectedMotionGroup
+/**
+ * The robot to draw: `motionGroup`, or the `connectedMotionGroup` of
+ * earlier versions
+ */
+export type RobotMotionGroupProps =
+  | {
+      /**
+       * The robot to draw: `robotModelOf(session)`, a `ConnectedMotionGroup`,
+       * or the app's own data
+       */
+      motionGroup: RobotModelSource
+      connectedMotionGroup?: never
+    }
+  | {
+      /** @deprecated Use `motionGroup`, which takes a ConnectedMotionGroup as it is */
+      connectedMotionGroup: ConnectedMotionGroup
+      motionGroup?: never
+    }
+
+export type RobotProps = RobotMotionGroupProps & {
   getModel?: (modelFromController: string) => Promise<string>
   flangeRef?: React.Ref<Group>
   transparentColor?: string
@@ -14,17 +33,19 @@ export type RobotProps = {
 } & ThreeElements["group"]
 
 /**
- * The Robot component is a wrapper around the SupportedRobot component
- * for usage with @wandelbots/nova-js ConnectedMotionGroup object.
+ * A robot of a NOVA cell in its model, at its mounting, moving as its motion
+ * state does: {@link SupportedRobot} for a {@link RobotModelSource}.
  *
- * @param {RobotProps} props - The properties for the Robot component.
- * @param {ConnectedMotionGroup} props.connectedMotionGroup - The connected motion group containing motion state and parameters.
- * @param {Function} [props.getModel] - Optional function to get the model URL. Defaults to defaultGetModel with the connection of the connected motion group (its URL and access token).
- * @param {Object} props - Additional properties passed to the SupportedRobot component.
+ * ```tsx
+ * <Robot motionGroup={robotModelOf(session)} />
+ * ```
  *
- * @returns {JSX.Element} The rendered SupportedRobot component.
+ * @param props.motionGroup - The robot to draw, see {@link RobotModelSource}
+ * @param props.getModel - Gives the URL of the model file. Defaults to {@link defaultGetModel}, downloading from the robot's `nova` connection (its URL and access token).
+ * @param props - Further properties go to SupportedRobot.
  */
 export function Robot({
+  motionGroup,
   connectedMotionGroup,
   getModel,
   flangeRef,
@@ -32,33 +53,33 @@ export function Robot({
   postModelRender,
   ...props
 }: RobotProps) {
-  // The model from the instance of the motion group, with the access token
-  // of its connection
+  const robot: RobotModelSource | undefined =
+    motionGroup ?? connectedMotionGroup
+
+  // The model from the instance of the robot, with the access token of its
+  // connection. Made again only for another connection: an app may give a
+  // new motionGroup object at every render.
+  const nova = robot?.nova
   const getModelOfConnection = useCallback(
-    (model: string) => defaultGetModel(model, connectedMotionGroup.nova),
-    [connectedMotionGroup],
+    (model: string) => defaultGetModel(model, nova),
+    [nova],
   )
 
-  if (!connectedMotionGroup.dhParameters) {
+  if (!robot?.dhParameters) {
     return null
   }
 
-  const mountingPosition = connectedMotionGroup.mountingPosition
-  const mountingQuaternion = connectedMotionGroup.mountingQuaternion
-
   return (
     <SupportedRobot
-      rapidlyChangingMotionState={
-        connectedMotionGroup.rapidlyChangingMotionState
-      }
-      modelFromController={connectedMotionGroup.modelFromController || ""}
-      dhParameters={connectedMotionGroup.dhParameters}
+      rapidlyChangingMotionState={robot.rapidlyChangingMotionState}
+      modelFromController={robot.modelFromController || ""}
+      dhParameters={robot.dhParameters}
       getModel={getModel ?? getModelOfConnection}
       flangeRef={flangeRef}
       transparentColor={transparentColor}
       postModelRender={postModelRender}
-      chainOffsetPosition={mountingPosition}
-      chainOffsetQuaternion={mountingQuaternion}
+      chainOffsetPosition={robot.mountingPosition}
+      chainOffsetQuaternion={robot.mountingQuaternion}
       {...props}
     />
   )

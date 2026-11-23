@@ -89,7 +89,7 @@ export interface AxisControlComponentColors {
 // @public (undocumented)
 export function CollisionSceneRenderer(input: CollisionSceneRendererProps): JSX.Element;
 
-// @public
+// @public @deprecated
 export class ConnectedMotionGroup {
     constructor(connection: NovaConnection, controller: RobotControllerState, motionGroup: MotionGroupState, initialMotionState: MotionGroupState, motionStateSocket: AutoReconnectingWebsocket, isVirtual: boolean, tcps: RobotTcpLike[], description: MotionGroupDescription, initialControllerState: RobotControllerState, controllerStateSocket: AutoReconnectingWebsocket, cellId?: string);
     // (undocumented)
@@ -697,8 +697,7 @@ export function jointValuesUnchanged(oldJointValues: number[], newJointValues: n
 export function LinearAxis(input: LinearAxisProps): JSX.Element | null;
 
 // @public (undocumented)
-export type LinearAxisProps = {
-    connectedMotionGroup: ConnectedMotionGroup;
+export type LinearAxisProps = RobotMotionGroupProps & {
     getModel?: (modelFromController: string) => Promise<string>;
     flangeRef?: React.Ref<Group>;
     transparentColor?: string;
@@ -1027,8 +1026,7 @@ export class RobotDescription {
     // (undocumented)
     readonly controllerConfiguration: RobotControllerConfiguration;
     readonly coordinateSystems: CoordinateSystem[];
-    // (undocumented)
-    get dhParameters(): DHParameter[];
+    readonly dhParameters: DHParameter[];
     get flangeOffset(): Pose | null;
     get inverseSolver(): string | undefined;
     get isVirtual(): boolean;
@@ -1184,6 +1182,28 @@ export class RobotModeChangeError extends Error {
 }
 
 // @public
+export function robotModelOf(session: RobotSession): RobotModelSource;
+
+// @public
+export type RobotModelSource = {
+    modelFromController?: string;
+    dhParameters?: DHParameter[];
+    rapidlyChangingMotionState: MotionGroupState;
+    mountingPosition?: [number, number, number];
+    mountingQuaternion?: Quaternion;
+    nova?: NovaConnection;
+};
+
+// @public
+export type RobotMotionGroupProps = {
+    motionGroup: RobotModelSource;
+    connectedMotionGroup?: never;
+} | {
+    connectedMotionGroup: ConnectedMotionGroup;
+    motionGroup?: never;
+};
+
+// @public
 export type RobotNotMoveableReason =
 /** The live state stopped coming */
     {
@@ -1223,8 +1243,7 @@ export type RobotPose = {
 };
 
 // @public (undocumented)
-export type RobotProps = {
-    connectedMotionGroup: ConnectedMotionGroup;
+export type RobotProps = RobotMotionGroupProps & {
     getModel?: (modelFromController: string) => Promise<string>;
     flangeRef?: React.Ref<Group>;
     transparentColor?: string;

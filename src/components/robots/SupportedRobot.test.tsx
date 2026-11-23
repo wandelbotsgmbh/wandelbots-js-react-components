@@ -11,8 +11,15 @@ import { afterEach, describe, expect, test, vi } from "vitest"
 import type { ConnectedMotionGroup } from "../../lib/ConnectedMotionGroup"
 import { LinearAxis } from "./LinearAxis"
 import { Robot } from "./Robot"
+import { defaultGetModel } from "./robotModelLogic"
 import { SupportedLinearAxisExact } from "./SupportedLinearAxis"
 import { SupportedRobotExact } from "./SupportedRobot"
+
+// The robots' default model download, counted: it downloads as it is
+vi.mock("./robotModelLogic", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("./robotModelLogic")>()
+  return { ...actual, defaultGetModel: vi.fn(actual.defaultGetModel) }
+})
 
 // useGLTF of drei downloads and parses the model file: here, the test gives
 // the model
@@ -230,6 +237,80 @@ describe("the model of Robot", () => {
     } finally {
       URL.createObjectURL = createObjectURL
     }
+  })
+})
+
+describe("Robot and LinearAxis with a plain motionGroup", () => {
+  /** A NOVA client whose model download gives a file */
+  function novaWithModels() {
+    const nova = new Nova({ instanceUrl: "https://mock.example.com" })
+    const downloadModel = vi
+      .spyOn(nova.api.motionGroupModels, "getMotionGroupGlbModel")
+      .mockResolvedValue(new File([], "model.glb"))
+    return { nova, downloadModel }
+  }
+
+  const createObjectURL = URL.createObjectURL
+  afterEach(() => {
+    URL.createObjectURL = createObjectURL
+    vi.mocked(defaultGetModel).mockClear()
+  })
+
+  test("Robot draws it, with the model downloaded from its connection", async () => {
+    const { nova, downloadModel } = novaWithModels()
+    URL.createObjectURL = vi.fn(() => "blob:plain-robot")
+    gltf.load = () => modelWithJoints("robot", 6)
+
+    // The app's own data: no ConnectedMotionGroup, no session
+    await renderInCanvas(
+      <Robot
+        motionGroup={{
+          nova,
+          modelFromController: "Plain_Robot",
+          dhParameters: dhParameters(6, JointTypeEnum.RevoluteJoint),
+          rapidlyChangingMotionState: standstill([0, 0, 0, 0, 0, 0]),
+        }}
+      />,
+    )
+
+    expect(downloadModel).toHaveBeenCalledWith("Plain_Robot", {
+      responseType: "blob",
+    })
+  })
+
+  // An app writes `motionGroup={robotModelOf(session)}`: a new object at
+  // every render, of the same robot. A failed download leaves the cache, so
+  // asking again at every render would download again at every render.
+  test.each([
+    ["Robot", Robot, "Every_Render_Robot", 6, JointTypeEnum.RevoluteJoint],
+    [
+      "LinearAxis",
+      LinearAxis,
+      "Every_Render_Axis",
+      1,
+      JointTypeEnum.PrismaticJoint,
+    ],
+  ] as const)("%s asks for its model once when every render gives a new object", async (_, Component, model, joints, type) => {
+    const { nova } = novaWithModels()
+    URL.createObjectURL = vi.fn(() => "blob:every-render")
+    gltf.load = () => modelWithJoints("robot", joints)
+    const robot = (position: number) => (
+      <Component
+        motionGroup={{
+          nova,
+          modelFromController: model,
+          dhParameters: dhParameters(joints, type),
+          rapidlyChangingMotionState: standstill(
+            Array.from({ length: joints }, () => position),
+          ),
+        }}
+      />
+    )
+
+    await renderInCanvas(robot(0.1))
+    await rerender(robot(0.2))
+
+    expect(defaultGetModel).toHaveBeenCalledTimes(1)
   })
 })
 

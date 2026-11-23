@@ -1,5 +1,6 @@
 import {
   type CoordinateSystem,
+  type DHParameter,
   JointTypeEnum,
   type KinematicModel,
   type MotionGroupDescription,
@@ -9,11 +10,26 @@ import {
 // From RobotPad's ActiveRobotStore: what NOVA describes about the robot. It
 // does not change while a session lives.
 
+/** What NOVA's API v2 leaves out of a DH parameter when it is 0 */
+const DH_PARAMETER_DEFAULTS = {
+  a: 0,
+  d: 0,
+  alpha: 0,
+  theta: 0,
+  reverse_rotation_direction: false,
+} satisfies DHParameter
+
 /**
  * What NOVA describes about a robot: its model, kinematics, limits, safety
  * zones, TCPs and the coordinate systems of its controller
  */
 export class RobotDescription {
+  /**
+   * The DH parameters of the joints, with the values that NOVA leaves out
+   * because they are 0 filled in; empty for a motion group without them
+   */
+  readonly dhParameters: DHParameter[]
+
   /** @internal The session makes it, see RobotSession */
   constructor(
     /** The motion group's description as NOVA gives it */
@@ -33,7 +49,11 @@ export class RobotDescription {
      * robot's frame.
      */
     readonly coordinateSystems: CoordinateSystem[],
-  ) {}
+  ) {
+    this.dhParameters = (motionGroupDescription.dh_parameters ?? []).map(
+      (parameter) => ({ ...DH_PARAMETER_DEFAULTS, ...parameter }),
+    )
+  }
 
   /** A virtual robot of NOVA's simulation, not a physical one */
   get isVirtual() {
@@ -63,10 +83,6 @@ export class RobotDescription {
       this.motionGroupDescription.dh_parameters?.[0]?.type ??
       JointTypeEnum.RevoluteJoint
     )
-  }
-
-  get dhParameters() {
-    return this.motionGroupDescription.dh_parameters ?? []
   }
 
   /** The joints' limits in automatic mode, one per joint */

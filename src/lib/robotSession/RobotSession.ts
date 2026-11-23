@@ -68,6 +68,12 @@ export class RobotSession {
   readonly motionGroupId: string
   readonly controllerId: string
   readonly cellId: string
+  /**
+   * The library's own NOVA client of the robot's instance (see
+   * `createNovaClient`): `robotModelOf` downloads the model with it
+   * @internal
+   */
+  readonly nova: Nova
 
   /** What NOVA describes about the robot; does not change */
   readonly description: RobotDescription
@@ -100,6 +106,7 @@ export class RobotSession {
   ) {
     const logger = options.logger ?? console
     this.onError = options.onError ?? (() => {})
+    this.nova = nova
     this.motionGroupId = ids.motionGroupId
     this.controllerId = ids.controllerId
     this.cellId = ids.cellId

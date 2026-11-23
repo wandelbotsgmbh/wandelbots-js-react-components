@@ -44,6 +44,11 @@ export * from "./components/robots/LinearAxis"
 export * from "./components/robots/MotionGroupVisualizer"
 export * from "./components/robots/Robot"
 export { defaultGetModel } from "./components/robots/robotModelLogic"
+// What Robot and LinearAxis draw, and the robot of a session as they draw it
+export {
+  type RobotModelSource,
+  robotModelOf,
+} from "./components/robots/robotModelSource"
 export * from "./components/robots/SupportedLinearAxis"
 export * from "./components/robots/SupportedRobot"
 // Opt-in joint-stream smoothing to feed the (as-is) robot visualizer.

@@ -79,7 +79,7 @@ export interface AxisControlComponentColors {
     labelColor?: string;
 }
 
-// @public
+// @public @deprecated
 export class ConnectedMotionGroup {
     constructor(connection: NovaConnection, controller: RobotControllerState, motionGroup: MotionGroupState, initialMotionState: MotionGroupState, motionStateSocket: AutoReconnectingWebsocket, isVirtual: boolean, tcps: RobotTcpLike[], description: MotionGroupDescription, initialControllerState: RobotControllerState, controllerStateSocket: AutoReconnectingWebsocket, cellId?: string);
     // (undocumented)
@@ -820,8 +820,7 @@ export class RobotDescription {
     // (undocumented)
     readonly controllerConfiguration: RobotControllerConfiguration;
     readonly coordinateSystems: CoordinateSystem[];
-    // (undocumented)
-    get dhParameters(): DHParameter[];
+    readonly dhParameters: DHParameter[];
     get flangeOffset(): Pose | null;
     get inverseSolver(): string | undefined;
     get isVirtual(): boolean;
