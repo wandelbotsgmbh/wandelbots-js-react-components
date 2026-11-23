@@ -2,7 +2,7 @@ import { useGLTF } from "@react-three/drei"
 import type { ThreeElements } from "@react-three/fiber"
 import type React from "react"
 import { useEffect, useState } from "react"
-import type { Group, Mesh, Object3D } from "three"
+import type { Group, Mesh, Object3D, Texture } from "three"
 import { isFlange, parseRobotModel } from "./robotModelLogic"
 
 export type RobotModelProps = {
@@ -20,6 +20,25 @@ function isMesh(node: Object3D): node is Mesh {
   return node.type === "Mesh"
 }
 
+/**
+ * Frees the renderers' copies of a model's geometries, materials and
+ * textures. The model itself stays as it is: a 3D view that shows it again
+ * uploads it again.
+ */
+function releaseModel(model: Object3D) {
+  model.traverse((node) => {
+    if (!isMesh(node)) return
+    node.geometry?.dispose()
+    for (const material of [node.material].flat()) {
+      if (!material) continue
+      for (const value of Object.values(material)) {
+        if ((value as Texture | null)?.isTexture) (value as Texture).dispose()
+      }
+      material.dispose()
+    }
+  })
+}
+
 // Separate component that only renders when we have a valid URL
 function LoadedRobotModel({
   url,
@@ -34,6 +53,12 @@ function LoadedRobotModel({
   const gltfResult = useGLTF(url)
   const parsed = parseRobotModel(gltfResult, "robot.glb")
   const gltf = parsed.gltf
+
+  // drei caches the model for all 3D views, so it is rendered without
+  // R3F's dispose. Each renderer that drew it listens to its parts until
+  // they are disposed, and so the cache would keep every renderer, with its
+  // canvas and the page around it: free the copies when the model goes.
+  useEffect(() => () => releaseModel(gltf.scene), [gltf])
 
   // After the commit, not in a ref callback: the refs of the components
   // above (such as the animator, which poses the joints of the new model)
