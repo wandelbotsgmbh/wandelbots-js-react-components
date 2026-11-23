@@ -14,6 +14,7 @@ import { RobotActivation, RobotModeChangeError } from "./RobotActivation"
 import { RobotDescription } from "./RobotDescription"
 import { RobotLiveState } from "./RobotLiveState"
 import { RobotSafety } from "./RobotSafety"
+import { RobotTargetPose } from "./RobotTargetPose"
 
 // Built from RobotPad's ActiveRobotStore
 
@@ -80,6 +81,8 @@ export class RobotSession {
   readonly jogging: JoggingStore
   /** Moving the robot to a pose along a planned trajectory (Move to) */
   readonly trajectory: TrajectoryExecutionStore
+  /** A pose the user types in, planned so Move to can drive there */
+  readonly targetPose: RobotTargetPose
 
   private readonly stateSource: RobotLoadResources["stateSource"]
   private readonly motionStateSocket: RobotLoadResources["motionStateSocket"]
@@ -171,6 +174,29 @@ export class RobotSession {
       logger,
     })
 
+    this.targetPose = new RobotTargetPose(
+      {
+        motionGroupId: ids.motionGroupId,
+        state: this.state,
+        jogging: this.jogging,
+        trajectory: this.trajectory,
+        // A typed pose plans nothing while the robot may not move, or while
+        // the app is locked
+        notMoveableReason: () =>
+          this.safety.notMoveableReason ??
+          (options.isLocked?.() ? { code: "locked" } : null),
+      },
+      logger,
+    )
+    // A staged typed pose holds the execution session open for its armed
+    // Move to, and the controller does not jog then: hand it back when the
+    // user starts jogging instead
+    this.jogging.onBeforeActivate = async () => {
+      if (this.targetPose.staged) {
+        await this.targetPose.resetToLive()
+      }
+    }
+
     // A virtual robot can be activated without any safety considerations
     if (
       options.autoActivateVirtual &&
@@ -209,6 +235,7 @@ export class RobotSession {
   /** Closes the session's connections and stops following the robot */
   dispose() {
     this.activation.dispose()
+    this.targetPose.dispose()
     this.state.stream.dispose()
     this.trajectory.dispose()
     this.stateSource.close()

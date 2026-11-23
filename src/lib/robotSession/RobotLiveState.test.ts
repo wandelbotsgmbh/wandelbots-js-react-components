@@ -105,3 +105,54 @@ test("the TCP pose is in the robot's own coordinate system, not another robot's 
     85, -100, 230,
   ])
 })
+
+// Ported from RobotPad (isRobotAtPose of src/pointsPanel/PoseStore.tsx)
+describe("isAt", () => {
+  const cartesian = (position: number[], orientation: number[]) => ({
+    type: "cartesian" as const,
+    motionGroupId: "0@robot1",
+    tcpPose: {
+      pose: { position, orientation },
+      coordSystemId: "world",
+      tcpId: "Flange",
+    },
+  })
+
+  test("is at a TCP pose within 0.5 mm and 0.01 rad", () => {
+    const { position, orientation } = storedState.tcp_pose
+
+    expect(liveState().isAt(cartesian(position, orientation))).toBe(true)
+    expect(
+      liveState().isAt(
+        cartesian([position[0] + 0.4, position[1], position[2]], orientation),
+      ),
+    ).toBe(true)
+    expect(
+      liveState().isAt(
+        cartesian([position[0] + 1, position[1], position[2]], orientation),
+      ),
+    ).toBe(false)
+    expect(liveState().isAt(cartesian(position, [0, 0, 0.02]))).toBe(false)
+  })
+
+  test("is at joint values within 0.001", () => {
+    const joints = storedState.joint_position
+    const joint = (values: number[]) => ({
+      type: "joint" as const,
+      motionGroupId: "0@robot1",
+      joints: values,
+    })
+
+    expect(liveState().isAt(joint(joints))).toBe(true)
+    expect(
+      liveState().isAt(joint([(joints[0] ?? 0) + 0.01, ...joints.slice(1)])),
+    ).toBe(false)
+  })
+
+  test("is not at a pose of a TCP the robot does not have", () => {
+    const pose = cartesian(storedState.tcp_pose.position, [0, 0, 0])
+    pose.tcpPose.tcpId = "missing"
+
+    expect(liveState().isAt(pose)).toBe(false)
+  })
+})

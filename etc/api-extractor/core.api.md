@@ -615,6 +615,9 @@ export type JogHandle = {
 };
 
 // @public
+export function jointsToText(joints: readonly number[]): string;
+
+// @public
 export function jointValuesEqual(oldJointValues: number[], newJointValues: number[], changeDeltaThreshold: number): boolean;
 
 // @public
@@ -724,6 +727,12 @@ export type OrientationFormat = {
 };
 
 // @public
+export function parseJointsText(text: string, jointCount: number): number[] | null;
+
+// @public
+export function parsePoseText(text: string): RobotControlPose | null;
+
+// @public
 export function planErrorTranslationKey(errorFeedbackName: string): string;
 
 // @public
@@ -742,6 +751,15 @@ export type PlanTrajectoryResult = {
 
 // @public (undocumented)
 export function poseEqual(oldTcp: Pose | undefined, newTcp: Pose | undefined, changeDeltaThreshold: number): boolean;
+
+// @public
+export function poseToText(pose: {
+    position?: readonly number[];
+    orientation?: readonly number[];
+}, precision?: {
+    positionPrecision?: number;
+    rotationPrecision?: number;
+}): string;
 
 // @public
 export function readoutOf(motionState: MotionGroupState): MotionStateReadout;
@@ -872,6 +890,7 @@ export class RobotLiveState {
     get controllerState(): RobotControllerState;
     get displayedTcpPose(): Required<Pose>;
     get displayedTcpPoseReference(): TcpReferencedPose;
+    isAt(pose: RobotPose): boolean;
     get jointPose(): number[];
     // (undocumented)
     get lastInvalidStateMessage(): {
@@ -979,6 +998,24 @@ export type RobotNotMoveableReason =
 };
 
 // @public
+export type RobotPose = {
+    type: "joint";
+    motionGroupId: string;
+    joints: number[];
+} | {
+    type: "cartesian";
+    motionGroupId: string;
+    tcpPose: {
+        pose: {
+            position: number[];
+            orientation?: number[];
+        };
+        coordSystemId: string;
+        tcpId: string;
+    };
+};
+
+// @public
 export class RobotSafety {
     get activationBlockedReason(): string | null;
     get canBeActive(): boolean;
@@ -1006,6 +1043,7 @@ export class RobotSession {
     get movementOwner(): JoggerMode;
     readonly safety: RobotSafety;
     readonly state: RobotLiveState;
+    readonly targetPose: RobotTargetPose;
     readonly trajectory: TrajectoryExecutionStore;
 }
 
@@ -1051,6 +1089,35 @@ export type RobotSessionOptions = {
     autoActivateVirtual?: boolean;
 };
 
+// @public
+export class RobotTargetPose {
+    // (undocumented)
+    beginEdit(): void;
+    // (undocumented)
+    cancelEdit(): void;
+    clear(): void;
+    confirmEdit(): Promise<void>;
+    confirming: boolean;
+    get displayString(): string;
+    // (undocumented)
+    dispose(): void;
+    draft: string;
+    // (undocumented)
+    get draftValid(): boolean;
+    editing: boolean;
+    get isRobotAtStagedPose(): boolean;
+    get liveDisplayString(): string;
+    onBeforePlan?: () => Promise<void>;
+    // (undocumented)
+    get phase(): "view" | "editing" | "staged" | "error";
+    resetToLive(): Promise<void>;
+    // (undocumented)
+    setDraft(text: string): void;
+    // (undocumented)
+    staged: StagedTargetPose | null;
+    get stagedPose(): RobotPose | null;
+}
+
 // @public (undocumented)
 export type RobotTcpLike = {
     id: string;
@@ -1081,6 +1148,13 @@ export interface SafetyBarProps {
     // (undocumented)
     transformOrigin?: PopoverOrigin;
 }
+
+// @public
+export type StagedTargetPose = {
+    pose: RobotPose;
+    displayString: string;
+    errorKey: string | null;
+};
 
 // @public (undocumented)
 export function tcpMotionEqual(oldMotionState: MotionGroupState, newMotionState: MotionGroupState, changeDeltaThreshold: number): boolean;
@@ -1126,6 +1200,9 @@ export type TrajectoryTarget = {
     type: "joint";
     joints: number[];
 };
+
+// @public
+export function trajectoryTargetOf(pose: RobotPose): TrajectoryTarget;
 
 // @public
 export function transformPoseToCoordinateSystem<T extends ReferencedPose>(inputPose: T, targetCoordinateSystemId: string, coordinateSystems: CoordinateSystem[]): T;

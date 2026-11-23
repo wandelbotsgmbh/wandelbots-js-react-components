@@ -1,8 +1,8 @@
 /**
  * A pose as typed and copied: "(x, y, z, rx, ry, rz)", position in mm and
- * orientation as a rotation vector in rad. The same format and rules as
- * robot-pad's typed target pose, so a pose copied in one app reads the same
- * in the other.
+ * orientation as a rotation vector in rad; joints as "[j1, j2, …]" in rad
+ * (mm for a linear axis). The same format and rules as robot-pad's typed
+ * target pose, so a pose copied in one app reads the same in the other.
  */
 
 import type { RobotControlPose } from "./RobotControlPanel"
@@ -10,25 +10,48 @@ import type { RobotControlPose } from "./RobotControlPanel"
 /** One plain or scientific-notation number, no separators */
 const NUMBER_PATTERN = /^[+-]?(\d+\.?\d*|\.\d+)([eE][+-]?\d+)?$/
 
-/** A pose as text: position to 0.1 mm, orientation to 0.0001 rad */
-export function poseToText(pose: RobotControlPose): string {
-  const round = (v: number, digits: number) =>
-    Number.parseFloat(v.toFixed(digits))
+const round = (value: number, digits: number) =>
+  Number.parseFloat(value.toFixed(digits))
+
+/**
+ * A pose as text: position to 0.1 mm, orientation to 0.0001 rad unless asked
+ * otherwise. A value that a NOVA pose leaves out is 0.
+ */
+export function poseToText(
+  pose: {
+    position?: readonly number[]
+    orientation?: readonly number[]
+  },
+  precision: { positionPrecision?: number; rotationPrecision?: number } = {},
+): string {
+  const positionDigits = precision.positionPrecision ?? 1
+  const rotationDigits = precision.rotationPrecision ?? 4
+  const three = (values: readonly number[] | undefined) =>
+    [0, 1, 2].map((index) => values?.[index] ?? 0)
   return `(${[
-    ...pose.position.map((v) => round(v, 1)),
-    ...pose.orientation.map((v) => round(v, 4)),
+    ...three(pose.position).map((v) => round(v, positionDigits)),
+    ...three(pose.orientation).map((v) => round(v, rotationDigits)),
   ].join(", ")})`
 }
 
+/** Joint values as text, each to 0.0001 */
+export function jointsToText(joints: readonly number[]): string {
+  return `[${joints.map((value) => round(value, 4)).join(", ")}]`
+}
+
 /**
- * The pose in `text`, or null if it is not one: six comma-separated numbers,
- * optionally in parentheses. Anything else is rejected rather than guessed,
- * e.g. a forgotten comma, which would otherwise shift every value after it.
+ * The comma-separated numbers in `text`, optionally in the given brackets, or
+ * null for anything malformed: unbalanced brackets, a missing comma, an empty
+ * entry or a value that is not a number
  */
-export function parsePoseText(text: string): RobotControlPose | null {
+function parseNumberList(
+  text: string,
+  open: string,
+  close: string,
+): number[] | null {
   let inner = text.trim()
-  const opens = inner.startsWith("(")
-  const closes = inner.endsWith(")")
+  const opens = inner.startsWith(open)
+  const closes = inner.endsWith(close)
   if (opens !== closes) return null
   if (opens) inner = inner.slice(1, -1)
   if (inner.trim() === "") return null
@@ -41,7 +64,17 @@ export function parsePoseText(text: string): RobotControlPose | null {
     if (!Number.isFinite(value)) return null
     values.push(value)
   }
-  if (values.length !== 6) return null
+  return values
+}
+
+/**
+ * The pose in `text`, or null if it is not one: six comma-separated numbers,
+ * optionally in parentheses. Anything else is rejected rather than guessed,
+ * e.g. a forgotten comma, which would otherwise shift every value after it.
+ */
+export function parsePoseText(text: string): RobotControlPose | null {
+  const values = parseNumberList(text, "(", ")")
+  if (values?.length !== 6) return null
 
   const [x, y, z, rx, ry, rz] = values as [
     number,
@@ -52,4 +85,17 @@ export function parsePoseText(text: string): RobotControlPose | null {
     number,
   ]
   return { position: [x, y, z], orientation: [rx, ry, rz] }
+}
+
+/**
+ * The joint values in `text`, or null if they are not exactly
+ * `jointCount` comma-separated numbers, optionally in square brackets
+ */
+export function parseJointsText(
+  text: string,
+  jointCount: number,
+): number[] | null {
+  const values = parseNumberList(text, "[", "]")
+  if (values?.length !== jointCount) return null
+  return values
 }

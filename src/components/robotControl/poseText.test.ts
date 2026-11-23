@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest"
-import { parsePoseText, poseToText } from "./poseText"
+import {
+  jointsToText,
+  parseJointsText,
+  parsePoseText,
+  poseToText,
+} from "./poseText"
 
 // The same rules as robot-pad's typed target pose (unit/poseParsing.test.ts),
 // so a pose copied in one app parses the same in the other
@@ -12,6 +17,51 @@ describe("poseToText", () => {
         orientation: [-2.34567, -0.04, 0.8],
       }),
     ).toBe("(539.9, 0, 895, -2.3457, -0.04, 0.8)")
+  })
+
+  it("writes 0 for what a NOVA pose leaves out", () => {
+    expect(poseToText({ position: [1, 2, 3] })).toBe("(1, 2, 3, 0, 0, 0)")
+  })
+
+  it("rounds to the precision asked for", () => {
+    expect(
+      poseToText(
+        { position: [1.234, 0, 0], orientation: [0.123456, 0, 0] },
+        { positionPrecision: 2, rotationPrecision: 2 },
+      ),
+    ).toBe("(1.23, 0, 0, 0.12, 0, 0)")
+  })
+})
+
+// Ported from RobotPad (unit/poseParsing.test.ts, parseJointPoseInput)
+describe("jointsToText and parseJointsText", () => {
+  it("parses what jointsToText writes", () => {
+    const text = jointsToText([1.2215, -0.5, 0.0002, -1.5708, 0.75, 3.1])
+
+    expect(text).toBe("[1.2215, -0.5, 0.0002, -1.5708, 0.75, 3.1]")
+    expect(parseJointsText(text, 6)).toEqual([
+      1.2215, -0.5, 0.0002, -1.5708, 0.75, 3.1,
+    ])
+  })
+
+  it("accepts values without brackets", () => {
+    expect(parseJointsText("1, 2, 3, 4, 5, 6", 6)).toEqual([1, 2, 3, 4, 5, 6])
+  })
+
+  it("respects the expected joint count", () => {
+    expect(parseJointsText("[1, 2, 3, 4]", 4)).toEqual([1, 2, 3, 4])
+    expect(parseJointsText("[1, 2, 3, 4]", 6)).toBeNull()
+    expect(parseJointsText("[1, 2, 3, 4, 5, 6]", 4)).toBeNull()
+  })
+
+  it("rejects the cartesian bracket style", () => {
+    expect(parseJointsText("(1, 2, 3, 4, 5, 6)", 6)).toBeNull()
+  })
+
+  it("rejects malformed input", () => {
+    expect(parseJointsText("[1, 2 3, 4, 5, 6]", 6)).toBeNull()
+    expect(parseJointsText("[1, 2, x, 4, 5, 6]", 6)).toBeNull()
+    expect(parseJointsText("", 6)).toBeNull()
   })
 })
 

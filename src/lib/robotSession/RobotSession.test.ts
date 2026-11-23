@@ -375,4 +375,35 @@ describe("RobotSession", () => {
     expect(harness.source.close).toHaveBeenCalled()
     expect(harness.socket.dispose).toHaveBeenCalled()
   })
+
+  // From RobotPad's ActiveRobotStore: a staged typed pose holds the execution
+  // session open for its armed Move to, and the controller does not jog then
+  it("drops a staged typed pose when jogging starts", async () => {
+    const session = await harness.load().ready
+    session.targetPose.staged = {
+      pose: { type: "joint", motionGroupId: MOTION_GROUP_ID, joints: [0] },
+      displayString: "[0]",
+      errorKey: "Jogging.TargetPose.Error.PlanningFailed.lb",
+    }
+
+    await session.jogging.onBeforeActivate?.()
+
+    expect(session.targetPose.staged).toBeNull()
+    session.dispose()
+  })
+
+  it("plans no typed pose while the app is locked", async () => {
+    const session = await harness.load({ isLocked: () => true }).ready
+    harness.source.send(controllerState({ mode: "MODE_CONTROL" }))
+
+    session.targetPose.beginEdit()
+    session.targetPose.setDraft("(1, 2, 3, 0, 0, 0)")
+    await session.targetPose.confirmEdit()
+
+    // A plan would have been tried (and failed against this fake NOVA),
+    // staging the pose with an error; locked, nothing is planned or staged
+    expect(session.targetPose.phase).toBe("editing")
+    expect(session.targetPose.staged).toBeNull()
+    session.dispose()
+  })
 })

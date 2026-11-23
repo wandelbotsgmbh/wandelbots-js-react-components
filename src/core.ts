@@ -108,9 +108,24 @@ export {
   RobotSafety,
 } from "./lib/robotSession/RobotSafety"
 export {
+  type RobotPose,
+  trajectoryTargetOf,
+} from "./lib/robotSession/robotPose"
+export {
   RobotSession,
   type RobotSessionError,
   type RobotSessionOptions,
 } from "./lib/robotSession/RobotSession"
+export {
+  RobotTargetPose,
+  type StagedTargetPose,
+} from "./lib/robotSession/RobotTargetPose"
+// A pose or joints as typed and copied: "(x, y, z, rx, ry, rz)", "[j1, …]"
+export {
+  jointsToText,
+  parseJointsText,
+  parsePoseText,
+  poseToText,
+} from "./components/robotControl/poseText"
 export * from "./lib/TrajectoryExecutionStore"
 export * from "./SafetyBar"
