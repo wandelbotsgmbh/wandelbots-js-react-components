@@ -4,7 +4,7 @@ import { RobotArm } from "@wandelbots/icons/RobotArm"
 import { SafetyStateNormal } from "@wandelbots/icons/SafetyStateNormal"
 import { SpaceDashboardFilled } from "@wandelbots/icons/SpaceDashboardFilled"
 import { ViewModuleFilled } from "@wandelbots/icons/ViewModuleFilled"
-import type { ConnectedMotionGroup } from "@wandelbots/wandelbots-js-react-components"
+import type { RobotSession } from "@wandelbots/wandelbots-js-react-components"
 import type { FC, ReactNode } from "react"
 import type { PlaygroundInstance } from "../instance"
 import { BuildingBlocksPage } from "./BuildingBlocksPage"
@@ -14,10 +14,10 @@ import { LayoutsPage } from "./LayoutsPage"
 import { ModelsPage } from "./ModelsPage"
 import { SafetyPage } from "./SafetyPage"
 
-/** Every page gets the instance and the motion group of the top bar */
+/** Every page gets the instance and the session of the top bar's motion group */
 export type PageProps = {
   instance: PlaygroundInstance
-  motionGroup: ConnectedMotionGroup
+  session: RobotSession
   /** All motion groups of the cell, for a page with a select of its own */
   motionGroupIds: string[]
   /** Selects another motion group, as the top bar's select does */

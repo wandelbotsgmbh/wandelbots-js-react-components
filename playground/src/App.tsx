@@ -5,11 +5,7 @@ import {
   NoMotionGroupModal,
 } from "@wandelbots/wandelbots-js-react-components"
 import { useEffect, useState } from "react"
-import {
-  listMotionGroupIds,
-  useAsync,
-  useConnectedMotionGroup,
-} from "./connections"
+import { listMotionGroupIds, useAsync, useRobotSession } from "./connections"
 import { type PlaygroundInstance, playgroundInstance } from "./instance"
 import { NoInstanceScreen } from "./NoInstanceScreen"
 import { pageById } from "./pages"
@@ -30,7 +26,7 @@ function Playground({ instance }: { instance: PlaygroundInstance }) {
   )
   // The motion group of the URL, else the first of the cell
   const motionGroupId = location.motionGroup ?? motionGroupIds.value?.[0]
-  const motionGroup = useConnectedMotionGroup(instance, motionGroupId)
+  const session = useRobotSession(instance, motionGroupId)
   const page = pageById(location.page)
 
   useEffect(() => {
@@ -53,11 +49,11 @@ function Playground({ instance }: { instance: PlaygroundInstance }) {
     if (!motionGroupId) {
       return <NoMotionGroupModal baseUrl={instance.url} />
     }
-    if (!motionGroup.value) {
+    if (!session.value) {
       return (
         <LoadingCover
           message={`Connecting to ${motionGroupId}`}
-          error={motionGroup.error}
+          error={session.error}
         />
       )
     }
@@ -66,7 +62,7 @@ function Playground({ instance }: { instance: PlaygroundInstance }) {
       <page.Component
         key={motionGroupId}
         instance={instance}
-        motionGroup={motionGroup.value}
+        session={session.value}
         motionGroupIds={motionGroupIds.value}
         onMotionGroupChange={(id) =>
           setLocation({ ...location, motionGroup: id })
@@ -87,7 +83,7 @@ function Playground({ instance }: { instance: PlaygroundInstance }) {
         onMotionGroupChange={(id) =>
           setLocation({ ...location, motionGroup: id })
         }
-        motionGroup={motionGroup.value}
+        session={session.value}
       />
       <Box sx={{ position: "relative", flex: 1, minHeight: 0 }}>
         {renderContent()}

@@ -23,7 +23,8 @@ import type { PageProps } from "."
  * The robot with the safety zones of its motion group description and a
  * collision setup of the cell, next to the JoggingPanel.
  */
-export function SafetyPage({ instance, motionGroup }: PageProps) {
+export function SafetyPage({ instance, session }: PageProps) {
+  const { description } = session
   const theme = useTheme()
   const collisionSetups = useAsync(instance.cellId, (cellId) =>
     instance.nova.api.storeCollisionSetups.listStoredCollisionSetups(cellId),
@@ -32,7 +33,7 @@ export function SafetyPage({ instance, motionGroup }: PageProps) {
   const [selectedSetupId, setSelectedSetupId] = useState<string>()
   const setupId = selectedSetupId ?? setupIds[0]
   const setup = setupId ? collisionSetups.value?.[setupId] : undefined
-  const safetyZoneCount = Object.keys(motionGroup.safetyZones ?? {}).length
+  const safetyZoneCount = Object.keys(description.safetyZones ?? {}).length
 
   function renderSetupNote() {
     if (collisionSetups.error !== undefined) {
@@ -52,14 +53,11 @@ export function SafetyPage({ instance, motionGroup }: PageProps) {
         <FitCamera>
           {(refit) => (
             <>
-              <MotionGroupModel
-                motionGroup={motionGroup}
-                onModelLoaded={refit}
-              />
+              <MotionGroupModel session={session} onModelLoaded={refit} />
               <NovaCoordinates>
                 <SafetyZonesRenderer
-                  safetyZones={motionGroup.safetyZones}
-                  dhParameters={motionGroup.dhParameters}
+                  safetyZones={description.safetyZones}
+                  dhParameters={description.dhParameters}
                 />
                 {setup && (
                   <CollisionSceneRenderer
@@ -82,8 +80,8 @@ export function SafetyPage({ instance, motionGroup }: PageProps) {
         <Typography variant="subtitle2">Safety zones</Typography>
         <Typography variant="body2" color="text.secondary">
           {safetyZoneCount > 0
-            ? `${safetyZoneCount} safety zones in the description of ${motionGroup.motionGroupId}`
-            : `The description of ${motionGroup.motionGroupId} has no safety zones.`}
+            ? `${safetyZoneCount} safety zones in the description of ${session.motionGroupId}`
+            : `The description of ${session.motionGroupId} has no safety zones.`}
         </Typography>
         <Typography variant="subtitle2" sx={{ mt: 1 }}>
           Collision setup
@@ -115,7 +113,7 @@ export function SafetyPage({ instance, motionGroup }: PageProps) {
       panel={
         <JoggingPanel
           nova={instance.nova}
-          motionGroupId={motionGroup.motionGroupId}
+          motionGroupId={session.motionGroupId}
           cellId={instance.cellId}
           sx={{ height: "100%" }}
         />

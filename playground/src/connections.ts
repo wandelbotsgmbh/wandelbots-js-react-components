@@ -1,8 +1,8 @@
 import { JointTypeEnum } from "@wandelbots/nova-js/v2"
 import {
-  ConnectedMotionGroup,
-  JoggerConnection,
-  JoggingStore,
+  type JoggingStore,
+  loadRobotSession,
+  type RobotSession,
   type Vector3Simple,
 } from "@wandelbots/wandelbots-js-react-components"
 import { when } from "mobx"
@@ -75,45 +75,31 @@ export async function listMotionGroupIds({
   )
 }
 
-/** The ConnectedMotionGroup of a motion group, as an app connects it */
-export function useConnectedMotionGroup(
+/**
+ * The RobotSession of a motion group, as an app loads it: its jogging
+ * settings kept in localStorage, a virtual robot not activated on its own
+ */
+export function useRobotSession(
   instance: PlaygroundInstance,
   motionGroupId: string | undefined,
-): Loading<ConnectedMotionGroup> {
-  return useAsync(
-    motionGroupId,
-    (id) =>
-      ConnectedMotionGroup.connect(instance.nova, id, {
-        cellId: instance.cellId,
-      }),
-    (motionGroup) => motionGroup.dispose(),
-  )
-}
-
-/**
- * A JoggingStore of a motion group, opened as JoggingPanel does it:
- * `JoggerConnection.open`, then `JoggingStore.loadFor`.
- */
-export function useJoggingStore(
-  instance: PlaygroundInstance,
-  motionGroupId: string,
-): Loading<JoggingStore> {
+): Loading<RobotSession> {
   return useAsync(
     motionGroupId,
     async (id) => {
-      const jogger = await JoggerConnection.open(instance.nova, id, {
+      const load = loadRobotSession(instance.nova, id, {
         cellId: instance.cellId,
+        storage: localStorage,
       })
       try {
-        return await JoggingStore.loadFor(jogger)
+        return await load.ready
       } catch (error) {
-        // Also closes the motion stream that open() opened
-        jogger.dispose()
+        // Closes what the load opened before it failed
+        load.dispose()
         throw error
       }
     },
-    // Closes the jogger with its motion stream
-    (store) => store.dispose(),
+    // Closes the session's connections
+    (session) => session.dispose(),
   )
 }
 

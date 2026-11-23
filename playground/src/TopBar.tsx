@@ -4,7 +4,7 @@ import Typography from "@mui/material/Typography"
 import { AdornedSelect } from "@wandelbots/mui"
 import {
   AppHeader,
-  type ConnectedMotionGroup,
+  type RobotSession,
   SafetyBar,
 } from "@wandelbots/wandelbots-js-react-components"
 import { observer } from "mobx-react-lite"
@@ -20,8 +20,8 @@ type TopBarProps = {
   /** The selected motion group, undefined when the cell has none */
   motionGroupId: string | undefined
   onMotionGroupChange: (motionGroupId: string) => void
-  /** The selected motion group, undefined while it connects */
-  motionGroup: ConnectedMotionGroup | undefined
+  /** The selected motion group's session, undefined while it loads */
+  session: RobotSession | undefined
 }
 
 /**
@@ -35,7 +35,7 @@ export const TopBar = observer(function TopBar({
   motionGroupIds = [],
   motionGroupId,
   onMotionGroupChange,
-  motionGroup,
+  session,
 }: TopBarProps) {
   const current = pageById(page)
   // A motion group of the URL that is not in the cell stays visible
@@ -86,12 +86,12 @@ export const TopBar = observer(function TopBar({
         ))}
       </AdornedSelect>
 
-      {motionGroup && (
+      {session && (
         <SafetyBar
-          isVirtual={motionGroup.isVirtual}
-          motionGroupId={motionGroup.motionGroupId}
-          operationMode={motionGroup.controllerState.operation_mode}
-          safetyState={motionGroup.controllerState.safety_state}
+          isVirtual={session.description.isVirtual}
+          motionGroupId={session.motionGroupId}
+          operationMode={session.state.controllerState.operation_mode}
+          safetyState={session.state.controllerState.safety_state}
         />
       )}
     </Stack>

@@ -22,7 +22,6 @@ import { ElevationCard, PrimaryButton, SecondaryButton } from "@wandelbots/mui"
 import { JointTypeEnum } from "@wandelbots/nova-js/v2"
 import {
   type AxisControlComponentColors,
-  type ConnectedMotionGroup,
   JoggingButtons,
   JoggingCartesianAxisControl,
   JoggingGizmo,
@@ -33,43 +32,31 @@ import {
   LoadingCover,
   LoadingErrorMessage,
   NoMotionGroupModal,
+  type RobotSession,
   VelocitySlider,
   VelocitySliderLabel,
 } from "@wandelbots/wandelbots-js-react-components"
 import { observer } from "mobx-react-lite"
 import { type ReactNode, useRef, useState } from "react"
 import type { Quaternion } from "three"
-import { startJogging, stopJogging, useJoggingStore } from "../connections"
+import { startJogging, stopJogging } from "../connections"
 import { cannotJog, useToolFrame } from "../jogging"
 import { FitCamera, MotionGroupModel, Viewport } from "../scene"
 import type { PageProps } from "."
 
 /**
  * The small parts alone, to check their look. The parts that move the robot
- * or show its values use a JoggingStore of the selected motion group.
+ * or show its values use the session's JoggingStore.
  */
-export function BuildingBlocksPage({ instance, motionGroup }: PageProps) {
-  const jogging = useJoggingStore(instance, motionGroup.motionGroupId)
-  const store = jogging.value
-
-  function withStore(render: (store: JoggingStore) => ReactNode) {
-    return store ? (
-      render(store)
-    ) : (
-      <DemoBox>
-        <LoadingCover message="Loading jogging" error={jogging.error} />
-      </DemoBox>
-    )
-  }
+export function BuildingBlocksPage({ instance, session }: PageProps) {
+  const store = session.jogging
 
   const cartesian = (
     <Section
       title="JoggingCartesianAxisControl"
       description="Moves the TCP along the axis while a button is pressed, and shows the TCP position. The colors are from the design tokens."
     >
-      {withStore((store) => (
-        <CartesianAxisControls store={store} />
-      ))}
+      <CartesianAxisControls store={store} />
     </Section>
   )
   const joint = (
@@ -77,9 +64,7 @@ export function BuildingBlocksPage({ instance, motionGroup }: PageProps) {
       title="JoggingJointValueControl"
       description="Moves a joint while a button is pressed, and shows its position and limits."
     >
-      {withStore((store) => (
-        <JointValueControls store={store} />
-      ))}
+      <JointValueControls store={store} />
     </Section>
   )
   const jointSliders = (
@@ -87,9 +72,7 @@ export function BuildingBlocksPage({ instance, motionGroup }: PageProps) {
       title="JoggingJointSlider"
       description="Joint 1 as a slider across its limits; an app shows one per joint. Hover the track to see the goal under the pointer; press there to jog the joint toward it until it gets there or you let go. While held, the goal follows the pointer. A held arrow key jogs the focused slider toward a limit. Below it, joint 2, disabled."
     >
-      {withStore((store) => (
-        <JointSliders store={store} />
-      ))}
+      <JointSliders store={store} />
     </Section>
   )
   const gizmo = (
@@ -97,9 +80,7 @@ export function BuildingBlocksPage({ instance, motionGroup }: PageProps) {
       title="JoggingGizmo and JoggingGizmoOrientation"
       description="Moves the TCP along an axis while a handle is held (Translate), or turns it about one (Rotate): an axis of the world frame, or of the tool. JoggingGizmoOrientation in the 3D view turns the gizmo like the camera, and its frameQuaternion like the tool when it jogs along the tool's axes: orbit the view or turn the tool, and the gizmo turns with it."
     >
-      {withStore((store) => (
-        <Gizmos store={store} motionGroup={motionGroup} />
-      ))}
+      <Gizmos store={store} session={session} />
     </Section>
   )
   const buttons = (
@@ -107,9 +88,7 @@ export function BuildingBlocksPage({ instance, motionGroup }: PageProps) {
       title="JoggingButtons"
       description="Moves the TCP along an axis while a button is held (Translate), or turns it about one (Rotate): an axis of the world frame, or of the tool. It takes the same props as JoggingGizmo, but does not turn with the 3D view: X+ is X+ of the frame, wherever the camera looks from."
     >
-      {withStore((store) => (
-        <Buttons store={store} />
-      ))}
+      <Buttons store={store} />
     </Section>
   )
   const velocity = (
@@ -117,9 +96,7 @@ export function BuildingBlocksPage({ instance, motionGroup }: PageProps) {
       title="VelocitySlider and VelocitySliderLabel"
       description="The velocity of the JoggingStore: with the default label, with a custom label, and the label alone."
     >
-      {withStore((store) => (
-        <VelocitySliders store={store} />
-      ))}
+      <VelocitySliders store={store} />
     </Section>
   )
   const loadingCover = (
@@ -431,13 +408,7 @@ const JointSliders = observer(({ store }: { store: JoggingStore }) => {
 })
 
 const Gizmos = observer(
-  ({
-    store,
-    motionGroup,
-  }: {
-    store: JoggingStore
-    motionGroup: ConnectedMotionGroup
-  }) => {
+  ({ store, session }: { store: JoggingStore; session: RobotSession }) => {
     const orientation = useRef<Quaternion | null>(null)
     const [motion, setMotion] = useState<Motion>("translate")
     const [frame, setFrame] = useState<Frame>("world")
@@ -469,10 +440,7 @@ const Gizmos = observer(
             <Viewport>
               <FitCamera>
                 {(refit) => (
-                  <MotionGroupModel
-                    motionGroup={motionGroup}
-                    onModelLoaded={refit}
-                  />
+                  <MotionGroupModel session={session} onModelLoaded={refit} />
                 )}
               </FitCamera>
               {/* Anywhere in the 3D view: it translates NOVA's Z up itself */}

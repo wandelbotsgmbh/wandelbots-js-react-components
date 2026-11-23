@@ -5,17 +5,17 @@ import Typography from "@mui/material/Typography"
 import { SecondaryButton } from "@wandelbots/mui"
 import type { Pose } from "@wandelbots/nova-js/v2"
 import {
-  type ConnectedMotionGroup,
   JoggingPanel,
   MotionGroupVisualizer,
   MotionGroupVisualizerExact,
   poseEqual,
+  type RobotSession,
+  robotModelOf,
   TrajectoryRenderer,
 } from "@wandelbots/wandelbots-js-react-components"
 import { observable, reaction, toJS } from "mobx"
 import { observer, useLocalObservable } from "mobx-react-lite"
-import { useEffect, useMemo, useState } from "react"
-import { useAsync } from "../connections"
+import { useEffect, useState } from "react"
 import { FitCamera, ViewPanel, Viewport, ViewWithSidePanel } from "../scene"
 import type { PageProps } from "."
 
@@ -26,42 +26,36 @@ const MAX_TCP_PATH_POINTS = 1000
  * The start page: the 3D view of the motion group with the TCP path that it
  * moved, and the JoggingPanel on the right side (layout as in RobotPad).
  */
-export function JoggingPage({ instance, motionGroup }: PageProps) {
+export function JoggingPage({ instance, session }: PageProps) {
   const [exact, setExact] = useState(false)
-  const tcpPath = useTcpPath(motionGroup)
-  // MotionGroupVisualizer needs the inverse solver of the kinematic model to
-  // tell a robot from a linear axis or a turntable
-  const kinematics = useAsync(motionGroup.modelFromController, (model) =>
-    instance.nova.api.motionGroupModels.getMotionGroupKinematicModel(model),
-  )
-  const dhParameters = useMemo(
-    () => motionGroup.dhParameters ?? [],
-    [motionGroup],
-  )
+  const tcpPath = useTcpPath(session)
+  const { description } = session
+  // The mounting in 3D units
+  const { mountingPosition, mountingQuaternion } = robotModelOf(session)
   const Visualizer = exact ? MotionGroupVisualizerExact : MotionGroupVisualizer
 
   const view = (
     <>
       <Viewport>
-        {kinematics.value && (
-          <FitCamera>
-            {(refit) => (
-              <Visualizer
-                instanceUrl={instance.url}
-                getModel={instance.getModel}
-                modelFromController={motionGroup.modelFromController}
-                rapidlyChangingMotionState={
-                  motionGroup.rapidlyChangingMotionState
-                }
-                dhParameters={dhParameters}
-                inverseSolver={kinematics.value?.inverse_solver}
-                chainOffsetPosition={motionGroup.mountingPosition}
-                chainOffsetQuaternion={motionGroup.mountingQuaternion}
-                postModelRender={refit}
-              />
-            )}
-          </FitCamera>
-        )}
+        <FitCamera>
+          {(refit) => (
+            // The inverse solver of the kinematic model tells a robot from
+            // a linear axis or a turntable
+            <Visualizer
+              instanceUrl={instance.url}
+              getModel={instance.getModel}
+              modelFromController={description.motionGroupModel}
+              rapidlyChangingMotionState={
+                session.state.rapidlyChangingMotionState
+              }
+              dhParameters={description.dhParameters}
+              inverseSolver={description.inverseSolver}
+              chainOffsetPosition={mountingPosition}
+              chainOffsetQuaternion={mountingQuaternion}
+              postModelRender={refit}
+            />
+          )}
+        </FitCamera>
         <RecordedTcpPath tcpPath={tcpPath} />
       </Viewport>
       <ViewPanel>
@@ -75,12 +69,6 @@ export function JoggingPage({ instance, motionGroup }: PageProps) {
           label="Exact (MotionGroupVisualizerExact, no smoothing)"
         />
         <TcpPathControls tcpPath={tcpPath} />
-        {kinematics.error !== undefined && (
-          <Typography variant="body2" color="error">
-            No kinematic model of {motionGroup.modelFromController}:{" "}
-            {String(kinematics.error)}
-          </Typography>
-        )}
       </ViewPanel>
     </>
   )
@@ -91,7 +79,7 @@ export function JoggingPage({ instance, motionGroup }: PageProps) {
       panel={
         <JoggingPanel
           nova={instance.nova}
-          motionGroupId={motionGroup.motionGroupId}
+          motionGroupId={session.motionGroupId}
           cellId={instance.cellId}
           sx={{ height: "100%" }}
         />
@@ -107,7 +95,7 @@ type TcpPath = {
 }
 
 /** Records the TCP poses of the motion state while the robot moves */
-function useTcpPath(motionGroup: ConnectedMotionGroup): TcpPath {
+function useTcpPath(session: RobotSession): TcpPath {
   const tcpPath = useLocalObservable<TcpPath>(
     () => ({
       points: [],
@@ -127,12 +115,12 @@ function useTcpPath(motionGroup: ConnectedMotionGroup): TcpPath {
   useEffect(
     () =>
       reaction(
-        () => motionGroup.rapidlyChangingMotionState.tcp_pose,
+        () => session.state.rapidlyChangingMotionState.tcp_pose,
         (pose) => {
           if (pose?.position) tcpPath.add(toJS(pose))
         },
       ),
-    [motionGroup, tcpPath],
+    [session, tcpPath],
   )
 
   return tcpPath
