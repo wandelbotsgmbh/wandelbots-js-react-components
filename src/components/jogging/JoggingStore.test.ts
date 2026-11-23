@@ -444,6 +444,24 @@ describe("TCP pose in the selected coordinate system", () => {
     )
   })
 
+  // Ported from RobotPad (unit/poseReadouts.test.ts)
+  it("is the readout, which holds while the joints only jitter, not the stored state", () => {
+    const motionStream = createMockMotionStream()
+    const readout = { position: [185, 0, 330], orientation: [0, 0, 0] }
+    // What the stream delivered since: inside the noise filter, not shown yet
+    Object.assign(motionStream.readoutState, { tcp_pose: readout })
+    ;(
+      motionStream as { rapidlyChangingMotionState: unknown }
+    ).rapidlyChangingMotionState = {
+      ...ur5eMotionGroupState,
+      tcp_pose: { position: [185.1, 0.05, 330.02], orientation: [0, 0, 1e-4] },
+    }
+    const store = createStore({ jogger: createMockJogger(motionStream) })
+    store.setSelectedCoordSystemId("world")
+
+    expect(store.tcpPoseInSelectedCoordSystem).toEqual(readout)
+  })
+
   it("takes the coordinate system that the stream reports the pose in", () => {
     const store = storeWithReadout(
       {
