@@ -12,4 +12,6 @@ export {
   type RobotHeaderActivationState,
   type RobotHeaderProps,
 } from "../components/robotHeader/RobotHeader"
+export { robotActivationOf } from "../components/robotHeader/robotActivationOf"
+export { robotSafetyOf } from "../components/robotHeader/robotSafetyOf"
 export type { SafetyBarProps } from "../SafetyBar/SafetyBar"

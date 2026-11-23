@@ -48,6 +48,9 @@ export {
   type RobotHeaderActivationState,
   type RobotHeaderProps,
 } from "./components/robotHeader/RobotHeader"
+// The header's parts that are the robot's: its safety and its activation
+export { robotActivationOf } from "./components/robotHeader/robotActivationOf"
+export { robotSafetyOf } from "./components/robotHeader/robotSafetyOf"
 // Also in /3d, with the panel: the bar takes them without three.js
 export type {
   RobotControlOption,

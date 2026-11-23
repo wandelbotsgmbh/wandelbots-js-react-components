@@ -803,6 +803,9 @@ export class RobotActivation {
 }
 
 // @public
+export function robotActivationOf(session: RobotSession): RobotHeaderActivation;
+
+// @public
 export type RobotActivationState = "inactive" | "activating" | "deactivating" | "active";
 
 // @public
@@ -1034,6 +1037,9 @@ export class RobotSafety {
     get isMoveableSafetyState(): boolean;
     get notMoveableReason(): RobotNotMoveableReason | null;
 }
+
+// @public
+export function robotSafetyOf(session: RobotSession): Pick<SafetyBarProps, "isVirtual" | "motionGroupId" | "operationMode" | "safetyState">;
 
 // @public
 export class RobotSession {

@@ -4,12 +4,29 @@
 
 ```ts
 
+import { AutoReconnectingWebsocket } from '@wandelbots/nova-js';
+import { Collider } from '@wandelbots/nova-js/v2';
+import { CoordinateSystem } from '@wandelbots/nova-js/v2';
+import { DHParameter } from '@wandelbots/nova-js/v2';
+import { Dictionary } from 'lodash';
+import { IReactionDisposer } from 'mobx';
+import { JointLimits } from '@wandelbots/nova-js/v2';
+import { JointTypeEnum } from '@wandelbots/nova-js/v2';
 import { JSX } from 'react/jsx-runtime';
+import { KinematicModel } from '@wandelbots/nova-js/v2';
+import { MotionGroupDescription } from '@wandelbots/nova-js/v2';
+import { MotionGroupState } from '@wandelbots/nova-js/v2';
+import type { Nova } from '@wandelbots/nova-js/v2';
 import type { OperationMode } from '@wandelbots/nova-js/v2';
 import type { PopoverOrigin } from '@mui/material/Popover';
+import { Pose } from '@wandelbots/nova-js/v2';
 import { ReactNode } from 'react';
+import { RobotControllerConfiguration } from '@wandelbots/nova-js/v2';
+import { RobotControllerState } from '@wandelbots/nova-js/v2';
+import { RobotTcp } from '@wandelbots/nova-js/v2';
 import type { SafetyStateType } from '@wandelbots/nova-js/v2';
 import type { SxProps } from '@mui/material/styles';
+import { TcpOffset } from '@wandelbots/nova-js/v2';
 import type { Theme } from '@mui/material/styles';
 
 // @public (undocumented)
@@ -20,6 +37,9 @@ export type AppItem = {
     href?: string;
     onClick?: () => void;
 };
+
+// @public
+export function robotActivationOf(session: RobotSession): RobotHeaderActivation;
 
 // @public
 export type RobotControlOption = {
@@ -62,6 +82,9 @@ export type RobotHeaderProps = {
     actions?: ReactNode;
     sx?: SxProps<Theme>;
 };
+
+// @public
+export function robotSafetyOf(session: RobotSession): Pick<SafetyBarProps, "isVirtual" | "motionGroupId" | "operationMode" | "safetyState">;
 
 // @public (undocumented)
 export interface SafetyBarProps {
