@@ -1,6 +1,7 @@
 import Box from "@mui/material/Box"
 import Stack from "@mui/material/Stack"
 import {
+  CurrentPose,
   JoggingGizmoOrientation,
   RobotControl,
   RobotSessionProvider,
@@ -9,7 +10,6 @@ import { useRef } from "react"
 import type { Quaternion } from "three"
 import { FitCamera, MotionGroupModel, Viewport } from "../scene"
 import type { PageProps } from "."
-import { CurrentPoseBarDemo } from "./CurrentPoseBarDemo"
 import { RobotHeaderDemo } from "./RobotHeaderDemo"
 
 /** The space between the parts and the edges of the 3D view, as in Figma */
@@ -21,8 +21,8 @@ const BAR_HEIGHT = "54px"
  * The parts put together as in the Figma design: RobotHeader on top, then
  * the robot's 3D view, RobotControlPanel floating at its top right (as
  * RobotPad's flyout) and ending above CurrentPoseBar, which runs along its
- * bottom. The panel is RobotControl, the panel of the session as the library
- * wires it; the bar is wired to the session's JoggingStore.
+ * bottom. Panel and bar are the library's connected components of the
+ * session, RobotControl and CurrentPose.
  */
 export function LayoutsPage({
   instance,
@@ -31,7 +31,6 @@ export function LayoutsPage({
   onMotionGroupChange,
   onPageChange,
 }: PageProps) {
-  const store = session.jogging
   // The camera's orientation for the panel's gizmo
   const orientation = useRef<Quaternion | null>(null)
 
@@ -76,7 +75,7 @@ export function LayoutsPage({
           <Box
             sx={{ position: "absolute", left: GAP, right: GAP, bottom: GAP }}
           >
-            <CurrentPoseBarDemo store={store} />
+            <CurrentPose />
           </Box>
         </Box>
       </Stack>
