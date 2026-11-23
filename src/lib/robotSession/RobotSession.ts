@@ -221,6 +221,16 @@ export class RobotSession {
     }
   }
 
+  /**
+   * Reports what went wrong in a call that a connected component made for
+   * the user, e.g. a jog: such a component has nobody to reject to, so it
+   * goes to the app's `onError` like the session's own background problems
+   * @internal
+   */
+  reportError(error: RobotSessionError) {
+    this.onError(error)
+  }
+
   /** Which motion owns the robot: jogging, a trajectory, or none ("off") */
   get movementOwner(): JoggerMode {
     return this.jogging.jogger.mode

@@ -10,6 +10,7 @@ import type { CollisionSetup } from '@wandelbots/nova-js/v2';
 import { CoordinateSystem } from '@wandelbots/nova-js/v2';
 import { DHParameter } from '@wandelbots/nova-js/v2';
 import { Dictionary } from 'lodash';
+import { FunctionComponent } from 'react';
 import type { Group } from 'three';
 import type { i18n as i18n_2 } from 'i18next';
 import { IReactionDisposer } from 'mobx';
@@ -922,6 +923,9 @@ export class RobotActivation {
 export type RobotActivationState = "inactive" | "activating" | "deactivating" | "active";
 
 // @public
+export const RobotControl: FunctionComponent<RobotControlProps>;
+
+// @public
 export type RobotControlIncrements = {
     steps: Record<JogMotion, number[]>;
     onStep: (motion: JogMotion, axis: JogAxis, direction: JogDirection, distance: number) => void;
@@ -972,6 +976,12 @@ export type RobotControlOption = {
 };
 
 // @public
+export type RobotControlOptions = {
+    disabled?: boolean;
+    gizmoOrientation?: RobotControlPanelProps["gizmoOrientation"];
+};
+
+// @public
 export const RobotControlPanel: (input: RobotControlPanelProps) => JSX.Element;
 
 // @public
@@ -1002,6 +1012,11 @@ export type RobotControlPanelProps = {
 export type RobotControlPose = {
     position: [number, number, number];
     orientation: [number, number, number];
+};
+
+// @public
+export type RobotControlProps = RobotControlOptions & Partial<RobotControlPanelProps> & {
+    session?: RobotSession;
 };
 
 // @public
@@ -1325,6 +1340,12 @@ export type RobotSessionOptions = {
 };
 
 // @public
+export function RobotSessionProvider(input: {
+    session: RobotSession;
+    children: ReactNode;
+}): JSX.Element;
+
+// @public
 export class RobotTargetPose {
     // (undocumented)
     beginEdit(): void;
@@ -1504,6 +1525,12 @@ export function unwrapRotationVector(newRotationVectorApi: Vector3Simple, curren
 
 // @public
 export function useInterpolation(initialValues?: number[], options?: InterpolationOptions): [ValueInterpolator];
+
+// @public
+export function useRobotControlProps(session: RobotSession, options?: RobotControlOptions): RobotControlPanelProps;
+
+// @public
+export function useRobotSession(): RobotSession;
 
 // @public
 export function useSmoothedMotionState(motionState: MotionGroupState, options?: InterpolationOptions): MotionGroupState;

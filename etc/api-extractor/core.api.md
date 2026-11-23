@@ -1089,6 +1089,12 @@ export type RobotSessionOptions = {
 };
 
 // @public
+export function RobotSessionProvider(input: {
+    session: RobotSession;
+    children: ReactNode;
+}): JSX.Element;
+
+// @public
 export class RobotTargetPose {
     // (undocumented)
     beginEdit(): void;
@@ -1211,6 +1217,9 @@ export function unwrapRotationVector(newRotationVectorApi: Vector3Simple, curren
 
 // @public
 export function useInterpolation(initialValues?: number[], options?: InterpolationOptions): [ValueInterpolator];
+
+// @public
+export function useRobotSession(): RobotSession;
 
 // @public
 export function useSmoothedMotionState(motionState: MotionGroupState, options?: InterpolationOptions): MotionGroupState;

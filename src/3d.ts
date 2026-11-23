@@ -40,6 +40,15 @@ export {
   type RobotControlTab,
   type RobotControlVelocity,
 } from "./components/robotControl/RobotControlPanel"
+// The panel of a robot session, ready to use, and its props
+export {
+  RobotControl,
+  type RobotControlProps,
+} from "./components/robotControl/RobotControl"
+export {
+  type RobotControlOptions,
+  useRobotControlProps,
+} from "./components/robotControl/useRobotControlProps"
 export * from "./components/robots/LinearAxis"
 export * from "./components/robots/MotionGroupVisualizer"
 export * from "./components/robots/Robot"

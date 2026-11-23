@@ -128,4 +128,9 @@ export {
   poseToText,
 } from "./components/robotControl/poseText"
 export * from "./lib/TrajectoryExecutionStore"
+// Gives connected components (e.g. RobotControl of /3d) their session
+export {
+  RobotSessionProvider,
+  useRobotSession,
+} from "./components/robotSession/RobotSessionProvider"
 export * from "./SafetyBar"

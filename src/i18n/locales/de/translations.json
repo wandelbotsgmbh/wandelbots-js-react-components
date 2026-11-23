@@ -121,5 +121,6 @@
   "CurrentPose.EulerConvention.Extrinsic.lb": "Extrinsisch {{axes}}",
   "RobotHeader.Apps.bt": "Apps",
   "RobotHeader.Search.bt": "Suchen",
-  "RobotHeader.MotionGroup.lb": "Bewegungsgruppe"
+  "RobotHeader.MotionGroup.lb": "Bewegungsgruppe",
+  "Jogging.MoveRelativeTo.SelectedTcp.dd": "Ausgewählter TCP"
 }
