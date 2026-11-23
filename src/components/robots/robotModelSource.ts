@@ -1,4 +1,8 @@
-import type { DHParameter, MotionGroupState } from "@wandelbots/nova-js/v2"
+import type {
+  DHParameter,
+  MotionGroupState,
+  Pose,
+} from "@wandelbots/nova-js/v2"
 import type { Quaternion } from "three"
 import type { NovaConnection } from "../../lib/novaConnection"
 import type { RobotSession } from "../../lib/robotSession/RobotSession"
@@ -14,6 +18,13 @@ export type RobotModelSource = {
   modelFromController?: string
   /** The joints' DH parameters; without them nothing is drawn */
   dhParameters?: DHParameter[]
+  /** The robot's serial number, for a copy of its model registered for it */
+  serialNumber?: string
+  /**
+   * The transform between the base frame and the start of the DH chain (the
+   * kinematic model's `kinematic_chain_offset`)
+   */
+  kinematicChainOffset?: Pose | null
   /**
    * The joint positions to show. The robot follows a new object as well as
    * changes made in place, as a MobX store makes them.
@@ -45,6 +56,8 @@ export function robotModelOf(session: RobotSession): RobotModelSource {
     nova: session.nova,
     modelFromController: description.motionGroupModel,
     dhParameters: description.dhParameters,
+    serialNumber: description.serialNumber,
+    kinematicChainOffset: description.kinematicChainOffset,
     rapidlyChangingMotionState: state.rapidlyChangingMotionState,
     mountingPosition: [
       (mounting?.position?.[0] ?? 0) / 1000,

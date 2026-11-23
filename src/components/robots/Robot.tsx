@@ -61,7 +61,8 @@ export function Robot({
   // new motionGroup object at every render.
   const nova = robot?.nova
   const getModelOfConnection = useCallback(
-    (model: string) => defaultGetModel(model, nova),
+    (model: string, _instanceUrl?: string, serialNumber?: string) =>
+      defaultGetModel(model, nova, serialNumber),
     [nova],
   )
 
@@ -74,6 +75,8 @@ export function Robot({
       rapidlyChangingMotionState={robot.rapidlyChangingMotionState}
       modelFromController={robot.modelFromController || ""}
       dhParameters={robot.dhParameters}
+      serialNumber={robot.serialNumber}
+      kinematicChainOffset={robot.kinematicChainOffset}
       getModel={getModel ?? getModelOfConnection}
       flangeRef={flangeRef}
       transparentColor={transparentColor}

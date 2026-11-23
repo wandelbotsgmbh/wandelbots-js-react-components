@@ -1,5 +1,9 @@
 import type { ThreeElements } from "@react-three/fiber"
-import type { DHParameter, MotionGroupState } from "@wandelbots/nova-js/v2"
+import type {
+  DHParameter,
+  MotionGroupState,
+  Pose,
+} from "@wandelbots/nova-js/v2"
 import {
   Suspense,
   useCallback,
@@ -23,19 +27,38 @@ import { defaultGetModel } from "./robotModelLogic"
 export type DHRobotProps = {
   rapidlyChangingMotionState: MotionGroupState
   dhParameters: Array<DHParameter>
+  /**
+   * The transform between the motion group's base frame and the start of
+   * its DH chain (the kinematic model's `kinematic_chain_offset`)
+   */
+  kinematicChainOffset?: Pose | null
 } & ThreeElements["group"]
 
 export type SupportedRobotProps = {
   rapidlyChangingMotionState: MotionGroupState
   modelFromController: string
   dhParameters: DHParameter[]
+  /**
+   * The robot's serial number: a copy of its model registered for it is
+   * drawn instead, if there is one (see `defaultGetModel`)
+   */
+  serialNumber?: string
+  /**
+   * The transform between the motion group's base frame and the start of
+   * its DH chain (the kinematic model's `kinematic_chain_offset`): the root
+   * joint is placed by it, whatever the model file says
+   */
+  kinematicChainOffset?: Pose | null
+  /** Where the robot is mounted, in metres (the motion group's mounting) */
   chainOffsetPosition?: [number, number, number]
+  /** How the robot is mounted (the motion group's mounting) */
   chainOffsetQuaternion?: THREE.Quaternion
   flangeRef?: React.Ref<THREE.Group>
   instanceUrl?: string
   getModel?: (
     modelFromController: string,
     instanceUrl?: string,
+    serialNumber?: string,
   ) => Promise<string> | undefined
   postModelRender?: () => void
   transparentColor?: string
@@ -55,6 +78,8 @@ export const SupportedRobotExact = externalizeComponent(
     rapidlyChangingMotionState,
     modelFromController,
     dhParameters,
+    serialNumber,
+    kinematicChainOffset,
     chainOffsetPosition,
     chainOffsetQuaternion,
     getModel = defaultGetModel,
@@ -91,19 +116,20 @@ export const SupportedRobotExact = externalizeComponent(
     }, [robotGroup, transparentColor])
 
     const modelURL = useMemo(() => {
-      const result = getModel(modelFromController, instanceUrl)
+      const result = getModel(modelFromController, instanceUrl, serialNumber)
       if (!result) {
         throw new Error(
           `No model found for robot "${modelFromController}". Ensure the model is available or provide a custom getModel function.`,
         )
       }
       return result
-    }, [modelFromController, instanceUrl, getModel])
+    }, [modelFromController, instanceUrl, serialNumber, getModel])
 
     const dhrobot = (
       <DHRobot
         rapidlyChangingMotionState={rapidlyChangingMotionState}
         dhParameters={dhParameters}
+        kinematicChainOffset={kinematicChainOffset}
         {...props}
       />
     )
@@ -129,6 +155,8 @@ export const SupportedRobotExact = externalizeComponent(
                 modelURL={modelURL}
                 postModelRender={handlePostModelRender}
                 flangeRef={flangeRef}
+                dhParameters={dhParameters}
+                kinematicChainOffset={kinematicChainOffset}
                 {...props}
               />
             </RobotAnimator>

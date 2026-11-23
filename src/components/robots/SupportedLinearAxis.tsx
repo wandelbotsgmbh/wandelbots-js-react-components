@@ -1,5 +1,9 @@
 import type { ThreeElements } from "@react-three/fiber"
-import type { DHParameter, MotionGroupState } from "@wandelbots/nova-js/v2"
+import type {
+  DHParameter,
+  MotionGroupState,
+  Pose,
+} from "@wandelbots/nova-js/v2"
 import {
   Suspense,
   useCallback,
@@ -32,13 +36,27 @@ export type SupportedLinearAxisProps = {
   rapidlyChangingMotionState: MotionGroupState
   modelFromController: string
   dhParameters: DHParameter[]
+  /**
+   * The axis's serial number: a copy of its model registered for it is
+   * drawn instead, if there is one (see `defaultGetModel`)
+   */
+  serialNumber?: string
+  /**
+   * The transform between the motion group's base frame and the start of
+   * its DH chain (the kinematic model's `kinematic_chain_offset`): the rail
+   * is placed by it, whatever the model file says
+   */
+  kinematicChainOffset?: Pose | null
+  /** Where the axis is mounted, in metres (the motion group's mounting) */
   chainOffsetPosition?: [number, number, number]
+  /** How the axis is mounted (the motion group's mounting) */
   chainOffsetQuaternion?: THREE.Quaternion
   flangeRef?: React.Ref<THREE.Group>
   instanceUrl?: string
   getModel?: (
     modelFromController: string,
     instanceUrl?: string,
+    serialNumber?: string,
   ) => Promise<string> | undefined
   postModelRender?: () => void
   transparentColor?: string
@@ -57,6 +75,8 @@ export const SupportedLinearAxisExact = externalizeComponent(
     rapidlyChangingMotionState,
     modelFromController,
     dhParameters,
+    serialNumber,
+    kinematicChainOffset,
     chainOffsetPosition,
     chainOffsetQuaternion,
     getModel = defaultGetModel,
@@ -95,7 +115,7 @@ export const SupportedLinearAxisExact = externalizeComponent(
     // One call of getModel per model, not one per render: after a failed
     // download, each call of defaultGetModel starts a new download
     const modelURL = useMemo(() => {
-      const result = getModel(modelFromController, instanceUrl)
+      const result = getModel(modelFromController, instanceUrl, serialNumber)
       if (!result) {
         const mockBlob = new Blob([], { type: "model/gltf-binary" })
         const mockFile = new File([mockBlob], `${modelFromController}.glb`, {
@@ -104,7 +124,7 @@ export const SupportedLinearAxisExact = externalizeComponent(
         return Promise.resolve(URL.createObjectURL(mockFile))
       }
       return result
-    }, [modelFromController, instanceUrl, getModel])
+    }, [modelFromController, instanceUrl, serialNumber, getModel])
 
     const dhLinearAxis = (
       <DHLinearAxis
@@ -131,10 +151,15 @@ export const SupportedLinearAxisExact = externalizeComponent(
               chainOffsetPosition={chainOffsetPosition}
               chainOffsetQuaternion={chainOffsetQuaternion}
             >
+              {/* The DH chain and its offset place the rail and hoist each
+                  joint's rest pose, so the animator slides the carriage
+                  along the rail */}
               <GenericRobot
                 modelURL={modelURL}
                 postModelRender={handlePostModelRender}
                 flangeRef={flangeRef}
+                dhParameters={dhParameters}
+                kinematicChainOffset={kinematicChainOffset}
                 {...props}
               />
             </LinearAxisAnimator>

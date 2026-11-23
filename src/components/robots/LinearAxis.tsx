@@ -43,7 +43,8 @@ export function LinearAxis({
   // new motionGroup object at every render.
   const nova = axis?.nova
   const getModelOfConnection = useCallback(
-    (model: string) => defaultGetModel(model, nova),
+    (model: string, _instanceUrl?: string, serialNumber?: string) =>
+      defaultGetModel(model, nova, serialNumber),
     [nova],
   )
   const loadModel = getModel ?? getModelOfConnection
@@ -64,6 +65,8 @@ export function LinearAxis({
         rapidlyChangingMotionState={axis.rapidlyChangingMotionState}
         modelFromController={modelFromController}
         dhParameters={axis.dhParameters}
+        serialNumber={axis.serialNumber}
+        kinematicChainOffset={axis.kinematicChainOffset}
         getModel={loadModel}
         flangeRef={flangeRef}
         transparentColor={transparentColor}

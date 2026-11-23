@@ -52,7 +52,16 @@ export {
 export * from "./components/robots/LinearAxis"
 export * from "./components/robots/MotionGroupVisualizer"
 export * from "./components/robots/Robot"
-export { defaultGetModel } from "./components/robots/robotModelLogic"
+// The rotation from a model's Y-up frame to NOVA's Z-up frame
+export { MODEL_ROTATION } from "./components/robots/modelRotation"
+export {
+  defaultGetModel,
+  FLANGE_NODE_SUFFIX,
+  JOINT_NODE_NAME,
+  JOINT_REST_SUFFIX,
+  jointIndexOf,
+  revokeAllModelUrls,
+} from "./components/robots/robotModelLogic"
 // What Robot and LinearAxis draw, and the robot of a session as they draw it
 export {
   type RobotModelSource,

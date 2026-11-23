@@ -10,6 +10,7 @@ import type { CollisionSetup } from '@wandelbots/nova-js/v2';
 import { CoordinateSystem } from '@wandelbots/nova-js/v2';
 import { DHParameter } from '@wandelbots/nova-js/v2';
 import { Dictionary } from 'lodash';
+import { Euler } from 'three';
 import { FunctionComponent } from 'react';
 import type { Group } from 'three';
 import type { i18n as i18n_2 } from 'i18next';
@@ -23,6 +24,7 @@ import type { LimitRange } from '@wandelbots/nova-js/v2';
 import { MotionGroupDescription } from '@wandelbots/nova-js/v2';
 import { MotionGroupState } from '@wandelbots/nova-js/v2';
 import type { Nova } from '@wandelbots/nova-js/v2';
+import { Object3D } from 'three';
 import type { OperationMode } from '@wandelbots/nova-js/v2';
 import type { OrientationType as OrientationType_2 } from '@wandelbots/nova-js/v2';
 import type { PopoverOrigin } from '@mui/material/Popover';
@@ -284,7 +286,7 @@ export type CurrentPoseProps = Partial<CurrentPoseBarProps> & {
 };
 
 // @public
-export function defaultGetModel(modelFromController: string, connection?: NovaConnection): Promise<string>;
+export function defaultGetModel(modelFromController: string, connection?: NovaConnection, serialNumber?: string): Promise<string>;
 
 // @public
 export function deriveSelectedTcpPose(input: {
@@ -307,10 +309,14 @@ export type DHLinearAxisProps = {
 export type DHRobotProps = {
     rapidlyChangingMotionState: MotionGroupState;
     dhParameters: Array<DHParameter>;
+    kinematicChainOffset?: Pose | null;
 } & ThreeElements["group"];
 
 // @public
 export type EulerConvention = Extract<OrientationType_2, `EULER_ANGLES_${string}`>;
+
+// @public (undocumented)
+export const FLANGE_NODE_SUFFIX = "_FLG";
 
 // @public (undocumented)
 export type GizmoChainOffset = Pose;
@@ -700,6 +706,15 @@ export type JogHandle = {
 export type JogMotion = "translate" | "rotate";
 
 // @public
+export const JOINT_NODE_NAME: RegExp;
+
+// @public (undocumented)
+export const JOINT_REST_SUFFIX = "_REST";
+
+// @public
+export function jointIndexOf(node: Object3D): number | null;
+
+// @public
 export function JointLimitGizmo(input: JointLimitGizmoProps): JSX.Element;
 
 // @public (undocumented)
@@ -760,6 +775,9 @@ export type LoadRobotSessionOptions = RobotSessionOptions & {
     retryDelaysMs?: number[];
     socketTimeoutMs?: number;
 };
+
+// @public
+export const MODEL_ROTATION: Euler;
 
 // @public
 export const MOTION_DELTA_THRESHOLD = 0.0001;
@@ -925,6 +943,9 @@ export type ReferencedPose = {
 
 // @public
 export function resolveCoordinateSystemInWorld(coordinateSystemId: string, coordinateSystems: CoordinateSystem[]): CoordinateSystem;
+
+// @public
+export function revokeAllModelUrls(): Promise<void>;
 
 // @public
 export function Robot(input: RobotProps): JSX.Element | null;
@@ -1233,6 +1254,8 @@ export function robotModelOf(session: RobotSession): RobotModelSource;
 export type RobotModelSource = {
     modelFromController?: string;
     dhParameters?: DHParameter[];
+    serialNumber?: string;
+    kinematicChainOffset?: Pose | null;
     rapidlyChangingMotionState: MotionGroupState;
     mountingPosition?: [number, number, number];
     mountingQuaternion?: Quaternion;
@@ -1465,11 +1488,13 @@ export type SupportedLinearAxisProps = {
     rapidlyChangingMotionState: MotionGroupState;
     modelFromController: string;
     dhParameters: DHParameter[];
+    serialNumber?: string;
+    kinematicChainOffset?: Pose | null;
     chainOffsetPosition?: [number, number, number];
     chainOffsetQuaternion?: THREE.Quaternion;
     flangeRef?: React.Ref<THREE.Group>;
     instanceUrl?: string;
-    getModel?: (modelFromController: string, instanceUrl?: string) => Promise<string> | undefined;
+    getModel?: (modelFromController: string, instanceUrl?: string, serialNumber?: string) => Promise<string> | undefined;
     postModelRender?: () => void;
     transparentColor?: string;
 } & ThreeElements["group"];
@@ -1485,11 +1510,13 @@ export type SupportedRobotProps = {
     rapidlyChangingMotionState: MotionGroupState;
     modelFromController: string;
     dhParameters: DHParameter[];
+    serialNumber?: string;
+    kinematicChainOffset?: Pose | null;
     chainOffsetPosition?: [number, number, number];
     chainOffsetQuaternion?: THREE.Quaternion;
     flangeRef?: React.Ref<THREE.Group>;
     instanceUrl?: string;
-    getModel?: (modelFromController: string, instanceUrl?: string) => Promise<string> | undefined;
+    getModel?: (modelFromController: string, instanceUrl?: string, serialNumber?: string) => Promise<string> | undefined;
     postModelRender?: () => void;
     transparentColor?: string;
 } & ThreeElements["group"];

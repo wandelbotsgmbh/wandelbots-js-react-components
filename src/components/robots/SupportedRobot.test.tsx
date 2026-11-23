@@ -357,3 +357,43 @@ describe("the model of a linear axis", () => {
     expect(getModel).toHaveBeenCalledTimes(1)
   })
 })
+
+describe("the joints' rest frames", () => {
+  // The animator writes `rotation.y = theta + q` onto a joint node. That
+  // replaces the node's Euler Y: for a joint authored at an oblique rest
+  // rotation, it only turns the joint about its own axis once the rest
+  // rotation lives in a parent of its own (ported from RobotPad)
+  it("turn a joint about its own axis from its authored rest pose", async () => {
+    const model = modelWithJoints("robot", 1)
+    const joint = model.scene.getObjectByName("robot_J00")
+    joint?.rotation.set(Math.PI / 2, 0, 0)
+    gltf.load = () => model
+    const theta = 0.3
+    const q = 0.5
+
+    const scene = await renderInCanvas(
+      <SupportedRobotExact
+        modelFromController="Oblique_Robot"
+        dhParameters={[
+          { ...dhParameters(1, JointTypeEnum.RevoluteJoint)[0], theta },
+        ]}
+        rapidlyChangingMotionState={standstill([q])}
+        getModel={() => Promise.resolve("blob:oblique")}
+      />,
+    )
+    await act(async () => {
+      await nextTask()
+    })
+
+    const drawn = scene.getObjectByName("robot_J00")
+    expect(scene.getObjectByName("robot_J00_REST")).toBeDefined()
+    const expected = new THREE.Quaternion()
+      .setFromEuler(new THREE.Euler(Math.PI / 2, 0, 0))
+      .multiply(
+        new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), q),
+      )
+    expect(
+      drawn?.getWorldQuaternion(new THREE.Quaternion()).angleTo(expected),
+    ).toBeCloseTo(0)
+  })
+})
