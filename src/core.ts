@@ -55,6 +55,16 @@ export * from "./components/utils/useSmoothedMotionState"
 export * from "./components/VelocitySlider"
 export * from "./i18n/config"
 export * from "./lib/ConnectedMotionGroup"
+export {
+  ControllerStateStream,
+  type ControllerStateStreamError,
+  type ControllerStateStreamOptions,
+  MOTION_DELTA_THRESHOLD,
+} from "./lib/ControllerStateStream"
+export {
+  type ControllerStateSource,
+  controllerStateWebsocket,
+} from "./lib/controllerStateSource"
 export type { ConnectionLogger } from "./lib/connectionLogger"
 export * from "./lib/JoggerConnection"
 export * from "./lib/motionStateUpdate"

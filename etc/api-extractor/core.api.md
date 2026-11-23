@@ -167,6 +167,61 @@ export type ConnectionLogger = {
 };
 
 // @public
+export type ControllerStateSource = {
+    readonly url: string;
+    readonly readyState: number;
+    addEventListener(type: "message", listener: (event: MessageEvent) => void): void;
+    removeEventListener(type: "message", listener: (event: MessageEvent) => void): void;
+    nextMessage(): Promise<MessageEvent>;
+    reconnect(): void;
+    close(): void;
+    parse(data: unknown): RobotControllerState | undefined;
+};
+
+// @public
+export class ControllerStateStream {
+    constructor(
+    source: ControllerStateSource,
+    motionGroupId: string, initialControllerState: RobotControllerState, options?: ControllerStateStreamOptions);
+    connectionQuality: "good" | "struggling" | "critical";
+    get controllerState(): RobotControllerState;
+    dispose(): void;
+    lastInvalidStateMessage: {
+        receivedAt: number;
+        data: unknown;
+    } | null;
+    lastValidStateMessage: {
+        receivedAt: number;
+        data: RobotControllerState;
+    };
+    readonly motionGroupId: string;
+    nextMotionState(): Promise<MotionGroupState>;
+    rapidlyChangingMotionState: MotionGroupState;
+    get readoutState(): MotionStateReadout;
+    readonly source: ControllerStateSource;
+}
+
+// @public
+export type ControllerStateStreamError = {
+    message: string;
+    url?: string;
+};
+
+// @public
+export type ControllerStateStreamOptions = {
+    isVirtual?: boolean;
+    onError?: (error: ControllerStateStreamError) => void;
+    reconnectOnFocus?: boolean;
+};
+
+// @public
+export function controllerStateWebsocket(connection: NovaConnection, input: {
+    controllerId: string;
+    cellId?: string;
+    responseRateMs?: number;
+}): ControllerStateSource;
+
+// @public
 export const CurrentPoseBar: (input: CurrentPoseBarProps) => JSX.Element;
 
 // @public
@@ -568,6 +623,9 @@ export const LoadingErrorMessage: (props: {
     loadingMessage?: string;
     error: unknown;
 }) => JSX.Element;
+
+// @public
+export const MOTION_DELTA_THRESHOLD = 0.0001;
 
 // @public (undocumented)
 export type MotionGroupOption = {
