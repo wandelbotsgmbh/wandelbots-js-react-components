@@ -8,18 +8,20 @@ import { AutoReconnectingWebsocket } from '@wandelbots/nova-js';
 import { Collider } from '@wandelbots/nova-js/v2';
 import type { CollisionSetup } from '@wandelbots/nova-js/v2';
 import { CoordinateSystem } from '@wandelbots/nova-js/v2';
-import type { DHParameter } from '@wandelbots/nova-js/v2';
+import { DHParameter } from '@wandelbots/nova-js/v2';
 import { Dictionary } from 'lodash';
 import type { Group } from 'three';
 import type { i18n as i18n_2 } from 'i18next';
 import { IReactionDisposer } from 'mobx';
 import type { JoggingDetailsState } from '@wandelbots/nova-js/v2';
+import { JointLimits } from '@wandelbots/nova-js/v2';
 import { JointTypeEnum } from '@wandelbots/nova-js/v2';
 import { JSX } from 'react/jsx-runtime';
 import { KinematicModel } from '@wandelbots/nova-js/v2';
 import type { LimitRange } from '@wandelbots/nova-js/v2';
 import { MotionGroupDescription } from '@wandelbots/nova-js/v2';
-import type { MotionGroupState } from '@wandelbots/nova-js/v2';
+import { MotionGroupState } from '@wandelbots/nova-js/v2';
+import type { Nova } from '@wandelbots/nova-js/v2';
 import type { OperationMode } from '@wandelbots/nova-js/v2';
 import type { OrientationType as OrientationType_2 } from '@wandelbots/nova-js/v2';
 import type { PopoverOrigin } from '@mui/material/Popover';
@@ -28,11 +30,13 @@ import { Quaternion } from 'three';
 import { default as React_2 } from 'react';
 import { ReactNode } from 'react';
 import { RefObject } from 'react';
-import type { RobotControllerState } from '@wandelbots/nova-js/v2';
+import { RobotControllerConfiguration } from '@wandelbots/nova-js/v2';
+import { RobotControllerState } from '@wandelbots/nova-js/v2';
 import { RobotTcp } from '@wandelbots/nova-js/v2';
 import type { SafetyStateType } from '@wandelbots/nova-js/v2';
 import Stack from '@mui/material/Stack';
 import { SxProps } from '@mui/material/styles';
+import { TcpOffset } from '@wandelbots/nova-js/v2';
 import type { Theme } from '@mui/material/styles';
 import * as THREE from 'three';
 import type { ThreeElements } from '@react-three/fiber';
@@ -320,6 +324,9 @@ export interface InterpolationOptions {
     tension?: number;
     threshold?: number;
 }
+
+// @public (undocumented)
+export function isRobotLoadStepError(err: unknown): err is RobotLoadStepError;
 
 // @public
 export type JogAxis = "x" | "y" | "z";
@@ -709,6 +716,22 @@ export const LoadingErrorMessage: (props: {
 }) => JSX.Element;
 
 // @public
+export function loadRobotSession(connection: NovaConnection, motionGroupId: string, options?: LoadRobotSessionOptions): RobotSessionLoad;
+
+// @public
+export type LoadRobotSessionOptions = RobotSessionOptions & {
+    cellId?: string;
+    controllerId?: string;
+    stateSource?: (options: {
+        cellId: string;
+        controllerId: string;
+    }) => ControllerStateSource;
+    onEvent?: (event: RobotSessionEvent) => void;
+    retryDelaysMs?: number[];
+    socketTimeoutMs?: number;
+};
+
+// @public
 export const MOTION_DELTA_THRESHOLD = 0.0001;
 
 // @public (undocumented)
@@ -862,6 +885,26 @@ export function resolveCoordinateSystemInWorld(coordinateSystemId: string, coord
 export function Robot(input: RobotProps): JSX.Element | null;
 
 // @public
+export const ROBOT_LOAD_STEP_IDS: readonly ["motionGroupDescription", "controllerConfiguration", "kinematicModel", "motionGroupModel", "coordinateSystems", "controllerState", "motionStateStream", "controllerStateStream"];
+
+// @public
+export class RobotActivation {
+    constructor(nova: Nova, ids: {
+        cellId: string;
+        controllerId: string;
+    }, live: RobotLiveState, safety: () => RobotSafety, logger: ConnectionLogger);
+    activate(): Promise<void>;
+    deactivate(): Promise<void>;
+    // (undocumented)
+    dispose(): void;
+    state: RobotActivationState;
+    toggle(): Promise<void>;
+}
+
+// @public
+export type RobotActivationState = "inactive" | "activating" | "deactivating" | "active";
+
+// @public
 export type RobotControlIncrements = {
     steps: Record<JogMotion, number[]>;
     onStep: (motion: JogMotion, axis: JogAxis, direction: JogDirection, distance: number) => void;
@@ -962,6 +1005,47 @@ export type RobotControlVelocity = {
 };
 
 // @public
+export class RobotDescription {
+    // (undocumented)
+    readonly controllerConfiguration: RobotControllerConfiguration;
+    readonly coordinateSystems: CoordinateSystem[];
+    // (undocumented)
+    get dhParameters(): DHParameter[];
+    get flangeOffset(): Pose | null;
+    get inverseSolver(): string | undefined;
+    get isVirtual(): boolean;
+    get jointLimits(): JointLimits[];
+    get jointType(): JointTypeEnum;
+    get kinematicChainOffset(): Pose | null;
+    readonly kinematicModel: KinematicModel;
+    readonly motionGroupDescription: MotionGroupDescription;
+    get motionGroupModel(): string;
+    get mounting(): Pose | null;
+    readonly resolvedMotionGroupModel: string;
+    get safetyLinkColliders(): {
+        [key: string]: Collider;
+    }[] | undefined;
+    get safetyToolColliders(): {
+        [key: string]: {
+            [key: string]: Collider;
+        };
+    } | undefined;
+    // (undocumented)
+    get safetyZones(): {
+        [key: string]: Collider;
+    } | undefined;
+    // (undocumented)
+    get serialNumber(): string | undefined;
+    get tcpOffsetsById(): {
+        [key: string]: TcpOffset;
+    };
+    get tcps(): {
+        id: string;
+        name: string;
+    }[];
+}
+
+// @public
 export const RobotHeader: (input: RobotHeaderProps) => JSX.Element;
 
 // @public
@@ -988,6 +1072,119 @@ export type RobotHeaderProps = {
     sx?: SxProps<Theme>;
 };
 
+// @public
+export class RobotLiveState {
+    // (undocumented)
+    get connectionQuality(): "good" | "struggling" | "critical";
+    get controllerState(): RobotControllerState;
+    get displayedTcpPose(): Required<Pose>;
+    get displayedTcpPoseReference(): TcpReferencedPose;
+    get jointPose(): number[];
+    // (undocumented)
+    get lastInvalidStateMessage(): {
+        receivedAt: number;
+        data: unknown;
+    } | null;
+    // (undocumented)
+    get lastValidStateMessage(): {
+        receivedAt: number;
+        data: RobotControllerState;
+    };
+    get measuredTcpPoseReference(): TcpReferencedPose;
+    nextMotionState(): Promise<MotionGroupState>;
+    get rapidlyChangingMotionState(): MotionGroupState;
+    get readoutState(): MotionStateReadout;
+    readonly stream: ControllerStateStream;
+    waitUntilStopped(): Promise<void>;
+}
+
+// @public
+export class RobotLoadProgress {
+    constructor(motionGroupId?: string | null, controllerId?: string | null);
+    beginRetry(attempt: number): void;
+    // (undocumented)
+    controllerId: string | null;
+    currentStepStartedAt: number | null;
+    // (undocumented)
+    get failedStep(): RobotLoadStep | undefined;
+    // (undocumented)
+    failStep(id: RobotLoadStepId, error: unknown): void;
+    failWith(error: unknown): void;
+    fatalError: unknown;
+    // (undocumented)
+    get isComplete(): boolean;
+    // (undocumented)
+    get isFailed(): boolean;
+    motionGroupId: string | null;
+    retryAttempt: number;
+    // (undocumented)
+    get runningStep(): RobotLoadStep | undefined;
+    // (undocumented)
+    startStep(id: RobotLoadStepId, url: string | null): void;
+    // (undocumented)
+    steps: RobotLoadStep[];
+    // (undocumented)
+    get succeededCount(): number;
+    // (undocumented)
+    succeedStep(id: RobotLoadStepId): void;
+    // (undocumented)
+    get totalCount(): number;
+    // (undocumented)
+    updateStepUrl(id: RobotLoadStepId, url: string): void;
+}
+
+// @public (undocumented)
+export type RobotLoadStep = {
+    id: RobotLoadStepId;
+    status: RobotLoadStepStatus;
+    url: string | null;
+    error: unknown;
+};
+
+// @public
+export class RobotLoadStepError extends Error {
+    constructor(stepId: RobotLoadStepId, cause: unknown, message: string);
+    // (undocumented)
+    readonly cause: unknown;
+    // (undocumented)
+    readonly stepId: RobotLoadStepId;
+}
+
+// @public (undocumented)
+export type RobotLoadStepId = (typeof ROBOT_LOAD_STEP_IDS)[number];
+
+// @public (undocumented)
+export type RobotLoadStepStatus = "pending" | "running" | "succeeded" | "failed";
+
+// @public
+export class RobotModeChangeError extends Error {
+    // (undocumented)
+    readonly cause: unknown;
+    // (undocumented)
+    readonly url: string;
+}
+
+// @public
+export type RobotNotMoveableReason =
+/** The live state stopped coming */
+    {
+    code: "disconnected";
+}
+/** The safety state does not allow movement, e.g. an emergency stop */
+| {
+    code: "safety_state";
+    value: string;
+}
+/** The operation mode does not allow movement */
+| {
+    code: "operation_mode";
+    value: string;
+}
+/** The robot is not activated (the controller is not in control mode) */
+| {
+    code: "deactivated";
+};
+
 // @public (undocumented)
 export type RobotProps = {
     connectedMotionGroup: ConnectedMotionGroup;
@@ -996,6 +1193,79 @@ export type RobotProps = {
     transparentColor?: string;
     postModelRender?: () => void;
 } & ThreeElements["group"];
+
+// @public
+export class RobotSafety {
+    get activationBlockedReason(): string | null;
+    get canBeActive(): boolean;
+    get canBeMoved(): boolean;
+    get isActivatableSafetyState(): boolean;
+    get isEstopActive(): boolean;
+    get isMoveableOperationMode(): boolean;
+    get isMoveableSafetyState(): boolean;
+    get notMoveableReason(): RobotNotMoveableReason | null;
+}
+
+// @public
+export class RobotSession {
+    readonly activation: RobotActivation;
+    // (undocumented)
+    readonly cellId: string;
+    // (undocumented)
+    readonly controllerId: string;
+    readonly description: RobotDescription;
+    dispose(): void;
+    ensureMovementOwnership(target: Exclude<JoggerMode, "off">): Promise<void>;
+    readonly jogging: JoggingStore;
+    // (undocumented)
+    readonly motionGroupId: string;
+    get movementOwner(): JoggerMode;
+    readonly safety: RobotSafety;
+    readonly state: RobotLiveState;
+    readonly trajectory: TrajectoryExecutionStore;
+}
+
+// @public
+export type RobotSessionError = {
+    kind: "mode" | "jog" | "stream";
+    message: string;
+    url?: string;
+    cause?: unknown;
+};
+
+// @public
+export type RobotSessionEvent = {
+    type: "loadFailed";
+    motionGroupId: string;
+    step: RobotLoadStepId | "unknown";
+    message: string;
+    attempts: number;
+};
+
+// @public
+export class RobotSessionLoad {
+    dispose(): void;
+    error: unknown;
+    // (undocumented)
+    readonly motionGroupId: string;
+    readonly progress: RobotLoadProgress;
+    get ready(): Promise<RobotSession>;
+    retry(): void;
+    session: RobotSession | null;
+    state: RobotSessionLoadState;
+}
+
+// @public (undocumented)
+export type RobotSessionLoadState = "loading" | "ready" | "failed";
+
+// @public
+export type RobotSessionOptions = {
+    isLocked?: () => boolean;
+    onError?: (error: RobotSessionError) => void;
+    storage?: JoggingStoreStorage;
+    logger?: ConnectionLogger;
+    autoActivateVirtual?: boolean;
+};
 
 // @public (undocumented)
 export type RobotTcpLike = {

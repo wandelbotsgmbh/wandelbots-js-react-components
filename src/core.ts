@@ -79,5 +79,38 @@ export {
   type TcpReferencedPose,
   transformPoseToCoordinateSystem,
 } from "./lib/PoseTransformer"
+// A robot of a NOVA cell, loaded and connected
+export {
+  type LoadRobotSessionOptions,
+  loadRobotSession,
+  type RobotSessionEvent,
+  RobotSessionLoad,
+  type RobotSessionLoadState,
+} from "./lib/robotSession/loadRobotSession"
+export {
+  RobotActivation,
+  type RobotActivationState,
+  RobotModeChangeError,
+} from "./lib/robotSession/RobotActivation"
+export { RobotDescription } from "./lib/robotSession/RobotDescription"
+export {
+  isRobotLoadStepError,
+  ROBOT_LOAD_STEP_IDS,
+  RobotLoadProgress,
+  type RobotLoadStep,
+  RobotLoadStepError,
+  type RobotLoadStepId,
+  type RobotLoadStepStatus,
+} from "./lib/robotSession/RobotLoadProgress"
+export { RobotLiveState } from "./lib/robotSession/RobotLiveState"
+export {
+  type RobotNotMoveableReason,
+  RobotSafety,
+} from "./lib/robotSession/RobotSafety"
+export {
+  RobotSession,
+  type RobotSessionError,
+  type RobotSessionOptions,
+} from "./lib/robotSession/RobotSession"
 export * from "./lib/TrajectoryExecutionStore"
 export * from "./SafetyBar"
