@@ -5,7 +5,7 @@ import {
   NoMotionGroupModal,
 } from "@wandelbots/wandelbots-js-react-components"
 import { useEffect, useState } from "react"
-import { listMotionGroupIds, useAsync, useRobotSession } from "./connections"
+import { listMotionGroupIds, useAsync, useLoadedSession } from "./connections"
 import { type PlaygroundInstance, playgroundInstance } from "./instance"
 import { NoInstanceScreen } from "./NoInstanceScreen"
 import { pageById } from "./pages"
@@ -26,7 +26,7 @@ function Playground({ instance }: { instance: PlaygroundInstance }) {
   )
   // The motion group of the URL, else the first of the cell
   const motionGroupId = location.motionGroup ?? motionGroupIds.value?.[0]
-  const session = useRobotSession(instance, motionGroupId)
+  const session = useLoadedSession(instance, motionGroupId)
   const page = pageById(location.page)
 
   useEffect(() => {

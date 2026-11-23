@@ -294,77 +294,98 @@ test("moves the TCP to a typed pose with RobotControlPanel's Move to tab as Robo
   page,
 }) => {
   await openPage(page, "layouts")
-  const panel = page.getByTestId("robot-control-panel")
-  await panel.getByRole("tab", { name: "Move to" }).click()
+  // As RobotPad: a typed pose is planned only for a robot that may move, so
+  // the robot is activated first
+  const activation = page
+    .getByTestId("robot-header")
+    .getByRole("switch", { name: /Activat|Deactivat/ })
+  await activation.click()
+  await expect(activation).toBeChecked({ timeout: 30_000 })
 
-  // Edit the current pose: 60 mm higher, saved with Enter. Far enough that
-  // the hold of at least 1 s ends on the way at 25 mm/s, the store's default
-  const coordinates = panel.getByRole("textbox", {
-    name: "Coordinates XYZ (mm) · Rotation vector (rad)",
-  })
-  await expect(coordinates).toHaveValue(/^\(.+\)$/)
-  await panel.getByRole("button", { name: "Edit pose" }).click()
-  const values = (await coordinates.inputValue())
-    .slice(1, -1)
-    .split(",")
-    .map(Number)
-  const start = await tcpZ()
-  const target = Math.round((start + 60) * 10) / 10
-  values[2] = target
-  await coordinates.fill(`(${values.join(", ")})`)
-  await coordinates.press("Enter")
+  try {
+    const panel = page.getByTestId("robot-control-panel")
+    await panel.getByRole("tab", { name: "Move to" }).click()
 
-  // Planned and loaded: the button can be held
-  const move = panel.getByRole("button", {
-    name: /^(Move to|Moving…|Stopping…)$/,
-  })
-  await expect(move).toHaveText("Move to")
-  await expect(move).toBeEnabled({ timeout: 30_000 })
-  await jogPress(
-    page,
-    move,
-    async () =>
-      (await move.textContent()) === "Moving…" && (await tcpZ()) > start + 3,
-  )
+    // Edit the current pose: 60 mm higher, saved with Enter. Far enough that
+    // the hold of at least 1 s ends on the way at 25 mm/s, the store's default
+    const coordinates = panel.getByRole("textbox", {
+      name: "Coordinates XYZ (mm) · Rotation vector (rad)",
+    })
+    await expect(coordinates).toHaveValue(/^\(.+\)$/)
+    await panel.getByRole("button", { name: "Edit pose" }).click()
+    const values = (await coordinates.inputValue())
+      .slice(1, -1)
+      .split(",")
+      .map(Number)
+    const start = await tcpZ()
+    const target = Math.round((start + 60) * 10) / 10
+    values[2] = target
+    await coordinates.fill(`(${values.join(", ")})`)
+    await coordinates.press("Enter")
 
-  // Let go on the way: the TCP stands still short of the target, which
-  // stays, to go on
-  let last = await tcpZ()
-  await expect
-    .poll(
-      async () => {
-        const now = await tcpZ()
-        const still = Math.abs(now - last) < 0.01
-        last = now
-        return still
-      },
-      { message: "The TCP stands still after the release", timeout: 30_000 },
-    )
-    .toBe(true)
-  expect(last).toBeLessThan(target - 0.5)
-  await expect(move).toHaveText("Move to", { timeout: 10_000 })
-  await expect(move).toBeEnabled()
-
-  // Held again to the target: the field shows the current pose again
-  await jogPress(
-    page,
-    move,
-    async () => Math.abs((await tcpZ()) - target) < 0.5,
-  )
-  await expect(move).toHaveText("Move to", { timeout: 10_000 })
-  await expect(move).toBeDisabled()
-  await expect(
-    panel.getByRole("button", { name: "Reset pose to previous one" }),
-  ).toHaveCount(0)
-  await expect
-    .poll(
+    // Planned and loaded: the button can be held
+    const move = panel.getByRole("button", {
+      name: /^(Move to|Moving…|Stopping…)$/,
+    })
+    await expect(move).toHaveText("Move to")
+    await expect(move).toBeEnabled({ timeout: 30_000 })
+    await jogPress(
+      page,
+      move,
       async () =>
-        Math.abs(
-          Number((await coordinates.inputValue()).slice(1, -1).split(",")[2]) -
-            target,
-        ),
-      { message: "The field shows the current pose, at the target" },
+        (await move.textContent()) === "Moving…" && (await tcpZ()) > start + 3,
     )
-    .toBeLessThan(0.5)
-  await screenshot(page, "layouts-robot-control-panel-move-to")
+
+    // Let go on the way: the TCP stands still short of the target, which
+    // stays, to go on
+    let last = await tcpZ()
+    await expect
+      .poll(
+        async () => {
+          const now = await tcpZ()
+          const still = Math.abs(now - last) < 0.01
+          last = now
+          return still
+        },
+        { message: "The TCP stands still after the release", timeout: 30_000 },
+      )
+      .toBe(true)
+    expect(last).toBeLessThan(target - 0.5)
+    await expect(move).toHaveText("Move to", { timeout: 10_000 })
+    await expect(move).toBeEnabled()
+
+    // Held again to the target: the field shows the current pose again
+    await jogPress(
+      page,
+      move,
+      async () => Math.abs((await tcpZ()) - target) < 0.5,
+    )
+    await expect(move).toHaveText("Move to", { timeout: 10_000 })
+    await expect(move).toBeDisabled()
+    await expect(
+      panel.getByRole("button", { name: "Reset pose to previous one" }),
+    ).toHaveCount(0)
+    await expect
+      .poll(
+        async () =>
+          Math.abs(
+            Number(
+              (await coordinates.inputValue()).slice(1, -1).split(",")[2],
+            ) - target,
+          ),
+        { message: "The field shows the current pose, at the target" },
+      )
+      .toBeLessThan(0.5)
+    await screenshot(page, "layouts-robot-control-panel-move-to")
+  } finally {
+    // The next test needs the robot in MODE_MONITOR
+    await nova().api.controller.setDefaultMode(
+      CELL,
+      testData().controller,
+      "ROBOT_SYSTEM_MODE_MONITOR",
+    )
+  }
+  await expect
+    .poll(async () => (await controllerState()).mode, { timeout: 30_000 })
+    .toBe("MODE_MONITOR")
 })
