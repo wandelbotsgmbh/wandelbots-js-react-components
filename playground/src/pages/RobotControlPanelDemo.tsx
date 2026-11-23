@@ -76,6 +76,8 @@ export const RobotControlPanelDemo = observer(
       <RobotControlPanel
         sx={sx}
         disabled={cannotJog(store)}
+        // A linear axis or a turntable jogs its joints only
+        cartesian={store.canJogCartesian}
         gizmoOrientation={gizmoOrientation}
         gizmoFrameQuaternion={tool ? toolFrame : undefined}
         tcp={

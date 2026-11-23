@@ -61,6 +61,34 @@ describe("RobotControlPanel", () => {
     expect(tab("Rotate")).toHaveAttribute("aria-selected", "false")
   })
 
+  it("has no Translate and Rotate tabs for a robot that cannot jog along the TCP's axes, and opens on the Joint tab", () => {
+    // A linear axis: one joint in mm
+    const joints = {
+      joints: [{ value: 0, min: -3600, max: 600 }],
+      linear: true,
+      velocity: { value: 25, min: 1, max: 250 },
+      onVelocityChange: vi.fn(),
+      onJogStart: vi.fn(),
+      onJogStop: vi.fn(),
+    }
+    const { rerender } = setup({ cartesian: false, joints })
+
+    expect(screen.queryByRole("tab", { name: "Translate" })).toBeNull()
+    expect(screen.queryByRole("tab", { name: "Rotate" })).toBeNull()
+    expect(tab("Joint")).toHaveAttribute("aria-selected", "true")
+    expect(screen.getByRole("slider", { name: "J1" })).toBeVisible()
+    expect(screen.queryByRole("button", { name: "Jog X+" })).toBeNull()
+
+    // Also when the app asks for a tab that is not there
+    rerender({ tab: "rotate" })
+    expect(tab("Joint")).toHaveAttribute("aria-selected", "true")
+
+    // Another robot, which can: the tabs come back
+    rerender({ cartesian: true, tab: undefined })
+    expect(tab("Translate")).toHaveAttribute("aria-selected", "true")
+    expect(tab("Rotate")).toBeVisible()
+  })
+
   it("has a close button only when the app can close it", () => {
     const { rerender } = setup()
     expect(screen.queryByRole("button", { name: "Close" })).toBeNull()

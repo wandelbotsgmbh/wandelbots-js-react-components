@@ -389,6 +389,7 @@ export class JoggingStore {
     // (undocumented)
     block(): void;
     blocked: boolean;
+    get canJogCartesian(): boolean;
     // (undocumented)
     get coordSystemCountByName(): Dictionary<number>;
     // (undocumented)

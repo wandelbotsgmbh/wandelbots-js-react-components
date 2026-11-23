@@ -94,18 +94,20 @@ function createStore({
   description = ur5eDescription,
   jogger = createMockJogger(),
   tcps = [{ id: "Flange", readable_name: "Flange" } as unknown as RobotTcp],
+  inverseSolver = "some-solver",
 }: {
   coordinateSystems?: CoordinateSystem[]
   description?: MotionGroupDescription
   jogger?: JoggerConnection
   tcps?: RobotTcp[]
+  inverseSolver?: string | null | undefined
 } = {}) {
   return new JoggingStore(
     jogger,
     structuredClone(coordinateSystems),
     description,
     tcps,
-    "some-solver",
+    inverseSolver,
   )
 }
 
@@ -231,6 +233,25 @@ describe("jog error", () => {
 
     await store.activate()
     expect(store.lastJogError).toBeNull()
+  })
+})
+
+describe("jogging along the TCP's axes", () => {
+  it("is possible with an inverse solver", () => {
+    const store = createStore()
+    expect(store.canJogCartesian).toBe(true)
+    expect(store.tabs.map((tab) => tab.id)).toEqual(["cartesian", "joint"])
+  })
+
+  it("is not possible when the kinematic model has no inverse solver, as a linear axis", () => {
+    const store = createStore({ inverseSolver: null })
+    expect(store.canJogCartesian).toBe(false)
+    expect(store.tabs.map((tab) => tab.id)).toEqual(["joint"])
+  })
+
+  it("is assumed possible when the solver could not be loaded", () => {
+    const store = createStore({ inverseSolver: undefined })
+    expect(store.canJogCartesian).toBe(true)
   })
 })
 

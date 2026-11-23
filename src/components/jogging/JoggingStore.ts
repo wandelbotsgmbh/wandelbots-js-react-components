@@ -456,6 +456,16 @@ export class JoggingStore {
     }
   }
 
+  /**
+   * Whether the robot can jog its TCP along axes (translate, rotate): with an
+   * inverse solver, or when none could be loaded (as a default). A kinematic
+   * model without a solver (null), e.g. a linear axis or a turntable, jogs
+   * its joints only.
+   */
+  get canJogCartesian(): boolean {
+    return this.inverseSolver !== null
+  }
+
   get tabs(): [JoggingTab, ...JoggingTab[]] {
     const tempTabs: [JoggingTab, ...JoggingTab[]] = [
       {
@@ -463,9 +473,7 @@ export class JoggingStore {
         label: "Joints",
       },
     ]
-    // show the cartesian tab only : 1. when there is a solver or 2. when no solver could be loaded ( as a default )
-    // do not show the cartesian tab when the solver is null this means, it cannot get jogged cartesian
-    if (this.inverseSolver !== null) {
+    if (this.canJogCartesian) {
       tempTabs.unshift({
         id: "cartesian",
         label: "Cartesian",
