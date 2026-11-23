@@ -61,15 +61,29 @@ async function moveToStartPose() {
     .toBeLessThan(0.001)
 }
 
-/** The height of the test robot's TCP, in mm, from the NOVA API */
-export async function tcpZ(): Promise<number> {
+/**
+ * The pose of the test robot's TCP from the NOVA API: the position in mm,
+ * the orientation as a rotation vector in rad
+ */
+export async function tcpPose(): Promise<{
+  position: number[]
+  orientation: number[]
+}> {
   const { motionGroup } = testData()
   const group = (await controllerState()).motion_groups.find(
     (group) => group.motion_group === motionGroup,
   )
-  const z = group?.tcp_pose?.position?.[2]
-  if (z === undefined) throw new Error("The controller state has no TCP pose")
-  return z
+  const position = group?.tcp_pose?.position
+  const orientation = group?.tcp_pose?.orientation
+  if (!position || !orientation) {
+    throw new Error("The controller state has no TCP pose")
+  }
+  return { position, orientation }
+}
+
+/** The height of the test robot's TCP, in mm, from the NOVA API */
+export async function tcpZ(): Promise<number> {
+  return (await tcpPose()).position[2]
 }
 
 /**
