@@ -1,4 +1,9 @@
-import type { CoordinateSystem, Pose, RobotTcp } from "@wandelbots/nova-js/v2"
+import type {
+  CoordinateSystem,
+  MotionGroupDescription,
+  Pose,
+  RobotTcp,
+} from "@wandelbots/nova-js/v2"
 import keyBy from "lodash-es/keyBy.js"
 import { Pose3 } from "./Pose3"
 
@@ -9,6 +14,11 @@ import { Pose3 } from "./Pose3"
 export type ReferencedPose = {
   pose: Required<Pose>
   coordinateSystemId: string
+}
+
+/** A pose of a TCP, and the coordinate system that it is relative to */
+export type TcpReferencedPose = ReferencedPose & {
+  tcpId: string
 }
 
 /** The id without the controller's suffix, e.g. "base" for "baseOnkuka" */
@@ -161,13 +171,14 @@ export function resolveCoordinateSystemInWorld(
 /**
  * The pose expressed in another coordinate system. Coordinate systems that
  * refer to others are resolved through `coordinateSystems`; an empty id is
- * world. Throws for an unknown id.
+ * world. Throws for an unknown id. What else the pose carries, such as its
+ * TCP, stays.
  */
-export function transformPoseToCoordinateSystem(
-  inputPose: ReferencedPose,
+export function transformPoseToCoordinateSystem<T extends ReferencedPose>(
+  inputPose: T,
   targetCoordinateSystemId: string,
   coordinateSystems: CoordinateSystem[],
-): ReferencedPose {
+): T {
   if (inputPose.coordinateSystemId === targetCoordinateSystemId) {
     return inputPose
   }
@@ -201,6 +212,7 @@ export function transformPoseToCoordinateSystem(
     )
 
   return {
+    ...inputPose,
     pose: {
       position: [
         transformed.position.x,
@@ -241,4 +253,67 @@ export function transformPoseToTcp(
     position: [position.x, position.y, position.z],
     orientation: [orientation.x, orientation.y, orientation.z],
   }
+}
+
+/** The TCPs of a motion group by their id, as its description lists them */
+type TcpOffsetsById = NonNullable<MotionGroupDescription["tcps"]>
+
+/** A TCP's offset from the flange. Throws for an unknown TCP. */
+function expectTcpOffset(
+  tcpOffsetsById: TcpOffsetsById | undefined,
+  tcpId: string,
+): TcpOffset {
+  const tcp = tcpOffsetsById?.[tcpId]
+  if (!tcp) {
+    throw new Error(
+      `Unknown TCP ${tcpId}. Known TCPs are: ${Object.keys(tcpOffsetsById ?? {}).join(", ")}`,
+    )
+  }
+  return {
+    position: tcp.pose.position ?? [0, 0, 0],
+    orientation: tcp.pose.orientation ?? [0, 0, 0],
+    orientation_type: "ROTATION_VECTOR",
+  }
+}
+
+/**
+ * A TCP's pose as the pose of the selected TCP, in the selected coordinate
+ * system: e.g. the pose that NOVA reports as the one the user chose to see.
+ * Without a selection the pose stays as it is. Throws for an unknown TCP or
+ * coordinate system.
+ */
+export function deriveSelectedTcpPose({
+  inputPose,
+  selectedTcpId,
+  selectedCoordinateSystemId,
+  tcpOffsetsById,
+  coordinateSystems,
+}: {
+  inputPose: TcpReferencedPose
+  selectedTcpId?: string
+  selectedCoordinateSystemId?: string
+  /** The motion group's TCPs, as its description lists them */
+  tcpOffsetsById: MotionGroupDescription["tcps"]
+  coordinateSystems: CoordinateSystem[]
+}): TcpReferencedPose {
+  const tcpPose =
+    selectedTcpId && selectedTcpId !== inputPose.tcpId
+      ? {
+          ...inputPose,
+          pose: transformPoseToTcp(
+            inputPose.pose,
+            expectTcpOffset(tcpOffsetsById, inputPose.tcpId),
+            expectTcpOffset(tcpOffsetsById, selectedTcpId),
+          ),
+          tcpId: selectedTcpId,
+        }
+      : inputPose
+
+  return selectedCoordinateSystemId
+    ? transformPoseToCoordinateSystem(
+        tcpPose,
+        selectedCoordinateSystemId,
+        coordinateSystems,
+      )
+    : tcpPose
 }

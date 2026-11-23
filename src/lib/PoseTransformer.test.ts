@@ -3,6 +3,7 @@ import { Vector3 } from "three"
 import { describe, expect, test } from "vitest"
 import { Pose3 } from "./Pose3"
 import {
+  deriveSelectedTcpPose,
   resolveCoordinateSystemInWorld,
   transformPoseToCoordinateSystem,
   transformPoseToTcp,
@@ -142,6 +143,83 @@ describe("transformPoseToCoordinateSystem", () => {
         rotated,
       ]),
     ).toBe(inputPose)
+  })
+
+  test("keeps what else the pose carries, such as its TCP", () => {
+    const transformed = transformPoseToCoordinateSystem(
+      {
+        pose: { position: [10, 0, 0], orientation: [0, 0, 0] },
+        tcpId: "tool",
+        coordinateSystemId: "rotated-90-z",
+      },
+      "world",
+      [world, rotated],
+    )
+
+    expect(transformed.tcpId).toBe("tool")
+  })
+})
+
+describe("deriveSelectedTcpPose", () => {
+  /** The flange, and a tool 100 mm out along the flange's Z */
+  const tcpOffsetsById = {
+    Flange: { name: "Default-Flange", pose: {} },
+    tool: { name: "Tool", pose: { position: [0, 0, 100] } },
+  }
+  const flangePose = {
+    pose: { position: [500, 0, 300], orientation: [0, 0, 0] },
+    tcpId: "Flange",
+    coordinateSystemId: "world",
+  }
+
+  test("is the pose of the selected TCP", () => {
+    const derived = deriveSelectedTcpPose({
+      inputPose: flangePose,
+      selectedTcpId: "tool",
+      tcpOffsetsById,
+      coordinateSystems: [world],
+    })
+
+    expect(derived.tcpId).toBe("tool")
+    expect(derived.coordinateSystemId).toBe("world")
+    expectVectorCloseTo(derived.pose.position, [500, 0, 400])
+    expectVectorCloseTo(derived.pose.orientation, [0, 0, 0])
+  })
+
+  test("in the selected coordinate system", () => {
+    const derived = deriveSelectedTcpPose({
+      inputPose: flangePose,
+      selectedTcpId: "tool",
+      selectedCoordinateSystemId: "rotated-90-z",
+      tcpOffsetsById,
+      coordinateSystems: [world, rotated],
+    })
+
+    expect(derived.tcpId).toBe("tool")
+    expect(derived.coordinateSystemId).toBe("rotated-90-z")
+    // World [500, 0, 400] is the frame's origin, raised by 400
+    expectVectorCloseTo(derived.pose.position, [0, 0, 400])
+  })
+
+  test("is the pose as it is when nothing is selected", () => {
+    expect(
+      deriveSelectedTcpPose({
+        inputPose: flangePose,
+        tcpOffsetsById,
+        coordinateSystems: [world],
+      }),
+    ).toBe(flangePose)
+  })
+
+  test("names the known TCPs for an unknown one", () => {
+    expect(() =>
+      deriveSelectedTcpPose({
+        inputPose: flangePose,
+        selectedTcpId: "missing",
+        tcpOffsetsById,
+        coordinateSystems: [world],
+      }),
+    ).toThrow("Known TCPs are: Flange, tool")
   })
 })
 

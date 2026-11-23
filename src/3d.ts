@@ -52,3 +52,9 @@ export {
   type InterpolationOptions,
 } from "./components/utils/interpolation"
 export * from "./components/utils/useSmoothedMotionState"
+// Pose math with three.js objects; the plain-number transforms are in /core
+export { Pose3 } from "./lib/Pose3"
+export {
+  parseRotationToQuaternion,
+  quaternionToRotationVector,
+} from "./lib/rotation"

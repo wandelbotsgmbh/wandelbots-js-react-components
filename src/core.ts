@@ -57,5 +57,13 @@ export * from "./lib/motionStateUpdate"
 export * from "./lib/MotionStreamConnection"
 export type { NovaConnection } from "./lib/novaConnection"
 export { planErrorTranslationKey } from "./lib/planErrorTranslation"
+// Pose math with plain numbers; Pose3 and the quaternions are in /3d
+export {
+  deriveSelectedTcpPose,
+  type ReferencedPose,
+  resolveCoordinateSystemInWorld,
+  type TcpReferencedPose,
+  transformPoseToCoordinateSystem,
+} from "./lib/PoseTransformer"
 export * from "./lib/TrajectoryExecutionStore"
 export * from "./SafetyBar"

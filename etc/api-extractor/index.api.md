@@ -37,6 +37,7 @@ import type { Theme } from '@mui/material/styles';
 import * as THREE from 'three';
 import type { ThreeElements } from '@react-three/fiber';
 import type { TrajectoryDetailsState } from '@wandelbots/nova-js/v2';
+import { Vector3 } from 'three';
 
 // @public
 export const AppHeader: ((props: AppHeaderProps) => JSX.Element) & {
@@ -196,6 +197,15 @@ export type CurrentPoseBarState = JoggingDetailsState["kind"] | TrajectoryDetail
 
 // @public
 export function defaultGetModel(modelFromController: string, connection?: NovaConnection): Promise<string>;
+
+// @public
+export function deriveSelectedTcpPose(input: {
+    inputPose: TcpReferencedPose;
+    selectedTcpId?: string;
+    selectedCoordinateSystemId?: string;
+    tcpOffsetsById: MotionGroupDescription["tcps"];
+    coordinateSystems: CoordinateSystem[];
+}): TcpReferencedPose;
 
 // @public (undocumented)
 export type DHLinearAxisProps = {
@@ -720,6 +730,9 @@ export type OrientationFormat = {
 };
 
 // @public
+export function parseRotationToQuaternion(orientation?: Array<number>, orientationType?: OrientationType_2): Quaternion;
+
+// @public
 export function planErrorTranslationKey(errorFeedbackName: string): string;
 
 // @public
@@ -736,6 +749,26 @@ export type PlanTrajectoryResult = {
     errorFeedbackName: string;
 };
 
+// @public
+export class Pose3 {
+    constructor(position: Vector3, quaternion: Quaternion);
+    // (undocumented)
+    static fromCoordinateSystem(coordinateSystem: CoordinateSystem): Pose3;
+    // (undocumented)
+    static fromPose(apiPose: Pose): Pose3;
+    static fromRobotTcp(robotTcp: Pick<RobotTcp, "position" | "orientation" | "orientation_type">): Pose3;
+    // (undocumented)
+    inverse(): Pose3;
+    // (undocumented)
+    multiply(other: Pose3): Pose3;
+    // (undocumented)
+    get orientation(): Vector3;
+    // (undocumented)
+    readonly position: Vector3;
+    // (undocumented)
+    readonly quaternion: Quaternion;
+}
+
 // @public (undocumented)
 export function poseEqual(oldTcp: Pose | undefined, newTcp: Pose | undefined, changeDeltaThreshold: number): boolean;
 
@@ -743,10 +776,22 @@ export function poseEqual(oldTcp: Pose | undefined, newTcp: Pose | undefined, ch
 export function PresetEnvironment(): JSX.Element;
 
 // @public
+export function quaternionToRotationVector(q: Quaternion): Vector3;
+
+// @public
 export function readoutOf(motionState: MotionGroupState): MotionStateReadout;
 
 // @public
 export function readoutsEqual(shown: MotionStateReadout, next: MotionStateReadout): boolean;
+
+// @public
+export type ReferencedPose = {
+    pose: Required<Pose>;
+    coordinateSystemId: string;
+};
+
+// @public
+export function resolveCoordinateSystemInWorld(coordinateSystemId: string, coordinateSystems: CoordinateSystem[]): CoordinateSystem;
 
 // @public
 export function Robot(input: RobotProps): JSX.Element | null;
@@ -971,6 +1016,11 @@ export type SupportedRobotProps = {
 export function tcpMotionEqual(oldMotionState: MotionGroupState, newMotionState: MotionGroupState, changeDeltaThreshold: number): boolean;
 
 // @public
+export type TcpReferencedPose = ReferencedPose & {
+    tcpId: string;
+};
+
+// @public
 export class TrajectoryExecutionStore {
     constructor(options: TrajectoryExecutionStoreOptions);
     clearError(): void;
@@ -1014,6 +1064,9 @@ export type TrajectoryTarget = {
     type: "joint";
     joints: number[];
 };
+
+// @public
+export function transformPoseToCoordinateSystem<T extends ReferencedPose>(inputPose: T, targetCoordinateSystemId: string, coordinateSystems: CoordinateSystem[]): T;
 
 // @public (undocumented)
 export function unwrapRotationVector(newRotationVectorApi: Vector3Simple, currentRotationVectorApi: Vector3Simple): Vector3Simple;

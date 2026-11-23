@@ -185,6 +185,15 @@ export type CurrentPoseBarProps = {
 export type CurrentPoseBarState = JoggingDetailsState["kind"] | TrajectoryDetailsState["kind"];
 
 // @public
+export function deriveSelectedTcpPose(input: {
+    inputPose: TcpReferencedPose;
+    selectedTcpId?: string;
+    selectedCoordinateSystemId?: string;
+    tcpOffsetsById: MotionGroupDescription["tcps"];
+    coordinateSystems: CoordinateSystem[];
+}): TcpReferencedPose;
+
+// @public
 export type EulerConvention = Extract<OrientationType_2, `EULER_ANGLES_${string}`>;
 
 // @public (undocumented)
@@ -652,6 +661,15 @@ export function readoutOf(motionState: MotionGroupState): MotionStateReadout;
 export function readoutsEqual(shown: MotionStateReadout, next: MotionStateReadout): boolean;
 
 // @public
+export type ReferencedPose = {
+    pose: Required<Pose>;
+    coordinateSystemId: string;
+};
+
+// @public
+export function resolveCoordinateSystemInWorld(coordinateSystemId: string, coordinateSystems: CoordinateSystem[]): CoordinateSystem;
+
+// @public
 export type RobotControlOption = {
     id: string;
     label: string;
@@ -732,6 +750,11 @@ export interface SafetyBarProps {
 export function tcpMotionEqual(oldMotionState: MotionGroupState, newMotionState: MotionGroupState, changeDeltaThreshold: number): boolean;
 
 // @public
+export type TcpReferencedPose = ReferencedPose & {
+    tcpId: string;
+};
+
+// @public
 export class TrajectoryExecutionStore {
     constructor(options: TrajectoryExecutionStoreOptions);
     clearError(): void;
@@ -767,6 +790,9 @@ export type TrajectoryTarget = {
     type: "joint";
     joints: number[];
 };
+
+// @public
+export function transformPoseToCoordinateSystem<T extends ReferencedPose>(inputPose: T, targetCoordinateSystemId: string, coordinateSystems: CoordinateSystem[]): T;
 
 // @public (undocumented)
 export function unwrapRotationVector(newRotationVectorApi: Vector3Simple, currentRotationVectorApi: Vector3Simple): Vector3Simple;
