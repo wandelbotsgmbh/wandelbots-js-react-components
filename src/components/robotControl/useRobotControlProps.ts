@@ -1,5 +1,5 @@
 import { degreesToRadians, radiansToDegrees } from "@wandelbots/nova-js"
-import { type CoordinateSystem, JointTypeEnum } from "@wandelbots/nova-js/v2"
+import { JointTypeEnum } from "@wandelbots/nova-js/v2"
 import { runInAction, when } from "mobx"
 import { useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -9,6 +9,7 @@ import type { Vector3Simple } from "../../lib/JoggerConnection"
 import { Pose3 } from "../../lib/Pose3"
 import type { RobotSession } from "../../lib/robotSession/RobotSession"
 import { parseRotationToQuaternion } from "../../lib/rotation"
+import { coordSystemLabel } from "../jogging/coordSystemLabel"
 import type { JoggingStore } from "../jogging/JoggingStore"
 import type { JogAxis, JogDirection } from "../jogging/jogHandle"
 import type {
@@ -50,16 +51,6 @@ const COORD_SYSTEM = "coordinate-system:"
 /** A shown velocity in °/s, without the float noise of the conversion */
 const toDegrees = (radians: number) =>
   Math.round(radiansToDegrees(radians) * 1e6) / 1e6
-
-/**
- * A coordinate system's name in a select, with its id when another one has
- * the same name
- */
-function coordSystemLabel(store: JoggingStore, cs: CoordinateSystem) {
-  return cs.name && (store.coordSystemCountByName[cs.name] ?? 0) > 1
-    ? `${cs.name} / ${cs.coordinate_system}`
-    : cs.name || cs.coordinate_system
-}
 
 /**
  * The joints' positions, followed every animation frame: the motion state

@@ -7,12 +7,17 @@ import "@wandelbots/mui"
 
 export * from "./components/AppHeader"
 export {
+  CurrentPose,
+  type CurrentPoseProps,
+} from "./components/currentPoseBar/CurrentPose"
+export {
   CurrentPoseBar,
   type CurrentPoseBarProps,
   type CurrentPoseBarState,
   type EulerConvention,
   type OrientationFormat,
 } from "./components/currentPoseBar/CurrentPoseBar"
+export { useCurrentPoseProps } from "./components/currentPoseBar/useCurrentPoseProps"
 export {
   JoggingButtons,
   type JoggingButtonsProps,

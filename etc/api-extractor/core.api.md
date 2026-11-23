@@ -9,6 +9,7 @@ import { Collider } from '@wandelbots/nova-js/v2';
 import { CoordinateSystem } from '@wandelbots/nova-js/v2';
 import { DHParameter } from '@wandelbots/nova-js/v2';
 import { Dictionary } from 'lodash';
+import { FunctionComponent } from 'react';
 import type { i18n as i18n_2 } from 'i18next';
 import { IReactionDisposer } from 'mobx';
 import type { JoggingDetailsState } from '@wandelbots/nova-js/v2';
@@ -228,6 +229,9 @@ export function controllerStateWebsocket(connection: NovaConnection, input: {
 }): ControllerStateSource;
 
 // @public
+export const CurrentPose: FunctionComponent<CurrentPoseProps>;
+
+// @public
 export const CurrentPoseBar: (input: CurrentPoseBarProps) => JSX.Element;
 
 // @public
@@ -244,6 +248,11 @@ export type CurrentPoseBarProps = {
 
 // @public
 export type CurrentPoseBarState = JoggingDetailsState["kind"] | TrajectoryDetailsState["kind"];
+
+// @public
+export type CurrentPoseProps = Partial<CurrentPoseBarProps> & {
+    session?: RobotSession;
+};
 
 // @public
 export function deriveSelectedTcpPose(input: {
@@ -1214,6 +1223,9 @@ export function transformPoseToCoordinateSystem<T extends ReferencedPose>(inputP
 
 // @public (undocumented)
 export function unwrapRotationVector(newRotationVectorApi: Vector3Simple, currentRotationVectorApi: Vector3Simple): Vector3Simple;
+
+// @public
+export function useCurrentPoseProps(session: RobotSession): CurrentPoseBarProps;
 
 // @public
 export function useInterpolation(initialValues?: number[], options?: InterpolationOptions): [ValueInterpolator];

@@ -239,6 +239,9 @@ export function controllerStateWebsocket(connection: NovaConnection, input: {
 }): ControllerStateSource;
 
 // @public
+export const CurrentPose: FunctionComponent<CurrentPoseProps>;
+
+// @public
 export const CurrentPoseBar: (input: CurrentPoseBarProps) => JSX.Element;
 
 // @public
@@ -255,6 +258,11 @@ export type CurrentPoseBarProps = {
 
 // @public
 export type CurrentPoseBarState = JoggingDetailsState["kind"] | TrajectoryDetailsState["kind"];
+
+// @public
+export type CurrentPoseProps = Partial<CurrentPoseBarProps> & {
+    session?: RobotSession;
+};
 
 // @public
 export function defaultGetModel(modelFromController: string, connection?: NovaConnection): Promise<string>;
@@ -1522,6 +1530,9 @@ export function transformPoseToCoordinateSystem<T extends ReferencedPose>(inputP
 
 // @public (undocumented)
 export function unwrapRotationVector(newRotationVectorApi: Vector3Simple, currentRotationVectorApi: Vector3Simple): Vector3Simple;
+
+// @public
+export function useCurrentPoseProps(session: RobotSession): CurrentPoseBarProps;
 
 // @public
 export function useInterpolation(initialValues?: number[], options?: InterpolationOptions): [ValueInterpolator];
