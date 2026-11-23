@@ -5,6 +5,8 @@ import MenuItem from "@mui/material/MenuItem"
 import { LinkFilled } from "@wandelbots/icons/LinkFilled"
 import { NotificationsFilled } from "@wandelbots/icons/NotificationsFilled"
 import {
+  ConnectionWarning,
+  connectionWarningOf,
   RobotHeader,
   type RobotSession,
   robotActivationOf,
@@ -54,6 +56,8 @@ export const RobotHeaderDemo = observer(
         activation={robotActivationOf(session)}
         actions={
           <>
+            {/* As RobotPad: when the robot's live state stops arriving */}
+            <ConnectionWarning {...connectionWarningOf(session)} />
             <IconButton
               aria-label="Notifications"
               onClick={(event) => setNotifications(event.currentTarget)}

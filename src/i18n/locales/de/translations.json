@@ -122,5 +122,8 @@
   "RobotHeader.Apps.bt": "Apps",
   "RobotHeader.Search.bt": "Suchen",
   "RobotHeader.MotionGroup.lb": "Bewegungsgruppe",
-  "Jogging.MoveRelativeTo.SelectedTcp.dd": "Ausgewählter TCP"
+  "Jogging.MoveRelativeTo.SelectedTcp.dd": "Ausgewählter TCP",
+  "ConnectionWarning.Interrupted.ti": "Verbindung unterbrochen",
+  "ConnectionWarning.LastUpdate.lb": "Kommunikation mit der Robotersteuerung nicht möglich. Die letzte Bewegungsmeldung kam {{time}}.",
+  "ConnectionWarning.ErrorState.lb": "Fehlermeldung {{time}}:"
 }

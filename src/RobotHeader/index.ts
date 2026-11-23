@@ -15,3 +15,10 @@ export {
 export { robotActivationOf } from "../components/robotHeader/robotActivationOf"
 export { robotSafetyOf } from "../components/robotHeader/robotSafetyOf"
 export type { SafetyBarProps } from "../SafetyBar/SafetyBar"
+// For the header's actions: a warning that the live state stopped arriving
+export {
+  type ConnectionQuality,
+  ConnectionWarning,
+  type ConnectionWarningProps,
+} from "../components/connectionWarning/ConnectionWarning"
+export { connectionWarningOf } from "../components/connectionWarning/connectionWarningOf"

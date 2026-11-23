@@ -123,5 +123,8 @@
   "RobotHeader.Apps.bt": "Apps",
   "RobotHeader.Search.bt": "Search",
   "RobotHeader.MotionGroup.lb": "Motion group",
-  "Jogging.MoveRelativeTo.SelectedTcp.dd": "Selected TCP"
+  "Jogging.MoveRelativeTo.SelectedTcp.dd": "Selected TCP",
+  "ConnectionWarning.Interrupted.ti": "Connection interrupted",
+  "ConnectionWarning.LastUpdate.lb": "Communication with the robot controller interrupted. The last motion update was received {{time}}.",
+  "ConnectionWarning.ErrorState.lb": "Error message from {{time}}:"
 }

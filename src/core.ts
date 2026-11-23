@@ -6,6 +6,13 @@
 import "@wandelbots/mui"
 
 export * from "./components/AppHeader"
+// A warning that the robot's live state stopped arriving, e.g. in RobotHeader
+export {
+  type ConnectionQuality,
+  ConnectionWarning,
+  type ConnectionWarningProps,
+} from "./components/connectionWarning/ConnectionWarning"
+export { connectionWarningOf } from "./components/connectionWarning/connectionWarningOf"
 export {
   CurrentPose,
   type CurrentPoseProps,

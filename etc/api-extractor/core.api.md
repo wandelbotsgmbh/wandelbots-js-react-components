@@ -173,6 +173,25 @@ export type ConnectionLogger = {
 };
 
 // @public
+export type ConnectionQuality = "good" | "struggling" | "critical";
+
+// @public
+export const ConnectionWarning: (input: ConnectionWarningProps) => JSX.Element | null;
+
+// @public
+export function connectionWarningOf(session: RobotSession): ConnectionWarningProps;
+
+// @public (undocumented)
+export type ConnectionWarningProps = {
+    quality: ConnectionQuality;
+    lastMessageAt: number;
+    lastInvalidMessage?: {
+        receivedAt: number;
+        data: unknown;
+    } | null;
+};
+
+// @public
 export type ControllerStateSource = {
     readonly url: string;
     readonly readyState: number;
