@@ -32,13 +32,20 @@ type CartesianJogTabProps = Omit<
 
 /**
  * The Translate and Rotate tabs: the TCP and the frame to jog along, the
- * jog mode, velocity and step size, and the gizmo or the buttons
+ * jog mode, velocity and step size, and the gizmo or the buttons.
+ *
+ * `jogDisabled` turns off what moves the robot, the gizmo or the buttons,
+ * and the TCP select, whose change needs the jogging connection as a jog
+ * does. The settings that move nothing stay usable: the frame to jog along,
+ * the jog mode, the velocity and the step size are the user's to prepare
+ * while the robot may not move. `disabled` turns off everything.
  */
 export function CartesianJogTab({
   motion,
   settings,
   onSettingsChange,
   disabled = false,
+  jogDisabled = false,
   tcp,
   jogFrame,
   velocity,
@@ -87,7 +94,7 @@ export function CartesianJogTab({
                 <PanelSelect
                   label={t("RobotControl.Tcp.lb")}
                   {...tcp}
-                  disabled={disabled}
+                  disabled={disabled || jogDisabled}
                 />
               )}
               {jogFrame && (
@@ -150,7 +157,7 @@ export function CartesianJogTab({
             onJogStart: start,
             onJogStop: stop,
             activeHandle: mode === "increment" ? increments?.running : null,
-            disabled,
+            disabled: disabled || jogDisabled,
           }}
           disabledReason={jogDisabledReason}
           gizmoOrientation={gizmoOrientation}

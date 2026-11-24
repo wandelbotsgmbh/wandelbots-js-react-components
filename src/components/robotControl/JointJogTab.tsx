@@ -13,14 +13,19 @@ import { VelocityRow } from "./VelocityRow"
  * changes at once, so a second finger on another slider in the same frame
  * jogs nothing; the other sliders show as unavailable meanwhile. Under the
  * sliders it says why jogging is off, when the app gives a reason.
+ *
+ * `jogDisabled` turns off the sliders, which move the robot; the velocity
+ * stays the user's to set. `disabled` turns off both.
  */
 export function JointJogTab({
   joints,
   disabled,
+  jogDisabled,
   disabledReason,
 }: {
   joints: RobotControlJoints
   disabled: boolean
+  jogDisabled: boolean
   /** Why jogging is off, as the panel shows it */
   disabledReason?: ReactNode
 }) {
@@ -59,7 +64,9 @@ export function JointJogTab({
               linear={joints.linear}
               onJogStart={(direction) => start(index, direction)}
               onJogStop={() => stop(index)}
-              disabled={disabled || (active !== null && active !== index)}
+              disabled={
+                disabled || jogDisabled || (active !== null && active !== index)
+              }
             />
           ))}
         </Stack>

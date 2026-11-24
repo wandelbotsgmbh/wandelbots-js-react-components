@@ -168,12 +168,20 @@ export type RobotControlMoveTo = {
 export type RobotControlPanelProps = {
   /** Shows a close button in the header that calls this */
   onClose?: () => void
-  /** Disables every control: nothing may move */
+  /**
+   * Disables every control: nothing may move and no setting may change. The
+   * app's lock, e.g. while a program runs.
+   */
   disabled?: boolean
   /**
    * Disables the jogging of the Translate, Rotate and Joint tabs, e.g. while
-   * a trajectory moves the robot. Move to stays usable: a move of its own
-   * must not end because the app locks jogging while it runs.
+   * the robot is not activated or a trajectory moves it: the gizmo, the
+   * buttons and the joint sliders, and the TCP select, whose change needs
+   * the jogging connection as a jog does. The settings that move nothing
+   * stay usable, so the user can prepare them: the frame to jog along,
+   * Continuous or Increment, the step size and the velocity. Move to stays
+   * usable too: a move of its own must not end because the app locks
+   * jogging while it runs.
    */
   jogDisabled?: boolean
   /**
@@ -421,7 +429,8 @@ export const RobotControlPanel = externalizeComponent(
           {tab === "joint" && joints ? (
             <JointJogTab
               joints={joints}
-              disabled={disabled || jogDisabled}
+              disabled={disabled}
+              jogDisabled={jogDisabled}
               disabledReason={jogDisabledNotice}
             />
           ) : tab === "moveTo" && moveTo ? (
@@ -437,7 +446,8 @@ export const RobotControlPanel = externalizeComponent(
           ) : tab === "translate" || tab === "rotate" ? (
             <CartesianJogTab
               {...props}
-              disabled={disabled || jogDisabled}
+              disabled={disabled}
+              jogDisabled={jogDisabled}
               jogDisabledReason={jogDisabledNotice}
               motion={tab}
               settings={settings}

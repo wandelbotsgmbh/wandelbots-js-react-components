@@ -152,6 +152,86 @@ describe("RobotControlPanel's state", () => {
     await waitFor(() => expect(onMoveStart).toHaveBeenCalledTimes(1))
   })
 
+  // In RobotPad they stayed usable while the robot was not activated: they
+  // move nothing. A TCP change needs the jogging connection, as a jog.
+  it("with jogDisabled, turns off the jog controls and the TCP select, and leaves the settings that move nothing", () => {
+    const onTcpChange = vi.fn()
+    const onFrameChange = vi.fn()
+    const onJogModeChange = vi.fn()
+    const onStepChange = vi.fn()
+    const onJointVelocityChange = vi.fn()
+    const props: Props = {
+      jogDisabled: true,
+      jogMode: "increment",
+      onJogModeChange,
+      increments: increments({ onStepChange }),
+      tcp: {
+        options: [
+          { id: "flange", label: "Flange" },
+          { id: "gripper", label: "Gripper" },
+        ],
+        value: "flange",
+        onChange: onTcpChange,
+      },
+      jogFrame: {
+        options: [
+          { id: "world", label: "World" },
+          { id: "tool", label: "Tool" },
+        ],
+        value: "world",
+        onChange: onFrameChange,
+      },
+      joints: {
+        joints: [{ value: 0, min: -2, max: 2 }],
+        velocity: { value: 0.5, min: 0.01, max: 1 },
+        onVelocityChange: onJointVelocityChange,
+        onJogStart: vi.fn(),
+        onJogStop: vi.fn(),
+      },
+    }
+    const select = (name: string) => screen.getByRole("combobox", { name })
+    const velocity = () => screen.getByRole("slider", { name: "Velocity" })
+    const { onVelocityChange, onJogStart, rerender } = setup(props)
+
+    // What moves the robot, or needs the connection that does, is off
+    expect(button("Jog X+")).toBeDisabled()
+    press(button("Jog X+"))
+    expect(onJogStart).not.toHaveBeenCalled()
+    expect(props.increments?.onStep).not.toHaveBeenCalled()
+    expect(select("TCP")).toHaveAttribute("aria-disabled", "true")
+
+    // The settings are the user's to prepare
+    choose("Move relative to", "Tool")
+    expect(onFrameChange).toHaveBeenCalledWith("tool")
+    fireEvent.click(button("Continuous"))
+    expect(onJogModeChange).toHaveBeenCalledWith("continuous")
+    choose("Step size", "10 mm")
+    expect(onStepChange).toHaveBeenCalledWith("translate", 10)
+    // A disabled slider would still report a change that a test fires
+    expect(velocity()).toBeEnabled()
+    fireEvent.change(velocity(), { target: { value: 200 } })
+    expect(onVelocityChange).toHaveBeenCalledWith("translate", 200)
+
+    fireEvent.click(tab("Joint"))
+    expect(screen.getByRole("slider", { name: "J1" })).toHaveAttribute(
+      "aria-disabled",
+      "true",
+    )
+    expect(velocity()).toBeEnabled()
+    fireEvent.change(velocity(), { target: { value: 20 } })
+    expect(onJointVelocityChange).toHaveBeenCalled()
+
+    // The app's lock turns everything off
+    rerender({ disabled: true })
+    expect(velocity()).toBeDisabled()
+    fireEvent.click(tab("Translate"))
+    expect(velocity()).toBeDisabled()
+    expect(button("Continuous")).toBeDisabled()
+    for (const name of ["TCP", "Move relative to", "Step size"]) {
+      expect(select(name)).toHaveAttribute("aria-disabled", "true")
+    }
+  })
+
   it("says why jogging is off in place of the hint on Translate and Rotate, and under the joints on Joint", () => {
     const reason = "The robot must be activated first"
     const hint = "Hold a button to jog · Release to stop"
