@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, within } from "@testing-library/react"
+import { act, fireEvent, render, screen, within } from "@testing-library/react"
 import type {
   CoordinateSystem,
   MotionGroupDescription,
@@ -6,6 +6,7 @@ import type {
   RobotTcp,
 } from "@wandelbots/nova-js/v2"
 import { JointTypeEnum, Nova } from "@wandelbots/nova-js/v2"
+import { runInAction } from "mobx"
 import { StrictMode } from "react"
 import { I18nextProvider } from "react-i18next"
 import { beforeEach, describe, expect, it, vi } from "vitest"
@@ -819,6 +820,26 @@ describe("JoggingPanel", () => {
       expect(jogger.translateTCP).toHaveBeenCalledWith(
         expect.objectContaining({ axis: "x", direction: "+" }),
       )
+    })
+
+    it("a lock while a button is held stops the jog", async () => {
+      const { store, jogger, initialize } = storeWithPendingInitialization()
+      renderWithI18n(<JoggingCartesianTab store={store} />)
+      fireEvent.pointerDown(plusButtonOfX(), { button: 0 })
+      initialize()
+      await nextTask()
+      expect(jogger.translateTCP).toHaveBeenCalled()
+      // As the real jogger is once its jogging websocket is open (the
+      // store's jogger: the store keeps an observable copy of the mock)
+      runInAction(() => {
+        store.jogger.mode = "jogging"
+      })
+
+      // The lock disables the button, which then reports no release
+      act(() => store.lock("external"))
+      await nextTask()
+
+      expect(jogger.setJoggingMode).toHaveBeenLastCalledWith("off")
     })
   })
 
