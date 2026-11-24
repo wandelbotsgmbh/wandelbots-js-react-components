@@ -17,6 +17,8 @@ pnpm add @wandelbots/wandelbots-js-react-components \
  @wandelbots/mui mobx mobx-react-lite
 ```
 
+An app without the library's UI, which takes only `/session`, installs the library and `mobx` (see [Peer dependencies](#peer-dependencies)).
+
 The 3D parts need three.js and React Three Fiber in addition. `/core` has the parts without 3D:
 
 ```typescript
@@ -88,7 +90,7 @@ import JoggingJointSlider from "@wandelbots/wandelbots-js-react-components/Joggi
 
 - **An app without a 3D view** needs no three.js. It takes the robot from `/session` and its parts from the component entry points that draw nothing in 3D: `/RobotHeader`, `/CurrentPose`, `/CurrentPoseBar`, `/SafetyBar`, `/JoggingButtons` and `/JoggingJointSlider`.
 - **`/core` needs three.js installed**, although it draws nothing in 3D: the deprecated `ConnectedMotionGroup` that it exports gives a three.js quaternion (`mountingQuaternion`). That ends when `ConnectedMotionGroup` is removed.
-- **An app without React**, or with a UI of its own, uses `/session` alone (and `/nats`). Of the peer dependencies it loads only `mobx`:
+- **An app without React**, or with a UI of its own, uses `/session` alone (and `/nats`). Of the peer dependencies it needs only `mobx` (see [Peer dependencies](#peer-dependencies)):
 
 ```typescript
 import { loadRobotSession } from "@wandelbots/wandelbots-js-react-components/session"
@@ -101,19 +103,21 @@ load.dispose()
 
 ### Peer dependencies
 
-| Package | Version |
-| --- | --- |
-| `react`, `react-dom` | ^19 |
-| `@mui/material`, `@mui/icons-material` | ^7 |
-| `@emotion/react`, `@emotion/styled` | ^11 |
-| `@wandelbots/mui` | ^2 |
-| `mobx` | ^6.13.6 |
-| `mobx-react-lite` | ^4.1.0 |
-| `three` (only `/3d`, `/JoggingGizmo`, `/RobotControlPanel`, and `/core` until `ConnectedMotionGroup` is removed) | >=0.182 |
-| `three-stdlib` (only `/3d`) | >=2 |
-| `@react-three/fiber` (only `/3d`, `/JoggingGizmo`, `/RobotControlPanel`) | ^9 |
-| `@react-three/drei` (only `/3d`) | ^10 |
-| `nats.ws` (only `/nats`) | ^1.30.3 |
+| Package | Version | Needed by |
+| --- | --- | --- |
+| `mobx` | ^6.13.6 | Every entry point |
+| `react`, `react-dom` | ^19 | Every entry point with UI: all but `/session` and `/nats` |
+| `@mui/material`, `@mui/icons-material` | ^7 | Every entry point with UI |
+| `@emotion/react`, `@emotion/styled` | ^11 | Every entry point with UI |
+| `@wandelbots/mui` | ^2 | Every entry point with UI |
+| `mobx-react-lite` | ^4.1.0 | Every entry point with UI |
+| `three` | >=0.182 | `.`, `/3d`, `/JoggingGizmo`, `/RobotControlPanel`, `/RobotControl`, `/RobotScene`, `/RobotView`, and `/core` until `ConnectedMotionGroup` is removed |
+| `@react-three/fiber` | ^9 | `.`, `/3d`, `/JoggingGizmo`, `/RobotControlPanel`, `/RobotControl`, `/RobotScene`, `/RobotView` |
+| `three-stdlib` | >=2 | `.`, `/3d`, `/RobotScene`, `/RobotView` |
+| `@react-three/drei` | ^10 | `.`, `/3d`, `/RobotScene`, `/RobotView` |
+| `nats.ws` | ^1.30.3 | `/nats` |
+
+Only `mobx` is a required peer. The others are optional in `package.json`, so an app installs those of the entry points it imports: an app that takes only `/session` (and `/nats`) installs `mobx` (and `nats.ws`), and no React, MUI or three.js. Three of the library's own dependencies (`react-i18next`, `react-error-boundary` and `@wandelbots/icons`) name `react` as their peer, so a package manager may still warn about React, or install it, for such an app; `/session` does not load it.
 
 These packages are peer dependencies because the app and the library must use the same copy: React, the MUI theme of the app, the MobX stores that the app reads with its own `observer`, and the `<Canvas>` of React Three Fiber.
 

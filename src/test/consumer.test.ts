@@ -511,6 +511,31 @@ describe("the public API leaves out the library's plumbing", () => {
   })
 })
 
+describe("the peer dependencies match the entry points", () => {
+  // An app that takes only /session gets no warning for a peer it does not
+  // need, and has every peer that /session loads
+  it("a peer is required only when /session loads it", () => {
+    const pkg = JSON.parse(
+      readFileSync(resolve(repoRoot, "package.json"), "utf8"),
+    ) as {
+      peerDependencies: Record<string, string>
+      peerDependenciesMeta?: Record<string, { optional?: boolean }>
+    }
+    const peers = Object.keys(pkg.peerDependencies)
+    const required = peers.filter(
+      (peer) => !pkg.peerDependenciesMeta?.[peer]?.optional,
+    )
+    const loaded = new Set(
+      ["session.js", "session.cjs"].flatMap((file) => [
+        ...importsOf(resolve(distDir, file)).keys(),
+      ]),
+    )
+    expect(required.sort()).toEqual(
+      peers.filter((peer) => loaded.has(peer)).sort(),
+    )
+  })
+})
+
 describe("entry points for an app without a 3D view", () => {
   // three.js is an optional peer: an app that does not install it must still
   // build with the session (see above), the NATS source and these components

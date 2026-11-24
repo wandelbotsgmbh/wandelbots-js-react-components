@@ -138,6 +138,27 @@
     "three-stdlib": ">=2"
   },
   "peerDependenciesMeta": {
+    "@emotion/react": {
+      "optional": true
+    },
+    "@emotion/styled": {
+      "optional": true
+    },
+    "@mui/icons-material": {
+      "optional": true
+    },
+    "@mui/material": {
+      "optional": true
+    },
+    "@wandelbots/mui": {
+      "optional": true
+    },
+    "mobx-react-lite": {
+      "optional": true
+    },
+    "react": {
+      "optional": true
+    },
     "react-dom": {
       "optional": true
     },
