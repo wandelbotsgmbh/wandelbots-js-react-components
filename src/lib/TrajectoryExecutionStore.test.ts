@@ -934,6 +934,104 @@ describe("TrajectoryExecutionStore hold to move", () => {
     expect(sentMessageTypes(sockets[0])).not.toContain("StartMovementRequest")
   })
 
+  // The caller says where its button moves to: the store starts only a
+  // trajectory that goes there
+  describe("for a target", () => {
+    const pose = (
+      position: number[],
+      orientation?: number[],
+      coordinateSystemId?: string,
+    ): TrajectoryTarget => ({
+      type: "cartesian",
+      pose: { position, orientation },
+      coordinateSystemId,
+    })
+
+    test.each<[string, TrajectoryTarget, TrajectoryTarget]>([
+      [
+        "another position",
+        pose([1, 2, 3], [0, 0, 0]),
+        pose([1, 2, 4], [0, 0, 0]),
+      ],
+      [
+        "another orientation",
+        pose([1, 2, 3], [0, 0, 0]),
+        pose([1, 2, 3], [0, 0, 1]),
+      ],
+      [
+        "another coordinate system",
+        pose([1, 2, 3], [0, 0, 0], "offset-300x"),
+        pose([1, 2, 3], [0, 0, 0], "world"),
+      ],
+      [
+        "other joints",
+        { type: "joint", joints: [0.1, 0.2] },
+        { type: "joint", joints: [0.1, 0.3] },
+      ],
+      [
+        "a pose, held for joints",
+        pose([1, 2, 3], [0, 0, 0]),
+        { type: "joint", joints: [1, 2, 3, 0, 0, 0] },
+      ],
+      [
+        "joints, held for a pose",
+        { type: "joint", joints: [1, 2, 3, 0, 0, 0] },
+        pose([1, 2, 3], [0, 0, 0]),
+      ],
+    ])("hold moves nothing along a trajectory that was planned for %s", async (_what, plannedFor, held) => {
+      const { store, emit, sockets } = makeStore()
+      await store.planTrajectory(plannedFor)
+      emit("INITIALIZE_RECEIVED")
+
+      expect(store.hold(held)).toBe(false)
+      expect(sentMessageTypes(sockets[0])).not.toContain("StartMovementRequest")
+
+      expect(store.hold(plannedFor)).toBe(true)
+    })
+
+    test("hold takes a pose without an orientation or a coordinate system as the one in world without a rotation", async () => {
+      const { store, emit } = makeStore()
+      await store.planTrajectory(pose([1, 2, 3]))
+      emit("INITIALIZE_RECEIVED")
+
+      expect(store.hold(pose([1, 2, 3], [0, 0, 0], "world"))).toBe(true)
+    })
+
+    test("hold moves nothing for a target while the trajectory was planned by hand", async () => {
+      const { store, sockets } = makeStore()
+      // As a test, or an app, that sets the plan without planTrajectory
+      store.plannedTrajectory = { startJoints: [0], endJoints: [1] }
+      store.trajectoryState = "planned"
+
+      expect(store.hold(pose([1, 2, 3]))).toBe(false)
+      expect(sentMessageTypes(sockets[0])).toEqual([])
+    })
+
+    test("the target of a plan that was dropped is no longer the planned one", async () => {
+      const { store, emit, sockets } = makeStore()
+      await store.planTrajectory(pose([1, 2, 3]))
+      store.reset()
+      store.plannedTrajectory = { startJoints: [0], endJoints: [1] }
+      emit("INITIALIZE_RECEIVED")
+
+      expect(store.hold(pose([1, 2, 3]))).toBe(false)
+      expect(sentMessageTypes(sockets[0])).not.toContain("StartMovementRequest")
+    })
+
+    test("a target that changes after it was planned does not change what was planned", async () => {
+      const { store, emit } = makeStore()
+      const target = pose([1, 2, 3], [0, 0, 0])
+      await store.planTrajectory(target)
+      emit("INITIALIZE_RECEIVED")
+
+      // e.g. a saved pose that is edited while it is selected
+      ;(target as { pose: { position: number[] } }).pose.position[2] = 300
+
+      expect(store.hold(target)).toBe(false)
+      expect(store.hold(pose([1, 2, 3], [0, 0, 0]))).toBe(true)
+    })
+  })
+
   test("holding again while held starts nothing more", async () => {
     const { store, emit, sent } = await planned()
 

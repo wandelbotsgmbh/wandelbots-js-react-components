@@ -9,7 +9,7 @@ import { i18n } from "../../i18n/config"
 import { Pose3 } from "../../lib/Pose3"
 import type { RobotNotMoveableReason } from "../../lib/robotSession/RobotSafety"
 import type { RobotSession } from "../../lib/robotSession/RobotSession"
-import type { RobotPose } from "../../lib/robotSession/robotPose"
+import { type RobotPose, sameRobotPose } from "../../lib/robotSession/robotPose"
 import { parseRotationToQuaternion } from "../../lib/rotation"
 import { coordSystemLabel } from "../jogging/coordSystemLabel"
 import { JoggingRefusedError } from "../jogging/JoggingRefusedError"
@@ -282,6 +282,13 @@ export function useRobotControlProps(
   const notMoveable = session.safety.notMoveableReason
 
   const staged = targetPose.staged
+  // The trajectory is the one of the panel's target only while the session
+  // has that pose staged: another flow may have planned its own since
+  // (RobotPad: a saved pose), or this one is not planned yet
+  const targetIsStaged =
+    target !== null &&
+    targetPose.stagedPose !== null &&
+    sameRobotPose(targetPose.stagedPose, robotPoseOf(session, target))
 
   return {
     disabled,
@@ -430,21 +437,25 @@ export function useRobotControlProps(
         onChange: (id) => store.setSelectedCoordSystemId(id),
       },
       onTargetChange,
-      // The trajectory's states are the panel's
-      state: targetPose.confirming ? "planning" : trajectory.trajectoryState,
+      // The trajectory's states are the panel's, while it is the target's
+      state: targetPose.confirming
+        ? "planning"
+        : targetIsStaged
+          ? trajectory.trajectoryState
+          : "idle",
       error:
         target && notMoveable
           ? notMoveableText(notMoveable, t)
           : staged?.errorKey
             ? t(staged.errorKey)
             : null,
-      // The button is held and let go: the trajectory sees to it that the
-      // robot moves only while it is held
-      onMoveStart: () => {
-        trajectory.hold()
+      // The button is held and let go: the session sees to it that the
+      // robot moves only while it is held, and only to the pose it shows
+      onMoveStart: (pose) => {
+        targetPose.holdMove(robotPoseOf(session, pose))
       },
       onMoveStop: () => {
-        trajectory.release().catch(report)
+        targetPose.releaseMove().catch(report)
       },
     },
   }

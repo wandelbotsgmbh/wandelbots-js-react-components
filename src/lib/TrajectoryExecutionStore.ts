@@ -45,6 +45,40 @@ export type TrajectoryTarget =
       joints: number[]
     }
 
+/** A pose's position or orientation; one that is left out is all zeros */
+const three = (values: readonly number[] | undefined) => values ?? [0, 0, 0]
+
+const sameNumbers = (a: readonly number[], b: readonly number[]) =>
+  a.length === b.length && a.every((value, index) => value === b[index])
+
+/** Whether two targets are the same place: the same numbers, in the same coordinate system */
+function sameTarget(a: TrajectoryTarget, b: TrajectoryTarget): boolean {
+  if (a.type === "joint") {
+    return b.type === "joint" && sameNumbers(a.joints, b.joints)
+  }
+  if (b.type === "joint") return false
+  return (
+    (a.coordinateSystemId || "world") === (b.coordinateSystemId || "world") &&
+    sameNumbers(three(a.pose.position), three(b.pose.position)) &&
+    sameNumbers(three(a.pose.orientation), three(b.pose.orientation))
+  )
+}
+
+/** A target with numbers of its own, which a change of the original leaves alone */
+function copyOfTarget(target: TrajectoryTarget): TrajectoryTarget {
+  if (target.type === "joint") {
+    return { type: "joint", joints: [...target.joints] }
+  }
+  return {
+    type: "cartesian",
+    pose: {
+      position: [...three(target.pose.position)],
+      orientation: [...three(target.pose.orientation)],
+    },
+    coordinateSystemId: target.coordinateSystemId,
+  }
+}
+
 /**
  * Outcome of a planTrajectory call. Planner rejections (unreachable pose,
  * singularity, joint limit, ...) are an expected user-facing result rather
@@ -128,6 +162,8 @@ export class TrajectoryExecutionStore {
    * still open: it may hold the trajectory, whatever became of the plan here
    */
   private armed = false
+  /** Where the planned trajectory goes, as `planTrajectory` got it */
+  private plannedTarget: TrajectoryTarget | null = null
   /**
    * What NOVA was asked to do on the execution websocket, whatever became of
    * the plan here: a start is on its way ("starting"), NOVA confirmed it
@@ -141,9 +177,18 @@ export class TrajectoryExecutionStore {
 
   constructor(private readonly options: TrajectoryExecutionStoreOptions) {
     this.logger = options.logger ?? console
-    makeAutoObservable<this, "socket" | "disposers" | "logger" | "options">(
+    makeAutoObservable<
       this,
-      { socket: false, disposers: false, logger: false, options: false },
+      "socket" | "disposers" | "logger" | "options" | "plannedTarget"
+    >(
+      this,
+      {
+        socket: false,
+        disposers: false,
+        logger: false,
+        options: false,
+        plannedTarget: false,
+      },
       { autoBind: true },
     )
     this.socket = this.openSocket()
@@ -337,6 +382,7 @@ export class TrajectoryExecutionStore {
     runInAction(() => {
       this.armed = true
       this.plannedTrajectory = { startJoints, endJoints }
+      this.plannedTarget = copyOfTarget(target)
     })
 
     return { ok: true }
@@ -348,9 +394,20 @@ export class TrajectoryExecutionStore {
    * for this hold: not without a trajectory that NOVA accepted, and not
    * while the move before it still stops. Safe to repeat while held.
    * {@link TrajectoryExecutionStore.release} ends the hold.
+   *
+   * `target` is where the button says it moves to, as `planTrajectory` got
+   * it: the robot does not move along a trajectory that was planned for
+   * another target, e.g. while the plan for the shown one is still to come
+   * or failed. Without it, the hold starts whatever is planned.
    */
-  hold(): boolean {
+  hold(target?: TrajectoryTarget): boolean {
     if (!this.plannedTrajectory) return false
+    if (
+      target &&
+      !(this.plannedTarget && sameTarget(target, this.plannedTarget))
+    ) {
+      return false
+    }
     // Held already: a second start would be one too many. Not after the
     // release: then the pause is to come, or on its way.
     if (this.motion === "starting") return !this.releaseOnStart
@@ -464,6 +521,7 @@ export class TrajectoryExecutionStore {
    */
   reset() {
     this.plannedTrajectory = null
+    this.plannedTarget = null
     this.trajectoryState = "idle"
   }
 

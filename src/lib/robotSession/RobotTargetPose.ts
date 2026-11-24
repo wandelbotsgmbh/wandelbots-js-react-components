@@ -15,7 +15,7 @@ import type { ConnectionLogger } from "../connectionLogger"
 import { planErrorTranslationKey } from "../planErrorTranslation"
 import type { TrajectoryExecutionStore } from "../TrajectoryExecutionStore"
 import type { RobotLiveState } from "./RobotLiveState"
-import { type RobotPose, trajectoryTargetOf } from "./robotPose"
+import { type RobotPose, sameRobotPose, trajectoryTargetOf } from "./robotPose"
 
 // Ported from RobotPad (src/jogging/TargetPoseStore.ts)
 
@@ -44,7 +44,12 @@ type TargetPoseParts = {
   jogging: Pick<JoggingStore, "selectedTabId">
   trajectory: Pick<
     TrajectoryExecutionStore,
-    "planTrajectory" | "stopAndReset" | "trajectoryState" | "executionState"
+    | "planTrajectory"
+    | "stopAndReset"
+    | "hold"
+    | "release"
+    | "trajectoryState"
+    | "executionState"
   >
   /** Why the robot may not move now, or null: a typed pose plans nothing then */
   notMoveableReason: () => unknown
@@ -241,8 +246,10 @@ export class RobotTargetPose {
    * Stages a pose: validates it against the backend by planning a trajectory
    * to it. On success the trajectory is left initialized on the execution
    * socket, so Move to is armed immediately; on a planner rejection the pose
-   * stays staged with the failure explanation. Does nothing while the robot
-   * may not move, or while another pose is planned.
+   * stays staged with the failure explanation. While the robot may not move,
+   * it plans nothing and drops the pose that was staged before: the one
+   * asked for last is the one to show, and no other may stay armed behind
+   * it. Does nothing while another pose is planned.
    *
    * What {@link RobotTargetPose.confirmEdit} does with the text of the
    * draft, for an app that has the pose as numbers: a cartesian pose is of
@@ -254,7 +261,10 @@ export class RobotTargetPose {
     // Planning a motion needs a robot that may move at all. Refusing here
     // keeps the planner from rejecting the request for a reason that has
     // nothing to do with the coordinates.
-    if (this.robot.notMoveableReason()) return
+    if (this.robot.notMoveableReason()) {
+      await this.dropStaged()
+      return
+    }
 
     const displayString =
       pose.type === "joint"
@@ -299,13 +309,40 @@ export class RobotTargetPose {
     }
   }
 
+  /**
+   * The Move to button is held: the robot moves to the staged pose while it
+   * is, see {@link TrajectoryExecutionStore.hold}. `pose` is the pose that
+   * the button's panel shows: nothing moves unless that is the staged pose,
+   * so a panel that shows another one (its plan is still to come, or was
+   * refused) cannot start the move to this one. Returns whether the robot
+   * moves for this hold. {@link RobotTargetPose.releaseMove} ends the hold.
+   */
+  holdMove(pose: RobotPose): boolean {
+    const staged = this.stagedPose
+    if (!staged || !sameRobotPose(staged, pose)) return false
+    return this.robot.trajectory.hold(trajectoryTargetOf(staged))
+  }
+
+  /**
+   * The Move to button was let go: the robot stops, see
+   * {@link TrajectoryExecutionStore.release}. Safe to call without a hold.
+   */
+  async releaseMove() {
+    await this.robot.trajectory.release()
+  }
+
   /** Discards the staged pose and shows the live pose again */
   async resetToLive() {
+    this.editing = false
+    this.draft = ""
+    await this.dropStaged()
+  }
+
+  /** Drops the staged pose and hands the trajectory that was planned to it back */
+  private async dropStaged() {
     const hadPlannedTrajectory = this.staged !== null && !this.staged.errorKey
     this.staged = null
     this.moveStarted = false
-    this.editing = false
-    this.draft = ""
 
     if (hadPlannedTrajectory) {
       await this.robot.trajectory.stopAndReset()

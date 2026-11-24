@@ -38,3 +38,26 @@ export function trajectoryTargetOf(pose: RobotPose): TrajectoryTarget {
     coordinateSystemId: pose.tcpPose.coordSystemId,
   }
 }
+
+const sameNumbers = (
+  a: readonly number[] = [0, 0, 0],
+  b: readonly number[] = [0, 0, 0],
+) => a.length === b.length && a.every((value, index) => value === b[index])
+
+/**
+ * Whether two poses are the same: the same numbers for the same motion
+ * group, and for a TCP's pose the same TCP and coordinate system
+ */
+export function sameRobotPose(a: RobotPose, b: RobotPose): boolean {
+  if (a.motionGroupId !== b.motionGroupId) return false
+  if (a.type === "joint") {
+    return b.type === "joint" && sameNumbers(a.joints, b.joints)
+  }
+  if (b.type === "joint") return false
+  return (
+    a.tcpPose.tcpId === b.tcpPose.tcpId &&
+    a.tcpPose.coordSystemId === b.tcpPose.coordSystemId &&
+    sameNumbers(a.tcpPose.pose.position, b.tcpPose.pose.position) &&
+    sameNumbers(a.tcpPose.pose.orientation, b.tcpPose.pose.orientation)
+  )
+}

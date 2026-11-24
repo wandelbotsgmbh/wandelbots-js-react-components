@@ -44,55 +44,48 @@ function deferred() {
 }
 
 /**
- * The session with a trajectory and a target pose that the test drives by
- * hand: their MobX actions cannot be spied on
+ * The session with a trajectory and a target pose whose state the test sets
+ * by hand
  */
 function withFakeMoveTo(session: RobotSession) {
-  const hold = vi.fn(() => true)
-  const release = vi.fn(async () => {})
   const trajectory = observable({
     trajectoryState: "idle" as string,
     plannedTrajectory: null as unknown,
-    hold,
-    release,
   })
-  const plan = vi.fn(async () => {})
-  const resetToLive = vi.fn(async () => {})
   const targetPose = observable({
     confirming: false,
     staged: null as { errorKey: string | null } | null,
-    plan,
-    resetToLive,
+    stagedPose: null,
   })
   const robot = Object.assign(Object.create(session), {
     trajectory,
     targetPose,
   }) as RobotSession
-  return {
-    robot,
-    trajectory,
-    targetPose,
-    hold,
-    release,
-    plan,
-    resetToLive,
-  }
+  return { robot, trajectory, targetPose }
 }
 
 const TARGET: RobotControlPose = { position: [1, 2, 3], orientation: [0, 0, 0] }
+const OTHER_TARGET: RobotControlPose = {
+  position: [9, 8, 7],
+  orientation: [0, 0, 0],
+}
 
 /**
  * The Move to of an activated robot, with the session's own trajectory and
  * typed pose on a faked planner and execution websocket: the test types a
  * pose, holds the button and plays NOVA's answers
  */
-async function loadMoveTo() {
+async function loadMoveTo({ activated = true } = {}) {
   const harness = makeHarness()
   const onError = vi.fn()
   const session = await harness.load({ onError }).ready
   onTestFinished(() => session.dispose())
-  harness.source.send(controllerState({ mode: "MODE_CONTROL" }))
+  if (activated) {
+    harness.source.send(controllerState({ mode: "MODE_CONTROL" }))
+  }
   const execution = await fakeExecution(session)
+  // The robot stands still, until a test says that it moves
+  execution.setMotionState({ standstill: true })
   const { result, rerender } = renderHook(() => useRobotControlProps(session))
   const moveTo = () => {
     rerender()
@@ -316,57 +309,41 @@ describe("useRobotControlProps", () => {
     expect(onError).not.toHaveBeenCalled()
   })
 
-  it("plans the pose of Move to as the session's typed pose, and holds and releases its trajectory with the button", async () => {
-    const session = await loadSession()
-    const fake = withFakeMoveTo(session)
-    const { result, rerender } = renderHook(() =>
-      useRobotControlProps(fake.robot),
-    )
-    const moveTo = () => {
-      const props = result.current.moveTo
-      if (!props) throw new Error("No Move to")
-      return props
+  it("plans the pose of Move to as the session's typed pose, and moves along its trajectory while the button is held", async () => {
+    const { session, execution, moveTo, sent, type, start, letGo } =
+      await loadMoveTo()
+    const pose: RobotControlPose = {
+      position: [1.23456, 2, 3],
+      orientation: [0, 0, 0],
     }
 
     // The pose as numbers, of the TCP and in the frame that the panel shows
-    act(() =>
-      moveTo().onTargetChange({
-        position: [1.23456, 2, 3],
-        orientation: [0, 0, 0],
-      }),
-    )
-    expect(fake.plan).toHaveBeenCalledExactlyOnceWith({
+    await type(pose)
+    expect(session.targetPose.stagedPose).toEqual({
       type: "cartesian",
       motionGroupId: MOTION_GROUP_ID,
-      tcpPose: {
-        pose: { position: [1.23456, 2, 3], orientation: [0, 0, 0] },
-        coordSystemId: "world",
-        tcpId: "Flange",
-      },
+      tcpPose: { pose, coordSystemId: "world", tcpId: "Flange" },
     })
-
-    runInAction(() => {
-      fake.targetPose.confirming = true
-    })
-    rerender()
+    // NOVA has not accepted the trajectory: holding Move to starts nothing
     expect(moveTo().state).toBe("planning")
+    act(() => moveTo().onMoveStart(pose))
+    expect(sent("StartMovementRequest")).toBe(0)
 
-    runInAction(() => {
-      fake.targetPose.confirming = false
-      fake.trajectory.trajectoryState = "planned"
-      fake.trajectory.plannedTrajectory = {}
-    })
-    rerender()
-    // The hook keeps no state of the hold: the trajectory decides what a
-    // hold starts and what a release has to pause
-    act(() => moveTo().onMoveStart(TARGET))
-    expect(fake.hold).toHaveBeenCalledOnce()
-    act(() => moveTo().onMoveStop())
-    await flush()
-    expect(fake.release).toHaveBeenCalledOnce()
+    act(() => execution.emit("INITIALIZE_RECEIVED"))
+    expect(moveTo().state).toBe("planned")
+    start(pose)
+    expect(sent("StartMovementRequest")).toBe(1)
+    await letGo()
+    expect(sent("PauseMovementRequest")).toBe(1)
+    expect(moveTo().state).toBe("planned")
 
+    // Reset: the session drops the pose and hands the trajectory back
+    const armed = execution.sockets.at(-1)
     act(() => moveTo().onTargetChange(null))
-    expect(fake.resetToLive).toHaveBeenCalled()
+    await act(flush)
+    expect(session.targetPose.staged).toBeNull()
+    expect(armed?.dispose).toHaveBeenCalled()
+    expect(moveTo().state).toBe("idle")
   })
 
   it("pauses a move that was started again, though the motion stream still shows the pause before it", async () => {
@@ -420,6 +397,64 @@ describe("useRobotControlProps", () => {
     expect(sent("PauseMovementRequest")).toBe(1)
   })
 
+  it("moves to the pose the panel shows once the robot may move again, not to the one planned before", async () => {
+    const { harness, execution, moveTo, sent, plan, type } = await loadMoveTo()
+    /** Where the last planned trajectory goes */
+    const plannedPosition = () => {
+      const path =
+        execution.planTrajectory.mock.calls.at(-1)?.[1].motion_commands[0]?.path
+      return path && "target_pose" in path ? path.target_pose.position : null
+    }
+    await plan(TARGET)
+    const armed = execution.sockets.at(-1)
+
+    // The robot is deactivated, then another pose is saved in the panel
+    act(() => harness.source.send(controllerState({ mode: "MODE_MONITOR" })))
+    await type(OTHER_TARGET)
+    expect(moveTo().error).toBe("The robot must be activated first")
+    // Nothing is planned for the pose that shows, so nothing stays armed
+    expect(armed?.dispose).toHaveBeenCalled()
+    expect(moveTo().state).toBe("idle")
+
+    // Activated again: the panel's pose is planned, and the button moves there
+    act(() => harness.source.send(controllerState({ mode: "MODE_CONTROL" })))
+    await act(flush)
+    expect(plannedPosition()).toEqual(OTHER_TARGET.position)
+    act(() => execution.emit("INITIALIZE_RECEIVED"))
+    expect(moveTo().state).toBe("planned")
+    act(() => moveTo().onMoveStart(OTHER_TARGET))
+    expect(sent("StartMovementRequest")).toBe(1)
+  })
+
+  it("starts nothing when the button is held for another pose than the planned one", async () => {
+    const { moveTo, sent, plan } = await loadMoveTo()
+    await plan(TARGET)
+
+    act(() => moveTo().onMoveStart(OTHER_TARGET))
+    expect(sent("StartMovementRequest")).toBe(0)
+
+    act(() => moveTo().onMoveStart(TARGET))
+    expect(sent("StartMovementRequest")).toBe(1)
+  })
+
+  // RobotPad: a saved pose gets selected, which drops the typed pose and
+  // plans a trajectory of its own. The Move to tab still shows its target.
+  it("keeps Move to off while the planned trajectory is not the one of the panel's pose", async () => {
+    const { session, execution, moveTo, sent, plan } = await loadMoveTo()
+    await plan(TARGET)
+
+    act(() => session.targetPose.clear())
+    await act(async () => {
+      await session.trajectory.planTrajectory({ type: "joint", joints: [1] })
+    })
+    act(() => execution.emit("INITIALIZE_RECEIVED"))
+    expect(session.trajectory.trajectoryState).toBe("planned")
+
+    expect(moveTo().state).toBe("idle")
+    act(() => moveTo().onMoveStart(TARGET))
+    expect(sent("StartMovementRequest")).toBe(0)
+  })
+
   it("shows why the typed pose could not be planned, in the library's words", async () => {
     const session = await loadSession()
     const fake = withFakeMoveTo(session)
@@ -436,35 +471,24 @@ describe("useRobotControlProps", () => {
   })
 
   it("says why a typed pose is not planned while the robot may not move, and plans it once it may", async () => {
-    const harness = makeHarness()
-    const session = await harness.load().ready
-    onTestFinished(() => session.dispose())
-    const fake = withFakeMoveTo(session)
-    const { result, rerender } = renderHook(() =>
-      useRobotControlProps(fake.robot),
-    )
+    const { harness, session, execution, moveTo, type } = await loadMoveTo({
+      activated: false,
+    })
     // The robot is not activated: the controller monitors it
     expect(session.safety.notMoveableReason?.code).toBe("deactivated")
 
-    act(() =>
-      result.current.moveTo?.onTargetChange({
-        position: [1, 2, 3],
-        orientation: [0, 0, 0],
-      }),
-    )
-    rerender()
-    expect(result.current.moveTo?.error).toBe(
-      "The robot must be activated first",
-    )
+    await type(TARGET)
+    expect(moveTo().error).toBe("The robot must be activated first")
+    expect(execution.planTrajectory).not.toHaveBeenCalled()
 
     // Activating, the robot cannot move yet: an app may still lock it (as
     // RobotPad does), and the session would plan nothing
-    fake.plan.mockClear()
     await act(async () => {
       await session.activation.activate()
     })
     expect(session.activation.state).toBe("activating")
-    expect(fake.plan).not.toHaveBeenCalled()
+    await act(flush)
+    expect(execution.planTrajectory).not.toHaveBeenCalled()
 
     // Activated: the pose is planned, without typing it again
     act(() =>
@@ -476,14 +500,12 @@ describe("useRobotControlProps", () => {
       ),
     )
     await act(flush)
-    rerender()
     expect(session.safety.notMoveableReason).toBeNull()
-    expect(fake.plan).toHaveBeenCalledExactlyOnceWith(
-      expect.objectContaining({
-        tcpPose: expect.objectContaining({ pose: TARGET }),
-      }),
-    )
-    expect(result.current.moveTo?.error ?? null).toBeNull()
+    expect(execution.planTrajectory).toHaveBeenCalledOnce()
+    expect(session.targetPose.stagedPose).toMatchObject({
+      tcpPose: { pose: TARGET },
+    })
+    expect(moveTo().error ?? null).toBeNull()
   })
 
   it("stops jogging while the app is disabled or a trajectory moves the robot", async () => {

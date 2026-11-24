@@ -4,6 +4,7 @@ import { jointValuesEqual } from "../motionStateUpdate"
 import type {
   PlanTrajectoryResult,
   TrajectoryExecutionStore,
+  TrajectoryTarget,
 } from "../TrajectoryExecutionStore"
 import type { RobotPose } from "./robotPose"
 import { RobotTargetPose } from "./RobotTargetPose"
@@ -21,6 +22,8 @@ function makeFakeRobot() {
     async (): Promise<PlanTrajectoryResult> => ({ ok: true }),
   )
   const stopAndReset = vi.fn(async () => {})
+  const hold = vi.fn((_target?: TrajectoryTarget) => true)
+  const release = vi.fn(async () => {})
   const app = observable({
     reasonNotMoveable: null as { code: string; message?: string } | null,
   })
@@ -32,6 +35,8 @@ function makeFakeRobot() {
       trajectory: {
         planTrajectory,
         stopAndReset,
+        hold,
+        release,
         trajectoryState: "idle" as TrajectoryExecutionStore["trajectoryState"],
         executionState: undefined as TrajectoryExecutionStore["executionState"],
       },
@@ -66,7 +71,24 @@ function makeFakeRobot() {
     { deep: true },
   )
 
-  return { robot, app, planTrajectory, stopAndReset }
+  return { robot, app, planTrajectory, stopAndReset, hold, release }
+}
+
+function cartesianPose(
+  position: number[],
+  coordSystemId = "world",
+  tcpId = "tcp1",
+  motionGroupId = "0@controller",
+): RobotPose {
+  return {
+    type: "cartesian",
+    motionGroupId,
+    tcpPose: {
+      pose: { position, orientation: [0, 0, 0] },
+      coordSystemId,
+      tcpId,
+    },
+  }
 }
 
 function makeStore() {
@@ -562,6 +584,89 @@ describe("RobotTargetPose", () => {
     expect(store.isRobotAtStagedPose).toBe(true)
     expect(store.phase).toBe("staged")
     expect(stopAndReset).not.toHaveBeenCalled()
+  })
+
+  // The panel shows the pose that was asked for last: one that was planned
+  // before it must not stay armed behind it
+  test("a pose that is not planned while the robot may not move drops the pose staged before it, and its trajectory", async () => {
+    const { store, app, planTrajectory, stopAndReset } = makeStore()
+    await store.plan(cartesianPose([1, 2, 3]))
+    expect(store.phase).toBe("staged")
+
+    runInAction(() => {
+      app.reasonNotMoveable = { code: "deactivated" }
+    })
+    await store.plan(cartesianPose([9, 8, 7]))
+
+    expect(planTrajectory).toHaveBeenCalledTimes(1)
+    expect(store.staged).toBeNull()
+    expect(stopAndReset).toHaveBeenCalledTimes(1)
+  })
+
+  describe("holding the Move to button", () => {
+    test("holdMove moves along the trajectory of the staged pose, for the pose that the button shows", async () => {
+      const { store, hold } = makeStore()
+      await store.plan(cartesianPose([1, 2, 3], "offset-300x"))
+
+      expect(store.holdMove(cartesianPose([1, 2, 3], "offset-300x"))).toBe(true)
+
+      expect(hold).toHaveBeenCalledExactlyOnceWith({
+        type: "cartesian",
+        pose: { position: [1, 2, 3], orientation: [0, 0, 0] },
+        coordinateSystemId: "offset-300x",
+      })
+    })
+
+    test.each<[string, RobotPose]>([
+      ["another position", cartesianPose([1, 2, 4])],
+      ["another coordinate system", cartesianPose([1, 2, 3], "offset-300x")],
+      ["another TCP", cartesianPose([1, 2, 3], "world", "tcp2")],
+      [
+        "another motion group",
+        cartesianPose([1, 2, 3], "world", "tcp1", "1@c"),
+      ],
+      [
+        "joints",
+        { type: "joint", motionGroupId: "0@controller", joints: [1, 2, 3] },
+      ],
+    ])("holdMove moves nothing for %s than the staged pose", async (_what, shown) => {
+      const { store, hold } = makeStore()
+      await store.plan(cartesianPose([1, 2, 3]))
+
+      expect(store.holdMove(shown)).toBe(false)
+
+      expect(hold).not.toHaveBeenCalled()
+    })
+
+    test("holdMove moves nothing without a staged pose, or to one that could not be planned", async () => {
+      const { store, planTrajectory, hold } = makeStore()
+      expect(store.holdMove(cartesianPose([1, 2, 3]))).toBe(false)
+
+      planTrajectory.mockResolvedValueOnce({
+        ok: false,
+        errorFeedbackName: "FeedbackOutOfWorkspace",
+      })
+      await store.plan(cartesianPose([1, 2, 3]))
+      expect(store.holdMove(cartesianPose([1, 2, 3]))).toBe(false)
+
+      expect(hold).not.toHaveBeenCalled()
+    })
+
+    test("holdMove tells when the trajectory does not start", async () => {
+      const { store, hold } = makeStore()
+      await store.plan(cartesianPose([1, 2, 3]))
+      hold.mockReturnValueOnce(false)
+
+      expect(store.holdMove(cartesianPose([1, 2, 3]))).toBe(false)
+    })
+
+    test("releaseMove releases the trajectory", async () => {
+      const { store, release } = makeStore()
+
+      await store.releaseMove()
+
+      expect(release).toHaveBeenCalledOnce()
+    })
   })
 
   test("does not plan while the robot may not move", async () => {
