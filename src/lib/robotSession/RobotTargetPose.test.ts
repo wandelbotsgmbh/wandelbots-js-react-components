@@ -92,6 +92,25 @@ describe("RobotTargetPose", () => {
     expect(store.displayString).toBe("(100, 200, 300, 0.1, 0.2, 0.3)")
   })
 
+  // A positioner or a turntable: the live state has no TCP pose to show,
+  // and none to read a typed pose's TCP and coordinate system from
+  test("shows no pose and takes no typed one for a motion group without a TCP pose", () => {
+    const { store, robot } = makeStore()
+    runInAction(() => {
+      Object.defineProperty(robot.state, "displayedTcpPoseReference", {
+        get() {
+          throw new Error("Invalid current TCP pose position")
+        },
+      })
+      ;(robot.state as { displayedTcpPose: unknown }).displayedTcpPose = null
+    })
+
+    expect(store.displayString).toBe("")
+    store.beginEdit()
+    store.setDraft("(1, 2, 3, 0, 0, 0)")
+    expect(store.draftValid).toBe(false)
+  })
+
   test("beginEdit seeds the draft with the displayed pose", () => {
     const { store } = makeStore()
     store.beginEdit()

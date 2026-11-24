@@ -85,21 +85,31 @@ export class RobotLiveState {
     return this.stream.lastInvalidStateMessage
   }
 
-  /** The TCP pose as NOVA reports it, in its own TCP and coordinate system */
+  /**
+   * The TCP pose as NOVA reports it, in its own TCP and coordinate system.
+   * Throws for a motion group that reports no TCP pose.
+   */
   get measuredTcpPoseReference(): TcpReferencedPose {
     return this.tcpPoseReferenceOf(this.rapidlyChangingMotionState)
   }
 
   /**
    * The measured TCP pose in the TCP and coordinate system that the jogging
-   * store has selected: what a stored or typed pose uses
+   * store has selected: what a stored or typed pose uses. Throws for a motion
+   * group that reports no TCP pose.
    */
   get displayedTcpPoseReference(): TcpReferencedPose {
     return this.inSelectedFrame(this.measuredTcpPoseReference)
   }
 
-  /** The pose readouts show, from {@link RobotLiveState.readoutState}, in the selected frame */
-  get displayedTcpPose() {
+  /**
+   * The pose readouts show, from {@link RobotLiveState.readoutState}, in the
+   * selected frame. null for a motion group that reports no TCP pose (a
+   * positioner, a turntable): a readout reads this while it renders, so it
+   * does not throw as the poses to store and to plan do.
+   */
+  get displayedTcpPose(): TcpReferencedPose["pose"] | null {
+    if (!this.readoutState.tcp_pose) return null
     return this.inSelectedFrame(this.tcpPoseReferenceOf(this.readoutState)).pose
   }
 

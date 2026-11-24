@@ -43,12 +43,15 @@ function liveState(
     coordSystems?: CoordinateSystem[]
     selectedCoordSystemId?: string
   } = {},
+  motionState: {
+    readoutState: object
+    rapidlyChangingMotionState: object
+  } = { readoutState: shownReadout, rapidlyChangingMotionState: storedState },
 ) {
   return new RobotLiveState(
     {
       motionGroupId: "0@robot1",
-      readoutState: shownReadout,
-      rapidlyChangingMotionState: storedState,
+      ...motionState,
     } as unknown as ControllerStateStream,
     {
       tcpOffsetsById: {
@@ -85,6 +88,31 @@ describe("the poses that readouts show", () => {
     expect(state.measuredTcpPoseReference.pose).toEqual(storedState.tcp_pose)
     expect(state.displayedTcpPoseReference.pose.position).toEqual(
       storedState.tcp_pose.position,
+    )
+  })
+})
+
+// A positioner or a turntable reports joints only
+describe("a motion group that reports no TCP pose", () => {
+  const { tcp_pose: _shown, ...shownJoints } = shownReadout
+  const { tcp_pose: _stored, ...storedJoints } = storedState
+  const withoutTcpPose = () =>
+    liveState(
+      {},
+      { readoutState: shownJoints, rapidlyChangingMotionState: storedJoints },
+    )
+
+  test("has no TCP pose to show, and still shows its joints", () => {
+    const state = withoutTcpPose()
+
+    // A readout reads this while it renders: it must not throw
+    expect(state.displayedTcpPose).toBeNull()
+    expect(state.jointPose).toEqual(shownReadout.joint_position)
+  })
+
+  test("still refuses to store or plan a TCP pose it does not have", () => {
+    expect(() => withoutTcpPose().displayedTcpPoseReference).toThrow(
+      "Invalid current TCP pose",
     )
   })
 })

@@ -169,7 +169,9 @@ export class RobotTargetPose {
     if (this.isJointTab) {
       return jointsToText(this.robot.state.jointPose)
     }
-    return poseToText(this.robot.state.displayedTcpPose)
+    // A motion group that reports no TCP pose (a positioner) shows none
+    const pose = this.robot.state.displayedTcpPose
+    return pose ? poseToText(pose) : ""
   }
 
   /** What the field shows outside of edit mode: staged value or live pose */
@@ -191,7 +193,9 @@ export class RobotTargetPose {
     if (!parsed) return null
 
     // The typed values are read in the currently displayed coordinate system
-    // and TCP, exactly like the displayed pose they replace.
+    // and TCP, exactly like the displayed pose they replace. Without a
+    // displayed pose there is no TCP to read them for.
+    if (!state.displayedTcpPose) return null
     const reference = state.displayedTcpPoseReference
     return {
       type: "cartesian",
