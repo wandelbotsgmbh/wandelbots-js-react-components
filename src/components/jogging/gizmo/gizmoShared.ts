@@ -13,7 +13,8 @@ import type { JogGrabSizes } from "./arrows"
 //   (JogHandle). Translating, it is half of an arrow. Rotating, it is an arc.
 // - scene: the gizmo's own small 3D drawing, in its canvas (…Scene)
 // - handles: the elements laid over the drawing, which take the presses and
-//   the keyboard (…Handles). The button of a handle names it, e.g. "Jog X+".
+//   the keyboard's focus (…Handles). The button of a handle names it, e.g.
+//   "Jog X+".
 // - overlay: those elements, placed by the scene each time the gizmo turns,
 //   without React (GizmoOverlay)
 // - view: NOVA's axes as the camera of the app's 3D view sees them

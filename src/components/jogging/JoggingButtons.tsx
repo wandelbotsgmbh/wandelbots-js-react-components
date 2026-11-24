@@ -71,7 +71,8 @@ function turnIcon(handle: JogHandle) {
 /**
  * Jogging by buttons: a row per axis with a minus and a plus button, held to
  * jog. `motion` picks whether they move the robot along the axes (X-, X+) or
- * turn it about them (Rx-, Rx+).
+ * turn it about them (Rx-, Rx+). Only a pointer holds a button: the keyboard
+ * reaches it, but does not jog.
  *
  * Unlike JoggingGizmo, the buttons do not turn with the 3D view: X+ is X+ of
  * the jog frame, wherever the camera looks from. They take the same props as

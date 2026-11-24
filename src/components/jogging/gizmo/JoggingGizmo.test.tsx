@@ -49,6 +49,9 @@ afterEach(() => {
   webgl.available = true
 })
 
+const handle = (name: string) =>
+  screen.getByRole("button", { name: `Jog ${name}` })
+
 describe("JoggingGizmo", () => {
   it("says it cannot be drawn, with no handles nobody sees, and tells the app, when the browser has no WebGL", () => {
     webgl.available = false
@@ -93,6 +96,19 @@ describe("JoggingGizmo", () => {
     fireEvent.pointerUp(handle)
     expect(onJogStop).toHaveBeenCalledTimes(1)
     expect(handle).toHaveAttribute("aria-pressed", "false")
+  })
+
+  it("does not jog from the keyboard: Space or Enter on a focused handle start nothing", () => {
+    const { onJogStart } = setup()
+
+    // Still reached by the keyboard, and named
+    handle("Z+").focus()
+    expect(handle("Z+")).toHaveFocus()
+    fireEvent.keyDown(handle("Z+"), { key: " " })
+    fireEvent.keyUp(handle("Z+"), { key: " " })
+    fireEvent.keyDown(handle("Z+"), { key: "Enter" })
+
+    expect(onJogStart).not.toHaveBeenCalled()
   })
 
   it("in rotate mode, has a handle for each direction of each axis, named like the rotate buttons", () => {

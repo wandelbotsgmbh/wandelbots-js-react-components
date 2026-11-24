@@ -21,9 +21,9 @@ import {
 } from "./gizmoShared"
 
 /**
- * The rotation handles: a round button on each arrowhead, which the keyboard
- * reaches and which names the handle, and a band along its arc, so it can be
- * grabbed anywhere along it
+ * The rotation handles: a round button on each arrowhead, which names the
+ * handle and takes the keyboard's focus, and a band along its arc, so it can
+ * be grabbed anywhere along it
  */
 export function RotationHandles(props: GizmoHandlesProps) {
   const { disabled, label, overlay, size } = props

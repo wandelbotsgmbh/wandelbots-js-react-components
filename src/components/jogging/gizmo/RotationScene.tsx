@@ -78,7 +78,7 @@ export function RotationScene({
         }
         const area = areas[i]
         // Also where the keyboard's focus shows, when a press could not tell
-        // which way this handle turns and only the keyboard reaches it
+        // which way this handle turns and so reaches none of it
         head.style.left = px(arc.head.x * radius)
         head.style.top = px(arc.head.y * radius)
         head.style.zIndex = area ? String(area.headLayer) : "0"

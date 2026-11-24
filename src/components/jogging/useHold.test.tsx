@@ -40,6 +40,8 @@ function setup(disabled = false) {
   return { onStart, onStop, press, view }
 }
 
+const button = (name: Target) => screen.getByRole("button", { name })
+
 function setVisibility(state: DocumentVisibilityState) {
   Object.defineProperty(document, "visibilityState", {
     configurable: true,
@@ -129,78 +131,52 @@ describe("useHold", () => {
     expect(onStop).toHaveBeenCalledTimes(1)
   })
 
-  it("does not restart on key repeat after something else ended the hold", () => {
-    const { onStart, onStop, view } = setup()
-    const a = screen.getByRole("button", { name: "a" })
-
-    fireEvent.keyDown(a, { key: " " })
-    view.rerender(<Controls onStart={onStart} onStop={onStop} disabled />)
-    view.rerender(<Controls onStart={onStart} onStop={onStop} />)
-    // The key is still down, so the browser keeps sending repeats
-    fireEvent.keyDown(a, { key: " ", repeat: true })
-
-    expect(onStart).toHaveBeenCalledTimes(1)
-  })
-
-  it("holds with Space or Enter", () => {
+  // The keyboard does not jog: a key held on a focused control moves nothing
+  it.each([
+    ["Space", { key: " " }],
+    ["Enter", { key: "Enter" }],
+    ["Cmd+Enter", { key: "Enter", metaKey: true }],
+    ["an auto-repeated Space", { key: " ", repeat: true }],
+  ])("does not start with %s, and leaves the key to the browser", (_, key) => {
     const { onStart, onStop } = setup()
-    const button = screen.getByRole("button", { name: "a" })
 
-    fireEvent.keyDown(button, { key: " " })
-    fireEvent.keyDown(button, { key: " ", repeat: true })
-    fireEvent.keyUp(button, { key: " " })
-    fireEvent.keyDown(button, { key: "Enter" })
-    fireEvent.keyUp(button, { key: "Enter" })
-
-    expect(onStart).toHaveBeenCalledTimes(2)
-    expect(onStop).toHaveBeenCalledTimes(2)
-  })
-
-  // macOS sends no keyup for a key released while Cmd is held
-  it("does not start with Cmd held, but keeps the key's default off", () => {
-    const { onStart } = setup()
-    const a = screen.getByRole("button", { name: "a" })
-
-    fireEvent.keyDown(a, { key: "Meta", metaKey: true })
-    const enter = fireEvent.keyDown(a, { key: "Enter", metaKey: true })
-    const space = fireEvent.keyDown(a, { key: " ", metaKey: true })
+    const down = fireEvent.keyDown(button("a"), key)
+    const up = fireEvent.keyUp(button("a"), key)
 
     expect(onStart).not.toHaveBeenCalled()
-    expect(enter).toBe(false)
-    expect(space).toBe(false)
+    expect(onStop).not.toHaveBeenCalled()
+    expect(screen.getByRole("status")).toHaveTextContent("none")
+    // Not prevented
+    expect(down).toBe(true)
+    expect(up).toBe(true)
   })
 
+  // A new key press may bring a release that never arrives (Cmd, on macOS)
   it.each([
     ["Cmd", { key: "Meta", metaKey: true }],
     ["Enter", { key: "Enter" }],
-    ["the held key again, its release lost", { key: " " }],
-  ])("stops once when another key press, e.g. %s, comes during a hold", (_, key) => {
-    const { onStart, onStop } = setup()
-    const a = screen.getByRole("button", { name: "a" })
+    ["Space", { key: " " }],
+  ])("stops a pointer hold once when a key is pressed, e.g. %s, and starts none with it", (_, key) => {
+    const { onStart, onStop, press } = setup()
 
-    fireEvent.keyDown(a, { key: " " })
-    fireEvent.keyDown(a, { key: " ", repeat: true })
-    expect(onStop).not.toHaveBeenCalled()
-
-    fireEvent.keyDown(a, key)
+    press("a")
+    fireEvent.keyDown(button("a"), key)
     expect(onStop).toHaveBeenCalledTimes(1)
     expect(screen.getByRole("status")).toHaveTextContent("none")
 
-    fireEvent.keyUp(a, { key: " " })
+    fireEvent.keyDown(button("a"), { ...key, repeat: true })
+    fireEvent.keyUp(button("a"), key)
     expect(onStop).toHaveBeenCalledTimes(1)
     expect(onStart).toHaveBeenCalledTimes(1)
   })
 
-  it("stops a pointer hold when a key is pressed", () => {
+  it("goes on through the auto-repeat of a key that was down before the press", () => {
     const { onStop, press } = setup()
 
     press("a")
-    fireEvent.keyDown(screen.getByRole("button", { name: "a" }), {
-      key: "Meta",
-      metaKey: true,
-    })
+    fireEvent.keyDown(button("a"), { key: "a", repeat: true })
 
-    expect(onStop).toHaveBeenCalledTimes(1)
+    expect(onStop).not.toHaveBeenCalled()
   })
 
   it("stops a pointer hold when a move shows the primary button is up: its release never arrived, or came while another button stays pressed", () => {
@@ -215,12 +191,11 @@ describe("useHold", () => {
     expect(onStop).toHaveBeenCalledTimes(1)
   })
 
-  it("keeps a key hold when the mouse moves over the control without a button", () => {
-    const { onStop } = setup()
-    const a = screen.getByRole("button", { name: "a" })
+  it("keeps the hold when another pointer moves over the control without a button", () => {
+    const { onStop, press } = setup()
 
-    fireEvent.keyDown(a, { key: " " })
-    fireEvent.pointerMove(a, { pointerId: 1, buttons: 0 })
+    press("a")
+    fireEvent.pointerMove(button("a"), { pointerId: 2, buttons: 0 })
 
     expect(onStop).not.toHaveBeenCalled()
   })

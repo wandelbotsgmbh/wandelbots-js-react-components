@@ -121,8 +121,9 @@ function useHasOrientation(orientation: RefObject<Quaternion | null>) {
  * about it with an arc per direction, whose arrowhead shows the way it
  * turns, grabbed anywhere along the arc. A handle is held to jog.
  *
- * The gizmo is drawn in 3D; the handles are laid over it as buttons, so it
- * works from the keyboard and tests can find a handle by its name. It draws
+ * The gizmo is drawn in 3D; the handles are laid over it as buttons, so
+ * assistive technology and tests find a handle by its name. The keyboard
+ * reaches a handle, but does not jog: only a pointer holds one. It draws
  * only when it turns or its state changes, not every frame.
  */
 export const JoggingGizmo = externalizeComponent(

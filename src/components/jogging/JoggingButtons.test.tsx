@@ -68,14 +68,18 @@ describe("JoggingButtons", () => {
     expect(button("Y-")).toHaveAttribute("aria-pressed", "false")
   })
 
-  it("jogs while Space is held, so it works from the keyboard", () => {
-    const { onJogStart, onJogStop } = setup()
+  it("does not jog from the keyboard: Space or Enter on a focused button start nothing", () => {
+    const { onJogStart } = setup()
 
+    // Still reached by the keyboard, and named
+    button("Z+").focus()
+    expect(button("Z+")).toHaveFocus()
     fireEvent.keyDown(button("Z+"), { key: " " })
-    expect(onJogStart).toHaveBeenCalledWith("z", "+")
-
     fireEvent.keyUp(button("Z+"), { key: " " })
-    expect(onJogStop).toHaveBeenCalledTimes(1)
+    fireEvent.keyDown(button("Z+"), { key: "Enter" })
+
+    expect(onJogStart).not.toHaveBeenCalled()
+    expect(button("Z+")).toHaveAttribute("aria-pressed", "false")
   })
 
   it("in rotate mode, turns about the held button's axis, named like the rotate handles", () => {

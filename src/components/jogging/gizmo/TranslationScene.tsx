@@ -62,8 +62,9 @@ export function TranslationScene({
           grip.style.zIndex = String(area.layer)
           grip.style.pointerEvents = ""
         } else {
-          // A press here could not tell this handle from another one. The
-          // keyboard, which picks a handle by its name, still reaches it.
+          // A press here could not tell this handle from another one, so it
+          // takes none: the user orbits the view, or jogs with the buttons.
+          // The keyboard's focus still reaches it, but does not jog.
           grip.style.pointerEvents = "none"
         }
         if (tip.direction !== "+") continue

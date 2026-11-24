@@ -249,7 +249,8 @@ Manual robot control interfaces.
 - `frameQuaternion` of `JoggingGizmo` is the frame the gizmo jogs along, in NOVA's coordinates: by default NOVA's world frame. The app gives it to the gizmo where it picks the frame, e.g. "Move along the axes of: Tool". Only the camera's view comes from the 3D scene. A frame that turns, such as the tool's, can be a function: the gizmo calls it every animation frame.
 - `motion` is `"translate"` (arrows, the default) or `"rotate"`: a circle about each axis with an arc per direction, whose arrowhead shows the way it turns (`+` counterclockwise seen from the tip of the axis). The handles are named as the jog buttons: "Jog X+", or "Jog Rx+" when rotating. A jog that runs when `motion` changes stops.
 - The gizmo moves nothing itself: `onJogStart(axis, direction)` and `onJogStop` leave that to the app, in the frame it jogs in. The app knows its `motion`, so it knows whether to move along the axis or turn about it.
-- A press jogs along the arrow drawn where it lands. Where a press could not tell two handles apart, it jogs neither: an arrow that points (almost) at or away from the viewer, or the farther of two arrowheads drawn over each other. The keyboard reaches every handle by its name.
+- A press jogs along the arrow drawn where it lands. Where a press could not tell two handles apart, it jogs neither: an arrow that points (almost) at or away from the viewer, or the farther of two arrowheads drawn over each other. To jog with such a handle, orbit the view, or use `JoggingButtons`.
+- Only a pointer jogs. A handle is a named button, so the keyboard's focus reaches it, but Space or Enter on it start nothing.
 - When rotating, a press turns the way the arc drawn there points: an arc is grabbed anywhere along it, an arrowhead above everything else. Where two arcs cross, the one drawn nearer there takes the press. An axis seen (almost) edge on, whose arcs lie over each other, takes no press.
 
 ```tsx
@@ -273,7 +274,7 @@ const orientation = useRef<Quaternion | null>(null)
 />
 ```
 
-**JoggingButtons** (from `/core` or `/JoggingButtons`) - Jogging by buttons: a row per axis with a minus and a plus button, held to jog (X-, X+; or Rx-, Rx+ when `motion` is `"rotate"`). It takes the same props as `JoggingGizmo` (`JogControlsProps`: `motion`, `onJogStart`, `onJogStop`, `activeHandle`, `disabled`), so an app wires both the same way and can offer both. Unlike the gizmo, the buttons do not turn with the 3D view: X+ is X+ of the jog frame, wherever the camera looks from. They draw nothing in 3D, so they need no `<Canvas>` and no `JoggingGizmoOrientation`.
+**JoggingButtons** (from `/core` or `/JoggingButtons`) - Jogging by buttons: a row per axis with a minus and a plus button, held to jog (X-, X+; or Rx-, Rx+ when `motion` is `"rotate"`). It takes the same props as `JoggingGizmo` (`JogControlsProps`: `motion`, `onJogStart`, `onJogStop`, `activeHandle`, `disabled`), so an app wires both the same way and can offer both. Unlike the gizmo, the buttons do not turn with the 3D view: X+ is X+ of the jog frame, wherever the camera looks from. They draw nothing in 3D, so they need no `<Canvas>` and no `JoggingGizmoOrientation`. As with the gizmo, only a pointer jogs: the keyboard's focus reaches a button, but Space or Enter on it start nothing.
 
 ```tsx
 <JoggingButtons

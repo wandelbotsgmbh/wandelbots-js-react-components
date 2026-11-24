@@ -30,9 +30,9 @@ export function startsKeyHold(event: {
 }
 
 /**
- * Whether a key press ends a running hold, by pointer or by key: any new
- * press does, as the release of the held key may never come (Cmd pressed
- * during it, on macOS). Only the auto-repeat of the held key goes on.
+ * Whether a key press ends a running hold: any new press does, as a key can
+ * take the release away (Cmd, on macOS). Only an auto-repeat goes on: of the
+ * key that holds, or of a key that was down before a pointer's press.
  */
 export function endsHold(event: { repeat: boolean }): boolean {
   return !event.repeat
