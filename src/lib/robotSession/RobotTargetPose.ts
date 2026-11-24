@@ -55,7 +55,8 @@ type TargetPoseParts = {
  * cartesian pose or joint configuration, validates it, and stages it by
  * planning a trajectory to it, so Move to can drive there. The text is read
  * like the displayed pose it replaces: in the selected TCP and coordinate
- * system, or as the joints on the joint tab.
+ * system, or as the joints on the joint tab. An app with a pose field of its
+ * own stages the pose as numbers with {@link RobotTargetPose.plan}.
  */
 export class RobotTargetPose {
   /** True while the field is an input the user is typing into */
@@ -227,19 +228,32 @@ export class RobotTargetPose {
   }
 
   /**
-   * Validates the typed pose against the backend by planning a trajectory to
-   * it. On success the trajectory is left initialized on the execution
-   * socket, so Move to is armed immediately; on a planner rejection the pose
-   * stays staged with the failure explanation. Does nothing while the robot
-   * may not move.
+   * Confirms the edit: plans the pose in the draft and stages it, see
+   * {@link RobotTargetPose.plan}. Does nothing while the draft is no pose.
    */
   async confirmEdit() {
     const pose = this.parsedDraft
-    if (!pose || this.confirming) return
+    if (!pose) return
+    await this.plan(pose)
+  }
 
-    // Confirming plans a motion, which needs a robot that may move at all.
-    // Refusing here keeps the planner from rejecting the request for a
-    // reason that has nothing to do with the typed coordinates.
+  /**
+   * Stages a pose: validates it against the backend by planning a trajectory
+   * to it. On success the trajectory is left initialized on the execution
+   * socket, so Move to is armed immediately; on a planner rejection the pose
+   * stays staged with the failure explanation. Does nothing while the robot
+   * may not move, or while another pose is planned.
+   *
+   * What {@link RobotTargetPose.confirmEdit} does with the text of the
+   * draft, for an app that has the pose as numbers: a cartesian pose is of
+   * its own TCP and in its own coordinate system, whatever is displayed.
+   */
+  async plan(pose: RobotPose) {
+    if (this.confirming) return
+
+    // Planning a motion needs a robot that may move at all. Refusing here
+    // keeps the planner from rejecting the request for a reason that has
+    // nothing to do with the coordinates.
     if (this.robot.notMoveableReason()) return
 
     const displayString =

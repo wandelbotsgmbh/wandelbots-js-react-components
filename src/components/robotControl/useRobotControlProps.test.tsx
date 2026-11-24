@@ -5,6 +5,7 @@ import { describe, expect, it, onTestFinished, vi } from "vitest"
 import {
   controllerState,
   fakeExecution,
+  MOTION_GROUP_ID,
   makeHarness,
 } from "../../lib/robotSession/__fixtures__/robotSessionHarness"
 import type { LoadRobotSessionOptions } from "../../lib/robotSession/loadRobotSession"
@@ -55,14 +56,12 @@ function withFakeMoveTo(session: RobotSession) {
     hold,
     release,
   })
-  const setDraft = vi.fn()
-  const confirmEdit = vi.fn(async () => {})
+  const plan = vi.fn(async () => {})
   const resetToLive = vi.fn(async () => {})
   const targetPose = observable({
     confirming: false,
     staged: null as { errorKey: string | null } | null,
-    setDraft,
-    confirmEdit,
+    plan,
     resetToLive,
   })
   const robot = Object.assign(Object.create(session), {
@@ -75,8 +74,7 @@ function withFakeMoveTo(session: RobotSession) {
     targetPose,
     hold,
     release,
-    setDraft,
-    confirmEdit,
+    plan,
     resetToLive,
   }
 }
@@ -330,11 +328,22 @@ describe("useRobotControlProps", () => {
       return props
     }
 
+    // The pose as numbers, of the TCP and in the frame that the panel shows
     act(() =>
-      moveTo().onTargetChange({ position: [1, 2, 3], orientation: [0, 0, 0] }),
+      moveTo().onTargetChange({
+        position: [1.23456, 2, 3],
+        orientation: [0, 0, 0],
+      }),
     )
-    expect(fake.setDraft).toHaveBeenCalledWith("(1, 2, 3, 0, 0, 0)")
-    expect(fake.confirmEdit).toHaveBeenCalled()
+    expect(fake.plan).toHaveBeenCalledExactlyOnceWith({
+      type: "cartesian",
+      motionGroupId: MOTION_GROUP_ID,
+      tcpPose: {
+        pose: { position: [1.23456, 2, 3], orientation: [0, 0, 0] },
+        coordSystemId: "world",
+        tcpId: "Flange",
+      },
+    })
 
     runInAction(() => {
       fake.targetPose.confirming = true
@@ -450,13 +459,12 @@ describe("useRobotControlProps", () => {
 
     // Activating, the robot cannot move yet: an app may still lock it (as
     // RobotPad does), and the session would plan nothing
-    fake.setDraft.mockClear()
-    fake.confirmEdit.mockClear()
+    fake.plan.mockClear()
     await act(async () => {
       await session.activation.activate()
     })
     expect(session.activation.state).toBe("activating")
-    expect(fake.confirmEdit).not.toHaveBeenCalled()
+    expect(fake.plan).not.toHaveBeenCalled()
 
     // Activated: the pose is planned, without typing it again
     act(() =>
@@ -470,8 +478,11 @@ describe("useRobotControlProps", () => {
     await act(flush)
     rerender()
     expect(session.safety.notMoveableReason).toBeNull()
-    expect(fake.setDraft).toHaveBeenCalledWith("(1, 2, 3, 0, 0, 0)")
-    expect(fake.confirmEdit).toHaveBeenCalledOnce()
+    expect(fake.plan).toHaveBeenCalledExactlyOnceWith(
+      expect.objectContaining({
+        tcpPose: expect.objectContaining({ pose: TARGET }),
+      }),
+    )
     expect(result.current.moveTo?.error ?? null).toBeNull()
   })
 

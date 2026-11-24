@@ -162,6 +162,69 @@ describe("RobotTargetPose", () => {
     })
   })
 
+  // What a panel with its own pose field calls: it has the numbers already
+  test("plan stages a pose without the text draft, for the pose's own TCP and coordinate system", async () => {
+    const { store, planTrajectory } = makeStore()
+    const pose: RobotPose = {
+      type: "cartesian",
+      motionGroupId: "0@controller",
+      tcpPose: {
+        pose: { position: [1.23456, 2, 3], orientation: [0.4, 0.5, 0.6] },
+        coordSystemId: "offset-300x",
+        tcpId: "tcp2",
+      },
+    }
+    store.beginEdit()
+
+    await store.plan(pose)
+
+    // The numbers as given, not through the text
+    expect(planTrajectory).toHaveBeenCalledWith({
+      type: "cartesian",
+      pose: { position: [1.23456, 2, 3], orientation: [0.4, 0.5, 0.6] },
+      coordinateSystemId: "offset-300x",
+    })
+    expect(store.phase).toBe("staged")
+    expect(store.stagedPose).toEqual(pose)
+    expect(store.displayString).toBe("(1.2, 2, 3, 0.4, 0.5, 0.6)")
+  })
+
+  test("plan stages joints as well, whichever tab the jogging store shows", async () => {
+    const { store, planTrajectory } = makeStore()
+
+    await store.plan({
+      type: "joint",
+      motionGroupId: "0@controller",
+      joints: [0.1, 0.2, 0.3, 0.4],
+    })
+
+    expect(planTrajectory).toHaveBeenCalledWith({
+      type: "joint",
+      joints: [0.1, 0.2, 0.3, 0.4],
+    })
+    expect(store.phase).toBe("staged")
+    expect(store.displayString).toBe("[0.1, 0.2, 0.3, 0.4]")
+  })
+
+  test("plan stages a pose that the planner rejects with its reason", async () => {
+    const { store, planTrajectory } = makeStore()
+    planTrajectory.mockResolvedValueOnce({
+      ok: false,
+      errorFeedbackName: "FeedbackOutOfWorkspace",
+    })
+
+    await store.plan({
+      type: "joint",
+      motionGroupId: "0@controller",
+      joints: [9, 9, 9, 9],
+    })
+
+    expect(store.phase).toBe("error")
+    expect(store.staged?.errorKey).toBe(
+      "Jogging.TargetPose.Error.NotReachable.lb",
+    )
+  })
+
   test("confirmEdit does nothing while the draft is invalid", async () => {
     const { store, planTrajectory } = makeStore()
     store.beginEdit()

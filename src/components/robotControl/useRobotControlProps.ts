@@ -9,6 +9,7 @@ import { i18n } from "../../i18n/config"
 import { Pose3 } from "../../lib/Pose3"
 import type { RobotNotMoveableReason } from "../../lib/robotSession/RobotSafety"
 import type { RobotSession } from "../../lib/robotSession/RobotSession"
+import type { RobotPose } from "../../lib/robotSession/robotPose"
 import { parseRotationToQuaternion } from "../../lib/rotation"
 import { coordSystemLabel } from "../jogging/coordSystemLabel"
 import { JoggingRefusedError } from "../jogging/JoggingRefusedError"
@@ -53,12 +54,25 @@ const COORD_SYSTEM = "coordinate-system:"
 const toDegrees = (radians: number) =>
   Math.round(radiansToDegrees(radians) * 1e6) / 1e6
 
+/**
+ * A pose of Move to as the session's: of the TCP and in the frame that the
+ * panel shows, which are the jogging store's selected ones
+ */
+function robotPoseOf(session: RobotSession, pose: RobotControlPose): RobotPose {
+  return {
+    type: "cartesian",
+    motionGroupId: session.motionGroupId,
+    tcpPose: {
+      pose,
+      coordSystemId: session.jogging.selectedCoordSystemId,
+      tcpId: session.jogging.selectedTcpId,
+    },
+  }
+}
+
 /** Plans a pose of Move to as the session's typed pose */
 function planTarget(session: RobotSession, pose: RobotControlPose) {
-  session.targetPose.setDraft(
-    `(${[...pose.position, ...pose.orientation].join(", ")})`,
-  )
-  void session.targetPose.confirmEdit()
+  void session.targetPose.plan(robotPoseOf(session, pose))
 }
 
 /** Why the robot may not move, in the library's words */
