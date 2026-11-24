@@ -32,6 +32,11 @@
       "import": "./dist/nats.js",
       "require": "./dist/nats.cjs"
     },
+    "./session": {
+      "types": "./dist/session.d.ts",
+      "import": "./dist/session.js",
+      "require": "./dist/session.cjs"
+    },
     "./package.json": "./package.json",
     "./*": {
       "types": "./dist/*/index.d.ts",

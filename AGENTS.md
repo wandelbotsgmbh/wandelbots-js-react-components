@@ -27,9 +27,17 @@ the migration from 6.x are in [README.md](README.md).
   library connects with its own client: a public function takes a
   `NovaConnection` (`src/lib/novaConnection.ts`), never the `Nova` class, and
   the library's client stays out of the public API (`@internal`).
-- The public API is the entry points `.`, `/core`, `/3d`, `/nats` and
-  `/SafetyBar` (`scripts/entry-points.ts`), recorded in
+- The public API is the entry points `.`, `/core`, `/3d`, `/nats`, `/session`
+  and `/SafetyBar` (`scripts/entry-points.ts`), recorded in
   `etc/api-extractor/*.api.md`.
+- `/session` (`src/session.ts`) is the library without React: an app with its
+  own UI, or without a 3D view, uses a robot session through it. So nothing
+  that it loads imports React, MUI or three.js. Its pose math is on plain
+  numbers (`src/lib/poseMath.ts`); `Pose3` and `rotation.ts` have the same
+  math on three.js objects for `/3d`, and both must give a robot the same
+  numbers. `/nats` and the component entries that draw nothing in 3D load no
+  three.js either. `pnpm run test:consumer` checks all of this on the built
+  files.
 - A UI component takes props and reports through callbacks: it never imports
   a store (such as `JoggingStore`), the connection code in `src/lib/` or a
   provider. So an app can use any one of them without the library's stores,

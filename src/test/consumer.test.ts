@@ -89,6 +89,11 @@ describe("package exports — aggregate entries", () => {
     { spec: `${pkgName}/core`, esm: "dist/core.js", cjs: "dist/core.cjs" },
     { spec: `${pkgName}/3d`, esm: "dist/3d.js", cjs: "dist/3d.cjs" },
     { spec: `${pkgName}/nats`, esm: "dist/nats.js", cjs: "dist/nats.cjs" },
+    {
+      spec: `${pkgName}/session`,
+      esm: "dist/session.js",
+      cjs: "dist/session.cjs",
+    },
   ]
 
   it.each(entries)("$spec resolves ESM, CJS, and types", ({
@@ -123,6 +128,7 @@ describe("the optional peer nats.ws", () => {
     "index.js",
     "core.js",
     "3d.js",
+    "session.js",
   ])("is not loaded by dist/%s", (entryFile) => {
     const loadingNats = [...loadedFiles(resolve(distDir, entryFile))].filter(
       (file) => readFileSync(file, "utf8").includes('"nats.ws"'),
@@ -321,9 +327,66 @@ function unwantedImports(distFile: string, unwanted: string[]): string[] {
     .sort()
 }
 
+describe("the library without React: /session", () => {
+  // A robot session is for every app, also one without React, without the
+  // library's UI and without a 3D view
+  it.each([
+    "session.js",
+    "session.cjs",
+  ])("dist/%s loads no React, no MUI and no three.js", (entryFile) => {
+    expect(
+      unwantedImports(resolve(distDir, entryFile), [
+        ...UI_PACKAGES,
+        ...THREE_PACKAGES,
+      ]),
+    ).toEqual([])
+  })
+
+  // Plain Node has no `window` and no `document`: a use of one while the
+  // entry loads throws here
+  it.each([
+    { format: "CJS", load: "require(process.argv[1])", flags: [] },
+    {
+      format: "ESM",
+      load: "await import(process.argv[1])",
+      flags: ["--input-type=module"],
+    },
+  ])("its $format build loads in Node, without a DOM", ({ load, flags }) => {
+    const output = execFileSync(
+      process.execPath,
+      [
+        ...flags,
+        "-e",
+        `const session = ${load}; ` +
+          "console.log(JSON.stringify({ " +
+          "loadRobotSession: typeof session.loadRobotSession, " +
+          "JoggingStore: typeof session.JoggingStore, " +
+          "window: typeof window, document: typeof document }))",
+        `${pkgName}/session`,
+      ],
+      { cwd: sandbox, encoding: "utf8" },
+    ).trim()
+    expect(JSON.parse(output)).toEqual({
+      loadRobotSession: "function",
+      JoggingStore: "function",
+      window: "undefined",
+      document: "undefined",
+    })
+  })
+
+  // One copy: a session of /session is a session for the parts of /core
+  it("/session and /core share one RobotSession", async () => {
+    const session = await import(`${pkgName}/session`)
+    const core = await import(`${pkgName}/core`)
+    expect(session.RobotSession).toBeDefined()
+    expect(session.RobotSession).toBe(core.RobotSession)
+    expect(session.loadRobotSession).toBe(core.loadRobotSession)
+  }, 30_000)
+})
+
 describe("entry points for an app without a 3D view", () => {
   // three.js is an optional peer: an app that does not install it must still
-  // build with the NATS source and with these components
+  // build with the session (see above), the NATS source and these components
   it.each([
     "nats",
     "RobotHeader/index",

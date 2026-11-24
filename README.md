@@ -17,7 +17,7 @@ pnpm add @wandelbots/wandelbots-js-react-components \
  @wandelbots/mui mobx mobx-react-lite
 ```
 
-The 3D parts need three.js and React Three Fiber in addition. If you don't need 3D rendering in your application, always import from `/core`.
+The 3D parts need three.js and React Three Fiber in addition. `/core` has the parts without 3D:
 
 ```typescript
 import {
@@ -40,6 +40,8 @@ pnpm add three three-stdlib @react-three/fiber @react-three/drei
 ```
 
 You can also import from the top-level package, but then you'll need to provide all optional dependencies.
+
+An app that installs no three.js imports from `/session` and from the entry points of single components instead of `/core`, see [Without three.js or without React](#without-threejs-or-without-react).
 
 The parts use the theme of your app. Create it with `createNovaMuiTheme` of `@wandelbots/mui`:
 
@@ -66,7 +68,8 @@ Browse the full icon set at https://wandelbotsgmbh.github.io/nova-design-system/
 **Available Entry Points:**
 
 - **`.`** (Main) — All components. Requires the peer dependencies of `/core` and `/3d`.
-- **`/core`** — The parts without 3D (jogging, `SafetyBar`, `AppHeader`, `LoadingCover`, `NoMotionGroupModal`), the NOVA connections and `JoggingStore`, the motion state helpers and `i18n`.
+- **`/core`** — The parts without 3D (jogging, `SafetyBar`, `AppHeader`, `LoadingCover`, `NoMotionGroupModal`), the NOVA connections and `JoggingStore`, the motion state helpers and `i18n`. Draws nothing in 3D, but still needs three.js installed (see [Without three.js or without React](#without-threejs-or-without-react)).
+- **`/session`** — The library without React: a robot of a NOVA cell, loaded and connected (`loadRobotSession`, `RobotSession` with its description, live state, safety, activation, jogging and Move to), `JoggingStore`, `TrajectoryExecutionStore`, the NOVA connections (`ControllerStateStream`, `JoggerConnection`, `MotionStreamConnection`), the pose math and the motion state helpers. Loads no React, no MUI and no three.js. `/core` exports all of it as well.
 - **`/3d`** — The 3D parts (`Robot`, `MotionGroupVisualizer`, `SafetyZonesRenderer`, …). Requires in addition three, three-stdlib, @react-three/fiber and @react-three/drei.
 - **`/nats`** — A robot's live controller state over NOVA's NATS server (`natsControllerStateSource`, `natsUrlOf`), a source for `ControllerStateStream` of `/core` instead of its websocket (`controllerStateWebsocket`). Requires in addition nats.ws; no other entry point loads it.
 - **`/SafetyBar`** — Only `SafetyBar` (also as the default export).
@@ -81,6 +84,21 @@ A component's own entry point brings only what that component needs, e.g. `/Jogg
 import JoggingJointSlider from "@wandelbots/wandelbots-js-react-components/JoggingJointSlider"
 ```
 
+### Without three.js or without React
+
+- **An app without a 3D view** needs no three.js. It takes the robot from `/session` and its parts from the component entry points that draw nothing in 3D: `/RobotHeader`, `/CurrentPose`, `/CurrentPoseBar`, `/SafetyBar`, `/JoggingButtons` and `/JoggingJointSlider`.
+- **`/core` needs three.js installed**, although it draws nothing in 3D: the deprecated `ConnectedMotionGroup` that it exports gives a three.js quaternion (`mountingQuaternion`). That ends when `ConnectedMotionGroup` is removed.
+- **An app without React**, or with a UI of its own, uses `/session` alone (and `/nats`). Of the peer dependencies it loads only `mobx`:
+
+```typescript
+import { loadRobotSession } from "@wandelbots/wandelbots-js-react-components/session"
+
+const load = loadRobotSession("https://my-instance.wandelbots.io", "0@ur5e")
+const session = await load.ready
+console.log(session.state.displayedTcpPose)
+load.dispose()
+```
+
 ### Peer dependencies
 
 | Package | Version |
@@ -91,7 +109,7 @@ import JoggingJointSlider from "@wandelbots/wandelbots-js-react-components/Joggi
 | `@wandelbots/mui` | ^2 |
 | `mobx` | ^6.13.6 |
 | `mobx-react-lite` | ^4.1.0 |
-| `three` (only `/3d`, `/JoggingGizmo`, `/RobotControlPanel`) | >=0.182 |
+| `three` (only `/3d`, `/JoggingGizmo`, `/RobotControlPanel`, and `/core` until `ConnectedMotionGroup` is removed) | >=0.182 |
 | `three-stdlib` (only `/3d`) | >=2 |
 | `@react-three/fiber` (only `/3d`, `/JoggingGizmo`, `/RobotControlPanel`) | ^9 |
 | `@react-three/drei` (only `/3d`) | ^10 |
