@@ -117,13 +117,12 @@ export const JoggingPanel = externalizeComponent(
 
     useEffect(() => {
       const store = state.joggingStore
-      if (!store) return
+      if (!store || !props.locked) return
 
-      if (props.locked) {
-        store.lock("external")
-      } else {
-        store.unlock("external")
-      }
+      store.lock("external")
+      // Also when the panel goes away: a store of `props.store` lives on,
+      // and other controls jog with it
+      return () => store.unlock("external")
     }, [state.joggingStore, props.locked])
 
     return (

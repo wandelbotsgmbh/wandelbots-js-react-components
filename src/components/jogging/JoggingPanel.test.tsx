@@ -331,6 +331,40 @@ describe("JoggingPanel", () => {
     })
   })
 
+  describe("The lock of the panel", () => {
+    const panel = (store: JoggingStore, locked: boolean) => (
+      <JoggingPanel
+        nova="https://mock.example.com"
+        motionGroupId="0@mock-ur5e"
+        store={store}
+        locked={locked}
+      />
+    )
+
+    it("locks the store while `locked` is set", async () => {
+      const store = createUr5eStore()
+      const { rerender } = render(panel(store, true))
+      await screen.findByTestId("jogging-tabs")
+      expect(store.isLocked).toBe(true)
+
+      rerender(panel(store, false))
+      expect(store.isLocked).toBe(false)
+    })
+
+    // A store that the app gives the panel lives on, e.g. to keep its state
+    // while the panel is hidden: other controls jog with it
+    it("leaves a store of the app unlocked when the panel goes away while locked", async () => {
+      const store = createUr5eStore()
+      const { unmount } = render(panel(store, true))
+      await screen.findByTestId("jogging-tabs")
+      expect(store.isLocked).toBe(true)
+
+      unmount()
+
+      expect(store.isLocked).toBe(false)
+    })
+  })
+
   // ---- Blocking ----
 
   describe("Blocking", () => {
