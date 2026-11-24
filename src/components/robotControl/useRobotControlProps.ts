@@ -36,15 +36,20 @@ export type RobotControlOptions = {
   gizmoOrientation?: RobotControlPanelProps["gizmoOrientation"]
 }
 
-/** The joints of a six-axis robot arm, as the design names them */
-const SIX_AXIS_NAMES = [
-  "Base",
-  "Shoulder",
-  "Elbow",
-  "Forearm",
-  "Wrist",
-  "Flange",
-]
+/**
+ * The joints of a six-axis robot arm, as the design names them, in the
+ * user's language
+ */
+function sixAxisNames(t: TFunction) {
+  return [
+    t("RobotControl.Joint.Base.lb"),
+    t("RobotControl.Joint.Shoulder.lb"),
+    t("RobotControl.Joint.Elbow.lb"),
+    t("RobotControl.Joint.Forearm.lb"),
+    t("RobotControl.Joint.Wrist.lb"),
+    t("RobotControl.Joint.Flange.lb"),
+  ]
+}
 
 // The selected TCP and the coordinate systems in one select
 const SELECTED_TCP = "selected-tcp"
@@ -143,6 +148,9 @@ export function useRobotControlProps(
   const linear = store.jointType === JointTypeEnum.PrismaticJoint
   const jointLimits =
     store.motionGroupDescription.operation_limits.auto_limits?.joints
+  // Only a six-axis arm has joints of these names
+  const jointNames =
+    jointValues.length === 6 && !linear ? sixAxisNames(t) : undefined
 
   // Jogging waits while a trajectory moves the robot (jogDisabled); Move to
   // stays usable, so its own move goes on
@@ -420,10 +428,7 @@ export function useRobotControlProps(
         value,
         min: jointLimits?.[index]?.position?.lower_limit,
         max: jointLimits?.[index]?.position?.upper_limit,
-        name:
-          jointValues.length === SIX_AXIS_NAMES.length && !linear
-            ? SIX_AXIS_NAMES[index]
-            : undefined,
+        name: jointNames?.[index],
       })),
       linear,
       velocity: linear

@@ -655,6 +655,37 @@ describe("useRobotControlProps", () => {
     expectJogging(false)
   })
 
+  it("names the joints of a six-axis arm as the design does, in the user's language", async () => {
+    const session = await loadSession()
+    const { result, rerender } = renderHook(() => useRobotControlProps(session))
+    const names = () => {
+      rerender()
+      return result.current.joints?.joints.map((joint) => joint.name)
+    }
+
+    expect(names()).toEqual([
+      "Base",
+      "Shoulder",
+      "Elbow",
+      "Forearm",
+      "Wrist",
+      "Flange",
+    ])
+
+    await act(() => i18n.changeLanguage("de"))
+    onTestFinished(async () => {
+      await i18n.changeLanguage("en")
+    })
+    expect(names()).toEqual([
+      "Basis",
+      "Schulter",
+      "Ellbogen",
+      "Unterarm",
+      "Handgelenk",
+      "Flansch",
+    ])
+  })
+
   // The gizmo's handles must point where the jogger moves the TCP: the
   // jogger takes a coordinate system without an orientation as not turned,
   // and an orientation without a type as a rotation vector (see Pose3)
