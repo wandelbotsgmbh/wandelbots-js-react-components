@@ -148,6 +148,33 @@ describe("RobotControlPanel's state", () => {
     expect(tcpSelect()).not.toHaveAttribute("aria-disabled", "true")
   })
 
+  // A step goes on when the tab changes. A joint jog would be refused
+  // meanwhile, and its release would stop the step.
+  it("turns the joint sliders off while a step runs, and on again after it", () => {
+    const joints = {
+      joints: [{ value: 0, min: -2, max: 2 }],
+      velocity: { value: 0.5, min: 0.01, max: 1 },
+      onVelocityChange: vi.fn(),
+      onJogStart: vi.fn(),
+      onJogStop: vi.fn(),
+    }
+    const { rerender } = setup({
+      jogMode: "increment",
+      increments: increments({ running: { axis: "z", direction: "+" } }),
+      joints,
+    })
+    const slider = () => screen.getByRole("slider", { name: "J1" })
+
+    fireEvent.click(tab("Joint"))
+
+    expect(slider()).toHaveAttribute("aria-disabled", "true")
+    // What moves nothing stays usable
+    expect(screen.getByRole("slider", { name: "Velocity" })).toBeEnabled()
+
+    rerender({ increments: increments() })
+    expect(slider()).not.toHaveAttribute("aria-disabled", "true")
+  })
+
   it("with jogDisabled, jogs nothing but still moves to a pose", async () => {
     const onMoveStart = vi.fn()
     const onMoveStop = vi.fn()

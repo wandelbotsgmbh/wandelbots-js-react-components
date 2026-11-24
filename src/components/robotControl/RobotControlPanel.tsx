@@ -61,8 +61,8 @@ export type RobotControlIncrements = {
   ) => void
   /**
    * The step that runs now: its control shows as pressed, and the jog
-   * controls and the TCP select are off until it is over, as only one step
-   * runs at a time
+   * controls, the joint sliders and the TCP select are off until it is
+   * over, as only one step runs at a time
    */
   running?: JogHandle | null
   /**
@@ -470,7 +470,9 @@ export const RobotControlPanel = externalizeComponent(
             <JointJogTab
               joints={joints}
               disabled={disabled}
-              jogDisabled={jogDisabled}
+              // One step runs at a time, also when the tab changes: a joint
+              // jog waits for it, as the jog controls of the other tabs do
+              jogDisabled={jogDisabled || Boolean(props.increments?.running)}
               disabledReason={jogDisabledNotice}
             />
           ) : tab === "moveTo" && moveTo ? (

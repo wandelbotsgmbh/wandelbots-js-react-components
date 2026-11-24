@@ -1383,6 +1383,31 @@ describe("a start that is refused", () => {
     await step
   })
 
+  // A control that is released after a refused press still stops: the stop
+  // belongs to no held jog then, and the jogger's stop would pause the step
+  it("leaves a running step alone when the press of a refused held jog is released", async () => {
+    const jogger = createMockJogger()
+    const store = createStore({ jogger })
+    const moving = deferred()
+    vi.mocked(jogger.runIncrementalCartesianMotion).mockReturnValue(
+      moving.promise,
+    )
+    const step = store.runIncrementalCartesianJog("translate", "x", "+", tenMm)
+    await flush()
+    await refusalOf(store.startJointJogging(0, "+"))
+
+    await store.stopJogging()
+
+    expect(jogger.stop).not.toHaveBeenCalled()
+    expect(jogger.mode).toBe("trajectory")
+    moving.resolve()
+    await step
+
+    // A stop with no step stops as before
+    await store.stopJogging()
+    expect(jogger.stop).toHaveBeenCalledOnce()
+  })
+
   // The jogging websocket takes about 0.1 to 0.5 s to open, and NOVA holds
   // the controller in control mode for as long as it is open
   describe("once the jogging connection is open", () => {

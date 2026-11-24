@@ -746,11 +746,15 @@ export class JoggingStore {
    *
    * A start that comes while the robot is told to stop keeps the websocket,
    * e.g. a joint slider that turns around stops and starts in one event.
+   *
+   * A step that runs is no held jog, and is left alone: a held jog is
+   * refused meanwhile, so the stop of its control belongs to none.
    */
   async stopJogging() {
     const press = ++this.jogPress
     this.stoppedLast = true
-    await this.jogger.stop()
+    // The jogger's stop would pause the step
+    if (!this.runningStep) await this.jogger.stop()
     if (press !== this.jogPress) return
     await this.deactivate()
   }
