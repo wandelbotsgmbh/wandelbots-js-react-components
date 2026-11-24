@@ -70,7 +70,7 @@ export function BuildingBlocksPage({ instance, session }: PageProps) {
   const jointSliders = (
     <Section
       title="JoggingJointSlider"
-      description="Joint 1 as a slider across its limits; an app shows one per joint. Hover the track to see the goal under the pointer; press there to jog the joint toward it until it gets there or you let go. While held, the goal follows the pointer. A held arrow key jogs the focused slider toward a limit. Below it, joint 2, disabled."
+      description="Joint 1 as a slider across its limits; an app shows one per joint. Hover the track to see the goal under the pointer; press there to jog the joint toward it until it gets there or you let go. While held, the goal follows the pointer; a pointer that leaves the slider stops the joint, as letting go does. Below it, joint 2, disabled."
     >
       <JointSliders store={store} />
     </Section>

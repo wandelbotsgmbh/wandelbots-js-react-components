@@ -279,8 +279,9 @@ test("turns JoggingGizmo like the tool when it jogs along the tool's axes", asyn
     )
     .toBeGreaterThan(20)
 
-  // Holding Z+ moves the TCP along the tool's Z. By keyboard: in a turned
-  // frame, Z can point at the viewer, and then a press reaches no handle.
+  // Holding a handle moves the TCP along the tool's axes. In a turned frame
+  // an axis can point at the viewer, and no press reaches its handle then:
+  // hold the first handle that the pointer reaches.
   const axisControls = section(page, "JoggingCartesianAxisControl")
   const position = async () =>
     Promise.all(
@@ -295,25 +296,29 @@ test("turns JoggingGizmo like the tool when it jogs along the tool's axes", asyn
       ),
     )
   const before = await position()
-  await handles[2].focus()
-  await page.keyboard.down(" ")
-  try {
-    await expect
-      .poll(
-        async () => {
-          const now = await position()
-          return now.reduce((sum, v, i) => sum + Math.abs(v - before[i]), 0)
-        },
-        {
-          message: "The TCP moves while Z+ is held",
-          // On a CI runner, the jogging connection can need more than 10 s
-          timeout: 30_000,
-        },
+  let reached: Locator | undefined
+  for (const handle of handles) {
+    await handle.scrollIntoViewIfNeeded()
+    const underThePointer = await handle.evaluate((element) => {
+      const box = element.getBoundingClientRect()
+      const hit = document.elementFromPoint(
+        box.x + box.width / 2,
+        box.y + box.height / 2,
       )
-      .toBeGreaterThan(3)
-  } finally {
-    await page.keyboard.up(" ")
+      return hit !== null && element.contains(hit)
+    })
+    if (underThePointer) {
+      reached = handle
+      break
+    }
   }
+  if (!reached) {
+    throw new Error("No handle of the tool's axes is under the pointer")
+  }
+  await jogPress(page, reached, async () => {
+    const now = await position()
+    return now.reduce((sum, v, i) => sum + Math.abs(v - before[i]), 0) > 3
+  })
   await screenshot(page, "building-blocks-gizmo-tool")
 })
 
