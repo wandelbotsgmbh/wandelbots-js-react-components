@@ -56,16 +56,23 @@ export type RobotControlJoints = {
 };
 
 // @public
+export type RobotControlJointTarget = {
+    joints: number[];
+};
+
+// @public
 export type RobotControlMoveState = "idle" | "planning" | "planned" | "moving" | "stopping";
 
 // @public
 export type RobotControlMoveTo = {
     getCurrentPose: () => RobotControlPose | null;
+    getCurrentJoints?: () => number[] | null;
     frame?: RobotControlSelect;
-    onTargetChange: (pose: RobotControlPose | null) => void;
+    onTargetChange: (target: RobotControlTarget | null) => void;
     state: RobotControlMoveState;
     error?: string | null;
-    onMoveStart: (pose: RobotControlPose) => void;
+    notMoveableReason?: string | null;
+    onMoveStart: (target: RobotControlTarget) => void;
     onMoveStop: () => void;
 };
 
@@ -121,6 +128,9 @@ export type RobotControlSelect = {
 
 // @public
 export type RobotControlTab = JogMotion | "joint" | "moveTo";
+
+// @public
+export type RobotControlTarget = RobotControlPose | RobotControlJointTarget;
 
 // @public
 export type RobotControlVelocity = {

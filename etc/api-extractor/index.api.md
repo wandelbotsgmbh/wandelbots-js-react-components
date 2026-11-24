@@ -1051,16 +1051,23 @@ export type RobotControlJoints = {
 };
 
 // @public
+export type RobotControlJointTarget = {
+    joints: number[];
+};
+
+// @public
 export type RobotControlMoveState = "idle" | "planning" | "planned" | "moving" | "stopping";
 
 // @public
 export type RobotControlMoveTo = {
     getCurrentPose: () => RobotControlPose | null;
+    getCurrentJoints?: () => number[] | null;
     frame?: RobotControlSelect;
-    onTargetChange: (pose: RobotControlPose | null) => void;
+    onTargetChange: (target: RobotControlTarget | null) => void;
     state: RobotControlMoveState;
     error?: string | null;
-    onMoveStart: (pose: RobotControlPose) => void;
+    notMoveableReason?: string | null;
+    onMoveStart: (target: RobotControlTarget) => void;
     onMoveStop: () => void;
 };
 
@@ -1125,6 +1132,9 @@ export type RobotControlSelect = {
 
 // @public
 export type RobotControlTab = JogMotion | "joint" | "moveTo";
+
+// @public
+export type RobotControlTarget = RobotControlPose | RobotControlJointTarget;
 
 // @public
 export type RobotControlVelocity = {
@@ -1616,7 +1626,7 @@ export class TrajectoryExecutionStore {
     constructor(options: TrajectoryExecutionStoreOptions);
     clearError(): void;
     dispose(): void;
-    get executionState(): "PAUSED_BY_USER" | "PAUSED_NEAR_COLLISION" | "PAUSED_NEAR_JOINT_LIMIT" | "PAUSED_NEAR_SINGULARITY" | "PAUSED_ON_IO" | "RUNNING" | "END_OF_TRAJECTORY" | "WAIT_FOR_IO" | undefined;
+    get executionState(): "END_OF_TRAJECTORY" | "PAUSED_BY_USER" | "PAUSED_ON_IO" | "RUNNING" | "WAIT_FOR_IO" | "PAUSED_NEAR_COLLISION" | "PAUSED_NEAR_JOINT_LIMIT" | "PAUSED_NEAR_SINGULARITY" | undefined;
     hold(target?: TrajectoryTarget): boolean;
     get holdsExecutionSession(): boolean;
     get isPlanOutdated(): boolean;
