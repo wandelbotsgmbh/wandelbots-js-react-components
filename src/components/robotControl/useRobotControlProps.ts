@@ -232,6 +232,8 @@ export function useRobotControlProps(
     lastIncrement.current = store.activeDiscreteIncrement
   }
   const increment = lastIncrement.current
+  // The steps that the panel started and that are not over yet
+  const ownSteps = useRef(0)
 
   /**
    * The store's increment of a step size of the panel: mm to translate, rad
@@ -426,11 +428,26 @@ export function useRobotControlProps(
       onStep: (motion, axis, direction, distance) => {
         const increment = incrementOf(motion, distance)
         if (!increment) return
-        follow(
-          store.runIncrementalCartesianJog(motion, axis, direction, increment),
+        ownSteps.current++
+        const step = store.runIncrementalCartesianJog(
+          motion,
+          axis,
+          direction,
+          increment,
         )
+        follow(step)
+        step
+          .finally(() => {
+            ownSteps.current--
+          })
+          .catch(() => {})
       },
       running: store.incrementJogInProgress,
+      // The panel goes away: a step of the panel stops, as by its starter;
+      // one of another part of the app goes on
+      onStepStop: () => {
+        if (ownSteps.current > 0) follow(store.stopIncrementalJog())
+      },
       // The store's increments pair a distance with an angle
       step: increment && {
         translate: increment.mm,

@@ -5,7 +5,7 @@ import Tab from "@mui/material/Tab"
 import Tabs from "@mui/material/Tabs"
 import Typography from "@mui/material/Typography"
 import { CloseFilled } from "@wandelbots/icons/CloseFilled"
-import { type RefObject, useState } from "react"
+import { type RefObject, useEffect, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import type { Quaternion } from "three"
 import { externalizeComponent } from "../../externalizeComponent"
@@ -65,6 +65,13 @@ export type RobotControlIncrements = {
    * over, as only one step runs at a time
    */
   running?: JogHandle | null
+  /**
+   * The panel goes away while a step runs (`running`): stop it if the panel
+   * started it (`onStep`), as a held jog stops when its control goes away.
+   * Not when the tab changes: a step goes on there. Without it, the step
+   * runs to its end.
+   */
+  onStepStop?: () => void
   /**
    * The chosen step size of a motion, one of its `steps`. Without it, the
    * panel keeps its own choice (the first step to start with).
@@ -359,6 +366,18 @@ export const RobotControlPanel = externalizeComponent(
         disabled={disabled}
       />
     ) : undefined
+
+    // A step that runs when the panel goes away gets its stop, as a held
+    // jog does when its control goes away; the tabs come and go, the step
+    // goes on
+    const increments = useRef(props.increments)
+    increments.current = props.increments
+    useEffect(
+      () => () => {
+        if (increments.current?.running) increments.current.onStepStop?.()
+      },
+      [],
+    )
 
     function changeTab(next: RobotControlTab) {
       setOwnTab(next)

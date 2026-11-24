@@ -1260,6 +1260,51 @@ describe("a step that the robot may no longer make", () => {
     await stopped
     expect(over).toBe(true)
   })
+
+  // As a held jog stops on its release: e.g. the panel that started the
+  // step goes away
+  it("is stopped by its starter: paused while it runs, and over once the robot stands still", async () => {
+    const jogger = createMockJogger()
+    const store = createStore({ jogger })
+    const { refusedReason, step, end } = await runningStep(store)
+
+    const stopped = store.stopIncrementalJog()
+    await flush()
+
+    expect(jogger.stop).toHaveBeenCalledOnce()
+    // The jogger sends nothing more of it
+    expect(refusedReason()).not.toBeNull()
+    await end()
+    await stopped
+    await expect(step).resolves.toBeUndefined()
+  })
+
+  it("moves nothing when its starter stops it before it went to NOVA, and is no refusal", async () => {
+    const jogger = createMockJogger()
+    const store = createStore({ jogger })
+    const ending = deferred()
+    store.onBeforeActivate = () => ending.promise
+    // As the jogger: it asks the step's check before the trajectory goes out
+    let sent = false
+    vi.mocked(jogger.runIncrementalCartesianMotion).mockImplementation(
+      async (request) => {
+        const reason = request.refusedReason?.()
+        if (reason) throw new JoggingRefusedError(reason)
+        sent = true
+      },
+    )
+    const step = store.runIncrementalCartesianJog("translate", "x", "+", tenMm)
+    await flush()
+
+    const stopped = store.stopIncrementalJog()
+    ending.resolve()
+
+    await expect(step).resolves.toBeUndefined()
+    await stopped
+    expect(sent).toBe(false)
+    expect(store.isLocked).toBe(false)
+    expect(store.incrementJogInProgress).toBeNull()
+  })
 })
 
 // NOVA switches a controller to control mode by itself for a movement

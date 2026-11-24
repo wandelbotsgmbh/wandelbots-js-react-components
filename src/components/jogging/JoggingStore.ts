@@ -104,6 +104,14 @@ export type JoggingStoreOptions = {
 /** The key of the jogging settings in the storage */
 const SETTINGS_KEY = "joggingToolStore"
 
+/**
+ * What the jogger is told of a step that its starter stopped (see
+ * `JoggingStore.stopIncrementalJog`), so that it sends nothing more of it.
+ * The store tells it by this very object, and passes it on to nobody: such
+ * a step resolves, as a held jog that is released before it moves.
+ */
+const STOPPED_BY_ITS_STARTER: JoggingRefusedReason = { code: "locked" }
+
 /** `localStorage`, where the environment has one (not in Node) */
 const defaultStorage = (): JoggingStoreStorage | undefined =>
   typeof localStorage === "undefined" ? undefined : localStorage
@@ -380,7 +388,7 @@ export class JoggingStore {
    * `stopIncrementalJog`, and resolves once it is over
    */
   private runningStep: {
-    stop: (reason: JoggingRefusedReason) => void
+    stop: (reason?: JoggingRefusedReason) => void
     over: Promise<void>
   } | null = null
 
@@ -855,6 +863,13 @@ export class JoggingStore {
           // The jogger asks right before the step goes to NOVA
           refusedReason: step.refusedReason,
         })
+      } catch (error) {
+        // Its starter stopped it before it went to NOVA: it moved nothing,
+        // as a held jog that is released before its websocket is open
+        if (step.stoppedByStarter() && error instanceof JoggingRefusedError) {
+          return
+        }
+        throw error
       } finally {
         step.end()
         this.setCurrentIncrementJog(null)
@@ -864,15 +879,20 @@ export class JoggingStore {
   }
 
   /**
-   * Stops the step that runs, as when the robot may no longer move (see
-   * {@link JoggingStore.runIncrementalCartesianJog}), and resolves once it
-   * is over: the robot stands still and its trajectory websocket is closed.
-   * Resolves at once without a step.
-   * @internal For the store's robot session: a step holds the controller in
+   * Stops the step that runs, and resolves once it is over: the robot
+   * stands still and its trajectory websocket is closed. Resolves at once
+   * without a step.
+   *
+   * With a reason, as when the robot may no longer move (see
+   * {@link JoggingStore.runIncrementalCartesianJog}): a step that has not
+   * gone to NOVA yet rejects with a {@link JoggingRefusedError} of it.
+   * Without one, its starter stops it, as the release of a held jog: a step
+   * that has not gone to NOVA yet moves nothing and resolves.
+   * @internal For the store's robot session (a step holds the controller in
    * control mode, and NOVA runs it to its end, so it goes before the robot
-   * is deactivated
+   * is deactivated), and for the panel that started the step
    */
-  async stopIncrementalJog(reason: JoggingRefusedReason) {
+  async stopIncrementalJog(reason?: JoggingRefusedReason) {
     const step = this.runningStep
     if (!step) return
     step.stop(reason)
@@ -890,7 +910,7 @@ export class JoggingStore {
     let stoppedFor: JoggingRefusedReason | null = null
     let ended = () => {}
     const step = {
-      stop: (reason: JoggingRefusedReason) => {
+      stop: (reason = STOPPED_BY_ITS_STARTER) => {
         if (stoppedFor) return
         stoppedFor = reason
         // Pauses a step that NOVA runs. One that it has not started yet
@@ -913,6 +933,7 @@ export class JoggingStore {
 
     return {
       refusedReason: () => stoppedFor ?? this.refusedReason(lock),
+      stoppedByStarter: () => stoppedFor === STOPPED_BY_ITS_STARTER,
       end: () => {
         stopWatching()
         if (this.runningStep === step) this.runningStep = null

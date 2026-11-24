@@ -245,6 +245,42 @@ describe("RobotControl", () => {
     expect(field).toHaveValue("(400, 0, 310, 3.1416, 0, 0)")
   })
 
+  // A held jog stops when its control goes away with the panel; NOVA runs
+  // a step to its end, a 10 mm step at 1 mm/s for 10 s
+  it("stops the step that it started when it is closed", async () => {
+    const harness = makeHarness()
+    const session = await harness.load().ready
+    onTestFinished(() => session.dispose())
+    act(() => harness.source.send(controllerState({ mode: "MODE_CONTROL" })))
+    const { jogger } = session.jogging
+    vi.spyOn(jogger, "setOptions").mockResolvedValue(undefined as never)
+    vi.spyOn(jogger, "setJoggingMode").mockResolvedValue(undefined as never)
+    const stop = vi.spyOn(jogger, "stop").mockResolvedValue(undefined)
+    let stepOver: () => void = () => {}
+    const step = vi
+      .spyOn(jogger, "runIncrementalCartesianMotion")
+      .mockImplementation(
+        () =>
+          new Promise<void>((resolve) => {
+            stepOver = resolve
+          }),
+      )
+    session.jogging.setSelectedIncrementId("10")
+    const { unmount } = render(<RobotControl session={session} />)
+
+    fireEvent.pointerDown(screen.getByRole("button", { name: "Jog X+" }), {
+      button: 0,
+      pointerId: 1,
+    })
+    await waitFor(() => expect(step).toHaveBeenCalledOnce())
+    expect(stop).not.toHaveBeenCalled()
+
+    unmount()
+
+    expect(stop).toHaveBeenCalledOnce()
+    stepOver()
+  })
+
   it("says what is missing without a session", () => {
     vi.spyOn(console, "error").mockImplementation(() => {})
 

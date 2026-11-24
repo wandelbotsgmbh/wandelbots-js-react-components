@@ -272,6 +272,55 @@ describe("useRobotControlProps", () => {
     expect(onError).not.toHaveBeenCalled()
   })
 
+  // The panel asks when it goes away while a step runs: a step of another
+  // part of the app goes on
+  it("stops the step that it started when the panel asks, and no other", async () => {
+    const session = await loadSession()
+    const { jogger } = session.jogging
+    vi.spyOn(jogger, "setOptions").mockResolvedValue(undefined as never)
+    vi.spyOn(jogger, "setJoggingMode").mockResolvedValue(undefined as never)
+    const stop = vi.spyOn(jogger, "stop").mockResolvedValue(undefined)
+    let stepOver: () => void = () => {}
+    vi.spyOn(jogger, "runIncrementalCartesianMotion").mockImplementation(
+      () =>
+        new Promise<void>((resolve) => {
+          stepOver = resolve
+        }),
+    )
+    const { result } = renderHook(() => useRobotControlProps(session))
+
+    /** A step of another part of the app, which the panel leaves alone */
+    async function otherStepGoesOn() {
+      const other = session.jogging.runIncrementalCartesianJog(
+        "translate",
+        "x",
+        "+",
+        session.jogging.discreteIncrementOptions[3],
+      )
+      await flush()
+      const stops = stop.mock.calls.length
+      act(() => result.current.increments?.onStepStop?.())
+      await flush()
+      expect(stop).toHaveBeenCalledTimes(stops)
+      stepOver()
+      await other
+    }
+
+    await otherStepGoesOn()
+
+    // The panel's own
+    act(() => result.current.increments?.onStep("translate", "x", "+", 10))
+    await flush()
+    act(() => result.current.increments?.onStepStop?.())
+    await flush()
+    expect(stop).toHaveBeenCalledOnce()
+    stepOver()
+    await flush()
+
+    // Once the panel's step is over, a step of another part is none of it
+    await otherStepGoesOn()
+  })
+
   it("reports a jog that failed to the session's onError", async () => {
     const onError = vi.fn()
     const session = await loadSession({ onError })

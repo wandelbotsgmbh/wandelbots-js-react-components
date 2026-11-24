@@ -37,6 +37,7 @@ function setup(props: Props = {}) {
   return {
     ...base,
     rerender: (p: Props) => view.rerender(panel({ ...props, ...p })),
+    unmount: view.unmount,
   }
 }
 
@@ -146,6 +147,40 @@ describe("RobotControlPanel's state", () => {
     press(button("Jog X+"))
     expect(idle.onStep).toHaveBeenCalledOnce()
     expect(tcpSelect()).not.toHaveAttribute("aria-disabled", "true")
+  })
+
+  // As a held jog stops when its control goes away with the panel. A step
+  // goes on when the tab changes.
+  it("asks to stop the running step when the panel goes away, not when the tab changes", () => {
+    const onStepStop = vi.fn()
+    const { unmount, rerender } = setup({
+      jogMode: "increment",
+      increments: increments({ onStepStop }),
+    })
+    rerender({
+      increments: increments({
+        onStepStop,
+        running: { axis: "z", direction: "+" },
+      }),
+    })
+
+    fireEvent.click(tab("Rotate"))
+    expect(onStepStop).not.toHaveBeenCalled()
+
+    unmount()
+    expect(onStepStop).toHaveBeenCalledOnce()
+  })
+
+  it("asks to stop nothing when the panel goes away without a running step", () => {
+    const onStepStop = vi.fn()
+    const { unmount } = setup({
+      jogMode: "increment",
+      increments: increments({ onStepStop }),
+    })
+
+    unmount()
+
+    expect(onStepStop).not.toHaveBeenCalled()
   })
 
   // A step goes on when the tab changes. A joint jog would be refused
