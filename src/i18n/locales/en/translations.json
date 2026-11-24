@@ -126,5 +126,8 @@
   "Jogging.MoveRelativeTo.SelectedTcp.dd": "Selected TCP",
   "ConnectionWarning.Interrupted.ti": "Connection interrupted",
   "ConnectionWarning.LastUpdate.lb": "Communication with the robot controller interrupted. The last motion update was received {{time}}.",
-  "ConnectionWarning.ErrorState.lb": "Error message from {{time}}:"
+  "ConnectionWarning.ErrorState.lb": "Error message from {{time}}:",
+  "RobotView.WebGLUnavailable.ti": "3D view not available",
+  "RobotView.WebGLUnavailable.pg": "Activate WebGL in your browser to display the 3D model. If neither the browser nor graphics driver support WebGL, update the graphics driver and switch to another browser.",
+  "RobotView.WebGLUnavailable.Reload.bt": "Reload"
 }

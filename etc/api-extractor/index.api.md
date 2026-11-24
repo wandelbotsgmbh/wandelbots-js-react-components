@@ -41,7 +41,7 @@ import type { SafetyStateType } from '@wandelbots/nova-js/v2';
 import Stack from '@mui/material/Stack';
 import { SxProps } from '@mui/material/styles';
 import { TcpOffset } from '@wandelbots/nova-js/v2';
-import type { Theme } from '@mui/material/styles';
+import { Theme } from '@mui/material/styles';
 import * as THREE from 'three';
 import type { ThreeElements } from '@react-three/fiber';
 import type { TrajectoryDetailsState } from '@wandelbots/nova-js/v2';
@@ -987,6 +987,19 @@ export function robotActivationOf(session: RobotSession): RobotHeaderActivation;
 export type RobotActivationState = "inactive" | "activating" | "deactivating" | "active";
 
 // @public
+export const RobotCanvas: (input: RobotCanvasProps) => JSX.Element;
+
+// @public
+export type RobotCanvasProps = {
+    orbitTarget?: [number, number, number];
+    antialias?: boolean;
+    onContextLost?: () => void;
+    onWebGLUnavailable?: (context: "preflight" | "renderer") => void;
+    children?: ReactNode;
+    sx?: SxProps<Theme>;
+};
+
+// @public
 export const RobotControl: FunctionComponent<RobotControlProps>;
 
 // @public
@@ -1476,6 +1489,12 @@ export type RobotTcpLike = {
     position: Vector3Simple;
     orientation: Vector3Simple;
 };
+
+// @public
+export const RobotView: FunctionComponent<RobotViewProps>;
+
+// @public
+export type RobotViewProps = RobotSceneProps & Omit<RobotCanvasProps, "orbitTarget">;
 
 // @public (undocumented)
 export const SafetyBar: ((input: SafetyBarProps) => JSX.Element) & {

@@ -125,5 +125,8 @@
   "Jogging.MoveRelativeTo.SelectedTcp.dd": "Ausgewählter TCP",
   "ConnectionWarning.Interrupted.ti": "Verbindung unterbrochen",
   "ConnectionWarning.LastUpdate.lb": "Kommunikation mit der Robotersteuerung nicht möglich. Die letzte Bewegungsmeldung kam {{time}}.",
-  "ConnectionWarning.ErrorState.lb": "Fehlermeldung {{time}}:"
+  "ConnectionWarning.ErrorState.lb": "Fehlermeldung {{time}}:",
+  "RobotView.WebGLUnavailable.ti": "3D-Ansicht nicht verfügbar",
+  "RobotView.WebGLUnavailable.pg": "Aktiviere WebGL in deinem Browser, damit das 3D-Modell angezeigt werden kann. Wird WebGL von den Grafiktreibern oder vom Browser nicht unterstützt, aktualisiere die Grafiktreiber und wechsle den Browser.",
+  "RobotView.WebGLUnavailable.Reload.bt": "Neu laden"
 }

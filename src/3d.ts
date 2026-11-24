@@ -63,6 +63,15 @@ export {
   type RobotSceneViewProps,
 } from "./components/robotScene/RobotSceneView"
 export { useRobotSceneProps } from "./components/robotScene/useRobotSceneProps"
+// The 3D view of a robot session, ready to use, and its canvas
+export {
+  RobotCanvas,
+  type RobotCanvasProps,
+} from "./components/robotView/RobotCanvas"
+export {
+  RobotView,
+  type RobotViewProps,
+} from "./components/robotView/RobotView"
 export * from "./components/robots/LinearAxis"
 export * from "./components/robots/MotionGroupVisualizer"
 export * from "./components/robots/Robot"
