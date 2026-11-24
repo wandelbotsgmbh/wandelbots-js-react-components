@@ -1507,6 +1507,42 @@ describe("a TCP change", () => {
     expect(store.tcpChangeInProgress).toBe(false)
   })
 
+  // Move to's staged pose holds the controller's execution session, and
+  // NOVA refuses the jogging connection while that is alive: the change
+  // went back after 3 s, with an error
+  it("hands back another motion first, as a jog does", async () => {
+    const jogger = joggerThatConfirms()
+    const store = createStore({ jogger, tcps: [flange, gripper] })
+    const ending = deferred()
+    store.onBeforeActivate = () => ending.promise
+
+    const change = store.requestTcpChange("gripper")
+    await flush()
+    expect(jogger.setJoggingMode).not.toHaveBeenCalled()
+    expect(store.tcpChangeInProgress).toBe(true)
+
+    ending.resolve()
+    await change
+    expect(modeChangesTo(jogger, "jogging")).toHaveLength(1)
+    expect(store.selectedTcpId).toBe("gripper")
+    expect(jogger.mode).toBe("off")
+  })
+
+  it("keeps the TCP and opens no jogging connection when the other motion does not end", async () => {
+    const jogger = joggerThatConfirms()
+    const store = createStore({ jogger, tcps: [flange, gripper] })
+    store.onBeforeActivate = () => Promise.reject(new Error("still moving"))
+
+    await expect(store.requestTcpChange("gripper")).rejects.toThrow(
+      "still moving",
+    )
+
+    expect(jogger.setJoggingMode).not.toHaveBeenCalled()
+    expect(jogger.tcp).toBe("Flange")
+    expect(store.selectedTcpId).toBe("Flange")
+    expect(store.tcpChangeInProgress).toBe(false)
+  })
+
   it("closes the jogging connection and keeps the TCP when the robot may no longer move once the connection is open", async () => {
     const jogger = createMockJogger()
     const open = deferred()

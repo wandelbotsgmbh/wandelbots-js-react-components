@@ -38,6 +38,11 @@ type MoveToTabProps = {
     onChange: (value: number) => void
   }
   disabled: boolean
+  /**
+   * Turns off the TCP select: its change needs the jogging connection, as
+   * on the jog tabs (`jogDisabled` of the panel)
+   */
+  jogDisabled: boolean
 }
 
 type Target = { target: RobotControlTarget; text: string }
@@ -71,6 +76,7 @@ export function MoveToTab({
   onVelocityChange,
   jointVelocity,
   disabled,
+  jogDisabled,
 }: MoveToTabProps) {
   const { t } = useTranslation()
   const [target, setTarget] = useState<Target | null>(null)
@@ -218,7 +224,7 @@ export function MoveToTab({
         <PanelSelect
           label={t("RobotControl.Tcp.lb")}
           {...tcp}
-          disabled={disabled}
+          disabled={disabled || jogDisabled}
         />
       )}
 

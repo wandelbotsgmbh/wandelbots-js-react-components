@@ -212,12 +212,12 @@ export type RobotControlPanelProps = {
   /**
    * Disables the jogging of the Translate, Rotate and Joint tabs, e.g. while
    * the robot is not activated or a trajectory moves it: the gizmo, the
-   * buttons and the joint sliders, and the TCP select, whose change needs
-   * the jogging connection as a jog does. The settings that move nothing
-   * stay usable, so the user can prepare them: the frame to jog along,
-   * Continuous or Increment, the step size and the velocity. Move to stays
-   * usable too: a move of its own must not end because the app locks
-   * jogging while it runs.
+   * buttons and the joint sliders, and the TCP select (also on Move to),
+   * whose change needs the jogging connection as a jog does. The settings
+   * that move nothing stay usable, so the user can prepare them: the frame
+   * to jog along, Continuous or Increment, the step size and the velocity.
+   * Move to's target and button stay usable too: a move of its own must not
+   * end because the app locks jogging while it runs.
    */
   jogDisabled?: boolean
   /**
@@ -497,6 +497,7 @@ export const RobotControlPanel = externalizeComponent(
                     }
               }
               disabled={disabled}
+              jogDisabled={jogDisabled}
             />
           ) : tab === "translate" || tab === "rotate" ? (
             <CartesianJogTab

@@ -279,10 +279,12 @@ export function useRobotControlProps(
   }
 
   /**
-   * Follows a jog that the store runs. One it refuses moves nothing and is
-   * no error to show: the panel shows jogging as off for the same reason.
+   * Follows a jog that the store runs, or a TCP change, which needs the
+   * jogging connection as a jog does. One it refuses moves nothing and is no
+   * error to show: the panel shows jogging and the TCP select as off for the
+   * same reason.
    */
-  function jog(running: Promise<void>) {
+  function follow(running: Promise<void>) {
     running.catch((error: unknown) => {
       if (!(error instanceof JoggingRefusedError)) report(error)
     })
@@ -369,7 +371,7 @@ export function useRobotControlProps(
             options: store.tcps.map((tcp) => ({ id: tcp.id, label: tcp.id })),
             value: store.selectedTcpId,
             onChange: (id) => {
-              store.requestTcpChange(id).catch(report)
+              follow(store.requestTcpChange(id))
             },
           }
         : undefined,
@@ -412,8 +414,8 @@ export function useRobotControlProps(
     // The store jogs: it makes a press that ends before the jogging
     // connection is ready move nothing, and runs one step at a time
     onJogStart: (motion, axis, direction) =>
-      jog(store.startCartesianJogging(motion, axis, direction)),
-    onJogStop: () => jog(store.stopJogging()),
+      follow(store.startCartesianJogging(motion, axis, direction)),
+    onJogStop: () => follow(store.stopJogging()),
     increments: {
       steps: {
         translate: store.discreteIncrementOptions.map((o) => o.mm),
@@ -424,7 +426,7 @@ export function useRobotControlProps(
       onStep: (motion, axis, direction, distance) => {
         const increment = incrementOf(motion, distance)
         if (!increment) return
-        jog(
+        follow(
           store.runIncrementalCartesianJog(motion, axis, direction, increment),
         )
       },
@@ -467,8 +469,8 @@ export function useRobotControlProps(
           ? store.setVelocityFromSlider(value, false)
           : store.setVelocityFromSlider(toDegrees(value), true),
       onJogStart: (joint, direction) =>
-        jog(store.startJointJogging(joint, direction)),
-      onJogStop: () => jog(store.stopJogging()),
+        follow(store.startJointJogging(joint, direction)),
+      onJogStop: () => follow(store.stopJogging()),
     },
     moveTo: {
       getCurrentPose: () => {

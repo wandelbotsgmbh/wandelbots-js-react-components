@@ -263,6 +263,43 @@ describe("RobotControlPanel's state", () => {
     }
   })
 
+  // A TCP change needs the jogging connection, also on Move to; the move
+  // to a target does not
+  it("with jogDisabled, turns off the TCP select of Move to as well, and leaves its target and velocity usable", () => {
+    const onTargetChange = vi.fn()
+    setup({
+      jogDisabled: true,
+      tcp: {
+        options: [
+          { id: "flange", label: "Flange" },
+          { id: "gripper", label: "Gripper" },
+        ],
+        value: "flange",
+        onChange: vi.fn(),
+      },
+      moveTo: {
+        getCurrentPose: () => null,
+        onTargetChange,
+        state: "idle",
+        onMoveStart: vi.fn(),
+        onMoveStop: vi.fn(),
+      },
+    })
+
+    fireEvent.click(tab("Move to"))
+
+    expect(screen.getByRole("combobox", { name: "TCP" })).toHaveAttribute(
+      "aria-disabled",
+      "true",
+    )
+    expect(screen.getByRole("slider", { name: "Velocity" })).toBeEnabled()
+    confirmPose("(1, 2, 3, 0, 0, 0)")
+    expect(onTargetChange).toHaveBeenCalledWith({
+      position: [1, 2, 3],
+      orientation: [0, 0, 0],
+    })
+  })
+
   it("says why jogging is off in place of the hint on Translate and Rotate, and under the joints on Joint", () => {
     const reason = "The robot must be activated first"
     const hint = "Hold a button to jog · Release to stop"

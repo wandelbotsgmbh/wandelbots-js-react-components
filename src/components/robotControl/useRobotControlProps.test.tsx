@@ -971,6 +971,23 @@ describe("useRobotControlProps", () => {
     expect(session.jogging.isLocked).toBe(false)
   })
 
+  // The panel shows the TCP select as off then, as jogging
+  it("reports no TCP change that the session refuses for a robot that may not move", async () => {
+    const harness = makeHarness()
+    const onError = vi.fn()
+    const session = await harness.load({ onError }).ready
+    onTestFinished(() => session.dispose())
+    expect(session.safety.notMoveableReason).toEqual({ code: "deactivated" })
+    const setJoggingMode = vi.spyOn(session.jogging.jogger, "setJoggingMode")
+    const { result } = renderHook(() => useRobotControlProps(session))
+
+    act(() => result.current.tcp?.onChange("Other"))
+    await flush()
+
+    expect(setJoggingMode).not.toHaveBeenCalled()
+    expect(onError).not.toHaveBeenCalled()
+  })
+
   it("reports a failed TCP change to the session's onError", async () => {
     const onError = vi.fn()
     const session = await loadSession({ onError })

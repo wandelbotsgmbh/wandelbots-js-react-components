@@ -1181,6 +1181,8 @@ export class JoggingStore {
    * {@link JoggingRefusedError} as a jog does, while the store is locked or
    * its owner says that the robot may not move: the TCP stays, and no
    * websocket opens (or it closes again, see {@link JoggingStore.activate}).
+   * As for a jog, {@link JoggingStore.onBeforeActivate} ends another motion
+   * first; when it rejects, the TCP stays.
    */
   async requestTcpChange(tcpId: string): Promise<void> {
     if (tcpId === this.selectedTcpId) return
@@ -1190,11 +1192,20 @@ export class JoggingStore {
 
     this.tcpChangeInProgress = true
     const previousTcp = this.jogger.tcp
-    const wasOff = this.jogger.mode !== "jogging"
+    let wasOff = true
+    // Whether this change asked for the jogging websocket, which it closes
+    // again on an error
+    let opening = false
 
     try {
+      // As for a jog: NOVA refuses the jogging connection while e.g. Move
+      // to's staged pose holds the controller's execution session
+      await this.onBeforeActivate?.()
+      wasOff = this.jogger.mode !== "jogging"
+
       // Store the new TCP on the jogger
       this.jogger.tcp = tcpId
+      opening = true
 
       // Jogger is idle — open a jogging websocket to send
       // InitializeJoggingRequest with the new TCP. Jogger is actively
@@ -1229,7 +1240,7 @@ export class JoggingStore {
       })
     } catch (err) {
       // On error, close the websocket if we opened it, revert jogger tcp
-      if (wasOff) {
+      if (opening && wasOff) {
         await this.jogger.setJoggingMode("off").catch(() => {})
       }
       runInAction(() => {
