@@ -27,6 +27,8 @@ import {
   transformPoseToCoordinateSystem,
   transformPoseToTcp,
 } from "../../lib/PoseTransformer"
+import type { RobotNotMoveableReason } from "../../lib/robotSession/RobotSafety"
+import { JoggingRefusedError } from "./JoggingRefusedError"
 import { extractJogErrorMessage, getJogErrorTranslationKey } from "./jogError"
 import {
   DEFAULT_ROTATION_VELOCITY_DEG_PER_SEC,
@@ -85,6 +87,15 @@ export type JoggingStoreOptions = {
    * where they belong, so pass it.
    */
   storage?: JoggingStoreStorage
+  /**
+   * Why the robot may not move right now, or null when it may. The store asks
+   * before it starts a jog, and starts none while there is a reason: the
+   * start rejects with a {@link JoggingRefusedError}. NOVA switches a
+   * controller to control mode by itself for a movement request, so without
+   * this a robot that is not activated jogs. A robot session gives its
+   * safety's reason; a store without it refuses only while it is locked.
+   */
+  notMoveableReason?: () => RobotNotMoveableReason | null
 }
 
 /** The key of the jogging settings in the storage */
@@ -302,6 +313,9 @@ export class JoggingStore {
   /** Where the jogging settings are kept, see {@link JoggingStoreOptions} */
   private readonly storage: JoggingStoreStorage | undefined
 
+  /** Why the robot may not move now, see {@link JoggingStoreOptions} */
+  private readonly notMoveableReason: JoggingStoreOptions["notMoveableReason"]
+
   /**
    * Counts the starts and stops of held jogs, so that each one knows whether
    * it is still the latest when its wait is over: a stop while the jogging
@@ -320,6 +334,7 @@ export class JoggingStore {
     options: JoggingStoreOptions = {},
   ) {
     this.storage = options.storage ?? defaultStorage()
+    this.notMoveableReason = options.notMoveableReason
     // TODO workaround for default coord system on backend having a canonical id
     // of empty string. Can remove when fixed on API side
     for (const cs of coordSystems) {
@@ -345,9 +360,9 @@ export class JoggingStore {
       JointTypeEnum.RevoluteJoint
 
     // Make all properties observable and actions auto-bound
-    makeAutoObservable<this, "storage" | "jogPress">(
+    makeAutoObservable<this, "storage" | "notMoveableReason" | "jogPress">(
       this,
-      { storage: false, jogPress: false },
+      { storage: false, notMoveableReason: false, jogPress: false },
       { autoBind: true },
     )
 
@@ -409,6 +424,11 @@ export class JoggingStore {
    * Resolves when the jogging websocket is initialized, or when the jogging
    * was stopped before that (`deactivate`).
    *
+   * Rejects with a {@link JoggingRefusedError} while the store is locked or
+   * its owner says that the robot may not move (see
+   * {@link JoggingStoreOptions}): nothing is sent to the robot then, and no
+   * jogging websocket opens.
+   *
    * {@link JoggingStore.startCartesianJogging},
    * {@link JoggingStore.startJointJogging} and
    * {@link JoggingStore.runIncrementalCartesianJog} activate what they need
@@ -423,8 +443,15 @@ export class JoggingStore {
     )
   }
 
-  /** Activates the jogger for a jog of the given kind */
-  private async activateFor(jog: JogKind) {
+  /**
+   * Activates the jogger for a jog of the given kind, unless it is refused
+   * (see {@link JoggingStore.refuseUnlessJoggable}, also for `ownLock`)
+   */
+  private async activateFor(jog: JogKind, ownLock?: string) {
+    // First of all: a refused start ends no other motion, and keeps the
+    // error of the jog before
+    this.refuseUnlessJoggable(ownLock)
+
     // Clear any latched error from a previous jog now that the user is
     // starting a new one
     this.lastJogError = null
@@ -433,6 +460,9 @@ export class JoggingStore {
     // keeps the controller's execution session open: the controller refuses
     // to jog while that session is alive
     await this.onBeforeActivate?.()
+
+    // That took its time: the robot may have stopped being moveable since
+    this.refuseUnlessJoggable(ownLock)
 
     if (jog !== "joint") {
       // Ensure jogger has the correct TCP and orientation before starting
@@ -459,6 +489,24 @@ export class JoggingStore {
   }
 
   /**
+   * Throws a {@link JoggingRefusedError} while a jog may not start: with the
+   * owner's reason that the robot may not move, else while the store is
+   * locked. `ownLock` is the lock of the step that asks: it locks the store
+   * against other jogs, not against itself.
+   */
+  private refuseUnlessJoggable(ownLock?: string) {
+    const reason = this.notMoveableReason?.() ?? null
+    if (reason) {
+      throw new JoggingRefusedError(reason)
+    }
+    for (const lock of this.locks) {
+      if (lock !== ownLock) {
+        throw new JoggingRefusedError({ code: "locked" })
+      }
+    }
+  }
+
+  /**
    * Starts jogging the TCP along an axis (`translate`) or about it
    * (`rotate`) until {@link JoggingStore.stopJogging}, with the store's
    * velocity, TCP and "Move relative to". For a jog control that is held:
@@ -466,7 +514,9 @@ export class JoggingStore {
    *
    * The robot moves once the jogging websocket is ready, about 0.1 to 0.5 s
    * later. A press that was stopped by then, or that another press followed,
-   * moves nothing. Does nothing while the store is locked.
+   * moves nothing. Rejects with a {@link JoggingRefusedError} as
+   * {@link JoggingStore.activate} does: while the store is locked or the
+   * robot may not move.
    */
   async startCartesianJogging(
     motion: CartesianMotionType,
@@ -474,7 +524,6 @@ export class JoggingStore {
     direction: JoggingDirection,
   ) {
     const press = ++this.jogPress
-    if (this.isLocked) return
     await this.activateFor("cartesian")
     if (press !== this.jogPress) return
 
@@ -497,7 +546,8 @@ export class JoggingStore {
    * Starts jogging one joint (by its index) until
    * {@link JoggingStore.stopJogging}, with the store's rotation velocity, or
    * its translation velocity for a linear axis. As
-   * {@link JoggingStore.startCartesianJogging}, for a control that is held.
+   * {@link JoggingStore.startCartesianJogging}, for a control that is held,
+   * and refused as it.
    */
   async startJointJogging(joint: number, direction: JoggingDirection) {
     const press = ++this.jogPress
@@ -518,7 +568,8 @@ export class JoggingStore {
   /**
    * Stops the jog of {@link JoggingStore.startCartesianJogging} or
    * {@link JoggingStore.startJointJogging} and closes the jogging websocket.
-   * Also while the store is locked: a jog always gets its stop.
+   * Never refused, also while the store is locked or the robot may not move:
+   * a jog always gets its stop.
    *
    * A start that comes while the robot is told to stop keeps the websocket,
    * e.g. a joint slider that turns around stops and starts in one event.
@@ -537,10 +588,12 @@ export class JoggingStore {
    * {@link JoggingStore.discreteIncrementOptions}. Resolves once the robot
    * has made the step.
    *
-   * One step runs at a time: the store is locked while it runs (see
+   * One step runs at a time: the store is locked while it runs (as by
    * {@link JoggingStore.withMotionLock}) and shows it as
-   * {@link JoggingStore.incrementJogInProgress}. Does nothing while the
-   * store is locked.
+   * {@link JoggingStore.incrementJogInProgress}. Rejects with a
+   * {@link JoggingRefusedError} as {@link JoggingStore.activate} does: while
+   * the store is locked, so also while another step runs, or the robot may
+   * not move.
    */
   async runIncrementalCartesianJog(
     motion: CartesianMotionType,
@@ -548,10 +601,11 @@ export class JoggingStore {
     direction: JoggingDirection,
     increment: DiscreteIncrementOption,
   ) {
-    if (this.isLocked) return
-    await this.withMotionLock(async () => {
+    // Before the step locks the store itself
+    this.refuseUnlessJoggable()
+    await this.withOwnLock(async (lock) => {
       try {
-        const jogger = await this.activateFor("cartesianStep")
+        const jogger = await this.activateFor("cartesianStep", lock)
         const state = jogger.motionStream.rapidlyChangingMotionState
         if (!state.tcp_pose) return
 
@@ -1006,11 +1060,20 @@ export class JoggingStore {
 
   /** Lock the UI until the given async callback resolves */
   async withMotionLock(fn: () => Promise<void>) {
+    return this.withOwnLock(() => fn())
+  }
+
+  /**
+   * Locks the store until the callback resolves, and gives the callback the
+   * id of its lock: for a jog that starts under it (see
+   * {@link JoggingStore.refuseUnlessJoggable})
+   */
+  private async withOwnLock(fn: (lockId: string) => Promise<void>) {
     const lockId = uniqueId()
     this.lock(lockId)
 
     try {
-      return await fn()
+      return await fn(lockId)
     } finally {
       this.unlock(lockId)
     }

@@ -225,6 +225,31 @@ describe("useRobotControlProps", () => {
     )
   })
 
+  // The panel shows jogging as off then: a press that still comes (a touch
+  // in the frame before, an app that enables the controls itself) is no
+  // error for the app to show
+  it("moves nothing and reports nothing for a jog that the store refuses", async () => {
+    const onError = vi.fn()
+    const session = await loadSession({ onError })
+    const { jogger } = session.jogging
+    const setJoggingMode = vi
+      .spyOn(jogger, "setJoggingMode")
+      .mockResolvedValue(undefined as never)
+    const { result } = renderHook(() =>
+      useRobotControlProps(session, { disabled: true }),
+    )
+
+    act(() => {
+      result.current.onJogStart("translate", "x", "+")
+      result.current.joints?.onJogStart(0, "+")
+      result.current.increments?.onStep("translate", "x", "+", 10)
+    })
+    await flush()
+
+    expect(setJoggingMode).not.toHaveBeenCalled()
+    expect(onError).not.toHaveBeenCalled()
+  })
+
   it("plans the pose of Move to as the session's typed pose, and moves only along a planned trajectory", async () => {
     const session = await loadSession()
     const fake = withFakeMoveTo(session)

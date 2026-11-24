@@ -38,6 +38,10 @@ export {
 } from "./components/jogging/joint/JoggingJointSlider"
 export * from "./components/jogging/JoggingPanel"
 export {
+  JoggingRefusedError,
+  type JoggingRefusedReason,
+} from "./components/jogging/JoggingRefusedError"
+export {
   JoggingStore,
   type JoggingStoreOptions,
   type JoggingStoreStorage,

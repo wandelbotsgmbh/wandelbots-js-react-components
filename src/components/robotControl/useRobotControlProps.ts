@@ -11,6 +11,7 @@ import type { RobotNotMoveableReason } from "../../lib/robotSession/RobotSafety"
 import type { RobotSession } from "../../lib/robotSession/RobotSession"
 import { parseRotationToQuaternion } from "../../lib/rotation"
 import { coordSystemLabel } from "../jogging/coordSystemLabel"
+import { JoggingRefusedError } from "../jogging/JoggingRefusedError"
 import type { JoggingStore } from "../jogging/JoggingStore"
 import type {
   JogMotion,
@@ -208,6 +209,16 @@ export function useRobotControlProps(
     })
   }
 
+  /**
+   * Follows a jog that the store runs. One it refuses moves nothing and is
+   * no error to show: the panel shows jogging as off for the same reason.
+   */
+  function jog(running: Promise<void>) {
+    running.catch((error: unknown) => {
+      if (!(error instanceof JoggingRefusedError)) report(error)
+    })
+  }
+
   // Move to: the pose typed in the panel is planned and staged as the
   // session's typed pose, so its rules apply
   const started = useRef(false)
@@ -332,12 +343,9 @@ export function useRobotControlProps(
         : store.setVelocityFromSlider(value, false),
     // The store jogs: it makes a press that ends before the jogging
     // connection is ready move nothing, and runs one step at a time
-    onJogStart: (motion, axis, direction) => {
-      store.startCartesianJogging(motion, axis, direction).catch(report)
-    },
-    onJogStop: () => {
-      store.stopJogging().catch(report)
-    },
+    onJogStart: (motion, axis, direction) =>
+      jog(store.startCartesianJogging(motion, axis, direction)),
+    onJogStop: () => jog(store.stopJogging()),
     increments: {
       steps: {
         translate: store.discreteIncrementOptions.map((o) => o.mm),
@@ -348,9 +356,9 @@ export function useRobotControlProps(
       onStep: (motion, axis, direction, distance) => {
         const increment = incrementOf(motion, distance)
         if (!increment) return
-        store
-          .runIncrementalCartesianJog(motion, axis, direction, increment)
-          .catch(report)
+        jog(
+          store.runIncrementalCartesianJog(motion, axis, direction, increment),
+        )
       },
       running: store.incrementJogInProgress,
       // The store's increments pair a distance with an angle
@@ -393,12 +401,9 @@ export function useRobotControlProps(
         linear
           ? store.setVelocityFromSlider(value, false)
           : store.setVelocityFromSlider(toDegrees(value), true),
-      onJogStart: (joint, direction) => {
-        store.startJointJogging(joint, direction).catch(report)
-      },
-      onJogStop: () => {
-        store.stopJogging().catch(report)
-      },
+      onJogStart: (joint, direction) =>
+        jog(store.startJointJogging(joint, direction)),
+      onJogStop: () => jog(store.stopJogging()),
     },
     moveTo: {
       getCurrentPose: () => {

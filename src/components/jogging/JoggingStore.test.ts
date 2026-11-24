@@ -18,7 +18,15 @@ import {
   ur5eDescription,
   ur5eMotionGroupState,
 } from "./__fixtures__/motionStreamMockData"
-import { JoggingStore, type JoggingStoreStorage } from "./JoggingStore"
+import {
+  JoggingRefusedError,
+  type JoggingRefusedReason,
+} from "./JoggingRefusedError"
+import {
+  JoggingStore,
+  type JoggingStoreOptions,
+  type JoggingStoreStorage,
+} from "./JoggingStore"
 
 const HALF_PI = Math.PI / 2
 
@@ -129,6 +137,7 @@ function createStore({
   tcps = [{ id: "Flange", readable_name: "Flange" } as unknown as RobotTcp],
   inverseSolver = "some-solver",
   storage,
+  notMoveableReason,
 }: {
   coordinateSystems?: CoordinateSystem[]
   description?: MotionGroupDescription
@@ -136,6 +145,7 @@ function createStore({
   tcps?: RobotTcp[]
   inverseSolver?: string | null | undefined
   storage?: JoggingStoreStorage
+  notMoveableReason?: JoggingStoreOptions["notMoveableReason"]
 } = {}) {
   return new JoggingStore(
     jogger,
@@ -143,8 +153,18 @@ function createStore({
     description,
     tcps,
     inverseSolver,
-    { storage },
+    { storage, notMoveableReason },
   )
+}
+
+/** The reason a start was refused with, or the test fails */
+async function refusalOf(start: Promise<unknown>) {
+  const error = await start.then(
+    () => undefined,
+    (e: unknown) => e,
+  )
+  expect(error).toBeInstanceOf(JoggingRefusedError)
+  return (error as JoggingRefusedError).reason
 }
 
 /** A storage of the app's own, with what it holds to look into */
@@ -774,17 +794,6 @@ describe("jogging while a control is held", () => {
     expect(jogger.stop).toHaveBeenCalledOnce()
     expect(jogger.mode).toBe("off")
   })
-
-  it("starts no Cartesian jog while the store is locked", async () => {
-    const jogger = createMockJogger()
-    const store = createStore({ jogger })
-    store.lock("external")
-
-    await store.startCartesianJogging("translate", "x", "+")
-
-    expect(jogger.setJoggingMode).not.toHaveBeenCalled()
-    expect(jogger.translateTCP).not.toHaveBeenCalled()
-  })
 })
 
 describe("a step", () => {
@@ -864,16 +873,18 @@ describe("a step", () => {
 
     // The second comes before the first has even opened its trajectory
     const first = store.runIncrementalCartesianJog("translate", "x", "+", tenMm)
-    const second = store
-      .runIncrementalCartesianJog("translate", "x", "+", tenMm)
-      .catch(() => {})
+    const second = refusalOf(
+      store.runIncrementalCartesianJog("translate", "x", "+", tenMm),
+    )
     await flush()
-    const third = store
-      .runIncrementalCartesianJog("translate", "x", "-", tenMm)
-      .catch(() => {})
+    const third = refusalOf(
+      store.runIncrementalCartesianJog("translate", "x", "-", tenMm),
+    )
     moving.resolve()
-    await Promise.all([first, second, third])
+    await first
 
+    expect(await second).toEqual({ code: "locked" })
+    expect(await third).toEqual({ code: "locked" })
     expect(jogger.runIncrementalCartesianMotion).toHaveBeenCalledOnce()
     expect(modeChangesTo(jogger, "trajectory")).toHaveLength(1)
   })
@@ -904,16 +915,146 @@ describe("a step", () => {
     expect(jogger.runIncrementalCartesianMotion).not.toHaveBeenCalled()
     expect(store.isLocked).toBe(false)
   })
+})
 
-  it("starts no step while the store is locked", async () => {
+// NOVA switches a controller to control mode by itself for a movement
+// request: what stops a jog of a robot that may not move is this store
+describe("a start that is refused", () => {
+  const tenMm = { id: "10", mm: 10, degrees: 5 }
+
+  /** Every way to start a jog */
+  const starts: [string, (store: JoggingStore) => Promise<unknown>][] = [
+    ["activate", (store) => store.activate()],
+    [
+      "a held jog of the TCP",
+      (store) => store.startCartesianJogging("translate", "x", "+"),
+    ],
+    ["a held jog of a joint", (store) => store.startJointJogging(0, "+")],
+    [
+      "a step",
+      (store) => store.runIncrementalCartesianJog("translate", "x", "+", tenMm),
+    ],
+  ]
+
+  function expectNothingSent(jogger: JoggerConnection) {
+    expect(jogger.setOptions).not.toHaveBeenCalled()
+    expect(jogger.setJoggingMode).not.toHaveBeenCalled()
+    expect(jogger.translateTCP).not.toHaveBeenCalled()
+    expect(jogger.rotateJoints).not.toHaveBeenCalled()
+    expect(jogger.runIncrementalCartesianMotion).not.toHaveBeenCalled()
+  }
+
+  it.each(
+    starts,
+  )("%s opens no jogging connection while the store's owner says the robot may not move", async (_name, start) => {
+    const jogger = createMockJogger()
+    let reason: JoggingRefusedReason | null = { code: "deactivated" }
+    const store = createStore({ jogger, notMoveableReason: () => reason })
+    // It would end another motion for a jog that does not start
+    const onBeforeActivate = vi.fn()
+    store.onBeforeActivate = onBeforeActivate
+
+    expect(await refusalOf(start(store))).toEqual({ code: "deactivated" })
+    expect(onBeforeActivate).not.toHaveBeenCalled()
+    expectNothingSent(jogger)
+    expect(store.isLocked).toBe(false)
+
+    reason = null
+    await start(store)
+    expect(jogger.setJoggingMode).toHaveBeenCalledOnce()
+  })
+
+  it.each(
+    starts,
+  )("%s opens no jogging connection while the store is locked", async (_name, start) => {
     const jogger = createMockJogger()
     const store = createStore({ jogger })
     store.lock("external")
 
-    await store.runIncrementalCartesianJog("translate", "x", "+", tenMm)
+    expect(await refusalOf(start(store))).toEqual({ code: "locked" })
+    expectNothingSent(jogger)
 
-    expect(jogger.setJoggingMode).not.toHaveBeenCalled()
-    expect(jogger.runIncrementalCartesianMotion).not.toHaveBeenCalled()
+    store.unlock("external")
+    await start(store)
+    expect(jogger.setJoggingMode).toHaveBeenCalledOnce()
+  })
+
+  it("says why the robot may not move, not that the store is locked, when both hold", async () => {
+    const store = createStore({
+      notMoveableReason: () => ({
+        code: "safety_state",
+        value: "SAFETY_STATE_STOP",
+      }),
+    })
+    store.lock("external")
+
+    const error = await store.activate().catch((e: unknown) => e)
+
+    expect((error as JoggingRefusedError).reason).toEqual({
+      code: "safety_state",
+      value: "SAFETY_STATE_STOP",
+    })
+    expect((error as Error).message).toContain("SAFETY_STATE_STOP")
+  })
+
+  // onBeforeActivate ends another motion first, which takes its time
+  it.each(
+    starts,
+  )("%s opens no jogging connection when the robot may no longer move once the other motion has ended", async (_name, start) => {
+    const jogger = createMockJogger()
+    let reason: JoggingRefusedReason | null = null
+    const store = createStore({ jogger, notMoveableReason: () => reason })
+    const ending = deferred()
+    store.onBeforeActivate = () => ending.promise
+
+    const started = refusalOf(start(store))
+    reason = { code: "disconnected" }
+    ending.resolve()
+
+    expect(await started).toEqual({ code: "disconnected" })
+    expectNothingSent(jogger)
+    expect(store.isLocked).toBe(false)
+  })
+
+  // A step locks the store against other jogs, not against itself
+  it("a step opens no trajectory when the store gets locked while the other motion ends", async () => {
+    const jogger = createMockJogger()
+    const store = createStore({ jogger })
+    const ending = deferred()
+    store.onBeforeActivate = () => ending.promise
+
+    const step = refusalOf(
+      store.runIncrementalCartesianJog("translate", "x", "+", tenMm),
+    )
+    store.lock("external")
+    ending.resolve()
+
+    expect(await step).toEqual({ code: "locked" })
+    expectNothingSent(jogger)
+    expect(store.incrementJogInProgress).toBeNull()
+  })
+
+  it("keeps the error of the jog before, which a start that is not refused clears", async () => {
+    const store = createStore()
+    store.jogger.onError?.({ message: "Collision" })
+    store.lock("external")
+
+    await store.activate().catch(() => {})
+
+    expect(store.lastJogError).toBe("Collision")
+  })
+
+  it("stops a jog also while the robot may no longer move", async () => {
+    const jogger = createMockJogger()
+    let reason: JoggingRefusedReason | null = null
+    const store = createStore({ jogger, notMoveableReason: () => reason })
+    await store.startCartesianJogging("translate", "x", "+")
+    reason = { code: "safety_state", value: "SAFETY_STATE_STOP" }
+
+    await store.stopJogging()
+
+    expect(jogger.stop).toHaveBeenCalledOnce()
+    expect(jogger.mode).toBe("off")
   })
 })
 
