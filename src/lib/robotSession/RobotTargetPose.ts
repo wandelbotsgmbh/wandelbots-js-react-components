@@ -28,11 +28,20 @@ export type StagedTargetPose = {
   pose: RobotPose
   displayString: string
   /**
-   * Translation key of the planning failure for this pose, or null if the
-   * plan succeeded and the trajectory is ready to execute
+   * Translation key of why the robot cannot move to this pose: its planning
+   * failed, or the move to it did. null if the plan succeeded and the
+   * trajectory is ready to execute.
    */
   errorKey: string | null
+  /**
+   * NOVA's reason for a failed move, the `message` of the text of
+   * `errorKey`: `t(errorKey, { message: errorMessage })`
+   */
+  errorMessage?: string
 }
+
+/** The move to a pose failed: NOVA refused its trajectory, or stopped it */
+const MOVE_FAILED_KEY = "Jogging.TargetPose.Error.MoveFailed.lb"
 
 /** What the target pose reads of its session */
 type TargetPoseParts = {
@@ -51,6 +60,8 @@ type TargetPoseParts = {
     | "trajectoryState"
     | "executionState"
     | "isPlanOutdated"
+    | "lastError"
+    | "holdsExecutionSession"
   >
   /** Why the robot may not move now, or null: a typed pose plans nothing then */
   notMoveableReason: () => unknown
@@ -149,6 +160,26 @@ export class RobotTargetPose {
 
           if (arrived) {
             void this.resetToLive()
+          }
+        },
+      ),
+    )
+
+    // A move that fails must show: NOVA refuses the trajectory of the staged
+    // pose, or stops the move along it. The trajectory store drops its plan
+    // then, so the pose is no longer one to move to, and says why. The reason
+    // is kept with the pose: an app may show the store's error itself and
+    // clear it at once (RobotPad does).
+    this.disposers.push(
+      reaction(
+        () => this.robot.trajectory.lastError,
+        (message) => {
+          if (message && this.staged && !this.staged.errorKey) {
+            this.staged = {
+              ...this.staged,
+              errorKey: MOVE_FAILED_KEY,
+              errorMessage: message,
+            }
           }
         },
       ),
@@ -267,7 +298,9 @@ export class RobotTargetPose {
    * Stages a pose: validates it against the backend by planning a trajectory
    * to it. On success the trajectory is left initialized on the execution
    * socket, so Move to is armed immediately; on a planner rejection the pose
-   * stays staged with the failure explanation. While the robot may not move,
+   * stays staged with the failure explanation, as it does when the move to
+   * it fails later: planning it again is the way out. While the robot may
+   * not move,
    * it plans nothing and drops the pose that was staged before: the one
    * asked for last is the one to show, and no other may stay armed behind
    * it. Does nothing while another pose is planned.
@@ -361,11 +394,16 @@ export class RobotTargetPose {
 
   /** Drops the staged pose and hands the trajectory that was planned to it back */
   private async dropStaged() {
-    const hadPlannedTrajectory = this.staged !== null && !this.staged.errorKey
+    const staged = this.staged
     this.staged = null
     this.moveStarted = false
 
-    if (hadPlannedTrajectory) {
+    // Also after a failed move: its trajectory is no longer planned here,
+    // but NOVA holds it until the execution session goes back
+    if (
+      staged &&
+      (!staged.errorKey || this.robot.trajectory.holdsExecutionSession)
+    ) {
       await this.robot.trajectory.stopAndReset()
     }
   }

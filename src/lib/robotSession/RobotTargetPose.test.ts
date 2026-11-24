@@ -1,5 +1,7 @@
-import { observable, runInAction } from "mobx"
+import { observable, reaction, runInAction } from "mobx"
 import { describe, expect, onTestFinished, test, vi } from "vitest"
+import deTranslations from "../../i18n/locales/de/translations.json"
+import enTranslations from "../../i18n/locales/en/translations.json"
 import { jointValuesEqual } from "../motionStateUpdate"
 import type {
   PlanTrajectoryResult,
@@ -40,6 +42,8 @@ function makeFakeRobot() {
         trajectoryState: "idle" as TrajectoryExecutionStore["trajectoryState"],
         executionState: undefined as TrajectoryExecutionStore["executionState"],
         isPlanOutdated: false,
+        lastError: null as string | null,
+        holdsExecutionSession: false,
       },
       state: {
         jointPose: [0, 0.5, 1, 1.5],
@@ -602,6 +606,105 @@ describe("RobotTargetPose", () => {
     expect(planTrajectory).toHaveBeenCalledTimes(1)
     expect(store.staged).toBeNull()
     expect(stopAndReset).toHaveBeenCalledTimes(1)
+  })
+
+  // NOVA refuses the trajectory of a planned pose, or the move along it
+  // fails: the trajectory store drops its plan and keeps the reason
+  describe("when the move to the staged pose fails", () => {
+    async function failed(message = "Collision detected") {
+      const made = makeStore()
+      await made.store.plan(cartesianPose([1, 2, 3]))
+      runInAction(() => {
+        made.robot.trajectory.lastError = message
+        made.robot.trajectory.holdsExecutionSession = true
+      })
+      return made
+    }
+
+    test("the pose stays, with the reason, and is not one to move to or to store", async () => {
+      const { store } = await failed()
+
+      expect(store.phase).toBe("error")
+      expect(store.staged).toMatchObject({
+        errorKey: "Jogging.TargetPose.Error.MoveFailed.lb",
+        errorMessage: "Collision detected",
+      })
+      expect(store.stagedPose).toBeNull()
+      expect(store.displayString).toBe("(1, 2, 3, 0, 0, 0)")
+    })
+
+    test("the reason has a text in English and German", () => {
+      const key = "Jogging.TargetPose.Error.MoveFailed.lb"
+      expect(enTranslations[key]).toContain("{{message}}")
+      expect(deTranslations[key]).toContain("{{message}}")
+    })
+
+    // RobotPad shows the error as its own message and clears it at once
+    test("the reason stays when the app clears the trajectory's error", async () => {
+      const made = makeStore()
+      await made.store.plan(cartesianPose([1, 2, 3]))
+      onTestFinished(
+        reaction(
+          () => made.robot.trajectory.lastError,
+          (message) => {
+            if (message) made.robot.trajectory.lastError = null
+          },
+        ),
+      )
+
+      runInAction(() => {
+        made.robot.trajectory.lastError = "Collision detected"
+      })
+
+      expect(made.robot.trajectory.lastError).toBeNull()
+      expect(made.store.staged?.errorMessage).toBe("Collision detected")
+    })
+
+    test("planning the pose again takes the failure away", async () => {
+      const { store, planTrajectory } = await failed()
+
+      await store.plan(cartesianPose([1, 2, 3]))
+
+      expect(planTrajectory).toHaveBeenCalledTimes(2)
+      expect(store.phase).toBe("staged")
+      expect(store.staged?.errorMessage).toBeUndefined()
+    })
+
+    test("resetToLive hands back the trajectory that NOVA still holds", async () => {
+      const { store, stopAndReset } = await failed()
+
+      await store.resetToLive()
+
+      expect(store.phase).toBe("view")
+      expect(stopAndReset).toHaveBeenCalledTimes(1)
+    })
+
+    test("an error of a trajectory that is not a staged pose's stages nothing", async () => {
+      const { store, robot } = makeStore()
+
+      runInAction(() => {
+        robot.trajectory.lastError = "Collision detected"
+      })
+
+      expect(store.staged).toBeNull()
+    })
+
+    test("an error does not replace why a pose could not be planned", async () => {
+      const { store, robot, planTrajectory } = makeStore()
+      planTrajectory.mockResolvedValueOnce({
+        ok: false,
+        errorFeedbackName: "FeedbackOutOfWorkspace",
+      })
+      await store.plan(cartesianPose([9999, 2, 3]))
+
+      runInAction(() => {
+        robot.trajectory.lastError = "Collision detected"
+      })
+
+      expect(store.staged?.errorKey).toBe(
+        "Jogging.TargetPose.Error.NotReachable.lb",
+      )
+    })
   })
 
   // A move runs at the velocity that shows when it starts. The trajectory

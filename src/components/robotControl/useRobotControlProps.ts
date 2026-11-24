@@ -447,7 +447,11 @@ export function useRobotControlProps(
         target && notMoveable
           ? notMoveableText(notMoveable, t)
           : staged?.errorKey
-            ? t(staged.errorKey)
+            ? t(staged.errorKey, {
+                // NOVA's reason for a failed move, as it is: React escapes it
+                message: staged.errorMessage,
+                interpolation: { escapeValue: false },
+              })
             : null,
       // The button is held and let go: the session sees to it that the
       // robot moves only while it is held, and only to the pose it shows

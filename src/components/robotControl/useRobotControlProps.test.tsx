@@ -487,6 +487,58 @@ describe("useRobotControlProps", () => {
     expect(sent("StartMovementRequest")).toBe(0)
   })
 
+  it("shows why a move failed, and plans the same pose again when the panel asks for it", async () => {
+    const { execution, moveTo, plan, start, type } = await loadMoveTo()
+    await plan(TARGET)
+    start(TARGET)
+
+    act(() =>
+      execution.emit("MOTION_ERROR", { message: 'Collision with "table"' }),
+    )
+
+    // The reason as NOVA gave it, and no button that looks ready
+    expect(moveTo().error).toBe(
+      'The move to this pose failed: Collision with "table"',
+    )
+    expect(moveTo().state).toBe("idle")
+
+    // Plan again, as the panel's button asks for the pose it still shows
+    await type(TARGET)
+    expect(execution.planTrajectory).toHaveBeenCalledTimes(2)
+    act(() => execution.emit("INITIALIZE_RECEIVED"))
+    expect(moveTo().error ?? null).toBeNull()
+    expect(moveTo().state).toBe("planned")
+  })
+
+  it("shows why NOVA refused the trajectory of a planned pose", async () => {
+    const { execution, moveTo, type } = await loadMoveTo()
+    await type(TARGET)
+
+    act(() =>
+      execution.emit("INITIALIZE_RECEIVED", {
+        message: "Trajectory does not start at the current joints",
+      }),
+    )
+
+    expect(moveTo().error).toBe(
+      "The move to this pose failed: Trajectory does not start at the current joints",
+    )
+    expect(moveTo().state).toBe("idle")
+  })
+
+  it("hands the trajectory of a failed move back when the pose is reset", async () => {
+    const { execution, moveTo, plan, start } = await loadMoveTo()
+    await plan(TARGET)
+    start(TARGET)
+    act(() => execution.emit("MOTION_ERROR", { message: "Collision" }))
+    const held = execution.sockets.at(-1)
+
+    act(() => moveTo().onTargetChange(null))
+    await act(flush)
+
+    expect(held?.dispose).toHaveBeenCalled()
+  })
+
   it("shows why the typed pose could not be planned, in the library's words", async () => {
     const session = await loadSession()
     const fake = withFakeMoveTo(session)

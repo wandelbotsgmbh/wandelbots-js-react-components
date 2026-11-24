@@ -1,6 +1,7 @@
 import Stack from "@mui/material/Stack"
 import Tooltip from "@mui/material/Tooltip"
 import Typography from "@mui/material/Typography"
+import { CachedFilled } from "@wandelbots/icons/CachedFilled"
 import { Undo } from "@wandelbots/icons/Undo"
 import { RoundedIconButton } from "@wandelbots/mui"
 import { useEffect, useRef, useState } from "react"
@@ -33,7 +34,9 @@ type Target = { pose: RobotControlPose; text: string }
 /**
  * The Move to tab: the TCP, the target pose and the frame it is relative to,
  * the velocity, and the Move to button, off until a typed pose is the
- * target; Reset shows with a target. It works as RobotPad's pose field and its TargetPoseStore: the
+ * target; Reset shows with a target, and Plan again while the app gives an
+ * `error` for it (it could not be planned, or the move to it failed). It
+ * works as RobotPad's pose field and its TargetPoseStore: the
  * field shows the TCP's current pose until a typed pose is saved; a move
  * that took the TCP there ends with the current pose shown again, once the
  * button is let go; another tab shows it again as well.
@@ -88,6 +91,12 @@ export function MoveToTab({
     setTarget({ pose: draftPose, text: poseToText(draftPose) })
     setDraft(null)
     moveTo.onTargetChange(draftPose)
+  }
+
+  // The way out of a move that failed, or a target the app could not plan
+  // when it was saved: the app plans the target that still shows
+  function planAgain() {
+    if (target) moveTo.onTargetChange(target.pose)
   }
 
   // As RobotPad: a move that took the TCP to the target is over once it no
@@ -181,7 +190,8 @@ export function MoveToTab({
       />
 
       {/* Move to stays, off without a target; Reset shows with one, as
-          RobotPad's, not while another pose is typed */}
+          RobotPad's, not while another pose is typed; Plan again with a
+          target the app cannot move to, so it need not be typed again */}
       <Stack direction="row" sx={{ gap: "12px", alignItems: "center" }}>
         {target && !editing && (
           <Tooltip title={t("RobotControl.MoveTo.Reset.lb")} placement="top">
@@ -190,6 +200,21 @@ export function MoveToTab({
                 icon={<Undo />}
                 ariaLabel={t("RobotControl.MoveTo.Reset.lb")}
                 onClick={showLivePose}
+              />
+            </span>
+          </Tooltip>
+        )}
+        {target && !editing && moveTo.error && (
+          <Tooltip
+            title={t("RobotControl.MoveTo.PlanAgain.lb")}
+            placement="top"
+          >
+            <span>
+              <RoundedIconButton
+                icon={<CachedFilled />}
+                ariaLabel={t("RobotControl.MoveTo.PlanAgain.lb")}
+                onClick={planAgain}
+                disabled={disabled || moveTo.state === "planning"}
               />
             </span>
           </Tooltip>

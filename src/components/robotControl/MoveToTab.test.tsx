@@ -311,6 +311,37 @@ describe("RobotControlPanel's Move to tab, as RobotPad's pose field", () => {
     expect(queryButton("Reset pose to previous one")).toBeNull()
   })
 
+  it("offers to plan the target again while the app says why it cannot move there, without typing it again", () => {
+    const { onTargetChange, rerender } = setup({ state: "planned" })
+    fireEvent.click(tab("Move to"))
+    confirmPose("(1, 2, 3, 0, 0, 0)")
+    // Planned and ready: there is nothing to plan again
+    expect(queryButton("Plan the move again")).toBeNull()
+
+    rerender({
+      state: "idle",
+      error: "The move to this pose failed: Collision detected",
+    })
+    expect(
+      screen.getByText("The move to this pose failed: Collision detected"),
+    ).toBeVisible()
+    expect(moveButton()).toBeDisabled()
+
+    fireEvent.click(button("Plan the move again"))
+    expect(onTargetChange).toHaveBeenCalledTimes(2)
+    expect(onTargetChange).toHaveBeenLastCalledWith(TARGET)
+    expect(coordinates()).toHaveValue("(1, 2, 3, 0, 0, 0)")
+
+    // While the app plans it, there is no second request
+    rerender({ state: "planning" })
+    expect(button("Plan the move again")).toBeDisabled()
+
+    // Not while another pose is typed: that one is saved instead
+    rerender({ state: "idle" })
+    fireEvent.click(button("Edit pose"))
+    expect(queryButton("Plan the move again")).toBeNull()
+  })
+
   it("shows the live pose again when another tab is chosen, and stops a held move", async () => {
     const { onMoveStart, onMoveStop, onTargetChange } = setup({
       state: "planned",
