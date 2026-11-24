@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test"
+import { expect, type Page, test } from "@playwright/test"
 import { Quaternion, Vector3 } from "three"
 import {
   controllerState,
@@ -18,6 +18,31 @@ import { CELL, testData } from "./testData"
 // over the robot's 3D view, as in the Figma design
 
 test.afterEach(screenshotOnFailure("layouts"))
+
+// A test that activated the robot: the next test's openPage waits for
+// MODE_MONITOR, and NOVA sets the start pose only then
+test.afterEach(async () => {
+  await nova().api.controller.setDefaultMode(
+    CELL,
+    testData().controller,
+    "ROBOT_SYSTEM_MODE_MONITOR",
+  )
+  await expect
+    .poll(async () => (await controllerState()).mode, { timeout: 30_000 })
+    .toBe("MODE_MONITOR")
+})
+
+/**
+ * Activates the robot with RobotHeader's switch, as RobotPad's user does
+ * before jogging: RobotControlPanel jogs no robot that is not activated
+ */
+async function activateRobot(page: Page) {
+  const activation = page
+    .getByTestId("robot-header")
+    .getByRole("switch", { name: /Activat|Deactivat/ })
+  await activation.click()
+  await expect(activation).toBeChecked({ timeout: 30_000 })
+}
 
 test("shows the robot's 3D view with RobotControlPanel at its top right and CurrentPoseBar along its bottom", async ({
   page,
@@ -115,6 +140,7 @@ test("shows the TCP's pose in CurrentPoseBar as NOVA reports it, Running while a
 
   // Jogging Z up with the panel's buttons: the bar follows, and says
   // Running while the jog runs
+  await activateRobot(page)
   const panel = page.getByTestId("robot-control-panel")
   await expect(panel.getByRole("button", { name: "Jog Z+" })).toBeEnabled({
     timeout: 30_000,
@@ -150,6 +176,7 @@ test("jogs the TCP with RobotControlPanel: up while Z+ is held, and one step of 
   page,
 }) => {
   await openPage(page, "layouts")
+  await activateRobot(page)
   const panel = page.getByTestId("robot-control-panel")
   // The gizmo is enabled once the page's 3D view gave it the camera's
   // orientation
@@ -197,6 +224,7 @@ test("jogs the TCP one step along the tool's Z with RobotControlPanel, relative 
   page,
 }) => {
   await openPage(page, "layouts")
+  await activateRobot(page)
   const panel = page.getByTestId("robot-control-panel")
   await expect(panel.getByRole("button", { name: "Jog Z+" })).toBeEnabled({
     timeout: 30_000,
@@ -239,6 +267,7 @@ test("jogs a joint with RobotControlPanel's Joint tab, one joint at a time, and 
   page,
 }) => {
   await openPage(page, "layouts")
+  await activateRobot(page)
   const panel = page.getByTestId("robot-control-panel")
   await panel.getByRole("tab", { name: "Joint" }).click()
   const j2 = panel.getByRole("slider", { name: "J2 Shoulder" })
@@ -296,11 +325,7 @@ test("moves the TCP to a typed pose with RobotControlPanel's Move to tab as Robo
   await openPage(page, "layouts")
   // As RobotPad: a typed pose is planned only for a robot that may move, so
   // the robot is activated first
-  const activation = page
-    .getByTestId("robot-header")
-    .getByRole("switch", { name: /Activat|Deactivat/ })
-  await activation.click()
-  await expect(activation).toBeChecked({ timeout: 30_000 })
+  await activateRobot(page)
 
   try {
     const panel = page.getByTestId("robot-control-panel")
