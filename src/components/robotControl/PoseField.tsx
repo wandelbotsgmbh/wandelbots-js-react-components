@@ -91,7 +91,10 @@ export function PoseField({
           },
         }}
       />
-      {/* The buttons sit beside the field's box, not beside its error */}
+      {/* The buttons sit beside the field's box, not beside its error.
+          Their tooltips take no pointer (disableInteractive): one that did
+          would stay open under it and take the click meant for what it
+          covers. */}
       <Stack
         direction="row"
         sx={{ gap: "8px", height: "56px", alignItems: "center" }}
@@ -103,9 +106,12 @@ export function PoseField({
               ariaLabel={t("RobotControl.MoveTo.Cancel.bt")}
               onClick={onCancel}
             />
+            {/* Above the button, not to its left: after a click on Edit
+                pose the pointer rests here, and Cancel must stay in sight */}
             <Tooltip
               title={t("RobotControl.MoveTo.ConfirmEdit.lb")}
-              placement="left"
+              placement="top"
+              disableInteractive
             >
               <span>
                 <RoundedIconButton
@@ -124,6 +130,7 @@ export function PoseField({
               title={t("RobotControl.MoveTo.Copied.lb")}
               open={copied}
               disableHoverListener
+              disableInteractive
               placement="left"
             >
               <RoundedIconButton

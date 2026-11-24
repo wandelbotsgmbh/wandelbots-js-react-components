@@ -163,6 +163,30 @@ describe("RobotControlPanel's Move to tab, as RobotPad's pose field", () => {
     expect(onTargetChange).not.toHaveBeenCalled()
   })
 
+  // After a click on Edit pose the pointer rests on Save pose edit, whose
+  // tooltip opens next to Cancel. A tooltip that takes the pointer stays
+  // open under it and takes the click that was meant for Cancel. jsdom has
+  // no layout: where the tooltips open is checked in a browser.
+  it("lets a click through the tooltips of the pose's buttons, e.g. on Cancel right after Edit pose", async () => {
+    Object.defineProperty(navigator, "clipboard", {
+      value: { writeText: vi.fn().mockResolvedValue(undefined) },
+      configurable: true,
+    })
+    setup()
+    fireEvent.click(tab("Move to"))
+
+    fireEvent.click(button("Copy"))
+    const copied = await screen.findByRole("tooltip")
+    expect(copied).toHaveTextContent("Pose copied")
+    expect(copied).toHaveStyle({ pointerEvents: "none" })
+
+    fireEvent.click(button("Edit pose"))
+    fireEvent.mouseOver(button("Save pose edit"))
+    const save = await screen.findByRole("tooltip")
+    expect(save).toHaveTextContent("Save pose edit")
+    expect(save).toHaveStyle({ pointerEvents: "none" })
+  })
+
   it("says when the typed text is no pose, and cannot save it", () => {
     const { onTargetChange } = setup()
     fireEvent.click(tab("Move to"))
