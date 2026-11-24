@@ -4,12 +4,11 @@ import {
   CurrentPose,
   JoggingGizmoOrientation,
   RobotControl,
-  RobotScene,
   RobotSessionProvider,
+  RobotView,
 } from "@wandelbots/wandelbots-js-react-components"
-import { useRef } from "react"
-import type { Group, Quaternion } from "three"
-import { FitCamera, NovaCoordinates, Viewport } from "../scene"
+import { useRef, useState } from "react"
+import type { Quaternion } from "three"
 import type { PageProps } from "."
 import { RobotHeaderDemo } from "./RobotHeaderDemo"
 
@@ -23,7 +22,8 @@ const BAR_HEIGHT = "54px"
  * the robot's 3D view, RobotControlPanel floating at its top right (as
  * RobotPad's flyout) and ending above CurrentPoseBar, which runs along its
  * bottom. View, panel and bar are the library's connected components of
- * the session: RobotScene, RobotControl and CurrentPose.
+ * the session: RobotView, RobotControl and CurrentPose. The page places
+ * them; they do not know where they are.
  */
 export function LayoutsPage({
   instance,
@@ -34,7 +34,7 @@ export function LayoutsPage({
 }: PageProps) {
   // The camera's orientation for the panel's gizmo
   const orientation = useRef<Quaternion | null>(null)
-  const robot = useRef<Group>(null)
+  const [modelDrawn, setModelDrawn] = useState(false)
 
   return (
     <RobotSessionProvider session={session}>
@@ -47,24 +47,18 @@ export function LayoutsPage({
           onPageChange={onPageChange}
         />
         <Box sx={{ position: "relative", flex: 1, minHeight: 0 }}>
-          <Viewport>
-            <FitCamera>
-              {(refit) => (
-                // The robot, its ghost, its safety zones and the jogging
-                // axes; the Viewport lights the scene. The camera fits the
-                // robot, not its safety zones.
-                <NovaCoordinates>
-                  <RobotScene
-                    lighting={false}
-                    robotRef={robot}
-                    onModelDrawn={() => refit(robot.current)}
-                  />
-                </NovaCoordinates>
-              )}
-            </FitCamera>
-            {/* Anywhere in the 3D view: it translates NOVA's Z up itself */}
-            <JoggingGizmoOrientation target={orientation} />
-          </Viewport>
+          {/* The robot's 3D view fills the box. data-model-drawn turns "true"
+              when the robot's model is drawn: the e2e tests wait for it. */}
+          <Box
+            data-testid="viewport"
+            data-model-drawn={modelDrawn}
+            sx={{ position: "absolute", inset: 0 }}
+          >
+            <RobotView onModelDrawn={() => setModelDrawn(true)}>
+              {/* Anywhere in the 3D view: it takes the camera's up */}
+              <JoggingGizmoOrientation target={orientation} />
+            </RobotView>
+          </Box>
 
           <Box
             sx={(theme) => ({

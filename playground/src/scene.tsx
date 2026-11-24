@@ -12,7 +12,6 @@ import {
   type RobotSession,
   robotModelOf,
 } from "@wandelbots/wandelbots-js-react-components"
-import type { Object3D } from "three"
 import {
   createContext,
   type ReactNode,
@@ -56,15 +55,14 @@ export function Viewport({ children }: { children: ReactNode }) {
 }
 
 /**
- * Fits the camera when the content calls `refit`, for example when a robot
- * model has loaded (a fit before that would fit an empty box): to the object
- * given to `refit`, else to the whole content. `refit` also sets the marker
- * data-model-drawn of the Viewport.
+ * Fits the camera to its content when the content calls `refit`, for example
+ * when a robot model has loaded. (A fit before that would fit an empty box.)
+ * `refit` also sets the marker data-model-drawn of the Viewport.
  */
 export function FitCamera({
   children,
 }: {
-  children: (refit: (object?: Object3D | null) => void) => ReactNode
+  children: (refit: () => void) => ReactNode
 }) {
   // A large margin, so that the robot stays in the view while it moves
   return (
@@ -74,23 +72,14 @@ export function FitCamera({
   )
 }
 
-function Refit({
-  children,
-}: {
-  children: (refit: (object?: Object3D | null) => void) => ReactNode
-}) {
+function Refit({ children }: { children: (refit: () => void) => ReactNode }) {
   const bounds = useBounds()
   const onModelDrawn = useContext(ModelDrawnContext)
-  const refit = useCallback(
-    (object?: Object3D | null) => {
-      // fit() of drei's Bounds, on its own line: a lint rule takes a
-      // bounds.….fit() for a focused test
-      const fitted = bounds.refresh(object ?? undefined).clip()
-      fitted.fit()
-      onModelDrawn()
-    },
-    [bounds, onModelDrawn],
-  )
+  const refit = useCallback(() => {
+    // biome-ignore lint/suspicious/noFocusedTests: fit() of drei's Bounds, not a test
+    bounds.refresh().clip().fit()
+    onModelDrawn()
+  }, [bounds, onModelDrawn])
   return children(refit)
 }
 
