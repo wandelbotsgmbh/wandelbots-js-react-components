@@ -495,7 +495,7 @@ pnpm playground:preview   # serves playground/dist on http://localhost:4180
 
 Vite reads these values when it starts (see [A NOVA instance](#a-nova-instance)). `CELL_ID` in the environment selects the cell (default `cell`). The cell needs a robot: without a motion group, the playground shows `NoMotionGroupModal`.
 
-The pages are Jogging, Joint limits, Safety and collisions, Robot models, Layouts and Building blocks. Each page combines parts that work together. Layouts puts `RobotControlPanel` and `CurrentPoseBar` over the robot's 3D view as the Figma design does; Building blocks shows the smaller parts alone. The app menu of the `AppHeader` switches the pages, and the URL selects the page and the motion group, for example `?page=jogging&motionGroup=0@ur5e`. The dev server uses React StrictMode, so a part that leaves a connection open shows up.
+The pages are Jogging, Joint limits, Safety and collisions, Robot models, Layouts and Building blocks. Each page combines parts that work together. Layouts puts `RobotControlPanel` and `CurrentPoseBar` over the robot's 3D view as the Figma design does; Building blocks shows the smaller parts alone. The app menu of the `AppHeader` switches the pages, and the URL selects the page and the motion group, for example `?page=jogging&motionGroup=0@ur5e`. The top bar has a switch that activates the robot: the parts that jog with the session's `JoggingStore` (on Layouts, Building blocks and Joint limits) move only an activated robot, and show their jog controls as off until then. The dev server uses React StrictMode, so a part that leaves a connection open shows up.
 
 The built playground contains the URL and the access token of the instance: never publish or upload `playground/dist`.
 

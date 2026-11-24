@@ -40,13 +40,14 @@ import { observer } from "mobx-react-lite"
 import { type ReactNode, useRef, useState } from "react"
 import type { Quaternion } from "three"
 import { startJogging, stopJogging } from "../connections"
-import { cannotJog, useToolFrame } from "../jogging"
+import { cannotJog, cannotJogCartesian, useToolFrame } from "../jogging"
 import { FitCamera, MotionGroupModel, Viewport } from "../scene"
 import type { PageProps } from "."
 
 /**
  * The small parts alone, to check their look. The parts that move the robot
- * or show its values use the session's JoggingStore.
+ * or show its values use the session's JoggingStore, which jogs only a robot
+ * that may move: activate it with the switch of the top bar.
  */
 export function BuildingBlocksPage({ instance, session }: PageProps) {
   const store = session.jogging
@@ -56,7 +57,7 @@ export function BuildingBlocksPage({ instance, session }: PageProps) {
       title="JoggingCartesianAxisControl"
       description="Moves the TCP along the axis while a button is pressed, and shows the TCP position. The colors are from the design tokens."
     >
-      <CartesianAxisControls store={store} />
+      <CartesianAxisControls session={session} />
     </Section>
   )
   const joint = (
@@ -64,7 +65,7 @@ export function BuildingBlocksPage({ instance, session }: PageProps) {
       title="JoggingJointValueControl"
       description="Moves a joint while a button is pressed, and shows its position and limits."
     >
-      <JointValueControls store={store} />
+      <JointValueControls session={session} />
     </Section>
   )
   const jointSliders = (
@@ -72,7 +73,7 @@ export function BuildingBlocksPage({ instance, session }: PageProps) {
       title="JoggingJointSlider"
       description="Joint 1 as a slider across its limits; an app shows one per joint. Hover the track to see the goal under the pointer; press there to jog the joint toward it until it gets there or you let go. While held, the goal follows the pointer; a pointer that leaves the slider stops the joint, as letting go does. Below it, joint 2, disabled."
     >
-      <JointSliders store={store} />
+      <JointSliders session={session} />
     </Section>
   )
   const gizmo = (
@@ -88,7 +89,7 @@ export function BuildingBlocksPage({ instance, session }: PageProps) {
       title="JoggingButtons"
       description="Moves the TCP along an axis while a button is held (Translate), or turns it about one (Rotate): an axis of the world frame, or of the tool. It takes the same props as JoggingGizmo, but does not turn with the 3D view: X+ is X+ of the frame, wherever the camera looks from."
     >
-      <Buttons store={store} />
+      <Buttons session={session} />
     </Section>
   )
   const velocity = (
@@ -243,14 +244,18 @@ const AXES = [
   },
 ] as const
 
+/** The props of a part that jogs the session's robot */
+type OfSession = { session: RobotSession }
+
 function AxisLabel({ children }: { children: ReactNode }) {
   return <Typography sx={{ fontSize: 24 }}>{children}</Typography>
 }
 
-const CartesianAxisControls = observer(({ store }: { store: JoggingStore }) => {
+const CartesianAxisControls = observer(({ session }: OfSession) => {
+  const store = session.jogging
   // Without an inverse solver (a linear axis or a turntable), the TCP cannot
   // move along an axis: JoggingPanel then has no cartesian tab
-  const disabled = store.isLocked || store.inverseSolver === null
+  const disabled = cannotJogCartesian(session)
 
   function tcpPosition(index: number) {
     const position =
@@ -301,7 +306,8 @@ const CartesianAxisControls = observer(({ store }: { store: JoggingStore }) => {
   )
 })
 
-const JointValueControls = observer(({ store }: { store: JoggingStore }) => {
+const JointValueControls = observer(({ session }: OfSession) => {
+  const store = session.jogging
   const revolute = store.jointType === JointTypeEnum.RevoluteJoint
 
   function jointProps(index: number) {
@@ -331,7 +337,7 @@ const JointValueControls = observer(({ store }: { store: JoggingStore }) => {
             startJogging(store, { joint: 0, direction })
           }
           stopJogging={() => stopJogging(store)}
-          disabled={store.isLocked}
+          disabled={cannotJog(session)}
         />
       </Stack>
       <Stack gap={1} sx={{ width: 260 }}>
@@ -349,7 +355,8 @@ const JointValueControls = observer(({ store }: { store: JoggingStore }) => {
   )
 })
 
-const JointSliders = observer(({ store }: { store: JoggingStore }) => {
+const JointSliders = observer(({ session }: OfSession) => {
+  const store = session.jogging
   const [angleUnit, setAngleUnit] = useState<"deg" | "rad">("deg")
   // A prismatic joint (a linear axis) is in mm
   const linear = store.jointType !== JointTypeEnum.RevoluteJoint
@@ -384,7 +391,7 @@ const JointSliders = observer(({ store }: { store: JoggingStore }) => {
         onJogStart={(direction) => startJogging(store, { joint: 0, direction })}
         onJogStop={() => stopJogging(store)}
         // Joints jog without the inverse solver
-        disabled={store.isLocked}
+        disabled={cannotJog(session)}
       />
       <Stack gap={1}>
         <Typography variant="caption" color="text.secondary">
@@ -413,7 +420,7 @@ const Gizmos = observer(
     const [motion, setMotion] = useState<Motion>("translate")
     const [frame, setFrame] = useState<Frame>("world")
     const toolFrame = useToolFrame(store)
-    const disabled = cannotJog(store)
+    const disabled = cannotJogCartesian(session)
 
     return (
       <Stack gap={2}>
@@ -489,7 +496,8 @@ const Gizmos = observer(
   },
 )
 
-const Buttons = observer(({ store }: { store: JoggingStore }) => {
+const Buttons = observer(({ session }: OfSession) => {
+  const store = session.jogging
   const [motion, setMotion] = useState<Motion>("translate")
   const [frame, setFrame] = useState<Frame>("world")
 
@@ -512,7 +520,7 @@ const Buttons = observer(({ store }: { store: JoggingStore }) => {
           })
         }
         onJogStop={() => stopJogging(store)}
-        disabled={cannotJog(store)}
+        disabled={cannotJogCartesian(session)}
       />
       <Typography variant="caption" color="text.secondary">
         Disabled, and disabled with activeHandle X+ (Rx+ when rotating), as

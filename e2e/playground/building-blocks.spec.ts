@@ -1,5 +1,8 @@
 import { expect, type Locator, type Page, test } from "@playwright/test"
 import {
+  activateRobot,
+  controllerState,
+  deactivateRobot,
   expectModelDrawn,
   jogPress,
   jointPositions,
@@ -9,9 +12,12 @@ import {
   screenshotOnFailure,
 } from "./helpers"
 
-// The page Building blocks: the small parts alone
+// The page Building blocks: the small parts alone. The parts that jog use
+// the session's JoggingStore, which moves only an activated robot: the tests
+// that jog activate it first with the switch of the top bar.
 
 test.afterEach(screenshotOnFailure("building-blocks"))
+test.afterEach(deactivateRobot)
 
 /** A section of the page, by its heading */
 function section(page: Page, title: string) {
@@ -69,8 +75,35 @@ test("shows the sections and the states of LoadingCover", async ({ page }) => {
   await screenshot(page, "building-blocks-sections")
 })
 
+test("shows the jog controls as off until the robot is activated, and leaves its controller in monitor mode", async ({
+  page,
+}) => {
+  await openPage(page, "building-blocks")
+  // The buttons of the controls of X, Y and Z come first: X-, X+, Y-, ...
+  const xPlus = section(page, "JoggingCartesianAxisControl")
+    .getByRole("button")
+    .nth(1)
+  const zPlus = section(page, "JoggingButtons")
+    .getByRole("button", { name: "Jog Z+" })
+    .first()
+  const j1 = section(page, "JoggingJointSlider").getByRole("slider", {
+    name: "J1 Base",
+  })
+  await expect(xPlus).toBeDisabled()
+  await expect(zPlus).toBeDisabled()
+  await expect(j1).toHaveAttribute("aria-disabled", "true")
+  // NOVA switches a controller to control mode by itself for a jog
+  expect((await controllerState()).mode).toBe("MODE_MONITOR")
+
+  await activateRobot(page)
+  await expect(xPlus).toBeEnabled()
+  await expect(zPlus).toBeEnabled()
+  await expect(j1).not.toHaveAttribute("aria-disabled", "true")
+})
+
 test("jogs the TCP with JoggingCartesianAxisControl", async ({ page }) => {
   await openPage(page, "building-blocks")
+  await activateRobot(page)
   // The buttons of the controls of X, Y and Z come first: X-, X+, Y-, ...
   const xPlus = section(page, "JoggingCartesianAxisControl")
     .getByRole("button")
@@ -91,6 +124,7 @@ test("jogs the TCP with JoggingCartesianAxisControl", async ({ page }) => {
 
 test("jogs the TCP up along Z with JoggingGizmo", async ({ page }) => {
   await openPage(page, "building-blocks")
+  await activateRobot(page)
   // The gizmo section's 3D view: the RobotControlPanel section has one too
   await expectModelDrawn(
     section(page, "JoggingGizmo and JoggingGizmoOrientation"),
@@ -122,6 +156,7 @@ test("jogs a joint toward the pressed point with JoggingJointSlider, turns it ar
   page,
 }) => {
   await openPage(page, "building-blocks")
+  await activateRobot(page)
   const j1 = section(page, "JoggingJointSlider").getByRole("slider", {
     name: "J1 Base",
   })
@@ -189,6 +224,7 @@ test("jogs a joint toward the pressed point with JoggingJointSlider, turns it ar
 
 test("jogs the TCP up along Z with JoggingButtons", async ({ page }) => {
   await openPage(page, "building-blocks")
+  await activateRobot(page)
   // The first buttons jog; the two sets below show the disabled and the
   // active state
   const zPlus = section(page, "JoggingButtons")
@@ -221,6 +257,7 @@ test("turns the TCP about Z with JoggingGizmo in rotate mode", async ({
   page,
 }) => {
   await openPage(page, "building-blocks")
+  await activateRobot(page)
   // The gizmo section's 3D view: the RobotControlPanel section has one too
   await expectModelDrawn(
     section(page, "JoggingGizmo and JoggingGizmoOrientation"),
@@ -251,6 +288,7 @@ test("turns JoggingGizmo like the tool when it jogs along the tool's axes", asyn
   page,
 }) => {
   await openPage(page, "building-blocks")
+  await activateRobot(page)
   // The gizmo section's 3D view: the RobotControlPanel section has one too
   await expectModelDrawn(
     section(page, "JoggingGizmo and JoggingGizmoOrientation"),

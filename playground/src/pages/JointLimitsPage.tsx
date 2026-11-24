@@ -3,7 +3,6 @@ import Typography from "@mui/material/Typography"
 import { JointTypeEnum } from "@wandelbots/nova-js/v2"
 import {
   JoggingJointValueControl,
-  type JoggingStore,
   JointLimitGizmo,
   type RobotSession,
   robotModelOf,
@@ -14,6 +13,7 @@ import {
 import { observer } from "mobx-react-lite"
 import { useMemo } from "react"
 import { startJogging, stopJogging } from "../connections"
+import { cannotJog } from "../jogging"
 import {
   FitCamera,
   MotionGroupModel,
@@ -41,7 +41,7 @@ export function JointLimitsPage({ session }: PageProps) {
           <MotionGroupJointLimits session={session} />
         </Viewport>
       }
-      panel={<JointControls store={session.jogging} />}
+      panel={<JointControls session={session} />}
     />
   )
 }
@@ -84,8 +84,13 @@ const MotionGroupJointLimits = observer(
   },
 )
 
-/** The joint jogging of JoggingPanel, built from the public parts */
-const JointControls = observer(({ store }: { store: JoggingStore }) => {
+/**
+ * The joint jogging of JoggingPanel, built from the public parts. The
+ * session's JoggingStore jogs only a robot that may move: activate it with
+ * the switch of the top bar.
+ */
+const JointControls = observer(({ session }: { session: RobotSession }) => {
+  const store = session.jogging
   const revolute = store.jointType === JointTypeEnum.RevoluteJoint
 
   return (
@@ -123,7 +128,7 @@ const JointControls = observer(({ store }: { store: JoggingStore }) => {
               useDegree={revolute}
               lowerLimit={limits?.lower_limit}
               upperLimit={limits?.upper_limit}
-              disabled={store.isLocked}
+              disabled={cannotJog(session)}
               getValue={() =>
                 store.jogger.motionStream.rapidlyChangingMotionState
                   .joint_position[index]

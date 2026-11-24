@@ -1,10 +1,22 @@
-import type { JoggingStore } from "@wandelbots/wandelbots-js-react-components"
+import type {
+  JoggingStore,
+  RobotSession,
+} from "@wandelbots/wandelbots-js-react-components"
 import { useMemo } from "react"
 import { Quaternion, Vector3 } from "three"
 
-/** Without an inverse solver, the TCP cannot move along an axis */
-export const cannotJog = (store: JoggingStore) =>
-  store.isLocked || store.inverseSolver === null
+/**
+ * The session's JoggingStore would start no jog: the robot may not move (it
+ * is not activated, its safety stopped it, its live state is gone) or the
+ * store is locked. The jog controls of a page show as off then, as an app's
+ * own controls on a session have to.
+ */
+export const cannotJog = (session: RobotSession) =>
+  !session.safety.canBeMoved || session.jogging.isLocked
+
+/** Without an inverse solver, the TCP cannot move along an axis either */
+export const cannotJogCartesian = (session: RobotSession) =>
+  cannotJog(session) || session.jogging.inverseSolver === null
 
 /**
  * The orientation of the TCP: the frame of jogging along the tool's axes.

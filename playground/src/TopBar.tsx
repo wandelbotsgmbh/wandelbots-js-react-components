@@ -1,10 +1,13 @@
+import FormControlLabel from "@mui/material/FormControlLabel"
 import MenuItem from "@mui/material/MenuItem"
 import Stack from "@mui/material/Stack"
+import Switch from "@mui/material/Switch"
 import Typography from "@mui/material/Typography"
 import { AdornedSelect } from "@wandelbots/mui"
 import {
   AppHeader,
   type RobotSession,
+  robotActivationOf,
   robotSafetyOf,
   SafetyBar,
 } from "@wandelbots/wandelbots-js-react-components"
@@ -27,7 +30,8 @@ type TopBarProps = {
 
 /**
  * The top bar of every page: AppHeader (its app menu switches the pages), the
- * motion group select and the SafetyBar of the selected motion group.
+ * motion group select, and the activation switch and the SafetyBar of the
+ * selected motion group.
  */
 export const TopBar = observer(function TopBar({
   instance,
@@ -87,7 +91,52 @@ export const TopBar = observer(function TopBar({
         ))}
       </AdornedSelect>
 
+      {session && <Activation session={session} />}
       {session && <SafetyBar {...robotSafetyOf(session)} />}
     </Stack>
+  )
+})
+
+const ACTIVATION_LABELS = {
+  inactive: "Activate",
+  activating: "Activating",
+  active: "Activated",
+  deactivating: "Deactivating",
+}
+
+/**
+ * Activates the robot (its controller in control mode) on every page: what
+ * jogs with the session's JoggingStore moves only an activated robot, and
+ * only the Layouts page has RobotHeader with its own switch. The state and
+ * the toggle are the session's, as RobotHeader takes them
+ * (robotActivationOf).
+ */
+const Activation = observer(function Activation({
+  session,
+}: {
+  session: RobotSession
+}) {
+  const { state, disabled, onToggle } = robotActivationOf(session)
+  const changing = state === "activating" || state === "deactivating"
+
+  return (
+    <FormControlLabel
+      data-testid="playground-activation"
+      sx={{ marginX: 0 }}
+      label={
+        <Typography variant="body2" color="text.secondary" noWrap>
+          {ACTIVATION_LABELS[state]}
+        </Typography>
+      }
+      control={
+        <Switch
+          size="small"
+          checked={state === "active" || state === "deactivating"}
+          disabled={disabled || changing}
+          onChange={() => onToggle()}
+          slotProps={{ input: { role: "switch" } }}
+        />
+      }
+    />
   )
 })

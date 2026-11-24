@@ -142,6 +142,36 @@ export function screenshotOnFailure(pageId: PageId) {
 }
 
 /**
+ * Activates the test robot with the switch of the playground's top bar. What
+ * jogs with the session's JoggingStore (the pages Building blocks and Joint
+ * limits) moves only an activated robot, and shows its jog controls as off
+ * before. A test that calls this needs `deactivateRobot` in its afterEach.
+ */
+export async function activateRobot(page: Page) {
+  const activation = page
+    .getByTestId("playground-activation")
+    .getByRole("switch")
+  await activation.click()
+  await expect(activation).toBeChecked({ timeout: 30_000 })
+}
+
+/**
+ * For test.afterEach of tests that activated the robot: puts the controller
+ * back in monitor mode. The next test's openPage waits for MODE_MONITOR, and
+ * NOVA sets the start pose only then.
+ */
+export async function deactivateRobot() {
+  await nova().api.controller.setDefaultMode(
+    CELL,
+    testData().controller,
+    "ROBOT_SYSTEM_MODE_MONITOR",
+  )
+  await expect
+    .poll(async () => (await controllerState()).mode, { timeout: 30_000 })
+    .toBe("MODE_MONITOR")
+}
+
+/**
  * Presses a jog button with the mouse (the jog buttons react to pointer
  * events): at least 1 s, and until `moved` returns true. The robot moves
  * only after NOVA has confirmed the jogging websocket, and a press that
