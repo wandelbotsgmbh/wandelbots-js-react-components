@@ -11,11 +11,11 @@ import { ErrorBoundary } from "react-error-boundary"
 import type * as THREE from "three"
 import { externalizeComponent } from "../../externalizeComponent"
 import ConsoleFilter from "../ConsoleFilter"
-import { useSmoothedMotionState } from "../utils/useSmoothedMotionState"
 import { GenericRobot } from "./GenericRobot"
 import RobotAnimator, { type RobotAnimatorHandle } from "./RobotAnimator"
 import { useGhostStyle } from "./ghostStyle"
 import { defaultGetModel } from "./robotModelLogic"
+import { useFrameSmoothedMotionState } from "./useFrameSmoothedMotionState"
 
 export type DHRobotProps = {
   rapidlyChangingMotionState: MotionGroupState
@@ -153,15 +153,17 @@ export const SupportedRobotExact = externalizeComponent(
 /**
  * Robot visualizer with built-in spring smoothing of the joint stream.
  *
- * This is a thin wrapper that runs the incoming motion state through
- * {@link useSmoothedMotionState} and renders {@link SupportedRobotExact}. It is
- * the batteries-included default; drop down to `SupportedRobotExact` (optionally
- * with your own {@link useSmoothedMotionState} configuration) when you need to
- * control or disable smoothing.
+ * This is a thin wrapper that runs the incoming motion state through the
+ * spring of {@link useSmoothedMotionState}, stepped in the canvas's frame loop
+ * so that each drawn frame shows the spring at its own time, and renders
+ * {@link SupportedRobotExact}. It is the batteries-included default; drop down
+ * to `SupportedRobotExact` (optionally with your own
+ * {@link useSmoothedMotionState} configuration) when you need to control or
+ * disable smoothing.
  */
 export const SupportedRobot = externalizeComponent(
   ({ rapidlyChangingMotionState, ...props }: SupportedRobotProps) => {
-    const smoothedMotionState = useSmoothedMotionState(
+    const smoothedMotionState = useFrameSmoothedMotionState(
       rapidlyChangingMotionState,
     )
 

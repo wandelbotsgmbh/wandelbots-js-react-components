@@ -9,7 +9,6 @@ import { ErrorBoundary } from "react-error-boundary"
 import type * as THREE from "three"
 import { externalizeComponent } from "../../externalizeComponent"
 import ConsoleFilter from "../ConsoleFilter"
-import { useSmoothedMotionState } from "../utils/useSmoothedMotionState"
 import { DHLinearAxis } from "./DHLinearAxis"
 import { GenericRobot } from "./GenericRobot"
 import LinearAxisAnimator, {
@@ -17,6 +16,7 @@ import LinearAxisAnimator, {
 } from "./LinearAxisAnimator"
 import { useGhostStyle } from "./ghostStyle"
 import { defaultGetModel } from "./robotModelLogic"
+import { useFrameSmoothedMotionState } from "./useFrameSmoothedMotionState"
 
 export type DHLinearAxisProps = {
   rapidlyChangingMotionState: MotionGroupState
@@ -156,14 +156,16 @@ export const SupportedLinearAxisExact = externalizeComponent(
 /**
  * Linear axis visualizer with built-in spring smoothing of the joint stream.
  *
- * Thin wrapper that runs the incoming motion state through
- * {@link useSmoothedMotionState} and renders {@link SupportedLinearAxisExact}.
- * It is the batteries-included default; drop down to `SupportedLinearAxisExact`
- * when you need to control or disable smoothing.
+ * Thin wrapper that runs the incoming motion state through the spring of
+ * {@link useSmoothedMotionState}, stepped in the canvas's frame loop so that
+ * each drawn frame shows the spring at its own time, and renders
+ * {@link SupportedLinearAxisExact}. It is the batteries-included default; drop
+ * down to `SupportedLinearAxisExact` when you need to control or disable
+ * smoothing.
  */
 export const SupportedLinearAxis = externalizeComponent(
   ({ rapidlyChangingMotionState, ...props }: SupportedLinearAxisProps) => {
-    const smoothedMotionState = useSmoothedMotionState(
+    const smoothedMotionState = useFrameSmoothedMotionState(
       rapidlyChangingMotionState,
     )
 
