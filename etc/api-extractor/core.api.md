@@ -477,6 +477,16 @@ export type JoggingPanelProps = {
 // @public (undocumented)
 export type JoggingPanelTabId = "cartesian" | "joint";
 
+// @public
+export class JoggingRefusedError extends Error {
+    readonly reason: JoggingRefusedReason;
+}
+
+// @public
+export type JoggingRefusedReason = RobotNotMoveableReason | {
+    code: "locked";
+};
+
 // @public (undocumented)
 export class JoggingStore {
     constructor(jogger: JoggerConnection, coordSystems: CoordinateSystem[], motionGroupDescription: MotionGroupDescription, tcps: RobotTcp[], inverseSolverValue: string | null | undefined, options?: JoggingStoreOptions);
@@ -573,6 +583,7 @@ export class JoggingStore {
     requestTcpChange(tcpId: string): Promise<void>;
     rotationVelocityDegPerSec: number;
     get rotationVelocityRadsPerSec(): number;
+    runIncrementalCartesianJog(motion: CartesianMotionType, axis: JoggingAxis, direction: JoggingDirection, increment: DiscreteIncrementOption): Promise<void>;
     saveToLocalStorage(): void;
     selectedCartesianMotionType: CartesianMotionType;
     selectedCoordSystemId: string;
@@ -606,6 +617,9 @@ export class JoggingStore {
     showTcpSelect: boolean;
     showVelocityLegend: boolean;
     showVelocitySliderLabel: boolean;
+    startCartesianJogging(motion: CartesianMotionType, axis: JoggingAxis, direction: JoggingDirection): Promise<void>;
+    startJointJogging(joint: number, direction: JoggingDirection): Promise<void>;
+    stopJogging(): Promise<void>;
     // (undocumented)
     get tabIndex(): number;
     // (undocumented)
@@ -631,6 +645,7 @@ export class JoggingStore {
 // @public
 export type JoggingStoreOptions = {
     storage?: JoggingStoreStorage;
+    notMoveableReason?: () => RobotNotMoveableReason | null;
 };
 
 // @public
