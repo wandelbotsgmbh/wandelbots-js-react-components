@@ -9,6 +9,7 @@ export {
   type RobotControlJogMode,
   type RobotControlJoint,
   type RobotControlJoints,
+  type RobotControlJointTarget,
   type RobotControlMoveState,
   type RobotControlMoveTo,
   type RobotControlOption,
@@ -16,6 +17,7 @@ export {
   type RobotControlPose,
   type RobotControlSelect,
   type RobotControlTab,
+  type RobotControlTarget,
   type RobotControlVelocity,
 } from "../components/robotControl/RobotControlPanel"
 export type {

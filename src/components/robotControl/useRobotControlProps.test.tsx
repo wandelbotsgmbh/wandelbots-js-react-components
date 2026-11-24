@@ -1,5 +1,6 @@
 import { act, renderHook } from "@testing-library/react"
 import { degreesToRadians } from "@wandelbots/nova-js"
+import type { RobotControllerState } from "@wandelbots/nova-js/v2"
 import { observable, runInAction } from "mobx"
 import { Vector3 } from "three"
 import { describe, expect, it, onTestFinished, vi } from "vitest"
@@ -9,10 +10,11 @@ import {
   fakeExecution,
   MOTION_GROUP_ID,
   makeHarness,
+  motionGroupState,
 } from "../../lib/robotSession/__fixtures__/robotSessionHarness"
 import type { LoadRobotSessionOptions } from "../../lib/robotSession/loadRobotSession"
 import type { RobotSession } from "../../lib/robotSession/RobotSession"
-import type { RobotControlPose } from "./RobotControlPanel"
+import type { RobotControlPose, RobotControlTarget } from "./RobotControlPanel"
 import { useRobotControlProps } from "./useRobotControlProps"
 
 // RobotPad's wiring of the Robot control panel to its stores, as the
@@ -108,19 +110,19 @@ async function loadMoveTo({ activated = true } = {}) {
     /** What the panel's calls reported to the app */
     onError,
     /** A pose is saved in the panel: the session plans it */
-    async type(pose: RobotControlPose) {
+    async type(pose: RobotControlTarget) {
       act(() => moveTo().onTargetChange(pose))
       await act(flush)
     },
     /** A pose is saved in the panel, and NOVA accepts its trajectory */
-    async plan(pose: RobotControlPose) {
+    async plan(pose: RobotControlTarget) {
       act(() => moveTo().onTargetChange(pose))
       await act(flush)
       act(() => execution.emit("INITIALIZE_RECEIVED"))
       expect(moveTo().state).toBe("planned")
     },
     /** The button is held, and NOVA confirms the start */
-    start(pose: RobotControlPose) {
+    start(pose: RobotControlTarget) {
       act(() => moveTo().onMoveStart(pose))
       act(() => execution.emit("START_RECEIVED"))
       expect(moveTo().state).toBe("moving")
@@ -346,6 +348,67 @@ describe("useRobotControlProps", () => {
     expect(session.targetPose.staged).toBeNull()
     expect(armed?.dispose).toHaveBeenCalled()
     expect(moveTo().state).toBe("idle")
+  })
+
+  it("plans joint values of Move to as the session's joint pose, and moves along their trajectory while the button is held", async () => {
+    const { session, execution, moveTo, sent, type, start, letGo } =
+      await loadMoveTo()
+    const target = { joints: [0.1, 0, 0, 0, 0, 0.5] }
+
+    await type(target)
+    expect(session.targetPose.stagedPose).toEqual({
+      type: "joint",
+      motionGroupId: MOTION_GROUP_ID,
+      joints: [0.1, 0, 0, 0, 0, 0.5],
+    })
+    expect(
+      execution.planTrajectory.mock.calls.at(-1)?.[1].motion_commands[0]?.path,
+    ).toEqual({
+      path_definition_name: "PathJointPTP",
+      target_joint_position: [0.1, 0, 0, 0, 0, 0.5],
+    })
+    expect(moveTo().state).toBe("planning")
+
+    act(() => execution.emit("INITIALIZE_RECEIVED"))
+    expect(moveTo().state).toBe("planned")
+    // Not for other joint values, and not for a pose of the TCP
+    act(() => moveTo().onMoveStart({ joints: [0.1, 0, 0, 0, 0, 0.6] }))
+    act(() => moveTo().onMoveStart(TARGET))
+    expect(sent("StartMovementRequest")).toBe(0)
+
+    start(target)
+    expect(sent("StartMovementRequest")).toBe(1)
+    await letGo()
+    expect(sent("PauseMovementRequest")).toBe(1)
+    expect(moveTo().state).toBe("planned")
+
+    // Reset: the session drops the joint pose and hands the trajectory back
+    act(() => moveTo().onTargetChange(null))
+    await act(flush)
+    expect(session.targetPose.staged).toBeNull()
+    expect(moveTo().state).toBe("idle")
+  })
+
+  it("gives Move to the robot's joints, and the frame of a typed pose only to a robot that takes TCP poses", async () => {
+    const { session, harness, moveTo } = await loadMoveTo()
+    expect(moveTo().getCurrentJoints?.()).toEqual([0, 0, 0, 0, 0, 0])
+    expect(moveTo().frame?.value).toBe("world")
+
+    act(() =>
+      harness.source.send({
+        ...controllerState({ mode: "MODE_CONTROL" }),
+        motion_groups: [
+          { ...motionGroupState(), joint_position: [0.5, 0, 0, 0, 0, 0] },
+        ],
+      } as unknown as RobotControllerState),
+    )
+    expect(moveTo().getCurrentJoints?.()).toEqual([0.5, 0, 0, 0, 0, 0])
+
+    // A linear axis or a turntable: no inverse solver, so no TCP poses
+    runInAction(() => {
+      session.jogging.inverseSolver = null
+    })
+    expect(moveTo().frame).toBeUndefined()
   })
 
   it("pauses a move that was started again, though the motion stream still shows the pause before it", async () => {

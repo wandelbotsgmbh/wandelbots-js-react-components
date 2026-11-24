@@ -3,6 +3,27 @@ import type { RobotControlPose } from "./RobotControlPanel"
 /** RobotPad's tolerances for "the robot is at this pose" */
 const POSITION_TOLERANCE_MM = 0.5
 const ORIENTATION_TOLERANCE_RAD = 0.01
+/** In rad, or mm for a linear axis: as the session's (RobotLiveState.isAt) */
+const JOINT_TOLERANCE = 0.001
+
+/**
+ * Whether the joints stand at `target`, each within the session's
+ * tolerance. Not for a robot that reports no joints, or another number of
+ * them.
+ */
+export function isAtJoints(
+  current: readonly number[] | null,
+  target: readonly number[],
+): boolean {
+  return (
+    current !== null &&
+    current.length === target.length &&
+    target.every(
+      (value, index) =>
+        Math.abs(value - (current[index] ?? 0)) <= JOINT_TOLERANCE,
+    )
+  )
+}
 
 /**
  * Whether the TCP stands at `target`, within RobotPad's tolerances. The

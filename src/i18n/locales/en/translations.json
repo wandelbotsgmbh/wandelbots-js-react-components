@@ -101,6 +101,7 @@
   "RobotControl.MoveTo.TargetPose.lb": "Target pose",
   "RobotControl.MoveTo.RelativeTo.lb": "Relative to",
   "RobotControl.MoveTo.Coordinates.lb": "Coordinates XYZ (mm) · Rotation vector (rad)",
+  "RobotControl.MoveTo.JointPositions.lb": "Joint positions ({{unit}})",
   "RobotControl.MoveTo.Copy.bt": "Copy",
   "RobotControl.MoveTo.Copied.lb": "Pose copied",
   "RobotControl.MoveTo.Edit.bt": "Edit pose",

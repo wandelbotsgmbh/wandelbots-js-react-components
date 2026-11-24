@@ -117,6 +117,15 @@ export type RobotControlPose = {
 }
 
 /**
+ * Joint values as a target of Move to, one per joint: in rad, or in mm for
+ * a linear axis
+ */
+export type RobotControlJointTarget = { joints: number[] }
+
+/** Where Move to goes: a pose of the TCP, or joint values */
+export type RobotControlTarget = RobotControlPose | RobotControlJointTarget
+
+/**
  * Where the move to the typed pose is, as RobotPad's trajectory: "planning"
  * the move, "planned" and loaded so that the button can start it, "moving",
  * "stopping" after the release, or "idle" (no plan)
@@ -130,12 +139,17 @@ export type RobotControlMoveState =
 
 /**
  * The Move to tab, as RobotPad's pose field: what the app gives to move the
- * TCP to a typed pose. The field shows the TCP's current pose; Edit pose (or
- * a click on the field) makes it editable, and Save pose edit (or Enter)
- * makes the typed pose the target. Then Reset and the Move to button show:
- * held for 200 ms, it starts the move; let go, it pauses it. Once a move has
- * taken the TCP to the target and it stands still, the field shows the
- * current pose again.
+ * robot to a typed target. The field shows the TCP's current pose; Edit pose
+ * (or a click on the field) makes it editable, and Save pose edit (or Enter)
+ * makes what was typed the target: a pose of the TCP as
+ * `(x, y, z, rx, ry, rz)`, or, with `getCurrentJoints`, joint values as
+ * `[j1, …, jn]`. Then Reset and the Move to button show: held for 200 ms, it
+ * starts the move; let go, it pauses it. Once a move has taken the robot to
+ * the target and it stands still, the field shows the current pose again.
+ *
+ * A robot that takes no TCP poses (the panel's `cartesian` is false: a
+ * linear axis, a turntable) moves to joint values only: the field shows its
+ * joints, and reads numbers without brackets as joint values.
  */
 export type RobotControlMoveTo = {
   /**
@@ -144,21 +158,31 @@ export type RobotControlMoveTo = {
    * fast for a prop.
    */
   getCurrentPose: () => RobotControlPose | null
+  /**
+   * The joints' positions now, in rad, or in mm for a linear axis. A
+   * function, as `getCurrentPose`. With it, the field also takes joint
+   * values as a target, as many as it returns. Without it, TCP poses only.
+   */
+  getCurrentJoints?: () => number[] | null
   /** The frame the typed pose is relative to ("Relative to"). Without it, no select. */
   frame?: RobotControlSelect
   /**
-   * A typed pose became the target: plan the move to it and load it, so that
-   * the button can start it at once. null: the field shows the current pose
-   * again (Reset, the TCP arrived, another tab was chosen, or the TCP or the
-   * frame changed): drop the plan. A held move gets its `onMoveStop` first.
+   * What was typed became the target: plan the move to it and load it, so
+   * that the button can start it at once. Joint values come only with
+   * `getCurrentJoints`. null: the field shows the current pose again (Reset,
+   * the robot arrived, another tab was chosen, or the TCP or the frame
+   * changed): drop the plan. A held move gets its `onMoveStop` first.
    */
-  onTargetChange: (pose: RobotControlPose | null) => void
+  onTargetChange: (target: RobotControlTarget | null) => void
   /** Where the move is: the button waits, says Moving… or Stopping… */
   state: RobotControlMoveState
-  /** Why the TCP cannot move to the target, e.g. it is out of reach */
+  /** Why the robot cannot move to the target, e.g. it is out of reach */
   error?: string | null
-  /** The button was held 200 ms while the move was "planned": start it */
-  onMoveStart: (pose: RobotControlPose) => void
+  /**
+   * The button was held 200 ms while the move was "planned": start it.
+   * `target` is the one that the field shows.
+   */
+  onMoveStart: (target: RobotControlTarget) => void
   /**
    * The button was let go after a start, or the hold ended otherwise (e.g.
    * another tab, or editing another pose): pause the move
@@ -257,8 +281,11 @@ export type RobotControlPanelProps = {
   /** The Joint tab. Without it, the panel has none. */
   joints?: RobotControlJoints
   /**
-   * The Move to tab. Without it, the panel has none. It moves with the
-   * translation velocity (`velocity.translate`).
+   * The Move to tab. Without it, the panel has none. It shows the velocity
+   * of the move to its target: the translation velocity
+   * (`velocity.translate`) for a pose of the TCP, and for joint values the
+   * velocity of the Joint tab (`joints.velocity`), or without that tab the
+   * rotation velocity (`velocity.rotate`).
    */
   moveTo?: RobotControlMoveTo
   /** Styles of the panel's box, e.g. its width */
@@ -270,7 +297,8 @@ export type RobotControlPanelProps = {
  * Rotate, and in them the TCP and the frame to jog along, Continuous or
  * Increment, the velocity, the step size, and the gizmo or the buttons; the
  * tab Joint, with a slider per joint and the joint velocity; and the tab
- * Move to, with a target pose and a button to hold to move there.
+ * Move to, with a target (a pose of the TCP, or joint values) and a button
+ * to hold to move there.
  *
  * It moves nothing itself: the app gets the presses (`onJogStart`,
  * `onJogStop`, `increments.onStep`) and keeps the velocity and the selects
@@ -441,9 +469,24 @@ export const RobotControlPanel = externalizeComponent(
             <MoveToTab
               moveTo={moveTo}
               tcp={props.tcp}
+              cartesian={cartesian}
               velocity={props.velocity.translate}
               onVelocityChange={(value) =>
                 props.onVelocityChange("translate", value)
+              }
+              linear={joints?.linear ?? false}
+              // Joint values move with the velocity of the Joint tab
+              jointVelocity={
+                joints
+                  ? {
+                      velocity: joints.velocity,
+                      onChange: joints.onVelocityChange,
+                    }
+                  : {
+                      velocity: props.velocity.rotate,
+                      onChange: (value) =>
+                        props.onVelocityChange("rotate", value),
+                    }
               }
               disabled={disabled}
             />

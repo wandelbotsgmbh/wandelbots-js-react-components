@@ -5,7 +5,7 @@
  * target pose, so a pose copied in one app reads the same in the other.
  */
 
-import type { RobotControlPose } from "./RobotControlPanel"
+import type { RobotControlPose, RobotControlTarget } from "./RobotControlPanel"
 
 /**
  * One plain or scientific-notation number, no separators. The digits after
@@ -102,4 +102,22 @@ export function parseJointsText(
   const values = parseNumberList(text, "[", "]")
   if (values?.length !== jointCount) return null
   return values
+}
+
+/**
+ * The target of a move in `text`, or null if it is none: a pose of the TCP
+ * in parentheses, or joint values in square brackets, as many as the robot
+ * has joints (`jointCount`; null when they are not known, which takes none).
+ * Numbers without brackets are what the field shows: a pose of the TCP, or
+ * joint values for a robot that takes no TCP poses (`poses` is false), for
+ * which a pose is no target either.
+ */
+export function parseTargetText(
+  text: string,
+  { poses, jointCount }: { poses: boolean; jointCount: number | null },
+): RobotControlTarget | null {
+  if (poses && !text.trim().startsWith("[")) return parsePoseText(text)
+  if (jointCount === null) return null
+  const joints = parseJointsText(text, jointCount)
+  return joints && { joints }
 }

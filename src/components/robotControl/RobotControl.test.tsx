@@ -3,6 +3,8 @@ import type { RobotControllerState } from "@wandelbots/nova-js/v2"
 import { describe, expect, it, onTestFinished, vi } from "vitest"
 import {
   controllerState,
+  fakeExecution,
+  MOTION_GROUP_ID,
   makeHarness,
   motionGroupState,
 } from "../../lib/robotSession/__fixtures__/robotSessionHarness"
@@ -163,6 +165,45 @@ describe("RobotControl", () => {
         "true",
       )
     })
+  })
+
+  // A linear axis or a turntable: its kinematic model has no inverse solver
+  it("moves a robot that takes no TCP poses to typed joint values", async () => {
+    const harness = makeHarness()
+    harness.api.opts.axiosInstance.get.mockImplementation(
+      async (url: string) => ({
+        data: url.endsWith("/description")
+          ? { name: "custom-UniversalRobots_UR5e-1" }
+          : { inverse_solver: null },
+      }),
+    )
+    const session = await harness.load().ready
+    onTestFinished(() => session.dispose())
+    act(() => harness.source.send(controllerState({ mode: "MODE_CONTROL" })))
+    await fakeExecution(session)
+
+    render(<RobotControl session={session} />)
+    expect(screen.queryByRole("tab", { name: "Translate" })).toBeNull()
+    fireEvent.click(screen.getByRole("tab", { name: "Move to" }))
+
+    const field = screen.getByRole("textbox", { name: "Joint positions (rad)" })
+    expect(field).toHaveValue("[0, 0, 0, 0, 0, 0]")
+    // Joint values are relative to nothing
+    expect(screen.queryByRole("combobox", { name: "Relative to" })).toBeNull()
+
+    fireEvent.click(screen.getByRole("button", { name: "Edit pose" }))
+    fireEvent.change(field, { target: { value: "0.5, 0, 0, 0, 0, 0" } })
+    fireEvent.keyDown(field, { key: "Enter" })
+    await act(async () => {
+      for (let i = 0; i < 20; i++) await Promise.resolve()
+    })
+
+    expect(session.targetPose.stagedPose).toEqual({
+      type: "joint",
+      motionGroupId: MOTION_GROUP_ID,
+      joints: [0.5, 0, 0, 0, 0, 0],
+    })
+    expect(field).toHaveValue("[0.5, 0, 0, 0, 0, 0]")
   })
 
   it("says what is missing without a session", () => {

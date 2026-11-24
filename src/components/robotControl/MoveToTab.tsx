@@ -6,15 +6,16 @@ import { Undo } from "@wandelbots/icons/Undo"
 import { RoundedIconButton } from "@wandelbots/mui"
 import { useEffect, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { isAtPose } from "./atPose"
+import { isAtJoints, isAtPose } from "./atPose"
 import { HoldToMoveButton } from "./HoldToMoveButton"
 import { PanelSelect } from "./PanelSelect"
 import { PoseField } from "./PoseField"
-import { parsePoseText, poseToText } from "./poseText"
+import { jointsToText, parseTargetText, poseToText } from "./poseText"
 import type {
+  RobotControlJointTarget,
   RobotControlMoveTo,
-  RobotControlPose,
   RobotControlSelect,
+  RobotControlTarget,
   RobotControlVelocity,
 } from "./RobotControlPanel"
 import { Section } from "./Section"
@@ -24,28 +25,51 @@ import { VelocityRow } from "./VelocityRow"
 type MoveToTabProps = {
   moveTo: RobotControlMoveTo
   tcp?: RobotControlSelect
+  /** The robot takes poses of the TCP: else it moves to joint values only */
+  cartesian: boolean
+  /** The joints are linear axes, in mm and mm/s */
+  linear: boolean
+  /** The velocity of a move to a pose of the TCP, in mm/s */
   velocity: RobotControlVelocity
   onVelocityChange: (value: number) => void
+  /** The velocity of a move to joint values: rad/s, or mm/s for linear axes */
+  jointVelocity: {
+    velocity: RobotControlVelocity
+    onChange: (value: number) => void
+  }
   disabled: boolean
 }
 
-type Target = { pose: RobotControlPose; text: string }
+type Target = { target: RobotControlTarget; text: string }
+
+const isJointTarget = (
+  target: RobotControlTarget,
+): target is RobotControlJointTarget => "joints" in target
 
 /**
- * The Move to tab: the TCP, the target pose and the frame it is relative to,
- * the velocity, and the Move to button, off until a typed pose is the
+ * The Move to tab: the TCP, the target and the frame it is relative to,
+ * the velocity, and the Move to button, off until what was typed is the
  * target; Reset shows with a target, and Plan again while the app gives an
  * `error` for it (it could not be planned, or the move to it failed). It
  * works as RobotPad's pose field and its TargetPoseStore: the
  * field shows the TCP's current pose until a typed pose is saved; a move
  * that took the TCP there ends with the current pose shown again, once the
  * button is let go; another tab shows it again as well.
+ *
+ * The target is a pose of the TCP, or joint values in square brackets,
+ * which RobotPad's field took on its Joint tab. A robot that takes no TCP
+ * poses (`cartesian` is false) shows its joints and moves to joint values
+ * only. The velocity is the one of the move to the target: the joint
+ * velocity for joint values.
  */
 export function MoveToTab({
   moveTo,
   tcp,
+  cartesian,
+  linear,
   velocity,
   onVelocityChange,
+  jointVelocity,
   disabled,
 }: MoveToTabProps) {
   const { t } = useTranslation()
@@ -54,6 +78,10 @@ export function MoveToTab({
   const [draft, setDraft] = useState<string | null>(null)
   const live = useEveryFrame(
     () => {
+      if (!cartesian) {
+        const joints = moveTo.getCurrentJoints?.()
+        return joints ? jointsToText(joints) : ""
+      }
       const current = moveTo.getCurrentPose()
       return current ? poseToText(current) : ""
     },
@@ -61,15 +89,31 @@ export function MoveToTab({
   )
   const shown = target?.text ?? live
   const editing = draft !== null
-  const draftPose = draft === null ? null : parsePoseText(draft)
+  const draftTarget =
+    draft === null
+      ? null
+      : parseTargetText(draft, {
+          poses: cartesian,
+          jointCount: moveTo.getCurrentJoints?.()?.length ?? null,
+        })
   // A target the app could plan, as RobotPad's staged pose. Not while
   // another pose is typed: the button would move to a pose not shown.
   const ready = target !== null && !moveTo.error && !editing
   const atPose =
     useEveryFrame(
-      () => target !== null && isAtPose(moveTo.getCurrentPose(), target.pose),
+      () =>
+        target !== null &&
+        (isJointTarget(target.target)
+          ? isAtJoints(
+              moveTo.getCurrentJoints?.() ?? null,
+              target.target.joints,
+            )
+          : isAtPose(moveTo.getCurrentPose(), target.target)),
       ready,
     ) && ready
+  // The move that the velocity is of: to the target, else to what the
+  // field shows and takes without brackets
+  const movesJoints = target ? isJointTarget(target.target) : !cartesian
 
   // The move to the target has run: arriving there ends it
   const moveStarted = useRef(false)
@@ -86,17 +130,22 @@ export function MoveToTab({
   }
 
   function confirm() {
-    if (draftPose === null || disabled) return
+    if (draftTarget === null || disabled) return
     moveStarted.current = false
-    setTarget({ pose: draftPose, text: poseToText(draftPose) })
+    setTarget({
+      target: draftTarget,
+      text: isJointTarget(draftTarget)
+        ? jointsToText(draftTarget.joints)
+        : poseToText(draftTarget),
+    })
     setDraft(null)
-    moveTo.onTargetChange(draftPose)
+    moveTo.onTargetChange(draftTarget)
   }
 
   // The way out of a move that failed, or a target the app could not plan
   // when it was saved: the app plans the target that still shows
   function planAgain() {
-    if (target) moveTo.onTargetChange(target.pose)
+    if (target) moveTo.onTargetChange(target.target)
   }
 
   // As RobotPad: a move that took the TCP to the target is over once it no
@@ -115,7 +164,8 @@ export function MoveToTab({
   }, [ready, moveTo.state, atPose])
 
   // The typed pose is relative to the TCP and the frame: another one makes
-  // the target a different pose
+  // the target a different pose. Joint values go as well: the field shows
+  // one thing after such a change, the live pose.
   const frameKey = [tcp?.value, moveTo.frame?.value].join("\u0000")
   // biome-ignore lint/correctness/useExhaustiveDependencies: on a new TCP or frame only
   useEffect(() => {
@@ -136,7 +186,7 @@ export function MoveToTab({
 
   const error =
     draft !== null
-      ? draftPose === null
+      ? draftTarget === null
         ? t("RobotControl.MoveTo.InvalidPose.lb")
         : null
       : target
@@ -166,6 +216,13 @@ export function MoveToTab({
           />
         )}
         <PoseField
+          label={
+            cartesian
+              ? t("RobotControl.MoveTo.Coordinates.lb")
+              : t("RobotControl.MoveTo.JointPositions.lb", {
+                  unit: linear ? "mm" : "rad",
+                })
+          }
           text={draft ?? shown}
           editing={editing}
           onEdit={() => {
@@ -175,7 +232,7 @@ export function MoveToTab({
           onCancel={() => setDraft(null)}
           onConfirm={confirm}
           canConfirm={
-            draftPose !== null && !disabled && moveTo.state !== "planning"
+            draftTarget !== null && !disabled && moveTo.state !== "planning"
           }
           error={error}
           disabled={disabled}
@@ -183,9 +240,11 @@ export function MoveToTab({
       </Stack>
 
       <VelocityRow
-        motion="translate"
-        velocity={velocity}
-        onChange={onVelocityChange}
+        // Joints show as a rotation (°/s), linear axes and the TCP as a
+        // translation (mm/s)
+        motion={movesJoints && !linear ? "rotate" : "translate"}
+        velocity={movesJoints ? jointVelocity.velocity : velocity}
+        onChange={movesJoints ? jointVelocity.onChange : onVelocityChange}
         disabled={disabled}
       />
 
@@ -225,7 +284,7 @@ export function MoveToTab({
           atPose={atPose}
           disabled={disabled}
           onMoveStart={() => {
-            if (target) moveTo.onMoveStart(target.pose)
+            if (target) moveTo.onMoveStart(target.target)
           }}
           onMoveStop={moveTo.onMoveStop}
           stopRef={stopHold}

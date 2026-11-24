@@ -18,8 +18,8 @@ import type {
   JogMotion,
   RobotControlJogMode,
   RobotControlPanelProps,
-  RobotControlPose,
   RobotControlTab,
+  RobotControlTarget,
 } from "./RobotControlPanel"
 import { useEveryFrame } from "./useEveryFrame"
 
@@ -60,24 +60,35 @@ const toDegrees = (radians: number) =>
   Math.round(radiansToDegrees(radians) * 1e6) / 1e6
 
 /**
- * A pose of Move to as the session's: of the TCP and in the frame that the
- * panel shows, which are the jogging store's selected ones
+ * A target of Move to as the session's pose: joint values as they are, and
+ * a pose of the TCP as one of the TCP and in the frame that the panel shows,
+ * which are the jogging store's selected ones
  */
-function robotPoseOf(session: RobotSession, pose: RobotControlPose): RobotPose {
+function robotPoseOf(
+  session: RobotSession,
+  target: RobotControlTarget,
+): RobotPose {
+  if ("joints" in target) {
+    return {
+      type: "joint",
+      motionGroupId: session.motionGroupId,
+      joints: target.joints,
+    }
+  }
   return {
     type: "cartesian",
     motionGroupId: session.motionGroupId,
     tcpPose: {
-      pose,
+      pose: target,
       coordSystemId: session.jogging.selectedCoordSystemId,
       tcpId: session.jogging.selectedTcpId,
     },
   }
 }
 
-/** Plans a pose of Move to as the session's typed pose */
-function planTarget(session: RobotSession, pose: RobotControlPose) {
-  void session.targetPose.plan(robotPoseOf(session, pose))
+/** Plans a target of Move to as the session's typed pose */
+function planTarget(session: RobotSession, target: RobotControlTarget) {
+  void session.targetPose.plan(robotPoseOf(session, target))
 }
 
 /** Why the robot may not move, in the library's words */
@@ -116,8 +127,9 @@ function useJointValues(store: JoggingStore): number[] {
 /**
  * The props of `RobotControlPanel` for a robot of a session: Translate
  * and Rotate jog the TCP (continuously or by the steps of its jogging store),
- * Joint jogs the joints, and Move to plans the pose typed in it as the
- * session's typed pose and moves along the planned trajectory while held.
+ * Joint jogs the joints, and Move to plans the pose or the joint values
+ * typed in it as the session's typed pose and moves along the planned
+ * trajectory while held.
  * The tab, jog mode, step size and velocities are the jogging store's, so
  * the session's storage keeps them.
  *
@@ -276,21 +288,21 @@ export function useRobotControlProps(
     })
   }
 
-  // Move to: the pose typed in the panel is planned and staged as the
-  // session's typed pose, so its rules apply
+  // Move to: the pose or the joint values typed in the panel are planned
+  // and staged as the session's typed pose, so its rules apply
   // The panel's target, while it has one. The session plans nothing while
   // the robot may not move: the panel says why, and plans it once it may.
-  const [target, setTarget] = useState<RobotControlPose | null>(null)
+  const [target, setTarget] = useState<RobotControlTarget | null>(null)
   const targetRef = useRef(target)
   targetRef.current = target
 
-  function onTargetChange(pose: RobotControlPose | null) {
-    setTarget(pose)
-    if (!pose) {
+  function onTargetChange(next: RobotControlTarget | null) {
+    setTarget(next)
+    if (!next) {
       void targetPose.resetToLive()
       return
     }
-    planTarget(session, pose)
+    planTarget(session, next)
   }
 
   useEffect(
@@ -459,15 +471,21 @@ export function useRobotControlProps(
           orientation: pose.orientation as [number, number, number],
         }
       },
-      // The typed pose is read in the coordinate system of the displayed pose
-      frame: {
-        options: store.coordSystems.map((cs) => ({
-          id: cs.coordinate_system,
-          label: coordSystemLabel(store, cs),
-        })),
-        value: store.selectedCoordSystemId,
-        onChange: (id) => store.setSelectedCoordSystemId(id),
-      },
+      // The joints as the readouts show them: joint values can be a target
+      getCurrentJoints: () => session.state.jointPose,
+      // The typed pose is read in the coordinate system of the displayed
+      // pose. A robot without TCP poses moves to joint values only, which
+      // are relative to nothing.
+      frame: store.canJogCartesian
+        ? {
+            options: store.coordSystems.map((cs) => ({
+              id: cs.coordinate_system,
+              label: coordSystemLabel(store, cs),
+            })),
+            value: store.selectedCoordSystemId,
+            onChange: (id) => store.setSelectedCoordSystemId(id),
+          }
+        : undefined,
       onTargetChange,
       // The trajectory's states are the panel's, while it is the target's
       state: targetPose.confirming
@@ -486,9 +504,9 @@ export function useRobotControlProps(
               })
             : null,
       // The button is held and let go: the session sees to it that the
-      // robot moves only while it is held, and only to the pose it shows
-      onMoveStart: (pose) => {
-        targetPose.holdMove(robotPoseOf(session, pose))
+      // robot moves only while it is held, and only to the target it shows
+      onMoveStart: (shown) => {
+        targetPose.holdMove(robotPoseOf(session, shown))
       },
       onMoveStop: () => {
         targetPose.releaseMove().catch(report)

@@ -10,6 +10,8 @@ import { useTranslation } from "react-i18next"
 import { useCopyText } from "./useCopyText"
 
 type PoseFieldProps = {
+  /** What the field holds, e.g. the coordinates of a pose and their units */
+  label: string
   /** The text shown: the draft while editing, else the target or the live pose */
   text: string
   editing: boolean
@@ -30,6 +32,7 @@ type PoseFieldProps = {
  * Save pose edit (Enter) and Cancel (Escape) end the editing
  */
 export function PoseField({
+  label,
   text,
   editing,
   onEdit,
@@ -65,7 +68,7 @@ export function PoseField({
   return (
     <Stack direction="row" sx={{ gap: "8px", alignItems: "flex-start" }}>
       <AdornedTextField
-        label={t("RobotControl.MoveTo.Coordinates.lb")}
+        label={label}
         value={text}
         inputRef={input}
         onChange={(event) => onDraftChange(event.target.value)}

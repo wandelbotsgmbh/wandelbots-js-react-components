@@ -3,6 +3,7 @@ import {
   jointsToText,
   parseJointsText,
   parsePoseText,
+  parseTargetText,
   poseToText,
 } from "./poseText"
 
@@ -139,5 +140,56 @@ describe("parsePoseText", () => {
     expect(parsePoseText("")).toBeNull()
     expect(parsePoseText("()")).toBeNull()
     expect(parsePoseText("   ")).toBeNull()
+  })
+})
+
+describe("parseTargetText", () => {
+  // A robot with six joints that takes TCP poses
+  const arm = { poses: true, jointCount: 6 }
+  // A linear axis: no inverse solver, so no TCP poses
+  const axis = { poses: false, jointCount: 1 }
+
+  it("tells a TCP pose from joint values by the brackets", () => {
+    expect(parseTargetText("(1, 2, 3, 0.1, 0.2, 0.3)", arm)).toEqual({
+      position: [1, 2, 3],
+      orientation: [0.1, 0.2, 0.3],
+    })
+    expect(parseTargetText("[1, 2, 3, 0.1, 0.2, 0.3]", arm)).toEqual({
+      joints: [1, 2, 3, 0.1, 0.2, 0.3],
+    })
+    expect(parseTargetText("  [ 1,2 ,3,4,5,6 ]  ", arm)).toEqual({
+      joints: [1, 2, 3, 4, 5, 6],
+    })
+  })
+
+  it("reads numbers without brackets as what the field shows: a TCP pose, or joint values for a robot without TCP poses", () => {
+    expect(parseTargetText("1, 2, 3, 0.1, 0.2, 0.3", arm)).toEqual({
+      position: [1, 2, 3],
+      orientation: [0.1, 0.2, 0.3],
+    })
+    expect(parseTargetText("250.5", axis)).toEqual({ joints: [250.5] })
+    expect(parseTargetText("[250.5]", axis)).toEqual({ joints: [250.5] })
+  })
+
+  it("takes joint values only with the robot's number of joints", () => {
+    expect(parseTargetText("[1, 2, 3]", arm)).toBeNull()
+    expect(parseTargetText("[1, 2, 3, 4, 5, 6, 7]", arm)).toBeNull()
+    expect(parseTargetText("[1, 2]", axis)).toBeNull()
+    // The app gives no joints: their number is not known
+    expect(
+      parseTargetText("[1, 2, 3, 4, 5, 6]", { poses: true, jointCount: null }),
+    ).toBeNull()
+  })
+
+  it("takes no TCP pose for a robot without TCP poses", () => {
+    const turntable = { poses: false, jointCount: 6 }
+    expect(parseTargetText("(1, 2, 3, 0.1, 0.2, 0.3)", turntable)).toBeNull()
+  })
+
+  it("rejects what is neither", () => {
+    expect(parseTargetText("", arm)).toBeNull()
+    expect(parseTargetText("[1, 2, 3, 4, 5, 6)", arm)).toBeNull()
+    expect(parseTargetText("(1, 2, 3, 4, 5, 6]", arm)).toBeNull()
+    expect(parseTargetText("[1, 2, x, 4, 5, 6]", arm)).toBeNull()
   })
 })

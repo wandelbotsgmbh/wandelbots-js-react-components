@@ -522,3 +522,221 @@ describe("RobotControlPanel's Move to tab, as RobotPad's pose field", () => {
     expect(coordinates()).toHaveAttribute("readonly")
   })
 })
+
+describe("RobotControlPanel's Move to tab with joint values as the target", () => {
+  const JOINTS = [0.1, -1.2, 1.3, 0, 1.5708, 0]
+  const JOINT_TARGET = { joints: [0.1, -1.2, 1.3, 0, 1.5708, 0.5] }
+  const JOINT_TEXT = "[0.1, -1.2, 1.3, 0, 1.5708, 0.5]"
+  const INVALID = "Please enter valid pose coordinates."
+  const jointPositions = (unit: string) =>
+    screen.getByRole("textbox", { name: `Joint positions (${unit})` })
+  const velocityField = () => screen.getByRole("textbox", { name: "Velocity" })
+
+  /** The Joint tab of an app: 10 °/s, of 1 to 60 °/s */
+  function jointsTab(
+    overrides: Partial<RobotControlPanelProps["joints"]> = {},
+  ) {
+    const onVelocityChange = vi.fn()
+    return {
+      onVelocityChange,
+      joints: {
+        joints: JOINTS.map((value) => ({ value, min: -3, max: 3 })),
+        velocity: {
+          value: Math.PI / 18,
+          min: Math.PI / 180,
+          max: Math.PI / 3,
+        },
+        onVelocityChange,
+        onJogStart: vi.fn(),
+        onJogStop: vi.fn(),
+        ...overrides,
+      },
+    }
+  }
+
+  it("takes joint values in square brackets as the target, and moves to them while the button is held", async () => {
+    const { onTargetChange, onMoveStart, rerender } = setup({
+      getCurrentJoints: () => JOINTS,
+    })
+    fireEvent.click(tab("Move to"))
+    // The field shows the TCP's pose, as without joints
+    expect(coordinates()).toHaveValue(LIVE_TEXT)
+
+    confirmPose(" [0.1, -1.2, 1.3, 0, 1.5708, 0.50001] ")
+    expect(onTargetChange).toHaveBeenLastCalledWith({
+      joints: [0.1, -1.2, 1.3, 0, 1.5708, 0.50001],
+    })
+    // As the copy of joint values: to 0.0001
+    expect(coordinates()).toHaveValue(JOINT_TEXT)
+    expect(coordinates()).toHaveAttribute("readonly")
+    expect(button("Reset pose to previous one")).toBeEnabled()
+
+    rerender({ state: "planned" })
+    await holdUntilStarted(onMoveStart)
+    expect(onMoveStart).toHaveBeenCalledWith({
+      joints: [0.1, -1.2, 1.3, 0, 1.5708, 0.50001],
+    })
+  })
+
+  it("still reads a pose in parentheses, and numbers without brackets, as a pose of the TCP", () => {
+    const { onTargetChange } = setup({ getCurrentJoints: () => JOINTS })
+    fireEvent.click(tab("Move to"))
+
+    confirmPose("(1, 2, 3, 0, 0, 0)")
+    expect(onTargetChange).toHaveBeenLastCalledWith(TARGET)
+    confirmPose("1, 2, 3, 0, 0, 0")
+    expect(onTargetChange).toHaveBeenCalledTimes(2)
+    expect(onTargetChange).toHaveBeenLastCalledWith(TARGET)
+  })
+
+  it("says that joint values for another number of joints are no target, and cannot save them", () => {
+    const { onTargetChange } = setup({ getCurrentJoints: () => JOINTS })
+    fireEvent.click(tab("Move to"))
+
+    fireEvent.click(button("Edit pose"))
+    fireEvent.change(coordinates(), { target: { value: "[0.1, -1.2, 1.3]" } })
+    expect(coordinates()).toHaveAccessibleDescription(INVALID)
+    expect(button("Save pose edit")).toBeDisabled()
+    fireEvent.keyDown(coordinates(), { key: "Enter" })
+    expect(onTargetChange).not.toHaveBeenCalled()
+
+    fireEvent.change(coordinates(), { target: { value: JOINT_TEXT } })
+    expect(coordinates()).toHaveAttribute("aria-invalid", "false")
+    expect(button("Save pose edit")).toBeEnabled()
+  })
+
+  it("takes no joint values from an app that gives no joints", () => {
+    const { onTargetChange } = setup()
+    fireEvent.click(tab("Move to"))
+
+    confirmPose(JOINT_TEXT)
+    expect(coordinates()).toHaveAccessibleDescription(INVALID)
+    expect(onTargetChange).not.toHaveBeenCalled()
+  })
+
+  it("cannot move to joint values the robot stands at, and shows the live pose again after a move that got there", async () => {
+    let joints = JOINTS
+    const { onMoveStart, onTargetChange, rerender } = setup({
+      getCurrentJoints: () => joints,
+      state: "planned",
+    })
+    fireEvent.click(tab("Move to"))
+    // Where the robot stands, within a thousandth
+    confirmPose("[0.1005, -1.2, 1.3, 0, 1.5708, 0]")
+    await waitFor(() => expect(moveButton()).toBeDisabled())
+    expect(
+      screen.getByLabelText("Robot is already at this pose"),
+    ).toContainElement(moveButton())
+
+    confirmPose(JOINT_TEXT)
+    await waitFor(() => expect(moveButton()).toBeEnabled())
+    await holdUntilStarted(onMoveStart)
+    rerender({ state: "moving" })
+    joints = [0.1, -1.2, 1.3, 0, 1.5708, 0.4995]
+    await waitFor(() => expect(moveButton()).toBeDisabled())
+
+    release(moveButton())
+    rerender({ state: "planned" })
+    await waitFor(() => expect(coordinates()).toHaveValue(LIVE_TEXT))
+    expect(onTargetChange).toHaveBeenLastCalledWith(null)
+  })
+
+  it("shows the velocity that the move to its target has: of the Joint tab for joint values, of Translate for a pose", () => {
+    const { joints, onVelocityChange: onJointVelocityChange } = jointsTab()
+    const { onVelocityChange } = setup(
+      { getCurrentJoints: () => JOINTS },
+      { joints },
+    )
+    fireEvent.click(tab("Move to"))
+    expect(velocityField()).toHaveValue("125")
+    expect(screen.getByText("mm/s")).toBeVisible()
+
+    confirmPose(JOINT_TEXT)
+    expect(velocityField()).toHaveValue("10")
+    expect(screen.getByText("°/s")).toBeVisible()
+    fireEvent.change(velocityField(), { target: { value: "45" } })
+    fireEvent.keyDown(velocityField(), { key: "Enter" })
+    expect(onJointVelocityChange).toHaveBeenLastCalledWith(
+      expect.closeTo(Math.PI / 4, 10),
+    )
+    expect(onVelocityChange).not.toHaveBeenCalled()
+
+    confirmPose("(1, 2, 3, 0, 0, 0)")
+    expect(velocityField()).toHaveValue("125")
+    fireEvent.change(velocityField(), { target: { value: "30" } })
+    fireEvent.keyDown(velocityField(), { key: "Enter" })
+    expect(onVelocityChange).toHaveBeenLastCalledWith("translate", 30)
+  })
+
+  it("moves to joint values with the rotation velocity when the app has no Joint tab", () => {
+    const { onVelocityChange } = setup({ getCurrentJoints: () => JOINTS })
+    fireEvent.click(tab("Move to"))
+
+    confirmPose(JOINT_TEXT)
+    // 0.1 rad/s
+    expect(velocityField()).toHaveValue("5.73")
+    fireEvent.change(velocityField(), { target: { value: "45" } })
+    fireEvent.keyDown(velocityField(), { key: "Enter" })
+    expect(onVelocityChange).toHaveBeenLastCalledWith(
+      "rotate",
+      expect.closeTo(Math.PI / 4, 10),
+    )
+  })
+
+  describe("of a robot that takes no TCP poses", () => {
+    it("shows the joints, live, and takes joint values with or without brackets, but no pose", async () => {
+      let joints = JOINTS
+      const { onTargetChange } = setup(
+        { getCurrentPose: () => null, getCurrentJoints: () => joints },
+        { cartesian: false, ...jointsTab() },
+      )
+      fireEvent.click(tab("Move to"))
+
+      const field = () => jointPositions("rad")
+      expect(field()).toHaveValue("[0.1, -1.2, 1.3, 0, 1.5708, 0]")
+      joints = [0.2, -1.2, 1.3, 0, 1.5708, 0]
+      await waitFor(() =>
+        expect(field()).toHaveValue("[0.2, -1.2, 1.3, 0, 1.5708, 0]"),
+      )
+      // The velocity of the Joint tab from the start
+      expect(velocityField()).toHaveValue("10")
+
+      fireEvent.click(button("Edit pose"))
+      fireEvent.change(field(), { target: { value: "(1, 2, 3, 0, 0, 0)" } })
+      expect(field()).toHaveAccessibleDescription(INVALID)
+      expect(button("Save pose edit")).toBeDisabled()
+
+      fireEvent.change(field(), {
+        target: { value: "0.1, -1.2, 1.3, 0, 1.5708, 0.5" },
+      })
+      fireEvent.keyDown(field(), { key: "Enter" })
+      expect(onTargetChange).toHaveBeenLastCalledWith(JOINT_TARGET)
+      expect(field()).toHaveValue(JOINT_TEXT)
+    })
+
+    it("shows a linear axis in mm, and its velocity in mm/s", () => {
+      const { joints, onVelocityChange } = jointsTab({
+        joints: [{ value: 250, min: 0, max: 1000 }],
+        linear: true,
+        velocity: { value: 100, min: 1, max: 250 },
+      })
+      const { onTargetChange } = setup(
+        { getCurrentPose: () => null, getCurrentJoints: () => [250] },
+        { cartesian: false, joints },
+      )
+      fireEvent.click(tab("Move to"))
+
+      expect(jointPositions("mm")).toHaveValue("[250]")
+      expect(velocityField()).toHaveValue("100")
+      expect(screen.getByText("mm/s")).toBeVisible()
+      fireEvent.change(velocityField(), { target: { value: "30" } })
+      fireEvent.keyDown(velocityField(), { key: "Enter" })
+      expect(onVelocityChange).toHaveBeenLastCalledWith(30)
+
+      fireEvent.click(button("Edit pose"))
+      fireEvent.change(jointPositions("mm"), { target: { value: "400.5" } })
+      fireEvent.keyDown(jointPositions("mm"), { key: "Enter" })
+      expect(onTargetChange).toHaveBeenLastCalledWith({ joints: [400.5] })
+    })
+  })
+})

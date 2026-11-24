@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { isAtPose } from "./atPose"
+import { isAtJoints, isAtPose } from "./atPose"
 import type { RobotControlPose } from "./RobotControlPanel"
 
 const TARGET: RobotControlPose = {
@@ -39,5 +39,25 @@ describe("isAtPose", () => {
 
   it("knows no pose for a TCP without one", () => {
     expect(isAtPose(null, TARGET)).toBe(false)
+  })
+})
+
+describe("isAtJoints", () => {
+  const TARGET_JOINTS = [0.1, -1.2, 1.3, 0, 1.5708, 0]
+
+  it("counts joints within a thousandth as there, as the session does", () => {
+    expect(isAtJoints(TARGET_JOINTS, TARGET_JOINTS)).toBe(true)
+    expect(isAtJoints([0.1009, -1.2, 1.3, 0, 1.5708, 0], TARGET_JOINTS)).toBe(
+      true,
+    )
+    expect(isAtJoints([0.1, -1.2, 1.3, 0, 1.5708, 0.0011], TARGET_JOINTS)).toBe(
+      false,
+    )
+  })
+
+  it("knows no joints for a robot that reports none, or another number of them", () => {
+    expect(isAtJoints(null, TARGET_JOINTS)).toBe(false)
+    expect(isAtJoints([0.1, -1.2, 1.3], TARGET_JOINTS)).toBe(false)
+    expect(isAtJoints([...TARGET_JOINTS, 0], TARGET_JOINTS)).toBe(false)
   })
 })
