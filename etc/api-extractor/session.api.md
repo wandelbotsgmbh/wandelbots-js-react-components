@@ -484,7 +484,6 @@ export const ROBOT_LOAD_STEP_IDS: readonly ["motionGroupDescription", "controlle
 export class RobotActivation {
     activate(): Promise<void>;
     deactivate(): Promise<void>;
-    // (undocumented)
     dispose(): void;
     get state(): RobotActivationState;
     toggle(): Promise<void>;

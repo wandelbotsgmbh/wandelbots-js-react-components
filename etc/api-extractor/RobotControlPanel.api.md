@@ -30,6 +30,7 @@ export type RobotControlIncrements = {
     steps: Record<JogMotion, number[]>;
     onStep: (motion: JogMotion, axis: JogAxis, direction: JogDirection, distance: number) => void;
     running?: JogHandle | null;
+    onStepStop?: () => void;
     step?: Partial<Record<JogMotion, number>>;
     onStepChange?: (motion: JogMotion, distance: number) => void;
 };

@@ -941,7 +941,6 @@ export const ROBOT_LOAD_STEP_IDS: readonly ["motionGroupDescription", "controlle
 export class RobotActivation {
     activate(): Promise<void>;
     deactivate(): Promise<void>;
-    // (undocumented)
     dispose(): void;
     get state(): RobotActivationState;
     toggle(): Promise<void>;
@@ -974,6 +973,7 @@ export type RobotControlIncrements = {
     steps: Record<JogMotion, number[]>;
     onStep: (motion: JogMotion, axis: JogAxis, direction: JogDirection, distance: number) => void;
     running?: JogHandle | null;
+    onStepStop?: () => void;
     step?: Partial<Record<JogMotion, number>>;
     onStepChange?: (motion: JogMotion, distance: number) => void;
 };
