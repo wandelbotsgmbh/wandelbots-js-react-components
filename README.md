@@ -21,7 +21,7 @@ The 3D parts need three.js and React Three Fiber in addition. `/core` has the pa
 
 ```typescript
 import {
-  JoggingPanel,
+  JoggingButtons,
   SafetyBar,
 } from "@wandelbots/wandelbots-js-react-components/core"
 ```
@@ -198,6 +198,40 @@ What changes besides the names:
 | `dispose()` | `load.dispose()`, or `session.dispose()` |
 | `<Robot connectedMotionGroup={…}>`, `<LinearAxis connectedMotionGroup={…}>` | `<Robot motionGroup={robotModelOf(session)}>`, the same for `LinearAxis`. `motionGroup` also takes a `ConnectedMotionGroup`, or the app's own data (see `RobotModelSource`). |
 
+### From JoggingPanel to RobotControl
+
+`JoggingPanel` and its parts that take a `JoggingStore` (`JoggingCartesianAxisControl`, `JoggingJointValueControl`, `VelocitySlider`, `VelocitySliderLabel`) are deprecated. They keep working until a later major version removes them. `RobotControl` replaces the panel: the Robot control panel of the design (Translate, Rotate, Joint and Move to) for a [robot session](#from-connectedmotiongroup-to-robotsession).
+
+```tsx
+// Before
+<JoggingPanel nova={nova} motionGroupId="0@ur5e" cellId={cellId} locked={programRuns} />
+
+// After
+const load = loadRobotSession(nova, "0@ur5e", { cellId, storage: localStorage })
+const session = await load.ready
+<RobotControl session={session} disabled={programRuns} />
+```
+
+| `JoggingPanel` | Instead |
+| --- | --- |
+| `nova`, `motionGroupId`, `cellId` | `loadRobotSession(nova, motionGroupId, { cellId })`; its session goes to `session`, or comes from a `RobotSessionProvider` |
+| `locked` | `disabled` |
+| `onSetup(store)`, `store` | `session.jogging`, the session's `JoggingStore`. It lives as long as the session, also while the panel is hidden. |
+| The jogging settings in `localStorage` | Only with `storage: localStorage` (or a storage of the app) for `loadRobotSession`; without it nothing is kept |
+| `sx` | `sx` |
+| `children` | No replacement: the app puts its own parts next to the panel |
+| The `show…` flags of `JoggingStore` (`showTcpSelect`, `showIncrementSelect`, …), its `tabs` and `onTabChange` | The props of `RobotControlPanel`: take `useRobotControlProps(session)` and leave out or replace a prop, e.g. `<RobotControlPanel {...props} increments={undefined} />` for no Increment mode |
+| `JoggingCartesianAxisControl` | `JoggingButtons` (a minus and a plus button per axis), or `JoggingGizmo` |
+| `JoggingJointValueControl` | `JoggingJointSlider` |
+| `VelocitySlider`, `VelocitySliderLabel` | The velocity of `RobotControlPanel` |
+| `JoggingStore.activate()` | `startCartesianJogging`, `startJointJogging` and `runIncrementalCartesianJog` of `JoggingStore` activate what they need; `session.ensureMovementOwnership("jogging")` hands the robot to jogging |
+
+What changes besides the names:
+
+- **Props in, callbacks out:** `RobotControlPanel`, `JoggingButtons`, `JoggingGizmo` and `JoggingJointSlider` take no store and move nothing themselves (`onJogStart`, `onJogStop`). `RobotControl` is `RobotControlPanel` with the props of `useRobotControlProps(session)`, which jogs the session's robot.
+- **The gizmo** needs the camera of the app's 3D view: `gizmoOrientation`, written by a `JoggingGizmoOrientation` in the view. Without it the panel jogs with buttons.
+- **Jogging is off** while the robot may not move (not activated, its safety, no live state), while a trajectory moves it or another client jogs it: `RobotControl` says why in the panel. `disabled` is only the app's own lock.
+
 ### 4.x Core Changes
 
 Robot data is now fetched from a running nova instance. This eliminates the need of shipping every react application with the robot data attached.
@@ -230,18 +264,9 @@ Breaking changes for each major version are documented in the [GitHub Releases](
 
 Manual robot control interfaces.
 
-**JoggingPanel** - Complete jogging interface with cartesian and joint controls
+**JoggingPanel** (deprecated, see [From JoggingPanel to RobotControl](#from-joggingpanel-to-robotcontrol)) - The jogging panel of earlier versions, with cartesian and joint controls. Its parts that take a `JoggingStore` are deprecated with it: **JoggingCartesianAxisControl** (use `JoggingButtons`), **JoggingJointValueControl** (use `JoggingJointSlider`), **VelocitySlider** and **VelocitySliderLabel** (use the velocity of `RobotControlPanel`).
 
-- Dual-mode operation (Cartesian & Joint space)
-- Real-time velocity control
-- Multiple coordinate systems support (Robot base or Tool)
-
-**Individual Jogging Controls**
-
-- **JoggingCartesianAxisControl** - Single-axis cartesian movement
-- **JoggingJointValueControl** - Individual joint controls
-- **VelocitySlider** (and **VelocitySliderLabel**) - Speed adjustment interface
-- **JoggingStore** - The state of the jogging (velocity, coordinate system, the jogging connection). `JoggingPanel` gives it to `onSetup`, and `JoggingStore.loadFor` creates one for your own controls. It also jogs for them: `startCartesianJogging(motion, axis, direction)` or `startJointJogging(joint, direction)` when a control is pressed and `stopJogging()` when it is let go, and `runIncrementalCartesianJog(motion, axis, direction, increment)` for one step. The store keeps the order that hold-to-jog needs: a press that ends before the jogging connection is ready moves nothing, and one step runs at a time. While the store is locked, or its owner says that the robot may not move (the option `notMoveableReason`, which a `RobotSession` gives its store), or after NOVA refused the jogging connection because another client jogs (`blocked`, until `unblock()`), it starts no jog: the start rejects with a `JoggingRefusedError`, whose `reason.code` says why. The same holds for everything else that opens the jogging connection, a TCP change (`requestTcpChange`) and `session.ensureMovementOwnership("jogging")`: NOVA switches a controller to control mode by itself for it. The store asks again once the connection is open, and closes it when the robot may no longer move by then.
+**JoggingStore** - The state of the jogging (velocity, coordinate system, the jogging connection). A robot session has one (`session.jogging`), and `JoggingStore.loadFor` creates one for your own controls. It also jogs for them: `startCartesianJogging(motion, axis, direction)` or `startJointJogging(joint, direction)` when a control is pressed and `stopJogging()` when it is let go, and `runIncrementalCartesianJog(motion, axis, direction, increment)` for one step. The store keeps the order that hold-to-jog needs: a press that ends before the jogging connection is ready moves nothing, and one step runs at a time. While the store is locked, or its owner says that the robot may not move (the option `notMoveableReason`, which a `RobotSession` gives its store), or after NOVA refused the jogging connection because another client jogs (`blocked`, until `unblock()`), it starts no jog: the start rejects with a `JoggingRefusedError`, whose `reason.code` says why. The same holds for everything else that opens the jogging connection, a TCP change (`requestTcpChange`) and `session.ensureMovementOwnership("jogging")`: NOVA switches a controller to control mode by itself for it. The store asks again once the connection is open, and closes it when the robot may no longer move by then.
 
 **JoggingGizmo** and **JoggingGizmoOrientation** (from `/3d` or `/JoggingGizmo`) - Jogging by the axes of the jog frame as the camera of the 3D view sees them: orbit the view and the gizmo turns with it, so the arrow pointing right on screen moves the robot right on screen. Hold a handle to jog.
 

@@ -23,6 +23,12 @@ import {
 
 const MOTION_DELTA_THRESHOLD = 0.0001
 
+/**
+ * A TCP of {@link ConnectedMotionGroup}
+ *
+ * @deprecated With `ConnectedMotionGroup`. A session has its TCPs in
+ * `description.tcps` and `description.tcpOffsetsById`.
+ */
 export type RobotTcpLike = {
   id: string
   readable_name: string
@@ -30,6 +36,7 @@ export type RobotTcpLike = {
   orientation: Vector3Simple
 }
 
+/** @deprecated Nothing uses it; no replacement */
 export type MotionGroupOption = {
   selectionId: string
 }
@@ -42,6 +49,10 @@ const EMPTY_DH_PARAMETER: DHParameter = {
   reverse_rotation_direction: false,
 }
 
+/**
+ * @deprecated With `ConnectedMotionGroup`. `loadRobotSession` takes
+ * `LoadRobotSessionOptions`.
+ */
 export type ConnectedMotionGroupOptions = {
   /** Cell id on the Nova instance. Defaults to "cell". */
   cellId?: string

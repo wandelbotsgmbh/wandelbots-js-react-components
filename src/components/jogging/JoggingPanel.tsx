@@ -17,8 +17,13 @@ import { JoggingCartesianTab } from "./JoggingCartesianTab"
 import { JoggingJointTab } from "./JoggingJointTab"
 import { JoggingStore } from "./JoggingStore"
 
+/**
+ * @deprecated Part of {@link JoggingPanel}. `RobotControlPanel` has the tabs
+ * `RobotControlTab`.
+ */
 export type JoggingPanelTabId = "cartesian" | "joint"
 
+/** @deprecated See {@link JoggingPanel} */
 export type JoggingPanelProps = {
   /**
    * The base url of a deployed Nova instance, or a Nova client of the app.
@@ -46,6 +51,12 @@ export type JoggingPanelProps = {
 
 /**
  * A high-level, opinionated UI panel for jogging a robot using the Wandelbots Platform API
+ *
+ * @deprecated Use `RobotControl` with a robot session of `loadRobotSession`:
+ * the Robot control panel of the design, with jogging, the joints and Move
+ * to. Or `RobotControlPanel` with the props of `useRobotControlProps(session)`,
+ * to replace single props. The README's "From JoggingPanel to RobotControl"
+ * maps the props.
  */
 export const JoggingPanel = externalizeComponent(
   observer((props: JoggingPanelProps) => {

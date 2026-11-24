@@ -36,6 +36,12 @@ type JoggingCartesianOpts = {
   direction: JoggingDirection
 }
 
+/**
+ * The cartesian tab of `JoggingPanel`
+ *
+ * @deprecated With `JoggingPanel`. `RobotControlPanel` has the tabs
+ * Translate and Rotate.
+ */
 export const JoggingCartesianTab = observer(
   ({
     store,

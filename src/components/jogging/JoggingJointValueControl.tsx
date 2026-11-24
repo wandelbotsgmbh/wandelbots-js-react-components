@@ -24,7 +24,13 @@ type JoggingJointValueControlProps = {
   disabled?: boolean
 } & React.ComponentProps<typeof Stack>
 
-/** A input widget to control an individual joint */
+/**
+ * A input widget to control an individual joint
+ *
+ * @deprecated Use `JoggingJointSlider`: one joint as a slider across its
+ * limits, pressed where the joint is to go (`value`, `min`, `max`,
+ * `onJogStart`, `onJogStop`).
+ */
 export const JoggingJointValueControl = externalizeComponent(
   observer(
     ({
