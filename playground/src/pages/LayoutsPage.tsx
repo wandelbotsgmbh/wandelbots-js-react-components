@@ -4,11 +4,12 @@ import {
   CurrentPose,
   JoggingGizmoOrientation,
   RobotControl,
+  RobotScene,
   RobotSessionProvider,
 } from "@wandelbots/wandelbots-js-react-components"
 import { useRef } from "react"
-import type { Quaternion } from "three"
-import { FitCamera, MotionGroupModel, Viewport } from "../scene"
+import type { Group, Quaternion } from "three"
+import { FitCamera, NovaCoordinates, Viewport } from "../scene"
 import type { PageProps } from "."
 import { RobotHeaderDemo } from "./RobotHeaderDemo"
 
@@ -21,8 +22,8 @@ const BAR_HEIGHT = "54px"
  * The parts put together as in the Figma design: RobotHeader on top, then
  * the robot's 3D view, RobotControlPanel floating at its top right (as
  * RobotPad's flyout) and ending above CurrentPoseBar, which runs along its
- * bottom. Panel and bar are the library's connected components of the
- * session, RobotControl and CurrentPose.
+ * bottom. View, panel and bar are the library's connected components of
+ * the session: RobotScene, RobotControl and CurrentPose.
  */
 export function LayoutsPage({
   instance,
@@ -33,6 +34,7 @@ export function LayoutsPage({
 }: PageProps) {
   // The camera's orientation for the panel's gizmo
   const orientation = useRef<Quaternion | null>(null)
+  const robot = useRef<Group>(null)
 
   return (
     <RobotSessionProvider session={session}>
@@ -48,7 +50,16 @@ export function LayoutsPage({
           <Viewport>
             <FitCamera>
               {(refit) => (
-                <MotionGroupModel session={session} onModelLoaded={refit} />
+                // The robot, its ghost, its safety zones and the jogging
+                // axes; the Viewport lights the scene. The camera fits the
+                // robot, not its safety zones.
+                <NovaCoordinates>
+                  <RobotScene
+                    lighting={false}
+                    robotRef={robot}
+                    onModelDrawn={() => refit(robot.current)}
+                  />
+                </NovaCoordinates>
               )}
             </FitCamera>
             {/* Anywhere in the 3D view: it translates NOVA's Z up itself */}
