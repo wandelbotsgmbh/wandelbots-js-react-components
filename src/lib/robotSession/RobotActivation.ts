@@ -177,7 +177,7 @@ export class RobotActivation {
   /**
    * Shows a mode change until it is over: the controller reports the mode
    * that was asked for, the request fails, or the controller has not
-   * confirmed it after {@link MODE_CHANGE_TIMEOUT_MS}. Then the state is
+   * confirmed it after 30 s (`MODE_CHANGE_TIMEOUT_MS`). Then the state is
    * what the controller reports again, and the change can be asked for
    * again.
    */

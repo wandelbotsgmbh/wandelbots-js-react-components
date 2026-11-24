@@ -484,6 +484,8 @@ export class JoggingRefusedError extends Error {
 
 // @public
 export type JoggingRefusedReason = RobotNotMoveableReason | {
+    code: "blocked";
+} | {
     code: "locked";
 };
 
@@ -634,7 +636,6 @@ export class JoggingStore {
     // (undocumented)
     get tcpsById(): Dictionary<RobotTcp>;
     translationVelocityMmPerSec: number;
-    // (undocumented)
     unblock(): void;
     // (undocumented)
     unlock(id: string): void;
@@ -833,7 +834,7 @@ export class RobotActivation {
     deactivate(): Promise<void>;
     // (undocumented)
     dispose(): void;
-    state: RobotActivationState;
+    get state(): RobotActivationState;
     toggle(): Promise<void>;
 }
 
