@@ -1,7 +1,7 @@
 import { degreesToRadians, radiansToDegrees } from "@wandelbots/nova-js"
 import { JointTypeEnum } from "@wandelbots/nova-js/v2"
 import type { TFunction } from "i18next"
-import { reaction, runInAction, when } from "mobx"
+import { reaction, runInAction } from "mobx"
 import { useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Quaternion } from "three"
@@ -233,7 +233,6 @@ export function useRobotControlProps(
 
   // Move to: the pose typed in the panel is planned and staged as the
   // session's typed pose, so its rules apply
-  const started = useRef(false)
   // The panel's target, while it has one. The session plans nothing while
   // the robot may not move: the panel says why, and plans it once it may.
   const [target, setTarget] = useState<RobotControlPose | null>(null)
@@ -267,26 +266,6 @@ export function useRobotControlProps(
   )
 
   const notMoveable = session.safety.notMoveableReason
-
-  function onMoveStart() {
-    if (
-      trajectory.trajectoryState === "planned" &&
-      trajectory.plannedTrajectory
-    ) {
-      started.current = true
-      trajectory.start()
-    }
-  }
-
-  async function onMoveStop() {
-    if (!started.current) return
-    started.current = false
-    // A release before NOVA confirmed the start: wait for it, then pause
-    await when(() => trajectory.trajectoryState !== "planned", {
-      timeout: 2000,
-    }).catch(() => {})
-    if (trajectory.trajectoryState === "moving") await trajectory.pause()
-  }
 
   const staged = targetPose.staged
 
@@ -445,9 +424,13 @@ export function useRobotControlProps(
           : staged?.errorKey
             ? t(staged.errorKey)
             : null,
-      onMoveStart,
+      // The button is held and let go: the trajectory sees to it that the
+      // robot moves only while it is held
+      onMoveStart: () => {
+        trajectory.hold()
+      },
       onMoveStop: () => {
-        onMoveStop().catch(report)
+        trajectory.release().catch(report)
       },
     },
   }

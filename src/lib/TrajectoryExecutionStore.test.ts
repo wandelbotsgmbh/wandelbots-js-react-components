@@ -226,6 +226,11 @@ function cartesianTarget(coordinateSystemId?: string) {
   } satisfies TrajectoryTarget
 }
 
+/** Lets queued promise callbacks run */
+async function flushPromises() {
+  for (let i = 0; i < 20; i++) await Promise.resolve()
+}
+
 /** Every message the store sent on a socket, by its type */
 function sentMessageTypes(socket: FakeSocket | undefined) {
   return socket?.sendJson.mock.calls.map(
@@ -855,6 +860,332 @@ describe("TrajectoryExecutionStore pausing", () => {
     const { store } = makeStore()
 
     await expect(store.pause()).rejects.toThrow('expected state "moving"')
+  })
+})
+
+// The Move to button: held, the robot moves along the planned trajectory;
+// let go, it stops, whatever NOVA and the motion stream have said by then
+describe("TrajectoryExecutionStore hold to move", () => {
+  /** A trajectory that NOVA accepted */
+  async function planned() {
+    const made = makeStore()
+    await made.store.planTrajectory(cartesianTarget("world"))
+    made.emit("INITIALIZE_RECEIVED")
+    /** How many messages of a type the store sent */
+    const sent = (type: string) =>
+      made.sockets
+        .flatMap((socket) => sentMessageTypes(socket) ?? [])
+        .filter((sentType) => sentType === type).length
+    /** What the motion stream reports: the robot moves, or stands still */
+    const moving = (isMoving: boolean) =>
+      runInAction(() => {
+        made.motionState.standstill = !isMoving
+      })
+    return { ...made, sent, moving }
+  }
+
+  test("hold starts the planned trajectory, release pauses it and resolves once the robot stands still", async () => {
+    const { store, emit, sent, moving } = await planned()
+
+    expect(store.hold()).toBe(true)
+    expect(sent("StartMovementRequest")).toBe(1)
+    emit("START_RECEIVED")
+    expect(store.trajectoryState).toBe("moving")
+    moving(true)
+
+    let released = false
+    const releasing = store.release().then(() => {
+      released = true
+    })
+    expect(sent("PauseMovementRequest")).toBe(1)
+    emit("PAUSE_RECEIVED")
+    await flushPromises()
+    expect(released).toBe(false)
+    expect(store.trajectoryState).toBe("stopping")
+
+    moving(false)
+    await releasing
+    // Still planned: the next hold goes on from here
+    expect(store.trajectoryState).toBe("planned")
+    expect(store.hold()).toBe(true)
+    expect(sent("StartMovementRequest")).toBe(2)
+  })
+
+  test("hold moves nothing without a trajectory that NOVA accepted", async () => {
+    const { store, sockets } = makeStore()
+
+    expect(store.hold()).toBe(false)
+    await store.planTrajectory(cartesianTarget("world"))
+    // Planned, but NOVA has not answered
+    expect(store.hold()).toBe(false)
+
+    expect(sentMessageTypes(sockets[0])).not.toContain("StartMovementRequest")
+  })
+
+  test("hold moves nothing along a trajectory that was dropped before NOVA accepted it", async () => {
+    const { store, emit, sockets } = makeStore()
+    await store.planTrajectory(cartesianTarget("world"))
+    store.reset()
+    // NOVA knows nothing of the reset
+    emit("INITIALIZE_RECEIVED")
+
+    expect(store.hold()).toBe(false)
+
+    expect(sentMessageTypes(sockets[0])).not.toContain("StartMovementRequest")
+  })
+
+  test("holding again while held starts nothing more", async () => {
+    const { store, emit, sent } = await planned()
+
+    expect(store.hold()).toBe(true)
+    expect(store.hold()).toBe(true)
+    emit("START_RECEIVED")
+    expect(store.hold()).toBe(true)
+
+    expect(sent("StartMovementRequest")).toBe(1)
+  })
+
+  test("a release before NOVA confirmed the start pauses as soon as it does, however late", async () => {
+    const { store, emit, sent } = await planned()
+    vi.useFakeTimers()
+    onTestFinished(() => {
+      vi.useRealTimers()
+    })
+
+    store.hold()
+    void store.release()
+    // NOVA has not taken the start: there is nothing to pause yet
+    expect(sent("PauseMovementRequest")).toBe(0)
+    await vi.advanceTimersByTimeAsync(10 * 60_000)
+    expect(sent("PauseMovementRequest")).toBe(0)
+
+    emit("START_RECEIVED")
+
+    expect(sent("PauseMovementRequest")).toBe(1)
+    await flushPromises()
+    expect(store.trajectoryState).toBe("planned")
+  })
+
+  test("a release pauses a move that goes on after a pause, while the motion stream still shows that pause", async () => {
+    const { store, emit, sent, setExecutionState } = await planned()
+    store.hold()
+    emit("START_RECEIVED")
+    await store.release()
+    setExecutionState("PAUSED_BY_USER")
+
+    expect(store.hold()).toBe(true)
+    emit("START_RECEIVED")
+    // The stream has not shown RUNNING yet
+    expect(store.executionState).toBe("PAUSED_BY_USER")
+    await store.release()
+
+    expect(sent("PauseMovementRequest")).toBe(2)
+  })
+
+  test("pause no longer refuses a move that the motion stream still shows as paused", async () => {
+    const { store, emit, sent, setExecutionState } = await planned()
+    store.start()
+    emit("START_RECEIVED")
+    setExecutionState("PAUSED_BY_USER")
+
+    await store.pause()
+
+    expect(sent("PauseMovementRequest")).toBe(1)
+  })
+
+  test("releasing again while the robot stops sends no second pause", async () => {
+    const { store, emit, sent, moving } = await planned()
+    store.hold()
+    emit("START_RECEIVED")
+    moving(true)
+
+    const first = store.release()
+    const second = store.release()
+    emit("PAUSE_RECEIVED")
+    const third = store.release()
+    expect(sent("PauseMovementRequest")).toBe(1)
+
+    moving(false)
+    await Promise.all([first, second, third])
+    expect(store.trajectoryState).toBe("planned")
+  })
+
+  test("release does nothing when nothing moves", async () => {
+    const idle = makeStore()
+    await idle.store.release()
+    expect(sentMessageTypes(idle.sockets[0])).toEqual([])
+
+    const { store, sent } = await planned()
+    await store.release()
+    expect(sent("PauseMovementRequest")).toBe(0)
+    expect(store.trajectoryState).toBe("planned")
+  })
+
+  test("a hold while the last move still stops moves nothing", async () => {
+    const { store, emit, sent, moving } = await planned()
+    store.hold()
+    emit("START_RECEIVED")
+    moving(true)
+    void store.release()
+
+    // The pause is on its way, then NOVA has it
+    expect(store.hold()).toBe(false)
+    emit("PAUSE_RECEIVED")
+    expect(store.hold()).toBe(false)
+
+    expect(sent("StartMovementRequest")).toBe(1)
+  })
+
+  test("a hold moves nothing before the robot stands still, also when another trajectory was accepted meanwhile", async () => {
+    const { store, emit, sent, moving } = await planned()
+    store.hold()
+    emit("START_RECEIVED")
+    moving(true)
+    void store.release()
+    await store.planTrajectory(cartesianTarget("world"))
+    emit("INITIALIZE_RECEIVED")
+    expect(store.trajectoryState).toBe("planned")
+
+    expect(store.hold()).toBe(false)
+    moving(false)
+    await flushPromises()
+    expect(store.hold()).toBe(true)
+
+    expect(sent("StartMovementRequest")).toBe(2)
+  })
+
+  test("a hold moves nothing while the motion stream shows a running trajectory", async () => {
+    const { store, sent, setExecutionState } = await planned()
+    setExecutionState("RUNNING")
+
+    expect(store.hold()).toBe(false)
+
+    expect(sent("StartMovementRequest")).toBe(0)
+  })
+
+  test("a hold after a release that still waits for the start moves nothing, and the release stands", async () => {
+    const { store, emit, sent } = await planned()
+    store.hold()
+    void store.release()
+
+    expect(store.hold()).toBe(false)
+    emit("START_RECEIVED")
+
+    expect(sent("StartMovementRequest")).toBe(1)
+    expect(sent("PauseMovementRequest")).toBe(1)
+  })
+
+  test("a release that waits for the start still pauses when the plan was reset meanwhile", async () => {
+    const { store, emit, sent } = await planned()
+    store.hold()
+    void store.release()
+
+    // NOVA knows nothing of this: it may still start the move
+    store.reset()
+    emit("START_RECEIVED")
+
+    expect(sent("PauseMovementRequest")).toBe(1)
+  })
+
+  test("a release pauses a move whose plan was reset while it ran", async () => {
+    const { store, emit, sent } = await planned()
+    store.hold()
+    emit("START_RECEIVED")
+    store.reset()
+    expect(store.trajectoryState).toBe("idle")
+
+    await store.release()
+
+    expect(sent("PauseMovementRequest")).toBe(1)
+  })
+
+  test("a release after the end of the trajectory pauses nothing", async () => {
+    const { store, emit, sent, setExecutionState } = await planned()
+    store.hold()
+    emit("START_RECEIVED")
+    setExecutionState("RUNNING")
+    setExecutionState("END_OF_TRAJECTORY")
+
+    await store.release()
+
+    expect(sent("PauseMovementRequest")).toBe(0)
+  })
+
+  test("the standstill of a pause does not end a move that was started after it", async () => {
+    const { store, emit, moving } = await planned()
+    store.hold()
+    emit("START_RECEIVED")
+    moving(true)
+    void store.release()
+    // Planned anew before the robot stood still, and started with `start`
+    await store.planTrajectory(cartesianTarget("world"))
+    emit("INITIALIZE_RECEIVED")
+    store.start()
+    emit("START_RECEIVED")
+
+    moving(false)
+    await flushPromises()
+
+    expect(store.trajectoryState).toBe("moving")
+  })
+
+  test("a pause that settles after the trajectory was planned again does not call the new one accepted", async () => {
+    const { store, emit, moving } = await planned()
+    store.hold()
+    emit("START_RECEIVED")
+    moving(true)
+    const releasing = store.release()
+    await store.planTrajectory(cartesianTarget("world"))
+    expect(store.trajectoryState).toBe("planning")
+
+    moving(false)
+    await releasing
+
+    // NOVA has not answered the new trajectory
+    expect(store.trajectoryState).toBe("planning")
+  })
+
+  test("stopAndReset pauses a start that NOVA has not confirmed, before it closes the execution websocket", async () => {
+    const { store, sockets } = await planned()
+    store.hold()
+
+    await store.stopAndReset()
+
+    expect(sentMessageTypes(sockets[0])).toEqual([
+      "InitializeMovementRequest",
+      "StartMovementRequest",
+      "PauseMovementRequest",
+    ])
+    expect(sockets[0]?.dispose).toHaveBeenCalled()
+  })
+
+  test("stopAndReset while the robot stops after a release sends no second pause", async () => {
+    const { store, emit, sent, moving } = await planned()
+    store.hold()
+    emit("START_RECEIVED")
+    moving(true)
+    void store.release()
+
+    const stopped = store.stopAndReset()
+    moving(false)
+    await stopped
+
+    expect(sent("PauseMovementRequest")).toBe(1)
+  })
+
+  test("a new execution websocket starts without a move: the next trajectory can be held", async () => {
+    const { store, emit, sockets } = await planned()
+    store.hold()
+    await store.stopAndReset()
+
+    await store.planTrajectory(cartesianTarget("world"))
+    emit("INITIALIZE_RECEIVED")
+
+    expect(store.hold()).toBe(true)
+    expect(sentMessageTypes(sockets[1])).toEqual([
+      "InitializeMovementRequest",
+      "StartMovementRequest",
+    ])
   })
 })
 

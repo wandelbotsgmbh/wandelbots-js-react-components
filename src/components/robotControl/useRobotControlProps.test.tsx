@@ -4,10 +4,12 @@ import { observable, runInAction } from "mobx"
 import { describe, expect, it, onTestFinished, vi } from "vitest"
 import {
   controllerState,
+  fakeExecution,
   makeHarness,
 } from "../../lib/robotSession/__fixtures__/robotSessionHarness"
 import type { LoadRobotSessionOptions } from "../../lib/robotSession/loadRobotSession"
 import type { RobotSession } from "../../lib/robotSession/RobotSession"
+import type { RobotControlPose } from "./RobotControlPanel"
 import { useRobotControlProps } from "./useRobotControlProps"
 
 // RobotPad's wiring of the Robot control panel to its stores, as the
@@ -45,13 +47,13 @@ function deferred() {
  * hand: their MobX actions cannot be spied on
  */
 function withFakeMoveTo(session: RobotSession) {
-  const start = vi.fn()
-  const pause = vi.fn(async () => {})
+  const hold = vi.fn(() => true)
+  const release = vi.fn(async () => {})
   const trajectory = observable({
     trajectoryState: "idle" as string,
     plannedTrajectory: null as unknown,
-    start,
-    pause,
+    hold,
+    release,
   })
   const setDraft = vi.fn()
   const confirmEdit = vi.fn(async () => {})
@@ -71,11 +73,70 @@ function withFakeMoveTo(session: RobotSession) {
     robot,
     trajectory,
     targetPose,
-    start,
-    pause,
+    hold,
+    release,
     setDraft,
     confirmEdit,
     resetToLive,
+  }
+}
+
+const TARGET: RobotControlPose = { position: [1, 2, 3], orientation: [0, 0, 0] }
+
+/**
+ * The Move to of an activated robot, with the session's own trajectory and
+ * typed pose on a faked planner and execution websocket: the test types a
+ * pose, holds the button and plays NOVA's answers
+ */
+async function loadMoveTo() {
+  const harness = makeHarness()
+  const onError = vi.fn()
+  const session = await harness.load({ onError }).ready
+  onTestFinished(() => session.dispose())
+  harness.source.send(controllerState({ mode: "MODE_CONTROL" }))
+  const execution = await fakeExecution(session)
+  const { result, rerender } = renderHook(() => useRobotControlProps(session))
+  const moveTo = () => {
+    rerender()
+    const props = result.current.moveTo
+    if (!props) throw new Error("No Move to")
+    return props
+  }
+  /** The messages of one type sent on the open execution websocket */
+  const sent = (type: string) =>
+    execution.sent().filter((sentType) => sentType === type).length
+
+  return {
+    harness,
+    session,
+    execution,
+    moveTo,
+    sent,
+    /** What the panel's calls reported to the app */
+    onError,
+    /** A pose is saved in the panel: the session plans it */
+    async type(pose: RobotControlPose) {
+      act(() => moveTo().onTargetChange(pose))
+      await act(flush)
+    },
+    /** A pose is saved in the panel, and NOVA accepts its trajectory */
+    async plan(pose: RobotControlPose) {
+      act(() => moveTo().onTargetChange(pose))
+      await act(flush)
+      act(() => execution.emit("INITIALIZE_RECEIVED"))
+      expect(moveTo().state).toBe("planned")
+    },
+    /** The button is held, and NOVA confirms the start */
+    start(pose: RobotControlPose) {
+      act(() => moveTo().onMoveStart(pose))
+      act(() => execution.emit("START_RECEIVED"))
+      expect(moveTo().state).toBe("moving")
+    },
+    /** The button is let go */
+    async letGo() {
+      act(() => moveTo().onMoveStop())
+      await act(flush)
+    },
   }
 }
 
@@ -257,7 +318,7 @@ describe("useRobotControlProps", () => {
     expect(onError).not.toHaveBeenCalled()
   })
 
-  it("plans the pose of Move to as the session's typed pose, and moves only along a planned trajectory", async () => {
+  it("plans the pose of Move to as the session's typed pose, and holds and releases its trajectory with the button", async () => {
     const session = await loadSession()
     const fake = withFakeMoveTo(session)
     const { result, rerender } = renderHook(() =>
@@ -281,28 +342,73 @@ describe("useRobotControlProps", () => {
     rerender()
     expect(moveTo().state).toBe("planning")
 
-    // Nothing planned: holding Move to starts nothing
-    act(() => moveTo().onMoveStart())
-    expect(fake.start).not.toHaveBeenCalled()
-
     runInAction(() => {
       fake.targetPose.confirming = false
       fake.trajectory.trajectoryState = "planned"
       fake.trajectory.plannedTrajectory = {}
     })
     rerender()
-    act(() => moveTo().onMoveStart())
-    expect(fake.start).toHaveBeenCalledOnce()
-
-    runInAction(() => {
-      fake.trajectory.trajectoryState = "moving"
-    })
+    // The hook keeps no state of the hold: the trajectory decides what a
+    // hold starts and what a release has to pause
+    act(() => moveTo().onMoveStart(TARGET))
+    expect(fake.hold).toHaveBeenCalledOnce()
     act(() => moveTo().onMoveStop())
     await flush()
-    expect(fake.pause).toHaveBeenCalledOnce()
+    expect(fake.release).toHaveBeenCalledOnce()
 
     act(() => moveTo().onTargetChange(null))
     expect(fake.resetToLive).toHaveBeenCalled()
+  })
+
+  it("pauses a move that was started again, though the motion stream still shows the pause before it", async () => {
+    const { execution, sent, onError, plan, start, letGo } = await loadMoveTo()
+    await plan(TARGET)
+
+    // Held, and let go on the way: the stream reports the pause
+    start(TARGET)
+    execution.setMotionState({ standstill: false })
+    await letGo()
+    expect(sent("PauseMovementRequest")).toBe(1)
+    execution.setMotionState({
+      standstill: true,
+      execute: {
+        joint_position: [],
+        details: {
+          kind: "TRAJECTORY",
+          trajectory: "trajectory",
+          location: 0.5,
+          state: { kind: "PAUSED_BY_USER" },
+        },
+      },
+    })
+    await act(flush)
+
+    // Held again, and let go before the stream shows that the robot runs
+    start(TARGET)
+    await letGo()
+
+    expect(onError).not.toHaveBeenCalled()
+    expect(sent("StartMovementRequest")).toBe(2)
+    expect(sent("PauseMovementRequest")).toBe(2)
+  })
+
+  it("pauses a move whose start NOVA confirms long after the button was let go", async () => {
+    const { execution, moveTo, sent, plan, letGo } = await loadMoveTo()
+    await plan(TARGET)
+    // Only the timeouts: the session's streams keep their real clock
+    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] })
+    onTestFinished(() => {
+      vi.useRealTimers()
+    })
+
+    act(() => moveTo().onMoveStart(TARGET))
+    await letGo()
+    expect(sent("PauseMovementRequest")).toBe(0)
+    await act(() => vi.advanceTimersByTimeAsync(60_000))
+    act(() => execution.emit("START_RECEIVED"))
+    await act(flush)
+
+    expect(sent("PauseMovementRequest")).toBe(1)
   })
 
   it("shows why the typed pose could not be planned, in the library's words", async () => {

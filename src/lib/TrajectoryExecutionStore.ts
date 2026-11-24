@@ -105,14 +105,17 @@ export type TrajectoryExecutionStoreOptions = {
  * Moves the robot to a target ("Move to"): plans a trajectory to it, keeps it
  * initialized on an execution websocket of the controller, and starts and
  * pauses the motion along it. Without a UI: an app shows `trajectoryState`,
- * `plannedTrajectory` and `lastError` and calls the actions.
+ * `plannedTrajectory` and `lastError` and calls the actions. For a button
+ * that moves the robot while it is held, these are `hold` and `release`:
+ * they see to it that the robot stops after a release, whatever the order
+ * of NOVA's messages.
  *
  * A planned trajectory holds the controller's execution session, also after
  * the robot arrived, until `stopAndReset`. So an app calls that before
  * jogging again (e.g. from the jogging store's `onBeforeActivate`).
  */
 export class TrajectoryExecutionStore {
-  /** The trajectory that `start` moves along, from the last plan */
+  /** The trajectory that `hold` and `start` move along, from the last plan */
   plannedTrajectory: PlannedTrajectory | null = null
   /** See {@link TrajectoryState} */
   trajectoryState: TrajectoryState = "idle"
@@ -125,6 +128,14 @@ export class TrajectoryExecutionStore {
    * still open: it may hold the trajectory, whatever became of the plan here
    */
   private armed = false
+  /**
+   * What NOVA was asked to do on the execution websocket, whatever became of
+   * the plan here: a start is on its way ("starting"), NOVA confirmed it
+   * ("running"), a pause followed ("pausing"), or nothing moves (null)
+   */
+  private motion: "starting" | "running" | "pausing" | null = null
+  /** The hold ended while "starting": pause once NOVA confirms the start */
+  private releaseOnStart = false
   private readonly disposers: IReactionDisposer[] = []
   private readonly logger: ConnectionLogger
 
@@ -142,6 +153,8 @@ export class TrajectoryExecutionStore {
         () => this.executionState,
         (executionState) => {
           if (executionState === "END_OF_TRAJECTORY") {
+            // The robot stands at the end: there is no move to pause
+            this.motion = null
             this.reset()
           }
         },
@@ -329,7 +342,59 @@ export class TrajectoryExecutionStore {
     return { ok: true }
   }
 
-  /** Starts the motion along the planned trajectory */
+  /**
+   * The Move to button is held: starts the motion along the planned
+   * trajectory, or goes on with a paused one. Returns whether the robot moves
+   * for this hold: not without a trajectory that NOVA accepted, and not
+   * while the move before it still stops. Safe to repeat while held.
+   * {@link TrajectoryExecutionStore.release} ends the hold.
+   */
+  hold(): boolean {
+    if (!this.plannedTrajectory) return false
+    // Held already: a second start would be one too many. Not after the
+    // release: then the pause is to come, or on its way.
+    if (this.motion === "starting") return !this.releaseOnStart
+    if (this.trajectoryState === "moving") return this.motion === "running"
+
+    if (
+      this.trajectoryState !== "planned" ||
+      this.motion === "pausing" ||
+      this.executionState === "RUNNING"
+    ) {
+      return false
+    }
+    this.sendStart()
+    return true
+  }
+
+  /**
+   * The Move to button was let go: pauses the motion. Whatever the motion
+   * stream shows by then, and also when the plan is gone here: only NOVA's
+   * own word that the trajectory ended makes a pause needless. A release
+   * before NOVA confirmed the start pauses as soon as it does, however late.
+   * Resolves once the robot stands still; the trajectory stays planned, so
+   * `hold` goes on from there. Does nothing when nothing moves, and is safe
+   * to repeat.
+   */
+  async release() {
+    if (this.motion === "starting") {
+      // NOVA pauses only what it has started: the pause follows its
+      // confirmation, see START_RECEIVED in handleMessage
+      this.releaseOnStart = true
+      await when(() => this.motion !== "starting")
+    } else if (this.motion === "running") {
+      this.sendPause()
+    }
+
+    if (this.motion === "pausing") {
+      await this.settlePause()
+    }
+  }
+
+  /**
+   * Starts the motion along the planned trajectory. For a button that is
+   * held, use {@link TrajectoryExecutionStore.hold}.
+   */
   start() {
     if (!this.plannedTrajectory) {
       throw new Error("Cannot start trajectory: no planned trajectory exists")
@@ -345,17 +410,13 @@ export class TrajectoryExecutionStore {
       throw new Error("Cannot start trajectory: robot is already running")
     }
 
-    const request: StartMovementRequest = {
-      message_type: "StartMovementRequest",
-      direction: "DIRECTION_FORWARD",
-    }
-
-    this.socket.sendJson(request)
+    this.sendStart()
   }
 
   /**
    * Pauses the motion. Resolves once the robot stands still; the trajectory
-   * stays planned, so `start` goes on from there.
+   * stays planned, so `start` goes on from there. For a button that was let
+   * go, use {@link TrajectoryExecutionStore.release}.
    */
   async pause() {
     if (this.trajectoryState !== "moving") {
@@ -364,21 +425,10 @@ export class TrajectoryExecutionStore {
       )
     }
 
-    if (this.executionState === "PAUSED_BY_USER") {
-      throw new Error("Cannot pause trajectory: robot is already paused")
-    }
-
-    const request: PauseMovementRequest = {
-      message_type: "PauseMovementRequest",
-    }
-
-    this.socket.sendJson(request)
-
-    await this.waitUntilStopped()
-
-    runInAction(() => {
-      this.trajectoryState = this.plannedTrajectory ? "planned" : "idle"
-    })
+    // Not refused for what the motion stream shows: NOVA confirmed a start,
+    // and the stream may still show the pause before it
+    this.sendPause()
+    await this.settlePause()
   }
 
   /**
@@ -390,12 +440,12 @@ export class TrajectoryExecutionStore {
     try {
       if (
         this.executionState === "RUNNING" ||
-        this.trajectoryState === "moving"
+        this.trajectoryState === "moving" ||
+        // Also a start that NOVA has not confirmed: the pause goes right
+        // behind it, and the websocket closes in any case
+        this.motion
       ) {
-        const request: PauseMovementRequest = {
-          message_type: "PauseMovementRequest",
-        }
-        this.socket.sendJson(request)
+        this.sendPause()
         await this.waitUntilStopped()
       }
     } catch (err) {
@@ -458,6 +508,48 @@ export class TrajectoryExecutionStore {
     await this.jogger.setJoggingMode("trajectory")
   }
 
+  private sendStart() {
+    const request: StartMovementRequest = {
+      message_type: "StartMovementRequest",
+      direction: "DIRECTION_FORWARD",
+    }
+    this.socket.sendJson(request)
+    this.motion = "starting"
+    this.releaseOnStart = false
+  }
+
+  /** Sends the pause of the move, once */
+  private sendPause() {
+    if (this.motion === "pausing") return
+
+    const request: PauseMovementRequest = {
+      message_type: "PauseMovementRequest",
+    }
+    this.socket.sendJson(request)
+    this.motion = "pausing"
+  }
+
+  /**
+   * After a pause: once the robot stands still, the trajectory is planned
+   * again. Not when the robot was started again meanwhile: that move has a
+   * pause of its own to wait for.
+   */
+  private async settlePause() {
+    await this.waitUntilStopped()
+
+    runInAction(() => {
+      if (this.motion !== "pausing") return
+
+      this.motion = null
+      if (
+        this.trajectoryState === "moving" ||
+        this.trajectoryState === "stopping"
+      ) {
+        this.trajectoryState = this.plannedTrajectory ? "planned" : "idle"
+      }
+    })
+  }
+
   /** Resolves once the motion stream reports that the robot stands still */
   private async waitUntilStopped() {
     await when(() => this.motionStream.rapidlyChangingMotionState.standstill)
@@ -484,7 +576,16 @@ export class TrajectoryExecutionStore {
         }
         break
       case "START_RECEIVED":
+        // NOVA has taken the start
+        this.motion = "running"
         this.trajectoryState = "moving"
+        if (this.releaseOnStart) {
+          // The hold ended before this confirmation, however long ago:
+          // nobody holds the move that starts now
+          this.releaseOnStart = false
+          this.sendPause()
+          void this.settlePause()
+        }
         break
       case "PAUSE_RECEIVED":
         // Only an interim state while the robot is still decelerating.
@@ -515,7 +616,8 @@ export class TrajectoryExecutionStore {
   private closeSocket() {
     this.socket.removeEventListener("message", this.handleMessage)
     this.socket.dispose()
-    // The execution session ends with its websocket
+    // The execution session ends with its websocket, and so does its move
     this.armed = false
+    this.motion = null
   }
 }
