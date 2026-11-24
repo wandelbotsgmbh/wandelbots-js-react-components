@@ -197,7 +197,7 @@ export function poseOfFrame(
   }
 }
 
-/** The pose `b`, which is relative to the pose `a`, in the frame of `a` */
+/** The pose `b`, which is relative to the pose `a`, in the frame that `a` is in */
 export function composePoses(a: PlainPose, b: PlainPose): PlainPose {
   const offset = rotateVector(b.position, a.quaternion)
   return {
@@ -212,7 +212,7 @@ export function composePoses(a: PlainPose, b: PlainPose): PlainPose {
   }
 }
 
-/** The pose that brings back: `pose` composed with it moves nothing */
+/** The pose back: `pose` composed with it is no move and no rotation */
 export function invertPose(pose: PlainPose): PlainPose {
   const quaternion = conjugateQuaternion(pose.quaternion)
   return {
