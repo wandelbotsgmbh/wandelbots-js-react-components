@@ -164,7 +164,7 @@ tests pass. Fix all errors and warnings before considering the work complete.
   an intended change, `pnpm run api:update`, and commit
   `etc/api-extractor/*.api.md` with the change.
 - `pnpm run test:consumer` — when `package.json`, the entry points or the
-  build changed
+  build changed, or a file got a new import (what an entry point loads)
 - `pnpm run test:e2e` and `pnpm run test:playground` — when the change touches
   the NOVA connections or a part of the playground (they need an instance)
 
