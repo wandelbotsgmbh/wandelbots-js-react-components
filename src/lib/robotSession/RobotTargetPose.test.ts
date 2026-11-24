@@ -828,6 +828,17 @@ describe("RobotTargetPose", () => {
       expect(hold).not.toHaveBeenCalled()
     })
 
+    test("holdMove takes a pose without an orientation as the one without a rotation", async () => {
+      const { store } = makeStore()
+      const withoutOrientation = cartesianPose([1, 2, 3])
+      if (withoutOrientation.type === "cartesian") {
+        delete withoutOrientation.tcpPose.pose.orientation
+      }
+      await store.plan(withoutOrientation)
+
+      expect(store.holdMove(cartesianPose([1, 2, 3]))).toBe(true)
+    })
+
     test("holdMove moves nothing without a staged pose, or to one that could not be planned", async () => {
       const { store, planTrajectory, hold } = makeStore()
       expect(store.holdMove(cartesianPose([1, 2, 3]))).toBe(false)

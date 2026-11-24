@@ -771,6 +771,53 @@ describe("TrajectoryExecutionStore execution session", () => {
     expectSessionHandedBack(made)
   })
 
+  // What NOVA does with a second trajectory on a session whose move failed
+  // or ended is its own matter: the next plan does not depend on it
+  test.each<[string, (made: Awaited<ReturnType<typeof armed>>) => void]>([
+    [
+      "a failed move",
+      (made) => made.emit("MOTION_ERROR", { message: "Collision detected" }),
+    ],
+    [
+      "a trajectory that NOVA refused",
+      (made) => made.emit("INITIALIZE_RECEIVED", { message: "invalid" }),
+    ],
+    [
+      "the end of a trajectory",
+      (made) => made.setExecutionState("END_OF_TRAJECTORY"),
+    ],
+    ["a reset", (made) => made.store.reset()],
+  ])("plans on a new execution session after %s, as the first plan did", async (_what, drop) => {
+    const made = await armed()
+    drop(made)
+    expect(made.store.plannedTrajectory).toBeNull()
+
+    await made.store.planTrajectory(cartesianTarget("world"))
+
+    expect(made.sockets).toHaveLength(2)
+    expect(made.sockets[0]?.dispose).toHaveBeenCalled()
+    expect(sentMessageTypes(made.sockets[0])).toEqual([
+      "InitializeMovementRequest",
+    ])
+    expect(sentMessageTypes(made.sockets[1])).toEqual([
+      "InitializeMovementRequest",
+    ])
+    made.emit("INITIALIZE_RECEIVED")
+    expect(made.store.trajectoryState).toBe("planned")
+  })
+
+  test("plans another target on the same execution session while the one before it is planned", async () => {
+    const made = await armed()
+
+    await made.store.planTrajectory(cartesianTarget("offset-300x"))
+
+    expect(made.sockets).toHaveLength(1)
+    expect(sentMessageTypes(made.sockets[0])).toEqual([
+      "InitializeMovementRequest",
+      "InitializeMovementRequest",
+    ])
+  })
+
   test("keeps holding the session after reset, at the end of the trajectory and after a motion error, until stopAndReset", async () => {
     const afterReset = await armed()
     afterReset.store.reset()

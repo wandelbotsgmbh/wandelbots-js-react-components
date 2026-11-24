@@ -424,6 +424,7 @@ Safety components for production environments.
 ### Logic
 
 - **loadRobotSession** and **RobotSession** - A robot of a cell, loaded and connected: its description, live state, safety, activation, jogging and Move to
+- **TrajectoryExecutionStore** (`session.trajectory`) and **RobotTargetPose** (`session.targetPose`) - Move to without a UI. `planTrajectory(target)` plans a trajectory and loads it; `hold(target)` moves along it while a button is held and `release()` stops the robot, whatever the order of NOVA's messages, and both are safe to repeat. `hold` starts nothing along a trajectory that was planned for another target, or with another velocity than the jogging store has now (`isPlanOutdated`: plan it again). `targetPose.plan(pose)`, `holdMove(pose)` and `releaseMove()` do the same for the typed pose that the Robot control shows, which also keeps why its plan or its move failed (`staged.errorKey`, `staged.errorMessage`)
 - **ConnectedMotionGroup** (deprecated, see [From ConnectedMotionGroup to RobotSession](#from-connectedmotiongroup-to-robotsession)) - A motion group with its live motion state, safety state and operation mode
 - **MotionStreamConnection** and **JoggerConnection** - The motion state stream and the jogging connection of a motion group
 - **jointValuesEqual**, **poseEqual**, **tcpMotionEqual**, **unwrapRotationVector** - Helpers for the motion state

@@ -269,6 +269,14 @@ export class TrajectoryExecutionStore {
       throw new Error("Cannot plan trajectory: the robot is locked")
     }
 
+    // A trajectory that the store dropped is still on the controller: the
+    // robot arrived, the move failed, or NOVA refused it. The next one gets
+    // a new execution session, as the first one had, so it does not depend
+    // on what NOVA does with another trajectory on that one.
+    if (this.armed && !this.plannedTrajectory) {
+      await this.stopAndReset()
+    }
+
     await this.ensureMovementOwnership()
 
     const currentJoints =
