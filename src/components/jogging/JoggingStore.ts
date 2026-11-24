@@ -574,9 +574,7 @@ export class JoggingStore {
     axis: JoggingAxis,
     direction: JoggingDirection,
   ) {
-    const press = ++this.jogPress
-    await this.activateFor("cartesian")
-    if (press !== this.jogPress) return
+    if (!(await this.openForHeldJog("cartesian"))) return
 
     if (motion === "translate") {
       await this.jogger.translateTCP({
@@ -601,9 +599,7 @@ export class JoggingStore {
    * and refused as it.
    */
   async startJointJogging(joint: number, direction: JoggingDirection) {
-    const press = ++this.jogPress
-    await this.activateFor("joint")
-    if (press !== this.jogPress) return
+    if (!(await this.openForHeldJog("joint"))) return
 
     const linear = this.jointType === JointTypeEnum.PrismaticJoint
     await this.jogger.rotateJoints({
@@ -614,6 +610,29 @@ export class JoggingStore {
         ? this.translationVelocityMmPerSec
         : this.rotationVelocityRadsPerSec,
     })
+  }
+
+  /**
+   * Opens the jogging websocket for a held jog. Resolves to whether this
+   * press is still the latest once it is open: a press that was stopped by
+   * then, or that another press followed, moves nothing.
+   *
+   * A start that fails or is refused leaves no jogging websocket open. A stop
+   * that came in the same event kept it for this start (see
+   * {@link JoggingStore.stopJogging}), and no other stop may follow.
+   */
+  private async openForHeldJog(jog: "cartesian" | "joint") {
+    const press = ++this.jogPress
+    try {
+      await this.activateFor(jog)
+    } catch (error) {
+      if (press === this.jogPress) {
+        // The error to report is the start's, whatever the closing does
+        await this.deactivate().catch(() => {})
+      }
+      throw error
+    }
+    return press === this.jogPress
   }
 
   /**

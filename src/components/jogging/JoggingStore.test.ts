@@ -1057,6 +1057,87 @@ describe("a start that is refused", () => {
     expect(jogger.mode).toBe("off")
   })
 
+  // A joint slider that turns around stops and starts in one event, and
+  // the stop keeps the connection for that start
+  it.each([
+    [
+      "the robot may no longer move",
+      { code: "safety_state", value: "SAFETY_STATE_STOP" },
+    ],
+    ["the store got locked", { code: "locked" }],
+  ] as [
+    string,
+    JoggingRefusedReason,
+  ][])("closes the jogging connection that a stop kept for a start in the same event, when %s", async (_name, refusal) => {
+    const jogger = createMockJogger()
+    let reason: JoggingRefusedReason | null = null
+    const store = createStore({ jogger, notMoveableReason: () => reason })
+    await store.startJointJogging(1, "+")
+    expect(jogger.mode).toBe("jogging")
+    if (refusal.code === "locked") {
+      store.lock("external")
+    } else {
+      reason = refusal
+    }
+
+    const stopped = store.stopJogging()
+    const started = refusalOf(store.startJointJogging(1, "-"))
+    await stopped
+
+    expect(await started).toEqual(refusal)
+    expect(jogger.rotateJoints).toHaveBeenCalledOnce()
+    expect(jogger.mode).toBe("off")
+  })
+
+  // The press that followed owns the connection by then
+  it("leaves the jogging connection to the press that followed a start that fails", async () => {
+    const jogger = createMockJogger()
+    const store = createStore({ jogger })
+    const ending = deferred()
+    // The other motion does not end for the first start; the second finds
+    // none to end
+    store.onBeforeActivate = vi
+      .fn()
+      .mockReturnValueOnce(ending.promise)
+      .mockResolvedValue(undefined)
+
+    const first = store
+      .startCartesianJogging("translate", "x", "+")
+      .catch((e: unknown) => e)
+    await store.startCartesianJogging("translate", "y", "+")
+    expect(jogger.mode).toBe("jogging")
+    ending.reject(new Error("still moving"))
+
+    expect(await first).toEqual(new Error("still moving"))
+    expect(jogger.mode).toBe("jogging")
+    expect(jogger.translateTCP).toHaveBeenCalledOnce()
+    expect(jogger.translateTCP).toHaveBeenCalledWith(
+      expect.objectContaining({ axis: "y" }),
+    )
+  })
+
+  // A step runs as a trajectory: a held jog that is refused because of it
+  // must not end it
+  it("leaves a running step alone when a held jog is refused meanwhile", async () => {
+    const jogger = createMockJogger()
+    const store = createStore({ jogger })
+    const moving = deferred()
+    vi.mocked(jogger.runIncrementalCartesianMotion).mockReturnValue(
+      moving.promise,
+    )
+    const step = store.runIncrementalCartesianJog("translate", "x", "+", tenMm)
+    await flush()
+    expect(jogger.mode).toBe("trajectory")
+
+    expect(await refusalOf(store.startJointJogging(0, "+"))).toEqual({
+      code: "locked",
+    })
+    expect(jogger.mode).toBe("trajectory")
+
+    moving.resolve()
+    await step
+  })
+
   // The jogging websocket takes about 0.1 to 0.5 s to open, and NOVA holds
   // the controller in control mode for as long as it is open
   describe("once the jogging connection is open", () => {
