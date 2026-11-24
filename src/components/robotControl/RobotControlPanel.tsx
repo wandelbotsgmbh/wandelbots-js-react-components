@@ -11,6 +11,7 @@ import type { Quaternion } from "three"
 import { externalizeComponent } from "../../externalizeComponent"
 import type { JogAxis, JogDirection, JogHandle } from "../jogging/jogHandle"
 import { type CartesianJogSettings, CartesianJogTab } from "./CartesianJogTab"
+import { JogDisabledReason } from "./JogDisabledReason"
 import { JointJogTab } from "./JointJogTab"
 import { MoveToTab } from "./MoveToTab"
 
@@ -184,6 +185,12 @@ export type RobotControlPanelProps = {
    */
   jogDisabledReason?: string
   /**
+   * Shows a Try again button under `jogDisabledReason`, for a reason that
+   * the user can end: e.g. another client held the jogging connection. The
+   * app then drops the reason and lets jogging be tried again.
+   */
+  onJogRetry?: () => void
+  /**
    * The robot can jog its TCP along axes: the Translate and Rotate tabs.
    * False for a motion group without an inverse solver, e.g. a linear axis
    * or a turntable (see `JoggingStore.canJogCartesian`). Defaults to true.
@@ -265,6 +272,8 @@ export const RobotControlPanel = externalizeComponent(
     joints,
     moveTo,
     jogDisabled = false,
+    jogDisabledReason,
+    onJogRetry,
     cartesian = true,
     tab: appTab,
     onTabChange,
@@ -294,6 +303,14 @@ export const RobotControlPanel = externalizeComponent(
       : tabs[0]
     const settings = withAppSettings(ownSettings, jogMode, props.increments)
     const title = t("RobotControl.Title.ti")
+    // The same on every jog tab; each tab puts it where it fits
+    const jogDisabledNotice = jogDisabledReason ? (
+      <JogDisabledReason
+        text={jogDisabledReason}
+        onRetry={onJogRetry}
+        disabled={disabled}
+      />
+    ) : undefined
 
     function changeTab(next: RobotControlTab) {
       setOwnTab(next)
@@ -405,7 +422,7 @@ export const RobotControlPanel = externalizeComponent(
             <JointJogTab
               joints={joints}
               disabled={disabled || jogDisabled}
-              disabledReason={props.jogDisabledReason}
+              disabledReason={jogDisabledNotice}
             />
           ) : tab === "moveTo" && moveTo ? (
             <MoveToTab
@@ -421,6 +438,7 @@ export const RobotControlPanel = externalizeComponent(
             <CartesianJogTab
               {...props}
               disabled={disabled || jogDisabled}
+              jogDisabledReason={jogDisabledNotice}
               motion={tab}
               settings={settings}
               onSettingsChange={changeSettings}

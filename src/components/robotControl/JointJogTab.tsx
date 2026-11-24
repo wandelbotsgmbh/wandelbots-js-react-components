@@ -1,9 +1,8 @@
 import Divider from "@mui/material/Divider"
 import Stack from "@mui/material/Stack"
-import { useRef, useState } from "react"
+import { type ReactNode, useRef, useState } from "react"
 import type { JogDirection } from "../jogging/jogHandle"
 import { JoggingJointSlider } from "../jogging/joint/JoggingJointSlider"
-import { JogDisabledReason } from "./JogDisabledReason"
 import type { RobotControlJoints } from "./RobotControlPanel"
 import { Section } from "./Section"
 import { VelocityRow } from "./VelocityRow"
@@ -22,7 +21,8 @@ export function JointJogTab({
 }: {
   joints: RobotControlJoints
   disabled: boolean
-  disabledReason?: string
+  /** Why jogging is off, as the panel shows it */
+  disabledReason?: ReactNode
 }) {
   const jogging = useRef<number | null>(null)
   const [active, setActive] = useState<number | null>(null)
@@ -63,7 +63,7 @@ export function JointJogTab({
             />
           ))}
         </Stack>
-        {disabledReason && <JogDisabledReason text={disabledReason} />}
+        {disabledReason}
       </Section>
       <Divider sx={{ marginX: "20px" }} />
       <Section>

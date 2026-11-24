@@ -1,6 +1,6 @@
 import Divider from "@mui/material/Divider"
 import Stack from "@mui/material/Stack"
-import { useRef } from "react"
+import { type ReactNode, useRef } from "react"
 import { useTranslation } from "react-i18next"
 import type { JogAxis, JogDirection } from "../jogging/jogHandle"
 import { JogArea, type JogView } from "./JogArea"
@@ -21,11 +21,13 @@ export type CartesianJogSettings = {
 
 type CartesianJogTabProps = Omit<
   RobotControlPanelProps,
-  "onClose" | "joints"
+  "onClose" | "joints" | "jogDisabledReason" | "onJogRetry"
 > & {
   motion: JogMotion
   settings: CartesianJogSettings
   onSettingsChange: (settings: CartesianJogSettings) => void
+  /** Why jogging is off, as the panel shows it: in place of the hint */
+  jogDisabledReason?: ReactNode
 }
 
 /**

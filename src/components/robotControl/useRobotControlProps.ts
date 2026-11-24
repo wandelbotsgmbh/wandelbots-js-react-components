@@ -120,8 +120,9 @@ function useJointValues(store: JoggingStore): number[] {
  * (`session.safety.canBeMoved`): not activated or still activating, stopped
  * by its safety, or without its live state. Also while a trajectory moves
  * the robot and while another client jogs it. `jogDisabledReason` says
- * which it is, in the library's words (English or German). `disabled` is
- * only the app's lock, for which the hook has no reason to give.
+ * which it is, in the library's words (English or German), and after
+ * another client's jogging `onJogRetry` lets the user try again. `disabled`
+ * is only the app's lock, for which the hook has no reason to give.
  *
  * `<RobotControl />` is the panel with these props. An app that wants to
  * change a part takes the props and overrides it:
@@ -153,17 +154,27 @@ export function useRobotControlProps(
   // would refuse the jog; the panel shows it.
   const moveable = session.safety.canBeMoved
   const locked = disabled || trajectoryBusy || !moveable
-  // Why, for the jog tabs to say. A robot that is activating or deactivating
-  // has no reason of its own (see RobotSession): it is not activated yet, or
-  // no longer. The app's lock has no reason here: the app knows it.
-  const jogDisabledReason = !moveable
-    ? notMoveableText(
+  // What turns jogging off, the robot's own reason first: the jog tabs say
+  // it. The app's lock is not among them: the app knows why it locks.
+  const jogOff = !moveable
+    ? "robot"
+    : trajectoryBusy
+      ? "trajectory"
+      : store.blocked
+        ? "blocked"
+        : null
+  const jogDisabledReason = {
+    // A robot that is activating or deactivating has no reason of its own
+    // (see RobotSession): it is not activated yet, or no longer
+    robot: () =>
+      notMoveableText(
         session.safety.notMoveableReason ?? { code: "deactivated" },
         t,
-      )
-    : trajectoryBusy
-      ? t("RobotControl.JogDisabled.Moving.lb")
-      : undefined
+      ),
+    trajectory: () => t("RobotControl.JogDisabled.Moving.lb"),
+    // NOVA gave the jogging connection to another client
+    blocked: () => t("Jogging.Blocked.lb"),
+  }
   useEffect(() => {
     if (!locked) return
     store.lock("external")
@@ -306,8 +317,11 @@ export function useRobotControlProps(
     disabled,
     // Jogging waits for a trajectory, for another client's jogging, and for
     // a robot that may move
-    jogDisabled: trajectoryBusy || store.blocked || !moveable,
-    jogDisabledReason,
+    jogDisabled: jogOff !== null,
+    jogDisabledReason: jogOff ? jogDisabledReason[jogOff]() : undefined,
+    // The store stays blocked until it is told to try again: the next jog
+    // asks NOVA for the jogging connection anew
+    onJogRetry: jogOff === "blocked" ? () => store.unblock() : undefined,
     // A linear axis or a turntable jogs its joints only
     cartesian: store.canJogCartesian,
     tab,

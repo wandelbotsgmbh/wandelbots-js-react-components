@@ -190,6 +190,34 @@ describe("RobotControlPanel's state", () => {
     expect(screen.queryByText(reason)).toBeNull()
   })
 
+  it("offers Try again with the reason only when the app can end it, and not while the panel is disabled", () => {
+    const onJogRetry = vi.fn()
+    const joints = {
+      joints: [{ value: 0, min: -2, max: 2 }],
+      velocity: { value: 0.5, min: 0.01, max: 1 },
+      onVelocityChange: vi.fn(),
+      onJogStart: vi.fn(),
+      onJogStop: vi.fn(),
+    }
+    const { rerender } = setup({
+      jogDisabled: true,
+      jogDisabledReason: "Another client is currently controlling the jogging.",
+      joints,
+    })
+    expect(screen.queryByRole("button", { name: "Try again" })).toBeNull()
+
+    rerender({ onJogRetry })
+    fireEvent.click(button("Try again"))
+    expect(onJogRetry).toHaveBeenCalledTimes(1)
+
+    fireEvent.click(tab("Joint"))
+    fireEvent.click(button("Try again"))
+    expect(onJogRetry).toHaveBeenCalledTimes(2)
+
+    rerender({ onJogRetry, disabled: true })
+    expect(button("Try again")).toBeDisabled()
+  })
+
   it("goes on moving to a pose when jogging becomes disabled meanwhile", async () => {
     const onMoveStart = vi.fn()
     const onMoveStop = vi.fn()

@@ -721,6 +721,63 @@ describe("useRobotControlProps", () => {
     expect(reason()).toBe("Der Roboter bewegt sich zu einer Pose")
   })
 
+  // NOVA gives the jogging connection to one client at a time. The store
+  // stays blocked until it is told to try again: the panel must offer that.
+  it("says that another client jogs the robot, with a way to try again, and jogs again after it", async () => {
+    const onError = vi.fn()
+    const session = await loadSession({ onError })
+    const { jogger } = session.jogging
+    let heldByAnother = true
+    vi.spyOn(jogger, "setOptions").mockResolvedValue(undefined as never)
+    vi.spyOn(jogger, "setJoggingMode").mockImplementation(async (mode) => {
+      jogger.mode = mode
+      // As the jogger when NOVA answers that another client is jogging
+      if (mode === "jogging" && heldByAnother) jogger.onBlocked?.()
+    })
+    const translateTCP = vi
+      .spyOn(jogger, "translateTCP")
+      .mockResolvedValue(undefined as never)
+    const { result, rerender } = renderHook(() => useRobotControlProps(session))
+    expect(result.current.onJogRetry).toBeUndefined()
+
+    act(() => result.current.onJogStart("translate", "x", "+"))
+    await act(flush)
+    rerender()
+
+    expect(translateTCP).not.toHaveBeenCalled()
+    expect(result.current.jogDisabled).toBe(true)
+    expect(result.current.jogDisabledReason).toBe(
+      "Another client is currently controlling the jogging.",
+    )
+    // The panel says it: nothing for the app to show as an error
+    expect(onError).not.toHaveBeenCalled()
+
+    heldByAnother = false
+    act(() => result.current.onJogRetry?.())
+    rerender()
+    expect(result.current.jogDisabled).toBe(false)
+    expect(result.current.jogDisabledReason).toBeUndefined()
+    expect(result.current.onJogRetry).toBeUndefined()
+
+    act(() => result.current.onJogStart("translate", "x", "+"))
+    await act(flush)
+    expect(translateTCP).toHaveBeenCalledOnce()
+  })
+
+  it("offers no way to try again for a reason that is the robot's", async () => {
+    const harness = makeHarness()
+    const session = await harness.load().ready
+    onTestFinished(() => session.dispose())
+    act(() => session.jogging.block())
+
+    const { result } = renderHook(() => useRobotControlProps(session))
+
+    expect(result.current.jogDisabledReason).toBe(
+      "The robot must be activated first",
+    )
+    expect(result.current.onJogRetry).toBeUndefined()
+  })
+
   // The app knows why it locks the panel, the hook does not
   it("gives no reason for the app's own lock", async () => {
     const session = await loadSession()

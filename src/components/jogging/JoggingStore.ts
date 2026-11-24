@@ -91,7 +91,8 @@ export type JoggingStoreOptions = {
    * start rejects with a {@link JoggingRefusedError}. NOVA switches a
    * controller to control mode by itself for a movement request, so without
    * this a robot that is not activated jogs. A robot session gives its
-   * safety's reason; a store without it refuses only while it is locked.
+   * safety's reason; a store without it refuses only while it is locked or
+   * blocked by another client's jogging.
    */
   notMoveableReason?: () => RobotNotMoveableReason | null
 }
@@ -109,7 +110,12 @@ export class JoggingStore {
   /** Locks to prevent UI interactions during certain operations */
   locks = new Set<string>()
 
-  /** Block jogging UI interactions when connection is taken by another jogger */
+  /**
+   * NOVA refused the jogging connection because another client jogs the
+   * robot. The store then starts no jog (see {@link JoggingRefusedError},
+   * "blocked") until {@link JoggingStore.unblock}: it does not ask NOVA
+   * again by itself, so a UI has to say it and offer to try again.
+   */
   blocked: boolean = false
 
   /**
@@ -530,14 +536,18 @@ export class JoggingStore {
 
   /**
    * Throws a {@link JoggingRefusedError} while a jog may not start: with the
-   * owner's reason that the robot may not move, else while the store is
-   * locked. `ownLock` is the lock of the step that asks: it locks the store
-   * against other jogs, not against itself.
+   * owner's reason that the robot may not move, else while another client
+   * holds the jogging connection ({@link JoggingStore.blocked}), else while
+   * the store is locked. `ownLock` is the lock of the step that asks: it
+   * locks the store against other jogs, not against itself.
    */
   private refuseUnlessJoggable(ownLock?: string) {
     const reason = this.notMoveableReason?.() ?? null
     if (reason) {
       throw new JoggingRefusedError(reason)
+    }
+    if (this.blocked) {
+      throw new JoggingRefusedError({ code: "blocked" })
     }
     for (const lock of this.locks) {
       if (lock !== ownLock) {

@@ -1209,6 +1209,69 @@ describe("a TCP change", () => {
 })
 
 describe("the connection that another client blocked", () => {
+  /**
+   * A jogger whose jogging websocket NOVA refuses while `held` says so,
+   * because another client jogs: as the real jogger, it tells its onBlocked
+   * and the opening ends without an error
+   */
+  function joggerThatIsBlocked(held: { byAnother: boolean }) {
+    const jogger = createMockJogger()
+    vi.mocked(jogger.setJoggingMode).mockImplementation(async (mode) => {
+      jogger.mode = mode
+      if (mode === "jogging" && held.byAnother) jogger.onBlocked?.()
+    })
+    return jogger
+  }
+
+  it("moves nothing, closes again and stays refused with a reason of its own until unblock()", async () => {
+    const held = { byAnother: true }
+    const jogger = joggerThatIsBlocked(held)
+    const store = createStore({ jogger })
+
+    expect(
+      await refusalOf(store.startCartesianJogging("translate", "x", "+")),
+    ).toEqual({ code: "blocked" })
+    expect(store.blocked).toBe(true)
+    expect(jogger.translateTCP).not.toHaveBeenCalled()
+    expect(jogger.mode).toBe("off")
+
+    // No start asks NOVA again by itself: the user decides to try again
+    vi.mocked(jogger.setJoggingMode).mockClear()
+    const error = await store.startJointJogging(0, "+").catch((e: unknown) => e)
+    expect((error as JoggingRefusedError).reason).toEqual({ code: "blocked" })
+    expect((error as Error).message).toContain("another client")
+    expect(
+      await refusalOf(
+        store.runIncrementalCartesianJog("translate", "x", "+", {
+          id: "1",
+          mm: 1,
+          degrees: 0.5,
+        }),
+      ),
+    ).toEqual({ code: "blocked" })
+    expect(await refusalOf(store.requestTcpChange("gripper"))).toEqual({
+      code: "blocked",
+    })
+    expect(jogger.setJoggingMode).not.toHaveBeenCalled()
+
+    // The other client is gone
+    held.byAnother = false
+    store.unblock()
+    await store.startCartesianJogging("translate", "x", "+")
+    expect(jogger.translateTCP).toHaveBeenCalledOnce()
+  })
+
+  it("says that the robot may not move rather than that the connection is blocked, and that rather than that the store is locked", async () => {
+    let reason: JoggingRefusedReason | null = { code: "deactivated" }
+    const store = createStore({ notMoveableReason: () => reason })
+    store.block()
+    store.lock("external")
+
+    expect(await refusalOf(store.activate())).toEqual({ code: "deactivated" })
+    reason = null
+    expect(await refusalOf(store.activate())).toEqual({ code: "blocked" })
+  })
+
   // unblock() opens the jogging websocket again for a jogger that an app
   // keeps in jogging mode
   it("is opened again by unblock() only for a robot that may move", async () => {

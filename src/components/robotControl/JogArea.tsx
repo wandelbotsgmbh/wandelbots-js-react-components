@@ -4,14 +4,13 @@ import Tooltip from "@mui/material/Tooltip"
 import Typography from "@mui/material/Typography"
 import { Jog } from "@wandelbots/icons/Jog"
 import { ViewModuleFilled } from "@wandelbots/icons/ViewModuleFilled"
-import { type RefObject, useState } from "react"
+import { type ReactNode, type RefObject, useState } from "react"
 import { useTranslation } from "react-i18next"
 import type { Quaternion } from "three"
 import { JoggingGizmo } from "../jogging/gizmo/JoggingGizmo"
 import { JoggingButtons } from "../jogging/JoggingButtons"
 import type { JogControlsProps } from "../jogging/useJogControls"
 import { isWebGLAvailable } from "../utils/webglSupport"
-import { JogDisabledReason } from "./JogDisabledReason"
 import type { JogMode } from "./JogModeToggle"
 
 /** Which jog controls the jog area shows */
@@ -24,7 +23,7 @@ type JogAreaProps = {
   /** The props of the gizmo or the buttons, whichever is shown */
   controls: JogControlsProps
   /** Why jogging is off: shown in place of the hint of how to jog */
-  disabledReason?: string
+  disabledReason?: ReactNode
   /**
    * Without it, there is no gizmo: the buttons, and no switch. Nor is there
    * one when the browser cannot draw it (no WebGL).
@@ -103,9 +102,7 @@ export function JogArea({
         <JoggingButtons {...controls} />
       )}
 
-      {disabledReason ? (
-        <JogDisabledReason text={disabledReason} />
-      ) : (
+      {disabledReason ?? (
         <Typography variant="body2" color="text.secondary" textAlign="center">
           {hint}
         </Typography>
