@@ -1,6 +1,5 @@
 import {
   type FocusEvent,
-  type KeyboardEvent,
   type PointerEvent,
   useCallback,
   useRef,
@@ -8,7 +7,6 @@ import {
 } from "react"
 import {
   capturePointer,
-  endsHold,
   isPointerOn,
   preventContextMenu,
   primaryReleased,
@@ -31,7 +29,8 @@ export type HoldOptions<T> = {
  * exactly as long as one control is held with a pointer. It stops when the
  * pointer is let go, wherever that happens, and when it leaves the control,
  * as RobotPad's jog buttons do. The keyboard does not move the robot: Space
- * or Enter on a focused control start nothing.
+ * or Enter on a focused control start nothing, and a key pressed during a
+ * hold ends it.
  *
  * Only one hold runs at a time; pressing a second control while one is held
  * does nothing. Every way a hold can end (release, leaving the control,
@@ -110,10 +109,6 @@ export function useHold<T>({
       onPointerUp: () => stop(target),
       onPointerCancel: () => stop(target),
       onLostPointerCapture: () => stop(target),
-      // The keyboard starts no hold: a key only ends one
-      onKeyDown: (event: KeyboardEvent<Element>) => {
-        if (heldRef.current !== null && endsHold(event)) stop()
-      },
       onBlur: (_event: FocusEvent<Element>) => stop(target),
       onContextMenu: preventContextMenu,
     }),

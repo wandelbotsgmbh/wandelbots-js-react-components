@@ -25,7 +25,8 @@ export function startsPointerHold(event: {
 /**
  * Whether a key press ends a running hold: any new press does, as a key can
  * take the pointer's release away (Cmd, on macOS). Only the auto-repeat of a
- * key that was down before goes on.
+ * key that was down before goes on. See {@link useEndHoldWhenUnattended}
+ * for where the keys are listened for.
  */
 export function endsHold(event: { repeat: boolean }): boolean {
   return !event.repeat
@@ -122,8 +123,12 @@ export function preventContextMenu(event: { preventDefault: () => void }) {
  * Ends a hold that the user can no longer end at the control: when the
  * controls become disabled or unmount, and while `holding`, when the window
  * loses focus or the tab is hidden (a release outside the page may never
- * reach the control). `end` must be stable and do nothing when nothing is
- * held.
+ * reach the control), and when a key is pressed (see {@link endsHold}).
+ * `end` must be stable and do nothing when nothing is held.
+ *
+ * The keys are listened for on the window, not on the control: a press
+ * gives the focus to a button in some browsers only (not in Safari), and
+ * never to an element that takes none, e.g. the band of a gizmo handle.
  */
 export function useEndHoldWhenUnattended(
   holding: boolean,
@@ -141,10 +146,16 @@ export function useEndHoldWhenUnattended(
     const endWhenHidden = () => {
       if (document.visibilityState === "hidden") end()
     }
+    const endOnKey = (event: KeyboardEvent) => {
+      if (endsHold(event)) end()
+    }
     window.addEventListener("blur", end)
+    // Before anything on the page takes the key
+    window.addEventListener("keydown", endOnKey, true)
     document.addEventListener("visibilitychange", endWhenHidden)
     return () => {
       window.removeEventListener("blur", end)
+      window.removeEventListener("keydown", endOnKey, true)
       document.removeEventListener("visibilitychange", endWhenHidden)
     }
   }, [holding, end])

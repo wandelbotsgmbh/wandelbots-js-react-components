@@ -2,13 +2,7 @@ import Box from "@mui/material/Box"
 import Stack from "@mui/material/Stack"
 import { useTheme } from "@mui/material/styles"
 import Typography from "@mui/material/Typography"
-import {
-  type KeyboardEvent,
-  type PointerEvent,
-  useEffect,
-  useRef,
-  useState,
-} from "react"
+import { type PointerEvent, useEffect, useRef, useState } from "react"
 import { externalizeComponent } from "../../../externalizeComponent"
 import type { JogDirection } from "../jogHandle"
 import {
@@ -23,7 +17,6 @@ import {
 } from "./jointJog"
 import {
   capturePointer,
-  endsHold,
   isPointerWithin,
   preventContextMenu,
   primaryReleased,
@@ -180,11 +173,6 @@ export const JoggingJointSlider = externalizeComponent(
       if (holdingPointer() === event.pointerId) end()
     }
 
-    // The keyboard starts no jog: a key only ends one
-    function onKeyDown(event: KeyboardEvent<HTMLElement>) {
-      if (isHolding() && endsHold(event)) end()
-    }
-
     const goal = hold?.goal ?? hoverGoal
     const limits = range && {
       min: formatJointLimit(range.min, unit),
@@ -258,7 +246,6 @@ export const JoggingJointSlider = externalizeComponent(
           onPointerUp={endPointer}
           onPointerCancel={endPointer}
           onLostPointerCapture={endPointer}
-          onKeyDown={onKeyDown}
           onBlur={end}
           onContextMenu={preventContextMenu}
           sx={{

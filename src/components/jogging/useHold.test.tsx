@@ -348,6 +348,40 @@ describe("useHold", () => {
     expect(onStart).toHaveBeenCalledTimes(1)
   })
 
+  // A press gives the focus to a button in some browsers only (not Safari),
+  // and never to an element that takes none, e.g. the band of a gizmo handle
+  it("stops when a key is pressed while the control does not have the focus", () => {
+    const { onStop, press } = setup()
+
+    press("a")
+    fireEvent.keyDown(document.body, { key: "Shift" })
+    expect(onStop).toHaveBeenCalledTimes(1)
+
+    // No hold: a key is nothing to the controls
+    fireEvent.keyDown(document.body, { key: "Shift" })
+    expect(onStop).toHaveBeenCalledTimes(1)
+  })
+
+  it("stops when a key is pressed in a part of the app that keeps its keys to itself", () => {
+    const onStop = vi.fn()
+    render(
+      <>
+        <Controls onStart={vi.fn()} onStop={onStop} />
+        {/* biome-ignore lint/a11y/noStaticElementInteractions: an app's own part */}
+        <div onKeyDown={(event) => event.stopPropagation()}>
+          <input aria-label="app field" />
+        </div>
+      </>,
+    )
+
+    fireEvent.pointerDown(button("a"), { button: 0, pointerId: 1 })
+    fireEvent.keyDown(screen.getByRole("textbox", { name: "app field" }), {
+      key: "x",
+    })
+
+    expect(onStop).toHaveBeenCalledTimes(1)
+  })
+
   it("goes on through the auto-repeat of a key that was down before the press", () => {
     const { onStop, press } = setup()
 

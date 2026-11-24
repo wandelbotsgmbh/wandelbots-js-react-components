@@ -483,6 +483,15 @@ describe("JoggingJointSlider", () => {
     expect(onJogStop).toHaveBeenCalledTimes(1)
   })
 
+  it("ends a pointer hold on a key press also while the slider does not have the focus", () => {
+    const { onJogStop } = setup()
+
+    press(xOf(1))
+    fireEvent.keyDown(document.body, { key: "Shift" })
+
+    expect(onJogStop).toHaveBeenCalledTimes(1)
+  })
+
   it("goes on through the auto-repeat of a key that was down before the press", () => {
     const { onJogStop } = setup()
 
