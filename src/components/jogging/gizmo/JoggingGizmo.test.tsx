@@ -47,10 +47,33 @@ function setup({
 afterEach(() => {
   vi.useRealTimers()
   webgl.available = true
+  Reflect.deleteProperty(document, "elementFromPoint")
 })
 
 const handle = (name: string) =>
   screen.getByRole("button", { name: `Jog ${name}` })
+
+/**
+ * Says which element lies under the pointer, as the page does in a browser:
+ * jsdom lays nothing out, and has no elementFromPoint
+ */
+function pointerIsOver(element: Element | null) {
+  document.elementFromPoint = () => element
+}
+
+/** A move of the holding pointer, its primary button still down */
+const moveOn = (element: Element) =>
+  fireEvent.pointerMove(element, { pointerId: 1, buttons: 1 })
+
+/**
+ * The two halves of the band along a rotate handle's arc, which take the
+ * presses beside the button on its arrowhead: the elements before the button
+ */
+function bandOf(head: HTMLElement) {
+  const second = head.previousElementSibling as HTMLElement
+  const first = second.previousElementSibling as HTMLElement
+  return [first, second]
+}
 
 describe("JoggingGizmo", () => {
   it("says it cannot be drawn, with no handles nobody sees, and tells the app, when the browser has no WebGL", () => {
@@ -98,6 +121,25 @@ describe("JoggingGizmo", () => {
     expect(handle).toHaveAttribute("aria-pressed", "false")
   })
 
+  it("stops when the pointer leaves the held handle, as on a release, and does not jog with the handle it gets to", () => {
+    const { onJogStart, onJogStop } = setup()
+
+    fireEvent.pointerDown(handle("Y-"), { button: 0, pointerId: 1 })
+    pointerIsOver(handle("Y-"))
+    moveOn(handle("Y-"))
+    expect(onJogStop).not.toHaveBeenCalled()
+
+    pointerIsOver(handle("X+"))
+    moveOn(handle("Y-"))
+    expect(onJogStop).toHaveBeenCalledTimes(1)
+    expect(handle("Y-")).toHaveAttribute("aria-pressed", "false")
+
+    // The release that still comes stops nothing more
+    fireEvent.pointerUp(handle("Y-"), { pointerId: 1 })
+    expect(onJogStop).toHaveBeenCalledTimes(1)
+    expect(onJogStart).toHaveBeenCalledTimes(1)
+  })
+
   it("does not jog from the keyboard: Space or Enter on a focused handle start nothing", () => {
     const { onJogStart } = setup()
 
@@ -130,6 +172,36 @@ describe("JoggingGizmo", () => {
 
     fireEvent.pointerUp(handle)
     expect(onJogStop).toHaveBeenCalledTimes(1)
+  })
+
+  it("in rotate mode, a handle is its whole band and its arrowhead: the pointer may move along them, and leaves it only past them", () => {
+    const { onJogStop } = setup({ motion: "rotate" })
+    const [half, otherHalf] = bandOf(handle("Rz-"))
+
+    fireEvent.pointerDown(half, { button: 0, pointerId: 1 })
+    expect(handle("Rz-")).toHaveAttribute("aria-pressed", "true")
+    for (const part of [half, otherHalf, handle("Rz-")]) {
+      pointerIsOver(part)
+      moveOn(half)
+    }
+    expect(onJogStop).not.toHaveBeenCalled()
+
+    // The band of another handle, which crosses this one's
+    pointerIsOver(bandOf(handle("Rx+"))[0])
+    moveOn(half)
+    expect(onJogStop).toHaveBeenCalledTimes(1)
+    expect(handle("Rz-")).toHaveAttribute("aria-pressed", "false")
+  })
+
+  it("shows a handle as hovered only until the pointer leaves it", () => {
+    setup()
+    const background = () => getComputedStyle(handle("X+")).backgroundColor
+    const plain = background()
+
+    fireEvent.pointerEnter(handle("X+"))
+    expect(background()).not.toBe(plain)
+    fireEvent.pointerLeave(handle("X+"))
+    expect(background()).toBe(plain)
   })
 
   it("stops a running jog when the motion changes, so a translation never goes on as a rotation", () => {

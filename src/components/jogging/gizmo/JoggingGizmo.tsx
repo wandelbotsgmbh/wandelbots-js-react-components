@@ -119,7 +119,9 @@ function useHasOrientation(orientation: RefObject<Quaternion | null>) {
  * `motion` picks the handles. To translate, each axis is an arrow with a
  * handle per direction, grabbed anywhere along its half of the axis. To rotate, each axis has a circle
  * about it with an arc per direction, whose arrowhead shows the way it
- * turns, grabbed anywhere along the arc. A handle is held to jog.
+ * turns, grabbed anywhere along the arc. A handle is held to jog: the jog
+ * stops when the pointer is let go, or leaves the handle (its bar, or its
+ * band and arrowhead).
  *
  * The gizmo is drawn in 3D; the handles are laid over it as buttons, so
  * assistive technology and tests find a handle by its name. The keyboard

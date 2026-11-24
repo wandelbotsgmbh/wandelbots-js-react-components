@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from "@testing-library/react"
 import { I18nextProvider } from "react-i18next"
-import { describe, expect, it, vi } from "vitest"
+import { afterEach, describe, expect, it, vi } from "vitest"
 import { i18n } from "../../i18n/config"
 import type { JogHandle } from "./jogHandle"
 import { JoggingButtons } from "./JoggingButtons"
@@ -46,6 +46,18 @@ function turnIconOf(element: HTMLElement) {
   }
 }
 
+afterEach(() => {
+  Reflect.deleteProperty(document, "elementFromPoint")
+})
+
+/**
+ * Says which element lies under the pointer, as the page does in a browser:
+ * jsdom lays nothing out, and has no elementFromPoint
+ */
+function pointerIsOver(element: Element | null) {
+  document.elementFromPoint = () => element
+}
+
 describe("JoggingButtons", () => {
   it("has a button for each direction of each axis, named like the gizmo's handles", () => {
     setup()
@@ -66,6 +78,22 @@ describe("JoggingButtons", () => {
     fireEvent.pointerUp(button("Y-"))
     expect(onJogStop).toHaveBeenCalledTimes(1)
     expect(button("Y-")).toHaveAttribute("aria-pressed", "false")
+  })
+
+  it("stops when the pointer leaves the held button, as on a release, and does not jog with the button it gets to", () => {
+    const { onJogStart, onJogStop } = setup()
+
+    fireEvent.pointerDown(button("Y-"), { button: 0, pointerId: 1 })
+    pointerIsOver(button("Y+"))
+    fireEvent.pointerMove(button("Y-"), { pointerId: 1, buttons: 1 })
+
+    expect(onJogStop).toHaveBeenCalledTimes(1)
+    expect(button("Y-")).toHaveAttribute("aria-pressed", "false")
+    expect(onJogStart).toHaveBeenCalledTimes(1)
+
+    // The release that still comes stops nothing more
+    fireEvent.pointerUp(button("Y-"), { pointerId: 1 })
+    expect(onJogStop).toHaveBeenCalledTimes(1)
   })
 
   it("does not jog from the keyboard: Space or Enter on a focused button start nothing", () => {

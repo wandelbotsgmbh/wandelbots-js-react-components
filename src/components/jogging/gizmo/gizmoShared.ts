@@ -1,5 +1,5 @@
 import { alpha, type Theme } from "@mui/material/styles"
-import type { RefObject } from "react"
+import type { PointerEvent, RefObject } from "react"
 import { type Quaternion, Vector3 } from "three"
 import { isSameJogHandle, type JogAxis, type JogHandle } from "../jogHandle"
 import { cartesianAxisColors } from "../joggingColors"
@@ -202,15 +202,46 @@ export function highlightOf(
   return lit ? alpha(color, 0.12) : "transparent"
 }
 
-/** What each element that grabs a handle gets: hover, and press and hold */
+/**
+ * The elements that grab a handle: its button, which is the bar of a
+ * translation handle, and the halves of the band of a rotation handle
+ */
+function grabElementsOf(handle: JogHandle, overlay: RefObject<GizmoOverlay>) {
+  const keys = [
+    handleKey(handle),
+    ...HALVES.map((half) => halfKey(handle, half)),
+  ]
+  return keys.flatMap((key) => overlay.current.get(key) ?? [])
+}
+
+/**
+ * What each element that grabs a handle gets: hover, and press and hold.
+ * The hold goes on while the pointer is on any element of the handle's grab
+ * area, e.g. along its band and on to its arrowhead, and ends when the
+ * pointer has left them all: a press there would no longer reach the handle.
+ *
+ * That is asked when the pointer moves. A gizmo that turns under a pointer
+ * that keeps still (jogging about the axes of the tool turns its frame)
+ * goes on jogging until the pointer moves or lets go.
+ */
 export function gripProps(
   handle: JogHandle,
-  { onHover, handlersFor }: Pick<GizmoHandlesProps, "onHover" | "handlersFor">,
+  {
+    onHover,
+    handlersFor,
+    overlay,
+  }: Pick<GizmoHandlesProps, "onHover" | "handlersFor" | "overlay">,
 ) {
+  const hold = handlersFor(handle, (element) =>
+    grabElementsOf(handle, overlay).some((grab) => grab.contains(element)),
+  )
   return {
+    ...hold,
     onPointerEnter: () => onHover(handle),
-    onPointerLeave: () => onHover(null),
-    ...handlersFor(handle),
+    onPointerLeave: (event: PointerEvent<Element>) => {
+      onHover(null)
+      hold.onPointerLeave(event)
+    },
   }
 }
 
