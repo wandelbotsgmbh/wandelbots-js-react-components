@@ -24,6 +24,9 @@ export default defineWorkspace([
       environment: "node",
       globals: true,
       include: ["src/test/consumer.test.ts"],
+      // The first import of a built entry with three.js and React Three
+      // Fiber takes several seconds on a busy machine
+      testTimeout: 30_000,
     },
   },
   {
