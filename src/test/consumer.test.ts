@@ -11,6 +11,9 @@
  *      index barrel).
  *   3. Named exports remain importable AND the MUI-style default export is
  *      also available and identical to the named one for primary components.
+ *   4. An entry point loads only the packages an app has for it: /session no
+ *      React and no three.js, /nats and the components that draw nothing in
+ *      3D no three.js, and only /nats nats.ws.
  *
  * Run via `pnpm test:consumer` (which builds first) or as part of
  * `pnpm test:unit:run` once dist/ exists.
@@ -374,13 +377,20 @@ describe("the library without React: /session", () => {
     })
   })
 
-  // One copy: a session of /session is a session for the parts of /core
-  it("/session and /core share one RobotSession", async () => {
-    const session = await import(`${pkgName}/session`)
-    const core = await import(`${pkgName}/core`)
-    expect(session.RobotSession).toBeDefined()
-    expect(session.RobotSession).toBe(core.RobotSession)
-    expect(session.loadRobotSession).toBe(core.loadRobotSession)
+  // /core exports all of /session, and one copy of it: a session of /session
+  // is a session for the parts of /core
+  it("/core exports everything of /session, the same objects", async () => {
+    const session = (await import(`${pkgName}/session`)) as Record<
+      string,
+      unknown
+    >
+    const core = (await import(`${pkgName}/core`)) as Record<string, unknown>
+    expect(Object.keys(session)).toContain("loadRobotSession")
+    for (const [name, value] of Object.entries(session)) {
+      expect(core[name], `/core does not export ${name} of /session`).toBe(
+        value,
+      )
+    }
   }, 30_000)
 })
 
