@@ -425,7 +425,8 @@ export class JoggingStore {
    * Rejects with a {@link JoggingRefusedError} while the store is locked or
    * its owner says that the robot may not move (see
    * {@link JoggingStoreOptions}): nothing is sent to the robot then, and no
-   * jogging websocket opens.
+   * jogging websocket opens. Also when that came to be while the jogging
+   * websocket opened: the store closes it again.
    *
    * {@link JoggingStore.startCartesianJogging},
    * {@link JoggingStore.startJointJogging} and
@@ -479,11 +480,52 @@ export class JoggingStore {
       this.jogger.coordinateSystem = this.jogCoordSystem
     }
 
-    await this.jogger.setJoggingMode(
-      jog === "cartesianStep" ? "trajectory" : "jogging",
-    )
+    if (jog === "cartesianStep") {
+      // Opens nothing yet: the step opens its own websocket
+      await this.jogger.setJoggingMode("trajectory")
+    } else {
+      await this.openJoggingWebsocket()
+    }
 
     return this.jogger
+  }
+
+  /**
+   * Opens the jogging websocket of the jogger, unless a jog may not start
+   * (see {@link JoggingStore.refuseUnlessJoggable}). It is a movement
+   * connection, for which NOVA switches a controller to control mode by
+   * itself and holds it there: the store opens it only here, for a jog, a
+   * TCP change or its robot session.
+   *
+   * It asks before it opens the websocket, and again once it is open: that
+   * takes 0.1 to 0.5 s, in which the robot may have been deactivated or
+   * stopped. Refused then, the websocket closes again before anything moves.
+   *
+   * `reinitialize` opens it anew when it is open already, for another TCP.
+   */
+  private async openJoggingWebsocket(reinitialize = false) {
+    this.refuseUnlessJoggable()
+    if (reinitialize) {
+      await this.jogger.setJoggingMode("jogging", false)
+    } else {
+      await this.jogger.setJoggingMode("jogging")
+    }
+    try {
+      this.refuseUnlessJoggable()
+    } catch (error) {
+      await this.deactivate()
+      throw error
+    }
+  }
+
+  /**
+   * Hands the jogger to jogging: opens its jogging websocket, as a held jog
+   * does, and rejects with a {@link JoggingRefusedError} as one.
+   * @internal For the store's robot session, see
+   * `RobotSession.ensureMovementOwnership`
+   */
+  async claimForJogging() {
+    await this.openJoggingWebsocket()
   }
 
   /**
@@ -514,7 +556,8 @@ export class JoggingStore {
    * later. A press that was stopped by then, or that another press followed,
    * moves nothing. Rejects with a {@link JoggingRefusedError} as
    * {@link JoggingStore.activate} does: while the store is locked or the
-   * robot may not move.
+   * robot may not move, also when that came to be while the websocket
+   * opened.
    */
   async startCartesianJogging(
     motion: CartesianMotionType,
@@ -898,9 +941,18 @@ export class JoggingStore {
    * If the jogger is idle, a jogging websocket is briefly opened to communicate the
    * TCP change. The websocket is kept open until the state-stream confirms the
    * change (or a 1s timeout), to ensure the backend has time to process it.
+   *
+   * The jogging websocket is a movement connection, for which NOVA switches a
+   * controller to control mode by itself. So the change rejects with a
+   * {@link JoggingRefusedError} as a jog does, while the store is locked or
+   * its owner says that the robot may not move: the TCP stays, and no
+   * websocket opens (or it closes again, see {@link JoggingStore.activate}).
    */
   async requestTcpChange(tcpId: string): Promise<void> {
     if (tcpId === this.selectedTcpId) return
+
+    // First of all: a refused change leaves the TCP and the store as they are
+    this.refuseUnlessJoggable()
 
     this.tcpChangeInProgress = true
     const previousTcp = this.jogger.tcp
@@ -910,14 +962,10 @@ export class JoggingStore {
       // Store the new TCP on the jogger
       this.jogger.tcp = tcpId
 
-      if (wasOff) {
-        // Jogger is idle — open a jogging websocket to send
-        // InitializeJoggingRequest with the new TCP
-        await this.jogger.setJoggingMode("jogging")
-      } else {
-        // Jogger is actively jogging — reinitialize with the new TCP
-        await this.jogger.setJoggingMode("jogging", false)
-      }
+      // Jogger is idle — open a jogging websocket to send
+      // InitializeJoggingRequest with the new TCP. Jogger is actively
+      // jogging — reinitialize with the new TCP.
+      await this.openJoggingWebsocket(!wasOff)
 
       // Wait for server to confirm the new TCP via state stream.
       // Use a short 1s timeout — if not confirmed in time, close the
@@ -1047,13 +1095,27 @@ export class JoggingStore {
     this.blocked = true
   }
 
+  /**
+   * Ends {@link JoggingStore.blocked}, so that jogging can be tried again.
+   * For a jogger that is still in jogging mode (one that an app keeps there),
+   * it opens the jogging websocket again, unless a jog may not start: then
+   * the jogger is switched off instead.
+   */
   unblock() {
     this.blocked = false
-    if (this.jogger.mode === "jogging") {
-      this.jogger.initializeJoggingWebsocket().catch((err) => {
-        console.error("Failed to initialize jogging:", err)
+    if (this.jogger.mode !== "jogging") return
+
+    try {
+      this.refuseUnlessJoggable()
+    } catch {
+      this.deactivate().catch((err) => {
+        console.error("Failed to stop jogging:", err)
       })
+      return
     }
+    this.jogger.initializeJoggingWebsocket().catch((err) => {
+      console.error("Failed to initialize jogging:", err)
+    })
   }
 
   /** Lock the UI until the given async callback resolves */

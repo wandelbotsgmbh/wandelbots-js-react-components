@@ -247,10 +247,22 @@ export class RobotSession {
 
   /**
    * Hands the robot to jogging or to a trajectory: the controller runs only
-   * one of them at a time
+   * one of them at a time.
+   *
+   * Handing it to jogging opens the jogging websocket, a movement connection
+   * for which NOVA switches the controller to control mode by itself. So it
+   * rejects with a `JoggingRefusedError` as a jog of {@link RobotSession.jogging}
+   * does, while the robot may not move or its jogging store is locked.
+   * Handing it to a trajectory opens nothing.
    */
   async ensureMovementOwnership(target: Exclude<JoggerMode, "off">) {
     if (this.movementOwner === target) {
+      return
+    }
+
+    if (target === "jogging") {
+      // The store's guard is the only way to the jogging websocket
+      await this.jogging.claimForJogging()
       return
     }
 

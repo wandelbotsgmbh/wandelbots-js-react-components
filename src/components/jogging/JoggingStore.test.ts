@@ -1056,6 +1056,179 @@ describe("a start that is refused", () => {
     expect(jogger.stop).toHaveBeenCalledOnce()
     expect(jogger.mode).toBe("off")
   })
+
+  // The jogging websocket takes about 0.1 to 0.5 s to open, and NOVA holds
+  // the controller in control mode for as long as it is open
+  describe("once the jogging connection is open", () => {
+    /** Every start that opens the jogging websocket */
+    const opening = starts.filter(([name]) => name !== "a step")
+
+    /** A jogger whose jogging websocket is open when the test says so */
+    function joggerThatOpensLater() {
+      const jogger = createMockJogger()
+      const open = deferred()
+      vi.mocked(jogger.setJoggingMode).mockImplementation(async (mode) => {
+        jogger.mode = mode
+        if (mode === "jogging") await open.promise
+      })
+      return { jogger, open }
+    }
+
+    it.each(
+      opening,
+    )("%s sends no velocity and closes the connection when the robot may no longer move", async (_name, start) => {
+      const { jogger, open } = joggerThatOpensLater()
+      let reason: JoggingRefusedReason | null = null
+      const store = createStore({ jogger, notMoveableReason: () => reason })
+
+      const started = refusalOf(start(store))
+      await flush()
+      expect(jogger.mode).toBe("jogging")
+      reason = { code: "deactivated" }
+      open.resolve()
+
+      expect(await started).toEqual({ code: "deactivated" })
+      expect(jogger.translateTCP).not.toHaveBeenCalled()
+      expect(jogger.rotateJoints).not.toHaveBeenCalled()
+      expect(jogger.mode).toBe("off")
+    })
+
+    it.each(
+      opening,
+    )("%s sends no velocity and closes the connection when the store got locked", async (_name, start) => {
+      const { jogger, open } = joggerThatOpensLater()
+      const store = createStore({ jogger })
+
+      const started = refusalOf(start(store))
+      await flush()
+      store.lock("external")
+      open.resolve()
+
+      expect(await started).toEqual({ code: "locked" })
+      expect(jogger.translateTCP).not.toHaveBeenCalled()
+      expect(jogger.rotateJoints).not.toHaveBeenCalled()
+      expect(jogger.mode).toBe("off")
+    })
+  })
+})
+
+// A TCP change goes to NOVA through the jogging websocket, which the store
+// opens for it when the jogger is idle: a movement connection, for which
+// NOVA switches the controller to control mode by itself
+describe("a TCP change", () => {
+  const flange = {
+    id: "Flange",
+    readable_name: "Flange",
+  } as unknown as RobotTcp
+  const gripper = {
+    id: "gripper",
+    readable_name: "Gripper",
+  } as unknown as RobotTcp
+
+  /** A jogger whose controller reports the new TCP once it is asked to */
+  function joggerThatConfirms() {
+    const jogger = createMockJogger()
+    vi.mocked(jogger.setJoggingMode).mockImplementation(async (mode) => {
+      jogger.mode = mode
+      if (mode === "jogging") {
+        jogger.motionStream.rapidlyChangingMotionState.tcp = jogger.tcp
+      }
+    })
+    return jogger
+  }
+
+  it("goes to NOVA through the jogging connection of an idle jogger, which closes again", async () => {
+    const jogger = joggerThatConfirms()
+    const store = createStore({ jogger, tcps: [flange, gripper] })
+
+    await store.requestTcpChange("gripper")
+
+    expect(modeChangesTo(jogger, "jogging")).toHaveLength(1)
+    expect(store.selectedTcpId).toBe("gripper")
+    expect(jogger.mode).toBe("off")
+    expect(store.tcpChangeInProgress).toBe(false)
+  })
+
+  it.each([
+    [
+      "the store's owner says the robot may not move",
+      (store: JoggingStore) => store,
+      { code: "deactivated" } as JoggingRefusedReason,
+    ],
+    [
+      "the store is locked",
+      (store: JoggingStore) => {
+        store.lock("external")
+        return store
+      },
+      { code: "locked" } as JoggingRefusedReason,
+    ],
+  ])("opens no jogging connection while %s", async (_name, prepare, expected) => {
+    const jogger = joggerThatConfirms()
+    const store = prepare(
+      createStore({
+        jogger,
+        tcps: [flange, gripper],
+        notMoveableReason: () => (expected.code === "locked" ? null : expected),
+      }),
+    )
+
+    expect(await refusalOf(store.requestTcpChange("gripper"))).toEqual(expected)
+
+    expect(jogger.setJoggingMode).not.toHaveBeenCalled()
+    expect(jogger.tcp).toBe("Flange")
+    expect(store.selectedTcpId).toBe("Flange")
+    expect(store.tcpChangeInProgress).toBe(false)
+  })
+
+  it("closes the jogging connection and keeps the TCP when the robot may no longer move once the connection is open", async () => {
+    const jogger = createMockJogger()
+    const open = deferred()
+    vi.mocked(jogger.setJoggingMode).mockImplementation(async (mode) => {
+      jogger.mode = mode
+      if (mode === "jogging") await open.promise
+    })
+    let reason: JoggingRefusedReason | null = null
+    const store = createStore({
+      jogger,
+      tcps: [flange, gripper],
+      notMoveableReason: () => reason,
+    })
+
+    const change = refusalOf(store.requestTcpChange("gripper"))
+    await flush()
+    reason = { code: "safety_state", value: "SAFETY_STATE_STOP" }
+    open.resolve()
+
+    expect(await change).toEqual(reason)
+    expect(jogger.mode).toBe("off")
+    expect(jogger.tcp).toBe("Flange")
+    expect(store.selectedTcpId).toBe("Flange")
+    expect(store.tcpChangeInProgress).toBe(false)
+  })
+})
+
+describe("the connection that another client blocked", () => {
+  // unblock() opens the jogging websocket again for a jogger that an app
+  // keeps in jogging mode
+  it("is opened again by unblock() only for a robot that may move", async () => {
+    const jogger = createMockJogger()
+    let reason: JoggingRefusedReason | null = null
+    const store = createStore({ jogger, notMoveableReason: () => reason })
+    jogger.mode = "jogging"
+    store.block()
+
+    reason = { code: "deactivated" }
+    store.unblock()
+    await flush()
+    expect(jogger.initializeJoggingWebsocket).not.toHaveBeenCalled()
+    expect(jogger.mode).toBe("off")
+
+    jogger.mode = "jogging"
+    reason = null
+    store.unblock()
+    expect(jogger.initializeJoggingWebsocket).toHaveBeenCalledOnce()
+  })
 })
 
 describe("create", () => {

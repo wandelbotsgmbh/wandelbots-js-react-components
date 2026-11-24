@@ -26,7 +26,8 @@ function refusalText(reason: JoggingRefusedReason) {
 /**
  * A jog that a jogging store did not start, because the robot may not move
  * now or the store is locked: nothing was sent to the robot. `reason` says
- * why.
+ * why. Also what else needs the jogging connection and did not get it: a
+ * TCP change, or handing the robot to jogging.
  */
 export class JoggingRefusedError extends Error {
   /** Why the jog did not start: `reason.code` is for the app to translate */

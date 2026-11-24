@@ -457,6 +457,74 @@ describe("RobotSession", () => {
       expect(jogger.setJoggingMode).not.toHaveBeenCalled()
       session.dispose()
     })
+
+    // The jogging websocket is a movement connection, whoever opens it
+    it("hands a robot that is not activated to no jogging, and changes its TCP through no jogging connection", async () => {
+      const session = await harness.load().ready
+      const jogger = spyOnJogger(session)
+      expect(session.activation.state).toBe("inactive")
+
+      expect(
+        await refusalOf(session.ensureMovementOwnership("jogging")),
+      ).toEqual({ code: "deactivated" })
+      expect(
+        await refusalOf(session.jogging.requestTcpChange("Other")),
+      ).toEqual({ code: "deactivated" })
+
+      expect(jogger.setJoggingMode).not.toHaveBeenCalled()
+      expect(session.movementOwner).toBe("off")
+      session.dispose()
+    })
+
+    it("hands an activated robot to jogging, and a robot in any state to a trajectory, which opens no movement connection", async () => {
+      const session = await harness.load().ready
+      const jogger = spyOnJogger(session)
+
+      await session.ensureMovementOwnership("trajectory")
+      expect(jogger.setJoggingMode).toHaveBeenLastCalledWith("trajectory")
+
+      harness.source.send(controllerState({ mode: "MODE_CONTROL" }))
+      await session.ensureMovementOwnership("jogging")
+      expect(jogger.setJoggingMode).toHaveBeenLastCalledWith("jogging")
+      session.dispose()
+    })
+
+    it("closes the jogging connection again when the robot's safety stopped it while the connection opened", async () => {
+      const session = await harness.load().ready
+      harness.source.send(controllerState({ mode: "MODE_CONTROL" }))
+      const { jogger } = session.jogging
+      let opened: () => void = () => {}
+      const setJoggingMode = vi
+        .spyOn(jogger, "setJoggingMode")
+        .mockImplementation(async (mode) => {
+          jogger.mode = mode
+          if (mode === "jogging") {
+            await new Promise<void>((resolve) => {
+              opened = resolve
+            })
+          }
+        })
+
+      const handed = refusalOf(session.ensureMovementOwnership("jogging"))
+      await vi.waitFor(() =>
+        expect(setJoggingMode).toHaveBeenCalledWith("jogging"),
+      )
+      harness.source.send(
+        controllerState({
+          mode: "MODE_CONTROL",
+          safety_state: "SAFETY_STATE_STOP",
+        }),
+      )
+      opened()
+
+      expect(await handed).toEqual({
+        code: "safety_state",
+        value: "SAFETY_STATE_STOP",
+      })
+      expect(setJoggingMode).toHaveBeenLastCalledWith("off")
+      expect(session.movementOwner).toBe("off")
+      session.dispose()
+    })
   })
 
   // The store drops its plan at the end of a trajectory, after a failed move
