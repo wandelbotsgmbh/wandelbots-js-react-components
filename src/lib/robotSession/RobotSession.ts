@@ -171,6 +171,7 @@ export class RobotSession {
       this.state,
       () => this.safety,
       logger,
+      () => this.releasePlannedMove(),
     )
     this.safety = new RobotSafety(this.state, () => this.activation.state)
 
@@ -247,6 +248,23 @@ export class RobotSession {
 
     await this.jogging.deactivate()
     await this.jogging.jogger.setJoggingMode(target)
+  }
+
+  /**
+   * Drops a planned move: a staged typed pose, or a trajectory the app
+   * planned itself (RobotPad: to a saved pose). It holds the controller's
+   * execution session, which keeps the controller in control mode.
+   */
+  private async releasePlannedMove() {
+    if (this.targetPose.staged) {
+      await this.targetPose.resetToLive()
+    }
+    if (
+      this.trajectory.plannedTrajectory ||
+      this.trajectory.trajectoryState !== "idle"
+    ) {
+      await this.trajectory.stopAndReset()
+    }
   }
 
   /** Closes the session's connections and stops following the robot */

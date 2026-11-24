@@ -276,6 +276,56 @@ describe("RobotSession", () => {
     session.dispose()
   })
 
+  it("hands a planned move back before it deactivates the robot, whose controller it holds in control mode", async () => {
+    const session = await harness.load().ready
+    harness.source.send(controllerState({ mode: "MODE_CONTROL" }))
+    // A typed pose planned for Move to: its trajectory is loaded on the
+    // controller's execution session
+    session.targetPose.staged = {
+      pose: { type: "joint", motionGroupId: MOTION_GROUP_ID, joints: [0] },
+      displayString: "[0]",
+      errorKey: null,
+    }
+    session.trajectory.plannedTrajectory = { startJoints: [0], endJoints: [1] }
+    session.trajectory.trajectoryState = "planned"
+    let plannedWhenAsked: unknown = "never asked"
+    harness.api.controller.setDefaultMode.mockImplementation(async () => {
+      plannedWhenAsked = session.trajectory.plannedTrajectory
+    })
+
+    await session.activation.deactivate()
+
+    expect(harness.api.controller.setDefaultMode).toHaveBeenCalledWith(
+      "cell",
+      CONTROLLER_ID,
+      "ROBOT_SYSTEM_MODE_MONITOR",
+    )
+    expect(plannedWhenAsked).toBeNull()
+    expect(session.targetPose.staged).toBeNull()
+
+    // The controller leaves control mode then
+    harness.source.send(controllerState({ mode: "MODE_MONITOR" }))
+    expect(session.activation.state).toBe("inactive")
+    session.dispose()
+  })
+
+  it("hands back a move that the app planned itself before it deactivates the robot", async () => {
+    const session = await harness.load().ready
+    harness.source.send(controllerState({ mode: "MODE_CONTROL" }))
+    // RobotPad plans the move to a saved pose itself, with no typed pose
+    session.trajectory.plannedTrajectory = { startJoints: [0], endJoints: [1] }
+    session.trajectory.trajectoryState = "planned"
+    let plannedWhenAsked: unknown = "never asked"
+    harness.api.controller.setDefaultMode.mockImplementation(async () => {
+      plannedWhenAsked = session.trajectory.plannedTrajectory
+    })
+
+    await session.activation.deactivate()
+
+    expect(plannedWhenAsked).toBeNull()
+    session.dispose()
+  })
+
   it("plans no typed pose while the app is locked", async () => {
     const session = await harness.load({ isLocked: () => true }).ready
     harness.source.send(controllerState({ mode: "MODE_CONTROL" }))

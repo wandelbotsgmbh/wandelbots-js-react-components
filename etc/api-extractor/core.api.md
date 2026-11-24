@@ -812,7 +812,8 @@ export class RobotActivation {
     constructor(nova: Nova, ids: {
         cellId: string;
         controllerId: string;
-    }, live: RobotLiveState, safety: () => RobotSafety, logger: ConnectionLogger);
+    }, live: RobotLiveState, safety: () => RobotSafety, logger: ConnectionLogger,
+    releaseControl?: () => Promise<void>);
     activate(): Promise<void>;
     deactivate(): Promise<void>;
     // (undocumented)

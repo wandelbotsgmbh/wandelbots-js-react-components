@@ -48,6 +48,11 @@ export class RobotActivation {
     private readonly live: RobotLiveState,
     private readonly safety: () => RobotSafety,
     private readonly logger: ConnectionLogger,
+    /**
+     * Hands back what holds the controller in control mode (a planned
+     * move's execution session): until then, it does not leave it
+     */
+    private readonly releaseControl: () => Promise<void> = async () => {},
   ) {
     if (live.controllerState.mode === "MODE_CONTROL") {
       this.state = "active"
@@ -55,7 +60,13 @@ export class RobotActivation {
 
     makeAutoObservable<
       this,
-      "nova" | "ids" | "live" | "safety" | "logger" | "disposers"
+      | "nova"
+      | "ids"
+      | "live"
+      | "safety"
+      | "logger"
+      | "releaseControl"
+      | "disposers"
     >(
       this,
       {
@@ -64,6 +75,7 @@ export class RobotActivation {
         live: false,
         safety: false,
         logger: false,
+        releaseControl: false,
         disposers: false,
       },
       { autoBind: true },
@@ -131,7 +143,8 @@ export class RobotActivation {
   }
 
   /**
-   * Switches the controller to monitor mode. Rejects with a
+   * Switches the controller to monitor mode, after handing back a planned
+   * move, which holds it in control mode. Rejects with a
    * {@link RobotModeChangeError} when NOVA refuses it.
    */
   async deactivate() {
@@ -142,6 +155,9 @@ export class RobotActivation {
 
     this.state = "deactivating"
     try {
+      // Else the controller stays in control mode, and the activation would
+      // wait for monitor mode forever
+      await this.releaseControl()
       await this.setMode("ROBOT_SYSTEM_MODE_MONITOR")
       runInAction(() => {
         if (this.live.controllerState.mode !== "MODE_CONTROL") {
