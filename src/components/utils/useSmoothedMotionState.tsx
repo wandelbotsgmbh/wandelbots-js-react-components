@@ -18,9 +18,18 @@ import { type InterpolationOptions, ValueInterpolator } from "./interpolation"
  * The returned object is a **stable, MobX-observable** motion state whose
  * `joint_position` is mutated in place every animation frame while the spring
  * settles. Because the object identity never changes, passing it to
- * `<SupportedRobot rapidlyChangingMotionState={...} />` triggers no React
+ * `<SupportedRobotExact rapidlyChangingMotionState={...} />` triggers no React
  * re-renders — the visualizer's own MobX autorun reacts to the mutation and
  * updates the scene directly. All non-joint fields mirror the latest input.
+ *
+ * The spring steps in a `requestAnimationFrame` loop of its own, so the hook
+ * needs no canvas. In a canvas, that loop is separate from React Three
+ * Fiber's: a drawn frame can show the step of the frame before, and each step
+ * lasts from one callback to the next, however long the drawing in between
+ * took. The smoothed visualizers (`SupportedRobot`, `SupportedLinearAxis`,
+ * `MotionGroupVisualizer`) step the same spring, with its default options, in
+ * the canvas's frame loop instead: prefer them for a smoothed robot in a
+ * canvas, unless it needs other options.
  *
  * @example
  * ```tsx
@@ -29,7 +38,7 @@ import { type InterpolationOptions, ValueInterpolator } from "./interpolation"
  *   { tension: 120, friction: 20 },
  * )
  *
- * <SupportedRobot rapidlyChangingMotionState={smoothed} {...props} />
+ * <SupportedRobotExact rapidlyChangingMotionState={smoothed} {...props} />
  * ```
  */
 export function useSmoothedMotionState(
