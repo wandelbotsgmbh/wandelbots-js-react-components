@@ -377,7 +377,7 @@ export class JoggingStore {
 
   /**
    * The step that runs now: stops it, see
-   * {@link JoggingStore.stopIncrementalJog}, and resolves once it is over
+   * `stopIncrementalJog`, and resolves once it is over
    */
   private runningStep: {
     stop: (reason: JoggingRefusedReason) => void

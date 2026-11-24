@@ -315,6 +315,7 @@ export type IncrementalCartesianMotionRequest = {
     axis: "x" | "y" | "z";
     direction: "-" | "+";
     motion: IncrementalMotion;
+    refusedReason?: () => JoggingRefusedReason | null;
 };
 
 // @public
@@ -574,7 +575,6 @@ export class JoggingStore {
         mm: number;
         degrees: number;
     }[];
-    // (undocumented)
     dispose(): void;
     // (undocumented)
     disposers: IReactionDisposer[];
@@ -1574,7 +1574,7 @@ export type TcpReferencedPose = ReferencedPose & {
 export class TrajectoryExecutionStore {
     clearError(): void;
     dispose(): void;
-    get executionState(): "END_OF_TRAJECTORY" | "PAUSED_BY_USER" | "PAUSED_ON_IO" | "RUNNING" | "WAIT_FOR_IO" | "PAUSED_NEAR_COLLISION" | "PAUSED_NEAR_JOINT_LIMIT" | "PAUSED_NEAR_SINGULARITY" | undefined;
+    get executionState(): "PAUSED_BY_USER" | "PAUSED_NEAR_COLLISION" | "PAUSED_NEAR_JOINT_LIMIT" | "PAUSED_NEAR_SINGULARITY" | "PAUSED_ON_IO" | "RUNNING" | "END_OF_TRAJECTORY" | "WAIT_FOR_IO" | undefined;
     hold(target?: TrajectoryTarget): boolean;
     get holdsExecutionSession(): boolean;
     get isPlanOutdated(): boolean;

@@ -435,7 +435,7 @@ export class TrajectoryExecutionStore {
    * planned with another velocity than now
    * ({@link TrajectoryExecutionStore.isPlanOutdated}), and not while the
    * robot may not move (see
-   * {@link TrajectoryExecutionStoreOptions.notMoveableReason}). Safe to
+   * `TrajectoryExecutionStoreOptions.notMoveableReason`). Safe to
    * repeat while held.
    * {@link TrajectoryExecutionStore.release} ends the hold.
    *
