@@ -866,16 +866,19 @@ describe("jogging while a control is held", () => {
     )
   })
 
-  // A lock that comes during a hold: the stop is the only one the jog gets
-  it("stops a jog also while the store is locked", async () => {
+  // A lock that comes during a hold stops the jog itself (see "a held jog
+  // that the robot may no longer make"); the release still comes
+  it("takes the release of a jog also while the store is locked", async () => {
     const jogger = createMockJogger()
     const store = createStore({ jogger })
     await store.startCartesianJogging("translate", "x", "+")
     store.lock("external")
+    await flush()
+    expect(jogger.mode).toBe("off")
 
     await store.stopJogging()
 
-    expect(jogger.stop).toHaveBeenCalledOnce()
+    expect(jogger.stop).toHaveBeenCalled()
     expect(jogger.mode).toBe("off")
   })
 })
@@ -999,6 +1002,137 @@ describe("a step", () => {
 
     expect(jogger.runIncrementalCartesianMotion).not.toHaveBeenCalled()
     expect(store.isLocked).toBe(false)
+  })
+})
+
+// A held jog moves until its release. The store stops it itself when the
+// robot may no longer move, so an app with controls of its own needs no
+// rule for it: the jogging websocket holds the controller in control mode
+// for as long as it is open.
+describe("a held jog that the robot may no longer make", () => {
+  /** Every held jog */
+  const holds: [string, (store: JoggingStore) => Promise<void>][] = [
+    [
+      "a held jog of the TCP",
+      (store) => store.startCartesianJogging("translate", "x", "+"),
+    ],
+    ["a held jog of a joint", (store) => store.startJointJogging(0, "+")],
+  ]
+
+  /** The velocity requests the jogger got */
+  const velocities = (jogger: JoggerConnection) =>
+    vi.mocked(jogger.translateTCP).mock.calls.length +
+    vi.mocked(jogger.rotateJoints).mock.calls.length
+
+  it.each(
+    holds,
+  )("%s stops, and its connection closes, when the robot may no longer move, and stays stopped", async (_name, hold) => {
+    const jogger = createMockJogger()
+    const reason = observable.box<JoggingRefusedReason | null>(null)
+    const store = createStore({ jogger, notMoveableReason: () => reason.get() })
+    await hold(store)
+    expect(jogger.mode).toBe("jogging")
+
+    runInAction(() => reason.set({ code: "deactivated" }))
+    await flush()
+
+    expect(jogger.stop).toHaveBeenCalledOnce()
+    expect(jogger.mode).toBe("off")
+
+    // The reason goes away while the control is still held: nothing moves
+    // until the next press
+    runInAction(() => reason.set(null))
+    await flush()
+    expect(velocities(jogger)).toBe(1)
+    expect(jogger.mode).toBe("off")
+
+    // The release comes later
+    await store.stopJogging()
+    expect(jogger.mode).toBe("off")
+  })
+
+  it.each([
+    [
+      "something else locks the store",
+      (store: JoggingStore) => store.lock("external"),
+    ],
+    [
+      "another client takes the jogging connection",
+      (store: JoggingStore) => store.block(),
+    ],
+  ])("stops when %s", async (_name, interrupt) => {
+    const jogger = createMockJogger()
+    const store = createStore({ jogger })
+    await store.startCartesianJogging("translate", "x", "+")
+
+    interrupt(store)
+    await flush()
+
+    expect(jogger.stop).toHaveBeenCalledOnce()
+    expect(jogger.mode).toBe("off")
+  })
+
+  it("is not stopped any more once it is released", async () => {
+    const jogger = createMockJogger()
+    const reason = observable.box<JoggingRefusedReason | null>(null)
+    const store = createStore({ jogger, notMoveableReason: () => reason.get() })
+    await store.startJointJogging(1, "+")
+    await store.stopJogging()
+    expect(jogger.stop).toHaveBeenCalledOnce()
+
+    runInAction(() => reason.set({ code: "deactivated" }))
+    store.lock("external")
+    await flush()
+
+    expect(jogger.stop).toHaveBeenCalledOnce()
+  })
+
+  // A second finger, or a press that comes before the release of the one
+  // before: one jog moves, so one stop
+  it("stops once when a press followed another without its release", async () => {
+    const jogger = createMockJogger()
+    const reason = observable.box<JoggingRefusedReason | null>(null)
+    const store = createStore({ jogger, notMoveableReason: () => reason.get() })
+    await store.startCartesianJogging("translate", "x", "+")
+    await store.startCartesianJogging("translate", "y", "+")
+
+    runInAction(() => reason.set({ code: "deactivated" }))
+    await flush()
+
+    expect(jogger.stop).toHaveBeenCalledOnce()
+    expect(jogger.mode).toBe("off")
+  })
+
+  it("is not stopped any more once the press that followed it is released", async () => {
+    const jogger = createMockJogger()
+    const reason = observable.box<JoggingRefusedReason | null>(null)
+    const store = createStore({ jogger, notMoveableReason: () => reason.get() })
+    await store.startCartesianJogging("translate", "x", "+")
+    await store.startCartesianJogging("translate", "y", "+")
+    await store.stopJogging()
+
+    runInAction(() => reason.set({ code: "deactivated" }))
+    await flush()
+
+    expect(jogger.stop).toHaveBeenCalledOnce()
+  })
+
+  // A joint slider that turns around stops and starts in one event: the
+  // jog in the other direction is the one to watch
+  it("watches the jog that followed in the same event", async () => {
+    const jogger = createMockJogger()
+    const reason = observable.box<JoggingRefusedReason | null>(null)
+    const store = createStore({ jogger, notMoveableReason: () => reason.get() })
+    await store.startJointJogging(1, "+")
+    await Promise.all([store.stopJogging(), store.startJointJogging(1, "-")])
+    expect(jogger.stop).toHaveBeenCalledOnce()
+    expect(jogger.mode).toBe("jogging")
+
+    runInAction(() => reason.set({ code: "deactivated" }))
+    await flush()
+
+    expect(jogger.stop).toHaveBeenCalledTimes(2)
+    expect(jogger.mode).toBe("off")
   })
 })
 

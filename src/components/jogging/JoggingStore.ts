@@ -390,6 +390,9 @@ export class JoggingStore {
    */
   private disposed = false
 
+  /** Ends the watch of the held jog that moves now, see `watchHeldJog` */
+  private endHeldJogWatch: (() => void) | null = null
+
   constructor(
     readonly jogger: JoggerConnection,
     readonly coordSystems: CoordinateSystem[],
@@ -432,6 +435,7 @@ export class JoggingStore {
       | "jogPress"
       | "stoppedLast"
       | "runningStep"
+      | "endHeldJogWatch"
     >(
       this,
       {
@@ -440,6 +444,7 @@ export class JoggingStore {
         jogPress: false,
         stoppedLast: false,
         runningStep: false,
+        endHeldJogWatch: false,
       },
       { autoBind: true },
     )
@@ -663,6 +668,12 @@ export class JoggingStore {
    * {@link JoggingStore.activate} does: while the store is locked or the
    * robot may not move, also when that came to be while the websocket
    * opened.
+   *
+   * A jog that moves is stopped as by its release (see
+   * {@link JoggingStore.stopJogging}) once a jog would be refused: when the
+   * robot may no longer move, another client takes the jogging connection or
+   * the store gets locked. It stays stopped until the next press, also when
+   * the reason goes away; the release still comes and changes nothing.
    */
   async startCartesianJogging(
     motion: CartesianMotionType,
@@ -684,6 +695,7 @@ export class JoggingStore {
         velocityRadsPerSec: this.rotationVelocityRadsPerSec,
       })
     }
+    this.watchHeldJog()
   }
 
   /**
@@ -691,7 +703,7 @@ export class JoggingStore {
    * {@link JoggingStore.stopJogging}, with the store's rotation velocity, or
    * its translation velocity for a linear axis. As
    * {@link JoggingStore.startCartesianJogging}, for a control that is held,
-   * and refused as it.
+   * and refused and stopped as it.
    */
   async startJointJogging(joint: number, direction: JoggingDirection) {
     if (!(await this.openForHeldJog("joint"))) return
@@ -705,6 +717,32 @@ export class JoggingStore {
         ? this.translationVelocityMmPerSec
         : this.rotationVelocityRadsPerSec,
     })
+    this.watchHeldJog()
+  }
+
+  /**
+   * Follows the held jog that moves now, until its release or the press
+   * that follows it: stops it as its release does once a jog would be
+   * refused, see {@link JoggingStore.startCartesianJogging}. NOVA jogs on
+   * at the last velocity for as long as the jogging websocket is open.
+   */
+  private watchHeldJog() {
+    this.endHeldJogWatch?.()
+    const stopWatching = reaction(
+      () => this.refusedReason(),
+      (reason) => {
+        // The stop ends this watch
+        if (!reason) return
+        this.stopJogging().catch((err: unknown) => {
+          console.error("Failed to stop jogging:", err)
+        })
+      },
+    )
+    const end = () => {
+      stopWatching()
+      if (this.endHeldJogWatch === end) this.endHeldJogWatch = null
+    }
+    this.endHeldJogWatch = end
   }
 
   /**
@@ -753,6 +791,7 @@ export class JoggingStore {
   async stopJogging() {
     const press = ++this.jogPress
     this.stoppedLast = true
+    this.endHeldJogWatch?.()
     // The jogger's stop would pause the step
     if (!this.runningStep) await this.jogger.stop()
     if (press !== this.jogPress) return

@@ -483,6 +483,30 @@ describe("RobotSession", () => {
       session.dispose()
     })
 
+    // The jogging websocket holds the controller in control mode, and the
+    // control may still be held when the user deactivates the robot
+    it("stops a held jog and closes its connection before it asks for monitor mode", async () => {
+      const session = await harness.load().ready
+      harness.source.send(controllerState({ mode: "MODE_CONTROL" }))
+      const { jogger } = session.jogging
+      spyOnJogger(session).setJoggingMode.mockImplementation(async (mode) => {
+        jogger.mode = mode
+      })
+      const stop = vi.spyOn(jogger, "stop").mockResolvedValue(undefined)
+      vi.spyOn(jogger, "translateTCP").mockResolvedValue(undefined)
+      await session.jogging.startCartesianJogging("translate", "z", "+")
+      expect(session.movementOwner).toBe("jogging")
+      let whenAsked: unknown = "never asked"
+      harness.api.controller.setDefaultMode.mockImplementation(async () => {
+        whenAsked = { stopped: stop.mock.calls.length, owner: jogger.mode }
+      })
+
+      await session.activation.deactivate()
+
+      expect(whenAsked).toEqual({ stopped: 1, owner: "off" })
+      session.dispose()
+    })
+
     it("jogs no robot that is deactivating, whose controller is still in control mode", async () => {
       const session = await harness.load().ready
       const jogger = spyOnJogger(session)
