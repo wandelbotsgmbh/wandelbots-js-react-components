@@ -242,11 +242,11 @@ export function useRobotControlProps(
       }
       return frame
     }
-    const coordSystem = store.jogCoordSystem
-    return parseRotationToQuaternion(
-      coordSystem.orientation ?? [1, 0, 0, 0],
-      coordSystem.orientation_type ?? "QUATERNION",
-    )
+    // As the jogger turns the axes it jogs along: a coordinate system
+    // without an orientation is not turned (a quaternion of NOVA is x, y, z,
+    // w, so a fallback of [1, 0, 0, 0] was a half turn about X: the Y and Z
+    // handles pointed the wrong way)
+    return Pose3.fromCoordinateSystem(store.jogCoordSystem).quaternion
   }
 
   /** What went wrong in a call the panel made, for the app to show */

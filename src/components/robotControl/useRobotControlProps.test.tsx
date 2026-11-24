@@ -1,6 +1,7 @@
 import { act, renderHook } from "@testing-library/react"
 import { degreesToRadians } from "@wandelbots/nova-js"
 import { observable, runInAction } from "mobx"
+import { Vector3 } from "three"
 import { describe, expect, it, onTestFinished, vi } from "vitest"
 import { i18n } from "../../i18n/config"
 import {
@@ -652,6 +653,41 @@ describe("useRobotControlProps", () => {
       ),
     )
     expectJogging(false)
+  })
+
+  // The gizmo's handles must point where the jogger moves the TCP: the
+  // jogger takes a coordinate system without an orientation as not turned,
+  // and an orientation without a type as a rotation vector (see Pose3)
+  it("turns the gizmo as the jogger jogs along the coordinate system, also one without an orientation or its type", async () => {
+    const harness = makeHarness()
+    harness.api.controller.listCoordinateSystems.mockResolvedValue([
+      { coordinate_system: "" },
+      // A quarter turn about Z: its X is world's Y
+      { coordinate_system: "turned", orientation: [0, 0, Math.PI / 2] },
+    ])
+    const session = await harness.load().ready
+    onTestFinished(() => session.dispose())
+    const { result, rerender } = renderHook(() => useRobotControlProps(session))
+    /** Where an axis of the gizmo's frame points in world */
+    const along = (x: number, y: number, z: number) => {
+      rerender()
+      const frame = result.current.gizmoFrameQuaternion
+      if (typeof frame !== "function") throw new Error("No frame")
+      const axis = new Vector3(x, y, z).applyQuaternion(frame())
+      return [axis.x, axis.y, axis.z]
+    }
+    const expectClose = (actual: number[], expected: number[]) =>
+      expected.forEach((value, i) => {
+        expect(actual[i]).toBeCloseTo(value)
+      })
+
+    expect(session.jogging.jogCoordSystem.orientation).toBeUndefined()
+    expectClose(along(0, 0, 1), [0, 0, 1])
+    expectClose(along(0, 1, 0), [0, 1, 0])
+
+    act(() => session.jogging.setMoveRelativeToCoordSystem("turned"))
+    expectClose(along(1, 0, 0), [0, 1, 0])
+    expectClose(along(0, 0, 1), [0, 0, 1])
   })
 
   // The jog tabs show it where their hint is; Move to has its own text
