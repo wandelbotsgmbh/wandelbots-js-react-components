@@ -370,6 +370,12 @@ export class JoggingStore {
   private jogPress = 0
 
   /**
+   * Whether the latest of {@link JoggingStore.jogPress} is a stop: a start
+   * that it overtook closes the websocket that it opened then
+   */
+  private stoppedLast = false
+
+  /**
    * The step that runs now: stops it, see
    * {@link JoggingStore.stopIncrementalJog}, and resolves once it is over
    */
@@ -415,13 +421,18 @@ export class JoggingStore {
     // Make all properties observable and actions auto-bound
     makeAutoObservable<
       this,
-      "storage" | "notMoveableReason" | "jogPress" | "runningStep"
+      | "storage"
+      | "notMoveableReason"
+      | "jogPress"
+      | "stoppedLast"
+      | "runningStep"
     >(
       this,
       {
         storage: false,
         notMoveableReason: false,
         jogPress: false,
+        stoppedLast: false,
         runningStep: false,
       },
       { autoBind: true },
@@ -688,20 +699,28 @@ export class JoggingStore {
    *
    * A start that fails or is refused leaves no jogging websocket open. A stop
    * that came in the same event kept it for this start (see
-   * {@link JoggingStore.stopJogging}), and no other stop may follow.
+   * {@link JoggingStore.stopJogging}), and no other stop may follow. A stop
+   * that came while the start waited, before the websocket opened (for
+   * `onBeforeActivate`, or for the TCP and orientation), found nothing to
+   * close: the start closes it then, unless another press followed the
+   * stop, which owns it.
    */
   private async openForHeldJog(jog: "cartesian" | "joint") {
     const press = ++this.jogPress
+    this.stoppedLast = false
     try {
       await this.activateFor(jog)
     } catch (error) {
-      if (press === this.jogPress) {
+      if (press === this.jogPress || this.stoppedLast) {
         // The error to report is the start's, whatever the closing does
         await this.deactivate().catch(() => {})
       }
       throw error
     }
-    return press === this.jogPress
+    if (press === this.jogPress) return true
+    // A stop overtook this start: nothing moves, and nothing stays open
+    if (this.stoppedLast) await this.deactivate()
+    return false
   }
 
   /**
@@ -715,6 +734,7 @@ export class JoggingStore {
    */
   async stopJogging() {
     const press = ++this.jogPress
+    this.stoppedLast = true
     await this.jogger.stop()
     if (press !== this.jogPress) return
     await this.deactivate()

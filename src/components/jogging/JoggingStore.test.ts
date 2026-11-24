@@ -740,6 +740,89 @@ describe("jogging while a control is held", () => {
     expect(jogger.mode).toBe("off")
   })
 
+  // Before the jogging websocket opens, the start may wait for another
+  // motion to end (onBeforeActivate: Move to's staged pose) or for the TCP
+  // and orientation to be set: a release then finds nothing to close yet.
+  // The open websocket would hold the controller in control mode and keep
+  // other clients from jogging.
+  it.each([
+    [
+      "another motion ends",
+      (store: JoggingStore, wait: Promise<void>) => {
+        store.onBeforeActivate = () => wait
+      },
+    ],
+    [
+      "the orientation is set",
+      (store: JoggingStore, wait: Promise<void>) => {
+        store.setMoveRelativeToSelectedTcp()
+        vi.mocked(store.jogger.setOptions).mockReturnValue(wait)
+      },
+    ],
+  ])("closes the jogging connection of a press that was let go while %s", async (_name, prepare) => {
+    const jogger = createMockJogger()
+    const store = createStore({ jogger })
+    const waiting = deferred()
+    prepare(store, waiting.promise)
+
+    const started = store.startCartesianJogging("translate", "x", "+")
+    await flush()
+    await store.stopJogging()
+    waiting.resolve()
+    await started
+
+    expect(jogger.translateTCP).not.toHaveBeenCalled()
+    expect(modeChangesTo(jogger, "jogging")).toHaveLength(1)
+    expect(jogger.mode).toBe("off")
+  })
+
+  it("leaves the jogging connection to a press that followed the stop", async () => {
+    const jogger = createMockJogger()
+    const store = createStore({ jogger })
+    const ending = deferred()
+    // The other motion ends for the first press; none is left for the next
+    store.onBeforeActivate = vi
+      .fn()
+      .mockReturnValueOnce(ending.promise)
+      .mockResolvedValue(undefined)
+    const first = store.startJointJogging(1, "+")
+    await flush()
+
+    // A joint slider that turns around: a stop and a start in one event
+    const stopped = store.stopJogging()
+    const second = store.startJointJogging(1, "-")
+    await Promise.all([stopped, second])
+    ending.resolve()
+    await first
+
+    expect(jogger.rotateJoints).toHaveBeenCalledExactlyOnceWith(
+      expect.objectContaining({ joint: 1, direction: "-" }),
+    )
+    expect(jogger.mode).toBe("jogging")
+  })
+
+  it("closes the jogging connection of a press that was let go and then failed to start", async () => {
+    const jogger = createMockJogger()
+    const store = createStore({ jogger })
+    const ending = deferred()
+    store.onBeforeActivate = () => ending.promise
+    // As the jogger: a websocket that NOVA does not confirm in time stays
+    vi.mocked(jogger.setJoggingMode).mockImplementation(async (mode) => {
+      jogger.mode = mode
+      if (mode === "jogging") throw new Error("Jogging initialization timeout")
+    })
+
+    const started = store
+      .startJointJogging(0, "+")
+      .catch((error: unknown) => error)
+    await flush()
+    await store.stopJogging()
+    ending.resolve()
+
+    expect(await started).toEqual(new Error("Jogging initialization timeout"))
+    expect(jogger.mode).toBe("off")
+  })
+
   it("moves only for the latest press when another one came before the jogging connection was ready", async () => {
     const jogger = createMockJogger()
     const store = createStore({ jogger })
