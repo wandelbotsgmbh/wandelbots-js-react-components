@@ -589,6 +589,66 @@ describe("RobotSession", () => {
     session.dispose()
   })
 
+  // The safety has no reason while the robot is activating or deactivating,
+  // but its controller is not in control mode yet, or is about to leave
+  // it; NOVA switches it there by itself for a movement request. Move to
+  // follows the rule of jogging.
+  describe("Move to while the robot is activating or deactivating", () => {
+    const pose = {
+      type: "joint" as const,
+      motionGroupId: MOTION_GROUP_ID,
+      joints: [0.1, 0, 0, 0, 0, 0],
+    }
+
+    it.each([
+      [
+        "activating",
+        async (session: RobotSession) => session.activation.activate(),
+      ],
+      [
+        "deactivating",
+        async (session: RobotSession) => {
+          harness.source.send(controllerState({ mode: "MODE_CONTROL" }))
+          await session.activation.deactivate()
+        },
+      ],
+    ])("plans no typed pose while the robot is %s", async (state, change) => {
+      const session = await harness.load().ready
+      const execution = await fakeExecution(session)
+      await change(session)
+      expect(session.activation.state).toBe(state)
+      expect(session.safety.notMoveableReason).toBeNull()
+
+      await session.targetPose.plan(pose)
+
+      expect(execution.planTrajectory).not.toHaveBeenCalled()
+      expect(session.targetPose.staged).toBeNull()
+      session.dispose()
+    })
+
+    it("starts no move to a staged pose while the robot is activating, and does once it is active", async () => {
+      const session = await harness.load().ready
+      harness.source.send(controllerState({ mode: "MODE_CONTROL" }))
+      const execution = await fakeExecution(session)
+      await session.targetPose.plan(pose)
+      execution.emit("INITIALIZE_RECEIVED")
+      expect(session.trajectory.trajectoryState).toBe("planned")
+      // The controller left control mode, and is asked back
+      harness.source.send(controllerState({ mode: "MODE_MONITOR" }))
+      await session.activation.activate()
+      expect(session.activation.state).toBe("activating")
+
+      expect(session.targetPose.holdMove(pose)).toBe(false)
+      expect(session.trajectory.hold()).toBe(false)
+      expect(execution.sent()).not.toContain("StartMovementRequest")
+
+      harness.source.send(controllerState({ mode: "MODE_CONTROL" }))
+      expect(session.targetPose.holdMove(pose)).toBe(true)
+      expect(execution.sent()).toContain("StartMovementRequest")
+      session.dispose()
+    })
+  })
+
   it("plans no typed pose while the app is locked", async () => {
     const session = await harness.load({ isLocked: () => true }).ready
     harness.source.send(controllerState({ mode: "MODE_CONTROL" }))

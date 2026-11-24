@@ -89,9 +89,15 @@ export class RobotSession {
    * rejects with a `JoggingRefusedError` that says why.
    */
   readonly jogging: JoggingStore
-  /** Moving the robot to a pose along a planned trajectory (Move to) */
+  /**
+   * Moving the robot to a pose along a planned trajectory (Move to). Its
+   * `hold` starts nothing while the robot may not move, as jogging.
+   */
   readonly trajectory: TrajectoryExecutionStore
-  /** A pose the user types in, planned so Move to can drive there */
+  /**
+   * A pose the user types in, planned so Move to can drive there. It plans
+   * and moves nothing while the robot may not move, as jogging.
+   */
   readonly targetPose: RobotTargetPose
 
   private readonly stateSource: RobotLoadResources["stateSource"]
@@ -186,6 +192,8 @@ export class RobotSession {
     this.trajectory = new TrajectoryExecutionStore({
       joggingStore: this.jogging,
       isLocked: options.isLocked,
+      // Move to starts no move while a jog would be refused for the robot
+      notMoveableReason: () => this.jogRefusedReason,
       ensureMovementOwnership: () => this.ensureMovementOwnership("trajectory"),
       logger,
     })
@@ -196,10 +204,11 @@ export class RobotSession {
         state: this.state,
         jogging: this.jogging,
         trajectory: this.trajectory,
-        // A typed pose plans nothing while the robot may not move, or while
-        // the app is locked
+        // A typed pose plans nothing and moves nothing while the robot may
+        // not move, as jogging (also while it is activating or
+        // deactivating), or while the app is locked
         notMoveableReason: () =>
-          this.safety.notMoveableReason ??
+          this.jogRefusedReason ??
           (options.isLocked?.() ? { code: "locked" } : null),
       },
       logger,
@@ -271,11 +280,12 @@ export class RobotSession {
   }
 
   /**
-   * Why the jogging store starts no jog now, or null when the robot can move.
-   * While the robot is activating or deactivating its safety has no reason
-   * (the robot is not deactivated, and Move to waits for it). But its
-   * controller is not in control mode yet, where NOVA would switch it for
-   * the jog, or is about to leave it: no jog then either.
+   * Why the jogging store starts no jog now, and Move to plans and starts
+   * no move, or null when the robot can move. While the robot is activating
+   * or deactivating its safety has no reason (the robot is not
+   * deactivated). But its controller is not in control mode yet, where NOVA
+   * would switch it for the movement request, or is about to leave it: no
+   * jog and no move then either.
    */
   private get jogRefusedReason(): RobotNotMoveableReason | null {
     return (

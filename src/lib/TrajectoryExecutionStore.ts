@@ -22,6 +22,7 @@ import {
 import type { JoggingStore } from "../components/jogging/JoggingStore"
 import type { ConnectionLogger } from "./connectionLogger"
 import { transformPoseToCoordinateSystem } from "./PoseTransformer"
+import type { RobotNotMoveableReason } from "./robotSession/RobotSafety"
 
 // Ported from RobotPad (src/util/TrajectoryExecutionStore.ts)
 
@@ -124,6 +125,14 @@ export type TrajectoryExecutionStoreOptions = {
    * Defaults to never locked.
    */
   isLocked?: () => boolean
+
+  /**
+   * Why the robot may not move now, or null when it may. `hold` starts
+   * nothing while there is a reason: NOVA switches a controller to control
+   * mode by itself for a start. Defaults to a robot that may always move; a
+   * robot session gives the reason that its jogging follows.
+   */
+  notMoveableReason?: () => RobotNotMoveableReason | null
 
   /**
    * Called before each plan: ends every other motion of the app that holds
@@ -420,10 +429,12 @@ export class TrajectoryExecutionStore {
    * The Move to button is held: starts the motion along the planned
    * trajectory, or goes on with a paused one. Returns whether the robot moves
    * for this hold: not without a trajectory that NOVA accepted, not while
-   * the move before it still stops, and not along a trajectory that was
+   * the move before it still stops, not along a trajectory that was
    * planned with another velocity than now
-   * ({@link TrajectoryExecutionStore.isPlanOutdated}). Safe to repeat while
-   * held.
+   * ({@link TrajectoryExecutionStore.isPlanOutdated}), and not while the
+   * robot may not move (see
+   * {@link TrajectoryExecutionStoreOptions.notMoveableReason}). Safe to
+   * repeat while held.
    * {@link TrajectoryExecutionStore.release} ends the hold.
    *
    * `target` is where the button says it moves to, as `planTrajectory` got
@@ -449,7 +460,9 @@ export class TrajectoryExecutionStore {
       this.motion === "pausing" ||
       this.executionState === "RUNNING" ||
       // A move starts at the velocity that shows, or not at all
-      this.isPlanOutdated
+      this.isPlanOutdated ||
+      // NOVA would switch the controller to control mode for the start
+      this.options.notMoveableReason?.()
     ) {
       return false
     }

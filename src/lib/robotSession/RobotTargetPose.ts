@@ -63,7 +63,10 @@ type TargetPoseParts = {
     | "lastError"
     | "holdsExecutionSession"
   >
-  /** Why the robot may not move now, or null: a typed pose plans nothing then */
+  /**
+   * Why the robot may not move now, or null: a typed pose plans nothing
+   * then, and Move to starts nothing
+   */
   notMoveableReason: () => unknown
 }
 
@@ -368,12 +371,16 @@ export class RobotTargetPose {
    * is, see {@link TrajectoryExecutionStore.hold}. `pose` is the pose that
    * the button's panel shows: nothing moves unless that is the staged pose,
    * so a panel that shows another one (its plan is still to come, or was
-   * refused) cannot start the move to this one. Returns whether the robot
-   * moves for this hold. {@link RobotTargetPose.releaseMove} ends the hold.
+   * refused) cannot start the move to this one. Nothing moves while the
+   * robot may not move either: the staged pose stays for when it may.
+   * Returns whether the robot moves for this hold.
+   * {@link RobotTargetPose.releaseMove} ends the hold.
    */
   holdMove(pose: RobotPose): boolean {
     const staged = this.stagedPose
     if (!staged || !sameRobotPose(staged, pose)) return false
+    // NOVA would switch the controller to control mode for the start
+    if (this.robot.notMoveableReason()) return false
     return this.robot.trajectory.hold(trajectoryTargetOf(staged))
   }
 

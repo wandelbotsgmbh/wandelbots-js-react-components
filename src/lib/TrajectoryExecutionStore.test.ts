@@ -9,6 +9,7 @@ import { autorun, observable, runInAction } from "mobx"
 import { describe, expect, onTestFinished, test, vi } from "vitest"
 import type { JoggingStore } from "../components/jogging/JoggingStore"
 import type { JoggerConnection, JoggerMode } from "./JoggerConnection"
+import type { RobotNotMoveableReason } from "./robotSession/RobotSafety"
 import {
   type TrajectoryExecutionStoreOptions,
   type TrajectoryTarget,
@@ -981,6 +982,26 @@ describe("TrajectoryExecutionStore hold to move", () => {
     expect(store.trajectoryState).toBe("planned")
     expect(store.hold()).toBe(true)
     expect(sent("StartMovementRequest")).toBe(2)
+  })
+
+  // NOVA switches a controller to control mode by itself for a start: a
+  // robot that is deactivating would be moved, or one still activating
+  test("hold moves nothing while the robot may not move, and moves once it may", async () => {
+    let reason: RobotNotMoveableReason | null = { code: "deactivated" }
+    const { store, emit, sockets } = makeStore({
+      notMoveableReason: () => reason,
+    })
+    await store.planTrajectory(cartesianTarget("world"))
+    emit("INITIALIZE_RECEIVED")
+
+    expect(store.hold()).toBe(false)
+    expect(sentMessageTypes(sockets.at(-1))).not.toContain(
+      "StartMovementRequest",
+    )
+
+    reason = null
+    expect(store.hold()).toBe(true)
+    expect(sentMessageTypes(sockets.at(-1))).toContain("StartMovementRequest")
   })
 
   test("hold moves nothing without a trajectory that NOVA accepted", async () => {

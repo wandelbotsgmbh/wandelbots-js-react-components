@@ -853,6 +853,24 @@ describe("RobotTargetPose", () => {
       expect(hold).not.toHaveBeenCalled()
     })
 
+    // A staged pose stays while the robot is deactivated or stopped, and
+    // NOVA switches a controller to control mode by itself for a start
+    test("holdMove moves nothing while the robot may not move", async () => {
+      const { store, app, hold } = makeStore()
+      await store.plan(cartesianPose([1, 2, 3]))
+      runInAction(() => {
+        app.reasonNotMoveable = { code: "deactivated" }
+      })
+
+      expect(store.holdMove(cartesianPose([1, 2, 3]))).toBe(false)
+      expect(hold).not.toHaveBeenCalled()
+
+      runInAction(() => {
+        app.reasonNotMoveable = null
+      })
+      expect(store.holdMove(cartesianPose([1, 2, 3]))).toBe(true)
+    })
+
     test("holdMove tells when the trajectory does not start", async () => {
       const { store, hold } = makeStore()
       await store.plan(cartesianPose([1, 2, 3]))
