@@ -28,6 +28,10 @@ import {
   ur5eMotionGroupState,
 } from "../components/jogging/__fixtures__/motionStreamMockData"
 import {
+  JoggingRefusedError,
+  type JoggingRefusedReason,
+} from "../components/jogging/JoggingRefusedError"
+import {
   type IncrementalCartesianMotionRequest,
   JoggerConnection,
   type JoggerConnectionOptions,
@@ -36,13 +40,32 @@ import { MotionStreamConnection } from "./MotionStreamConnection"
 
 class FakeSocket {
   listeners: ((ev: MessageEvent) => void)[] = []
+  openListeners: (() => void)[] = []
   sent: Record<string, unknown>[] = []
   disposed = false
+  /** `WebSocket.OPEN`, unless the test opens it itself (`open`) */
+  readyState = 1
 
   constructor(readonly path: string) {}
 
-  addEventListener(_type: string, cb: (ev: MessageEvent) => void) {
-    this.listeners.push(cb)
+  addEventListener(type: string, cb: (ev: MessageEvent) => void) {
+    if (type === "open") {
+      this.openListeners.push(cb as () => void)
+    } else {
+      this.listeners.push(cb)
+    }
+  }
+  removeEventListener(type: string, cb: (ev: MessageEvent) => void) {
+    if (type === "open") {
+      this.openListeners = this.openListeners.filter((l) => l !== cb)
+    } else {
+      this.listeners = this.listeners.filter((l) => l !== cb)
+    }
+  }
+  /** The connection is up: what a real websocket queued goes out now */
+  open() {
+    this.readyState = 1
+    for (const l of [...this.openListeners]) l()
   }
   sendJson(data: Record<string, unknown>) {
     this.sent.push(data)
@@ -75,6 +98,7 @@ function setup({
   planResponse,
   description = ur5eDescription,
   withoutOnError = false,
+  socketsOpenLater = false,
   ...joggerOptions
 }: {
   plannedDurationSeconds?: number
@@ -83,6 +107,8 @@ function setup({
   description?: MotionGroupDescription
   /** Failures reject the step instead of going to `onError` */
   withoutOnError?: boolean
+  /** A trajectory websocket is open only once the test calls its `open()` */
+  socketsOpenLater?: boolean
 } & JoggerConnectionOptions = {}) {
   const trajectorySockets: FakeSocket[] = []
   const planRequests: PlanTrajectoryRequest[] = []
@@ -91,6 +117,7 @@ function setup({
   const nova = new Nova({ instanceUrl: "https://mock.example.com" })
   vi.spyOn(nova, "openReconnectingWebsocket").mockImplementation((path) => {
     const socket = new FakeSocket(path)
+    if (socketsOpenLater) socket.readyState = 0
     trajectorySockets.push(socket)
     return socket as unknown as AutoReconnectingWebsocket
   })
@@ -726,4 +753,102 @@ test("a motion group without a cycle time is not planned, and the jogger's logge
   expect(logger.warn).toHaveBeenCalledTimes(1)
   expect(consoleWarn).not.toHaveBeenCalled()
   consoleWarn.mockRestore()
+})
+
+// NOVA switches a controller to control mode by itself for a movement
+// request. Planning a step takes a round trip, and NOVA's answer to its
+// trajectory another: the robot may have been deactivated or stopped by
+// then, and the step must not go to the robot
+describe("a step that the robot may no longer make", () => {
+  const deactivated: JoggingRefusedReason = { code: "deactivated" }
+
+  /** The reason a step was refused with, or the test fails */
+  async function refusalOf(step: Promise<unknown>) {
+    const error = await step.then(
+      () => undefined,
+      (e: unknown) => e,
+    )
+    expect(error).toBeInstanceOf(JoggingRefusedError)
+    return (error as JoggingRefusedError).reason
+  }
+
+  test("sends no trajectory, and opens no websocket for it, when the robot may no longer move once it is planned", async () => {
+    const h = setup()
+    let reason: JoggingRefusedReason | null = null
+    // The planner of setup(), which answers with a trajectory
+    const plan = vi.spyOn(
+      h.jogger.nova.api.trajectoryPlanning,
+      "planTrajectory",
+    )
+    const planned = plan.getMockImplementation()
+    plan.mockImplementation(async (...args) => {
+      // The robot was deactivated while the planner worked
+      reason = deactivated
+      return planned?.(...args) as never
+    })
+
+    const step = refusalOf(h.jog({ refusedReason: () => reason }))
+
+    expect(await step).toEqual(deactivated)
+    expect(h.planRequests).toHaveLength(1)
+    expect(h.trajectorySockets).toHaveLength(0)
+    // No error of the motion: the step did not start
+    expect(h.errors).toHaveLength(0)
+  })
+
+  test("sends the trajectory only once its websocket is open, and not when the robot may no longer move by then", async () => {
+    const h = setup({ socketsOpenLater: true })
+    let reason: JoggingRefusedReason | null = null
+
+    const step = refusalOf(h.jog({ refusedReason: () => reason }))
+    const socket = await h.waitForTrajectorySocket(1)
+    await tick()
+    // A websocket that is not open yet would only queue it
+    expect(socket.sent).toHaveLength(0)
+
+    reason = deactivated
+    socket.open()
+
+    expect(await step).toEqual(deactivated)
+    expect(socket.sent).toHaveLength(0)
+    expect(socket.disposed).toBe(true)
+    expect(h.errors).toHaveLength(0)
+  })
+
+  test("sends the trajectory once its websocket is open, while the robot may move", async () => {
+    const h = setup({ socketsOpenLater: true })
+
+    const jog = h.jog({ refusedReason: () => null })
+    const socket = await h.waitForTrajectorySocket(1)
+    socket.open()
+    expect(socket.sentMessageTypes).toEqual(["InitializeMovementRequest"])
+
+    h.finishMotionOn(socket)
+    await jog
+    expect(socket.sentMessageTypes).toEqual([
+      "InitializeMovementRequest",
+      "StartMovementRequest",
+    ])
+  })
+
+  test("does not start the trajectory when the robot may no longer move once NOVA has it", async () => {
+    const h = setup()
+    let reason: JoggingRefusedReason | null = null
+
+    const step = refusalOf(h.jog({ refusedReason: () => reason }))
+    const socket = await h.waitForTrajectorySocket(1)
+    expect(socket.sentMessageTypes).toEqual(["InitializeMovementRequest"])
+
+    reason = { code: "safety_state", value: "SAFETY_STATE_STOP" }
+    socket.emit({ kind: "INITIALIZE_RECEIVED" })
+
+    expect(await step).toEqual(reason)
+    expect(socket.sentMessageTypes).not.toContain("StartMovementRequest")
+    expect(socket.disposed).toBe(true)
+    expect(h.errors).toHaveLength(0)
+
+    // The jogger is free for the next step
+    void h.jog().catch(() => {})
+    await expect(h.waitForTrajectorySocket(2)).resolves.toBeDefined()
+  })
 })

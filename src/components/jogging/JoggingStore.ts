@@ -11,6 +11,7 @@ import { countBy, keyBy, uniqueId } from "lodash-es"
 import {
   autorun,
   makeAutoObservable,
+  reaction,
   runInAction,
   when,
   type IReactionDisposer,
@@ -26,7 +27,10 @@ import {
   transformPoseToTcp,
 } from "../../lib/PoseTransformer"
 import type { RobotNotMoveableReason } from "../../lib/robotSession/RobotSafety"
-import { JoggingRefusedError } from "./JoggingRefusedError"
+import {
+  JoggingRefusedError,
+  type JoggingRefusedReason,
+} from "./JoggingRefusedError"
 import { extractJogErrorMessage, getJogErrorTranslationKey } from "./jogError"
 import {
   DEFAULT_ROTATION_VELOCITY_DEG_PER_SEC,
@@ -365,6 +369,15 @@ export class JoggingStore {
    */
   private jogPress = 0
 
+  /**
+   * The step that runs now: stops it, see
+   * {@link JoggingStore.stopIncrementalJog}, and resolves once it is over
+   */
+  private runningStep: {
+    stop: (reason: JoggingRefusedReason) => void
+    over: Promise<void>
+  } | null = null
+
   constructor(
     readonly jogger: JoggerConnection,
     readonly coordSystems: CoordinateSystem[],
@@ -400,9 +413,17 @@ export class JoggingStore {
       JointTypeEnum.RevoluteJoint
 
     // Make all properties observable and actions auto-bound
-    makeAutoObservable<this, "storage" | "notMoveableReason" | "jogPress">(
+    makeAutoObservable<
       this,
-      { storage: false, notMoveableReason: false, jogPress: false },
+      "storage" | "notMoveableReason" | "jogPress" | "runningStep"
+    >(
+      this,
+      {
+        storage: false,
+        notMoveableReason: false,
+        jogPress: false,
+        runningStep: false,
+      },
       { autoBind: true },
     )
 
@@ -583,18 +604,25 @@ export class JoggingStore {
    * locks the store against other jogs, not against itself.
    */
   private refuseUnlessJoggable(ownLock?: string) {
-    const reason = this.notMoveableReason?.() ?? null
+    const reason = this.refusedReason(ownLock)
     if (reason) {
       throw new JoggingRefusedError(reason)
     }
-    if (this.blocked) {
-      throw new JoggingRefusedError({ code: "blocked" })
-    }
+  }
+
+  /**
+   * Why a jog may not start now, or null: see
+   * {@link JoggingStore.refuseUnlessJoggable}. Observed while a step runs,
+   * which it stops.
+   */
+  private refusedReason(ownLock?: string): JoggingRefusedReason | null {
+    const reason = this.notMoveableReason?.() ?? null
+    if (reason) return reason
+    if (this.blocked) return { code: "blocked" }
     for (const lock of this.locks) {
-      if (lock !== ownLock) {
-        throw new JoggingRefusedError({ code: "locked" })
-      }
+      if (lock !== ownLock) return { code: "locked" }
     }
+    return null
   }
 
   /**
@@ -705,6 +733,14 @@ export class JoggingStore {
    * {@link JoggingRefusedError} as {@link JoggingStore.activate} does: while
    * the store is locked, so also while another step runs, or the robot may
    * not move.
+   *
+   * A step that the robot may no longer make is stopped: when the robot may
+   * no longer move, another client takes the jogging connection or
+   * something else locks the store. Before its trajectory went to NOVA
+   * (planning it takes a round trip) or was started, it rejects with a
+   * {@link JoggingRefusedError} then; once it runs, it is paused and
+   * resolves when the robot stands still. A stopped step stays stopped,
+   * also when the reason goes away.
    */
   async runIncrementalCartesianJog(
     motion: CartesianMotionType,
@@ -715,6 +751,7 @@ export class JoggingStore {
     // Before the step locks the store itself
     this.refuseUnlessJoggable()
     await this.withOwnLock(async (lock) => {
+      const step = this.watchStep(lock)
       try {
         const jogger = await this.activateFor("cartesianStep", lock)
         const state = jogger.motionStream.rapidlyChangingMotionState
@@ -737,12 +774,73 @@ export class JoggingStore {
                   type: "rotate",
                   distanceRads: degreesToRadians(increment.degrees),
                 },
+          // The jogger asks right before the step goes to NOVA
+          refusedReason: step.refusedReason,
         })
       } finally {
+        step.end()
         this.setCurrentIncrementJog(null)
         await this.deactivate()
       }
     })
+  }
+
+  /**
+   * Stops the step that runs, as when the robot may no longer move (see
+   * {@link JoggingStore.runIncrementalCartesianJog}), and resolves once it
+   * is over: the robot stands still and its trajectory websocket is closed.
+   * Resolves at once without a step.
+   * @internal For the store's robot session: a step holds the controller in
+   * control mode, and NOVA runs it to its end, so it goes before the robot
+   * is deactivated
+   */
+  async stopIncrementalJog(reason: JoggingRefusedReason) {
+    const step = this.runningStep
+    if (!step) return
+    step.stop(reason)
+    await step.over
+  }
+
+  /**
+   * Follows the step of the lock `lock` until `end`: stops it once a jog
+   * would be refused for another reason than its own lock, see
+   * {@link JoggingStore.runIncrementalCartesianJog}. `refusedReason` is what
+   * the jogger asks: the reason that stopped the step, else why a jog would
+   * be refused now.
+   */
+  private watchStep(lock: string) {
+    let stoppedFor: JoggingRefusedReason | null = null
+    let ended = () => {}
+    const step = {
+      stop: (reason: JoggingRefusedReason) => {
+        if (stoppedFor) return
+        stoppedFor = reason
+        // Pauses a step that NOVA runs. One that it has not started yet
+        // does not start: the jogger asks refusedReason first.
+        this.jogger.stop().catch((err: unknown) => {
+          console.error("Failed to stop the step:", err)
+        })
+      },
+      over: new Promise<void>((resolve) => {
+        ended = resolve
+      }),
+    }
+    this.runningStep = step
+    const stopWatching = reaction(
+      () => this.refusedReason(lock),
+      (reason) => {
+        if (reason) step.stop(reason)
+      },
+    )
+
+    return {
+      refusedReason: () => stoppedFor ?? this.refusedReason(lock),
+      end: () => {
+        stopWatching()
+        if (this.runningStep === step) this.runningStep = null
+        ended()
+      },
+    }
   }
 
   /**

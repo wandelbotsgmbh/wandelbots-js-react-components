@@ -443,6 +443,46 @@ describe("RobotSession", () => {
       session.dispose()
     })
 
+    // A step holds the controller's execution session, and NOVA runs it to
+    // its end: a 10 mm step at 1 mm/s takes 10 s
+    it("stops a step that runs before it deactivates the robot, and asks for monitor mode once the step is over", async () => {
+      const session = await harness.load().ready
+      harness.source.send(controllerState({ mode: "MODE_CONTROL" }))
+      const { jogger } = session.jogging
+      const jogs = spyOnJogger(session)
+      let stepOver: () => void = () => {}
+      jogs.step.mockImplementation(
+        () =>
+          new Promise<void>((resolve) => {
+            stepOver = resolve
+          }),
+      )
+      const stop = vi.spyOn(jogger, "stop").mockResolvedValue(undefined)
+      const step = session.jogging.runIncrementalCartesianJog(
+        "translate",
+        "z",
+        "+",
+        oneMm,
+      )
+      await vi.waitFor(() => expect(jogs.step).toHaveBeenCalledOnce())
+
+      const deactivation = session.activation.deactivate()
+      await vi.waitFor(() => expect(stop).toHaveBeenCalled())
+      await new Promise((resolve) => setTimeout(resolve, 0))
+      expect(harness.api.controller.setDefaultMode).not.toHaveBeenCalled()
+
+      // The robot stands still: the step is over
+      stepOver()
+      await step
+      await deactivation
+      expect(harness.api.controller.setDefaultMode).toHaveBeenCalledWith(
+        "cell",
+        CONTROLLER_ID,
+        "ROBOT_SYSTEM_MODE_MONITOR",
+      )
+      session.dispose()
+    })
+
     it("jogs no robot that is deactivating, whose controller is still in control mode", async () => {
       const session = await harness.load().ready
       const jogger = spyOnJogger(session)

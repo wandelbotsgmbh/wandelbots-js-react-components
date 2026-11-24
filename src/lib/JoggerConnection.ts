@@ -12,6 +12,10 @@ import {
   type StartMovementResponse,
 } from "@wandelbots/nova-js/v2"
 import { when } from "mobx"
+import {
+  JoggingRefusedError,
+  type JoggingRefusedReason,
+} from "../components/jogging/JoggingRefusedError"
 import type { ConnectionLogger } from "./connectionLogger"
 import {
   computeIncrementalTargetPose,
@@ -31,6 +35,9 @@ export type { IncrementalMotion } from "./incrementalCartesianMotion"
 export type Vector3Simple = [number, number, number]
 
 const API_ERROR_CONNECTION_BLOCKED = `Movement request rejected. Another client is currently executing a 'Jogging' motion!`
+
+/** `WebSocket.OPEN`, also where there is no WebSocket (Node) */
+const OPEN = 1
 
 /**
  * Slack added on top of a jog's planned duration by {@link motionTimeoutMs}:
@@ -69,6 +76,16 @@ export type IncrementalCartesianMotionRequest = {
   axis: "x" | "y" | "z"
   direction: "-" | "+"
   motion: IncrementalMotion
+  /**
+   * Why the robot may not move now, or null when it may. The step asks right
+   * before it sends its trajectory to NOVA and right before it starts it:
+   * with a reason it sends nothing more and rejects with a
+   * `JoggingRefusedError`, also with `onError`, since the robot did not
+   * move. Planning the step and NOVA's answer to its trajectory take a round
+   * trip each, and NOVA switches a controller to control mode by itself for
+   * a movement request. The jogging store gives it.
+   */
+  refusedReason?: () => JoggingRefusedReason | null
 }
 
 /**
@@ -612,7 +629,9 @@ export class JoggerConnection {
    * while another one runs is dropped (resolves at once). Every error (a
    * refused or failed plan, a refused trajectory, an error of the
    * controller, the watchdog) goes to `onError`, or without it rejects the
-   * promise.
+   * promise. A step that the robot may no longer make (see
+   * {@link IncrementalCartesianMotionRequest.refusedReason}) rejects with a
+   * `JoggingRefusedError`.
    */
   async runIncrementalCartesianMotion(
     request: IncrementalCartesianMotionRequest,
@@ -632,7 +651,7 @@ export class JoggerConnection {
     try {
       const trajectory = await this.planIncrementalCartesianMotion(request)
       if (trajectory) {
-        await this.executeTrajectory(trajectory)
+        await this.executeTrajectory(trajectory, request.refusedReason)
       }
     } finally {
       this.incrementalMotionInFlight = false
@@ -760,8 +779,20 @@ export class JoggerConnection {
    * Each call owns its own websocket. Sharing
    * {@link JoggerConnection.trajectorySocket} across motions meant a finishing
    * motion closed the socket of a later one.
+   *
+   * `refusedReason` is asked right before the trajectory and its start go to
+   * NOVA, see {@link IncrementalCartesianMotionRequest.refusedReason}
    */
-  private async executeTrajectory(trajectory: JointTrajectory) {
+  private async executeTrajectory(
+    trajectory: JointTrajectory,
+    refusedReason: () => JoggingRefusedReason | null = () => null,
+  ) {
+    // Planning took a round trip: no websocket for a step that may not move
+    const reason = refusedReason()
+    if (reason) {
+      throw new JoggingRefusedError(reason)
+    }
+
     const socket = this.nova.openReconnectingWebsocket(
       `/cells/${this.cellId}/controllers/${this.motionStream.controllerId}/execution/trajectory`,
     )
@@ -802,6 +833,18 @@ export class JoggerConnection {
                   `Failed to execute trajectory: ${JSON.stringify(err)}`,
                 ),
           )
+        }
+
+        // Whether the robot may no longer move: then the step ends here, with
+        // nothing more sent. Not an error of the motion, so not for onError.
+        const refused = () => {
+          const reason = refusedReason()
+          if (!reason) return false
+          if (!settled) {
+            settled = true
+            reject(new JoggingRefusedError(reason))
+          }
+          return true
         }
 
         // For the jogger: it closes the websocket, which ends the motion
@@ -849,6 +892,9 @@ export class JoggerConnection {
               return
             }
 
+            // NOVA's answer took a round trip
+            if (refused()) return
+
             // Trajectory locked, now start movement
             socket.sendJson({
               message_type: "StartMovementRequest",
@@ -880,15 +926,31 @@ export class JoggerConnection {
         })
 
         // Send initialization/movement request
-        socket.sendJson({
-          message_type: "InitializeMovementRequest",
-          trajectory: {
-            message_type: "TrajectoryData",
-            motion_group: this.motionGroupId,
-            data: trajectory,
-            tcp: this.tcp,
-          },
-        })
+        const initialize = () => {
+          if (refused()) return
+          socket.sendJson({
+            message_type: "InitializeMovementRequest",
+            trajectory: {
+              message_type: "TrajectoryData",
+              motion_group: this.motionGroupId,
+              data: trajectory,
+              tcp: this.tcp,
+            },
+          })
+        }
+        // A websocket that is not open yet queues what is sent, and sends it
+        // once it is: the robot may no longer move by then. So it is sent,
+        // and asked for, once the websocket is open; and only once, also
+        // when it opens again.
+        if (socket.readyState === OPEN) {
+          initialize()
+        } else {
+          const onOpen = () => {
+            socket.removeEventListener("open", onOpen)
+            initialize()
+          }
+          socket.addEventListener("open", onOpen)
+        }
       })
     } finally {
       clearTimeout(timeout)

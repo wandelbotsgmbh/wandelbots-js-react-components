@@ -7,6 +7,7 @@ import {
   type MotionGroupState,
   type RobotTcp,
 } from "@wandelbots/nova-js/v2"
+import { observable, runInAction } from "mobx"
 import { Vector3 } from "three"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import deTranslations from "../../i18n/locales/de/translations.json"
@@ -813,6 +814,7 @@ describe("a step", () => {
       axis: "z",
       direction: "-",
       motion: { type: "translate", distanceMm: 10 },
+      refusedReason: expect.any(Function),
     })
 
     await store.runIncrementalCartesianJog("rotate", "x", "+", tenMm)
@@ -914,6 +916,132 @@ describe("a step", () => {
 
     expect(jogger.runIncrementalCartesianMotion).not.toHaveBeenCalled()
     expect(store.isLocked).toBe(false)
+  })
+})
+
+// Planning a step takes a round trip, and NOVA runs it to its end once it
+// started it: a 10 mm step at 1 mm/s takes 10 s. NOVA switches a controller
+// to control mode by itself for a movement request.
+describe("a step that the robot may no longer make", () => {
+  const tenMm = { id: "10", mm: 10, degrees: 5 }
+
+  /** A step that runs until the test ends it, and what the jogger got */
+  async function runningStep(store: JoggingStore) {
+    const { jogger } = store
+    const moving = deferred()
+    vi.mocked(jogger.runIncrementalCartesianMotion).mockReturnValue(
+      moving.promise,
+    )
+    const step = store.runIncrementalCartesianJog("translate", "x", "+", tenMm)
+    await flush()
+    const request = vi.mocked(jogger.runIncrementalCartesianMotion).mock
+      .lastCall?.[0]
+    if (!request?.refusedReason) throw new Error("No check for the jogger")
+    return {
+      step,
+      refusedReason: request.refusedReason,
+      end: async () => {
+        moving.resolve()
+        await step
+      },
+    }
+  }
+
+  it("is refused by the jogger right before it goes to NOVA while the robot may not move or something else locks the store, not for its own lock", async () => {
+    const jogger = createMockJogger()
+    // MobX sees no change of it: the jogger asks it right then
+    let reason: JoggingRefusedReason | null = null
+    const store = createStore({ jogger, notMoveableReason: () => reason })
+    const { refusedReason, end } = await runningStep(store)
+    expect(store.isLocked).toBe(true)
+
+    // The step locks the store itself
+    expect(refusedReason()).toBeNull()
+    reason = { code: "deactivated" }
+    expect(refusedReason()).toEqual({ code: "deactivated" })
+    reason = null
+    expect(refusedReason()).toBeNull()
+
+    store.lock("external")
+    expect(refusedReason()).toEqual({ code: "locked" })
+    await end()
+  })
+
+  it("is stopped while it runs when the robot may no longer move, and stays stopped", async () => {
+    const jogger = createMockJogger()
+    const reason = observable.box<JoggingRefusedReason | null>(null)
+    const store = createStore({ jogger, notMoveableReason: () => reason.get() })
+    const { refusedReason, end } = await runningStep(store)
+    expect(jogger.stop).not.toHaveBeenCalled()
+
+    runInAction(() => reason.set({ code: "deactivated" }))
+
+    expect(jogger.stop).toHaveBeenCalledOnce()
+    // The step was stopped: it does not go on when the reason is gone, e.g.
+    // while NOVA's answer to its trajectory is still to come
+    runInAction(() => reason.set(null))
+    expect(refusedReason()).toEqual({ code: "deactivated" })
+    await end()
+    expect(jogger.stop).toHaveBeenCalledOnce()
+  })
+
+  it.each([
+    [
+      "something else locks the store",
+      (store: JoggingStore) => store.lock("external"),
+    ],
+    [
+      "another client takes the jogging connection",
+      (store: JoggingStore) => store.block(),
+    ],
+  ])("is stopped while it runs when %s", async (_name, interrupt) => {
+    const jogger = createMockJogger()
+    const store = createStore({ jogger })
+    const { end } = await runningStep(store)
+
+    interrupt(store)
+
+    expect(jogger.stop).toHaveBeenCalledOnce()
+    await end()
+  })
+
+  it("is not stopped any more once it is over", async () => {
+    const jogger = createMockJogger()
+    const reason = observable.box<JoggingRefusedReason | null>(null)
+    const store = createStore({ jogger, notMoveableReason: () => reason.get() })
+    const { end } = await runningStep(store)
+    await end()
+
+    runInAction(() => reason.set({ code: "deactivated" }))
+    store.lock("external")
+
+    expect(jogger.stop).not.toHaveBeenCalled()
+  })
+
+  it("is stopped for the store's owner, which learns when it is over", async () => {
+    const jogger = createMockJogger()
+    const store = createStore({ jogger })
+    // Without a step there is nothing to wait for
+    await store.stopIncrementalJog({ code: "deactivated" })
+    expect(jogger.stop).not.toHaveBeenCalled()
+
+    const { refusedReason, end } = await runningStep(store)
+    let over = false
+    const stopped = store
+      .stopIncrementalJog({ code: "deactivated" })
+      .then(() => {
+        over = true
+      })
+    await flush()
+
+    expect(jogger.stop).toHaveBeenCalledOnce()
+    expect(refusedReason()).toEqual({ code: "deactivated" })
+    expect(over).toBe(false)
+
+    // The robot stands still: the step is over
+    await end()
+    await stopped
+    expect(over).toBe(true)
   })
 })
 

@@ -179,7 +179,7 @@ export class RobotSession {
       this.state,
       () => this.safety,
       logger,
-      () => this.releasePlannedMove(),
+      () => this.releaseControl(),
     )
     this.safety = new RobotSafety(this.state, () => this.activation.state)
 
@@ -282,6 +282,16 @@ export class RobotSession {
       this.safety.notMoveableReason ??
       (this.safety.canBeMoved ? null : { code: "deactivated" })
     )
+  }
+
+  /**
+   * Hands back what holds the controller in control mode, before the robot
+   * is deactivated: a step that runs, which is stopped and over once the
+   * robot stands still (NOVA would run it to its end), and a planned move
+   */
+  private async releaseControl() {
+    await this.jogging.stopIncrementalJog({ code: "deactivated" })
+    await this.releasePlannedMove()
   }
 
   /**

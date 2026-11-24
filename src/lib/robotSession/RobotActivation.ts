@@ -66,8 +66,9 @@ export class RobotActivation {
     private readonly safety: () => RobotSafety,
     private readonly logger: ConnectionLogger,
     /**
-     * Hands back what holds the controller in control mode (a planned
-     * move's execution session): until then, it does not leave it
+     * Hands back what holds the controller in control mode (a step that
+     * runs, a planned move's execution session): until then, it does not
+     * leave it
      */
     private readonly releaseControl: () => Promise<void> = async () => {},
   ) {
