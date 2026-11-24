@@ -29,9 +29,13 @@ function refusalText(reason: JoggingRefusedReason) {
  * why.
  */
 export class JoggingRefusedError extends Error {
+  /** Why the jog did not start: `reason.code` is for the app to translate */
+  readonly reason: JoggingRefusedReason
+
   /** @internal The jogging store makes it, see JoggingStore */
-  constructor(readonly reason: JoggingRefusedReason) {
+  constructor(reason: JoggingRefusedReason) {
     super(`Jogging refused: ${refusalText(reason)}`)
     this.name = "JoggingRefusedError"
+    this.reason = reason
   }
 }
