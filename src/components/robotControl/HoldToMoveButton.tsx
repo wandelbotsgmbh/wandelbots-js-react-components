@@ -24,13 +24,14 @@ type HoldToMoveButtonProps = {
 }
 
 /**
- * The Move to button, as RobotPad's: held for 200 ms while the move is
- * planned, it starts it, and the release pauses it. It says Moving… and
- * Stopping…, and cannot move to the pose the TCP stands at. Every other way
- * a hold ends stops the move as well (the safety rules of every hold-to-jog
- * control, see useHold). At the target the hold goes on, as in RobotPad,
- * until the release: the hold sits on the wrapper, which keeps the pointer
- * while the button turns off.
+ * The Move to button, as RobotPad's: held with a pointer for 200 ms while
+ * the move is planned, it starts it, and the release pauses it, as does the
+ * pointer leaving the button. The keyboard does not move the robot. It says
+ * Moving… and Stopping…, and cannot move to the pose the TCP stands at.
+ * Every other way a hold ends stops the move as well (the safety rules of
+ * every hold-to-move control, see useHold). At the target the hold goes on,
+ * as in RobotPad, until the release or the leave: the hold sits on the
+ * wrapper, which keeps the pointer while the button turns off.
  */
 export function HoldToMoveButton({
   state,
