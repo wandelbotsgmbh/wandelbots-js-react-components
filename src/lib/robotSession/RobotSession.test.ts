@@ -4,6 +4,7 @@ import {
   CONTROLLER_ID,
   MOTION_GROUP_ID,
   controllerState,
+  fakeExecution,
   makeHarness,
 } from "./__fixtures__/robotSessionHarness"
 import { RobotModeChangeError } from "./RobotActivation"
@@ -456,6 +457,28 @@ describe("RobotSession", () => {
       expect(jogger.setJoggingMode).not.toHaveBeenCalled()
       session.dispose()
     })
+  })
+
+  // The store drops its plan at the end of a trajectory, after a failed move
+  // and on reset, but NOVA keeps the trajectory until the websocket closes
+  it("hands back a trajectory that the controller still holds without a plan, before it deactivates the robot", async () => {
+    const session = await harness.load().ready
+    harness.source.send(controllerState({ mode: "MODE_CONTROL" }))
+    const execution = await fakeExecution(session)
+    await session.trajectory.planTrajectory({ type: "joint", joints: [1] })
+    execution.emit("INITIALIZE_RECEIVED")
+    session.trajectory.reset()
+    expect(session.trajectory.trajectoryState).toBe("idle")
+    const held = execution.sockets.at(-1)
+    let closedWhenAsked: unknown = "never asked"
+    harness.api.controller.setDefaultMode.mockImplementation(async () => {
+      closedWhenAsked = held?.dispose.mock.calls.length
+    })
+
+    await session.activation.deactivate()
+
+    expect(closedWhenAsked).toBe(1)
+    session.dispose()
   })
 
   it("plans no typed pose while the app is locked", async () => {

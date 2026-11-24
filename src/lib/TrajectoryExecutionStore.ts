@@ -120,6 +120,11 @@ export class TrajectoryExecutionStore {
   lastError: string | null = null
 
   private socket: AutoReconnectingWebsocket
+  /**
+   * NOVA got a trajectory on the execution websocket and the websocket is
+   * still open: it may hold the trajectory, whatever became of the plan here
+   */
+  private armed = false
   private readonly disposers: IReactionDisposer[] = []
   private readonly logger: ConnectionLogger
 
@@ -156,6 +161,17 @@ export class TrajectoryExecutionStore {
     return this.options.joggingStore.jogger.motionStream
   }
 
+  /**
+   * Whether NOVA may still hold a trajectory of this store, and with it the
+   * controller's execution session, which blocks jogging and keeps the
+   * controller in control mode: from a plan that NOVA got until
+   * `stopAndReset`. Also after `reset`, after the robot arrived and after a
+   * failed move, which only drop the plan here.
+   */
+  get holdsExecutionSession() {
+    return this.armed
+  }
+
   /** The execution state that the motion stream reports, e.g. "RUNNING" */
   get executionState() {
     return this.motionStream.rapidlyChangingMotionState.execute?.details?.state
@@ -166,13 +182,15 @@ export class TrajectoryExecutionStore {
    * Plans a trajectory from the current joints to the target and initializes
    * it on the execution websocket. The store is "planned" once NOVA accepted
    * it. Returns a planner rejection as a value; throws while the app locks
-   * the robot and when the planner cannot be reached.
+   * the robot and when the planner cannot be reached. A target that cannot be
+   * planned leaves no trajectory, also not the one before it on the
+   * controller.
    */
   async planTrajectory(
     target: TrajectoryTarget,
   ): Promise<PlanTrajectoryResult> {
     if (this.options.isLocked?.()) {
-      this.reset()
+      await this.dropPlan()
       throw new Error("Cannot plan trajectory: the robot is locked")
     }
 
@@ -219,7 +237,7 @@ export class TrajectoryExecutionStore {
         } catch {
           // A saved pose may refer to a deleted frame. Never plan its local
           // coordinates as world coordinates or leave an old plan armed.
-          this.reset()
+          await this.dropPlan()
           return { ok: false, errorFeedbackName: "FeedbackUnknown" }
         }
       }
@@ -265,7 +283,7 @@ export class TrajectoryExecutionStore {
       )
     } catch (err) {
       // Not a planner verdict but a transport failure: do not stay "planning"
-      this.reset()
+      await this.dropPlan()
       throw err
     }
     const trajectory = planned.response
@@ -279,7 +297,7 @@ export class TrajectoryExecutionStore {
       const errorFeedbackName =
         (trajectory.error_feedback as { error_feedback_name?: string })
           ?.error_feedback_name ?? "FeedbackUnknown"
-      this.reset()
+      await this.dropPlan()
       return { ok: false, errorFeedbackName }
     }
 
@@ -288,7 +306,7 @@ export class TrajectoryExecutionStore {
     const endJoints = trajectoryJoints[trajectoryJoints.length - 1]
 
     if (!startJoints || !endJoints) {
-      this.reset()
+      await this.dropPlan()
       throw new Error("Trajectory returned invalid joint positions")
     }
 
@@ -304,6 +322,7 @@ export class TrajectoryExecutionStore {
 
     this.socket.sendJson(initRequest)
     runInAction(() => {
+      this.armed = true
       this.plannedTrajectory = { startJoints, endJoints }
     })
 
@@ -388,10 +407,27 @@ export class TrajectoryExecutionStore {
     }
   }
 
-  /** Drops the planned trajectory, without telling NOVA */
+  /**
+   * Drops the planned trajectory here, without telling NOVA: it keeps the
+   * trajectory and the execution session, see
+   * {@link TrajectoryExecutionStore.holdsExecutionSession}
+   */
   reset() {
     this.plannedTrajectory = null
     this.trajectoryState = "idle"
+  }
+
+  /**
+   * Drops the plan because its next target cannot be planned. The trajectory
+   * before it is still armed on the controller, so the execution session goes
+   * back as well: with no plan here, nothing else would ask for that.
+   */
+  private async dropPlan() {
+    if (this.armed) {
+      await this.stopAndReset()
+    } else {
+      this.reset()
+    }
   }
 
   /** Removes {@link TrajectoryExecutionStore.lastError} */
@@ -479,5 +515,7 @@ export class TrajectoryExecutionStore {
   private closeSocket() {
     this.socket.removeEventListener("message", this.handleMessage)
     this.socket.dispose()
+    // The execution session ends with its websocket
+    this.armed = false
   }
 }

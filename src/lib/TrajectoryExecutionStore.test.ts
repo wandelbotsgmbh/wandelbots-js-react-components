@@ -679,6 +679,113 @@ describe("TrajectoryExecutionStore execution", () => {
   })
 })
 
+// NOVA keeps a trajectory it accepted until the execution websocket closes:
+// it holds the controller's execution session, which blocks jogging and keeps
+// the controller in control mode
+describe("TrajectoryExecutionStore execution session", () => {
+  /** Plans a trajectory that NOVA accepts: it is armed on the first socket */
+  async function armed(options: Parameters<typeof makeStore>[0] = {}) {
+    const made = makeStore(options)
+    expect(made.store.holdsExecutionSession).toBe(false)
+    await made.store.planTrajectory(cartesianTarget("world"))
+    made.emit("INITIALIZE_RECEIVED")
+    expect(made.store.trajectoryState).toBe("planned")
+    expect(made.store.holdsExecutionSession).toBe(true)
+    return made
+  }
+
+  /** The first socket was closed and replaced, so NOVA holds nothing */
+  function expectSessionHandedBack(made: Awaited<ReturnType<typeof armed>>) {
+    expect(made.sockets[0]?.dispose).toHaveBeenCalled()
+    expect(made.sockets).toHaveLength(2)
+    expect(made.store.holdsExecutionSession).toBe(false)
+    expect(made.store.plannedTrajectory).toBeNull()
+    expect(made.store.trajectoryState).toBe("idle")
+  }
+
+  test("a target that the planner rejects takes the trajectory before it off the controller", async () => {
+    const made = await armed()
+    made.planTrajectory.mockResolvedValueOnce({
+      response: {
+        error_feedback: { error_feedback_name: "FeedbackOutOfWorkspace" },
+        error_location_on_trajectory: 0,
+      },
+    } as PlanTrajectoryResponse)
+
+    expect(await made.store.planTrajectory(cartesianTarget("world"))).toEqual({
+      ok: false,
+      errorFeedbackName: "FeedbackOutOfWorkspace",
+    })
+
+    expectSessionHandedBack(made)
+  })
+
+  test("a target in a deleted coordinate system takes the trajectory before it off the controller", async () => {
+    const made = await armed()
+
+    expect(
+      await made.store.planTrajectory(cartesianTarget("deleted-frame")),
+    ).toEqual({ ok: false, errorFeedbackName: "FeedbackUnknown" })
+
+    expectSessionHandedBack(made)
+  })
+
+  test("a planner that cannot be reached takes the trajectory before it off the controller", async () => {
+    const made = await armed()
+    made.planTrajectory.mockRejectedValueOnce(new Error("Network Error"))
+
+    await expect(
+      made.store.planTrajectory(cartesianTarget("world")),
+    ).rejects.toThrow("Network Error")
+
+    expectSessionHandedBack(made)
+  })
+
+  test("a plan refused by the app's lock takes the trajectory before it off the controller", async () => {
+    let locked = false
+    const made = await armed({ isLocked: () => locked })
+    locked = true
+
+    await expect(
+      made.store.planTrajectory(cartesianTarget("world")),
+    ).rejects.toThrow("locked")
+
+    expectSessionHandedBack(made)
+  })
+
+  test("a plan without joint positions takes the trajectory before it off the controller", async () => {
+    const made = await armed()
+    made.planTrajectory.mockResolvedValueOnce({
+      response: { joint_positions: [], times: [], locations: [] },
+    })
+
+    await expect(
+      made.store.planTrajectory(cartesianTarget("world")),
+    ).rejects.toThrow("invalid joint positions")
+
+    expectSessionHandedBack(made)
+  })
+
+  test("keeps holding the session after reset, at the end of the trajectory and after a motion error, until stopAndReset", async () => {
+    const afterReset = await armed()
+    afterReset.store.reset()
+    expect(afterReset.store.holdsExecutionSession).toBe(true)
+
+    const arrived = await armed()
+    arrived.setExecutionState("END_OF_TRAJECTORY")
+    expect(arrived.store.trajectoryState).toBe("idle")
+    expect(arrived.store.holdsExecutionSession).toBe(true)
+
+    const failed = await armed()
+    failed.emit("MOTION_ERROR", { message: "Collision detected" })
+    expect(failed.store.trajectoryState).toBe("idle")
+    expect(failed.store.holdsExecutionSession).toBe(true)
+
+    await failed.store.stopAndReset()
+    expect(failed.store.holdsExecutionSession).toBe(false)
+  })
+})
+
 describe("TrajectoryExecutionStore pausing", () => {
   /** Plan, initialize and start a trajectory, leaving it in "moving" */
   async function startMoving(

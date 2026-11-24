@@ -1,10 +1,17 @@
-import type { Nova, RobotControllerState } from "@wandelbots/nova-js/v2"
+import type {
+  MotionGroupState,
+  Nova,
+  PlanTrajectoryResponse,
+  RobotControllerState,
+} from "@wandelbots/nova-js/v2"
+import { runInAction } from "mobx"
 import { vi } from "vitest"
 import type { ControllerStateSource } from "../../controllerStateSource"
 import {
   createRobotSessionLoad,
   type LoadRobotSessionOptions,
 } from "../loadRobotSession"
+import type { RobotSession } from "../RobotSession"
 
 // A real RobotSession on a fake NOVA: the description, model, coordinate
 // systems and streams of a virtual UR5e, which a test feeds by hand
@@ -126,4 +133,80 @@ export function makeHarness() {
   }
 
   return { api, socket, source, load }
+}
+
+/** An execution websocket that records what is sent and that the test feeds */
+function makeExecutionSocket() {
+  const listeners = new Set<(event: MessageEvent) => void>()
+  return {
+    addEventListener: (_type: string, listener: (e: MessageEvent) => void) => {
+      listeners.add(listener)
+    },
+    removeEventListener: (
+      _type: string,
+      listener: (e: MessageEvent) => void,
+    ) => {
+      listeners.delete(listener)
+    },
+    sendJson: vi.fn(),
+    dispose: vi.fn(),
+    emit(result: object) {
+      for (const listener of listeners) {
+        listener({ data: JSON.stringify({ result }) } as MessageEvent)
+      }
+    },
+  }
+}
+
+/**
+ * Gives the trajectory of a session a planner and execution websockets that
+ * the test drives: the planner accepts every target until the test says
+ * otherwise, and NOVA's answers come from `emit`
+ */
+export async function fakeExecution(session: RobotSession) {
+  const { nova, motionStream } = session.jogging.jogger
+  const planTrajectory = vi
+    .spyOn(nova.api.trajectoryPlanning, "planTrajectory")
+    .mockImplementation(
+      async () =>
+        ({
+          response: {
+            joint_positions: [
+              [0, 0, 0, 0, 0, 0],
+              [0.1, 0, 0, 0, 0, 0],
+            ],
+            times: [0, 1],
+            locations: [0, 1],
+          },
+        }) as PlanTrajectoryResponse as never,
+    )
+  const sockets: ReturnType<typeof makeExecutionSocket>[] = []
+  vi.spyOn(nova, "openReconnectingWebsocket").mockImplementation(() => {
+    const socket = makeExecutionSocket()
+    sockets.push(socket)
+    return socket as never
+  })
+  // The store was made with a real websocket: it takes a fake one now
+  await session.trajectory.stopAndReset()
+
+  return {
+    planTrajectory,
+    /** Every execution websocket the store opened, the open one last */
+    sockets,
+    /** The types of the messages sent on the open execution websocket */
+    sent: () =>
+      sockets
+        .at(-1)
+        ?.sendJson.mock.calls.map(
+          ([message]) => (message as { message_type: string }).message_type,
+        ) ?? [],
+    /** Delivers a message of NOVA on the open execution websocket */
+    emit: (kind: string, fields: object = {}) =>
+      sockets.at(-1)?.emit({ kind, ...fields }),
+    /** What the motion stream reports, e.g. `{ standstill: false }` */
+    setMotionState: (state: Partial<MotionGroupState>) =>
+      runInAction(() => {
+        Object.assign(motionStream.rapidlyChangingMotionState, state)
+      }),
+  }
 }

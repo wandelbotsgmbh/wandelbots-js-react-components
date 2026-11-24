@@ -275,7 +275,9 @@ export class RobotSession {
   /**
    * Drops a planned move: a staged typed pose, or a trajectory the app
    * planned itself (RobotPad: to a saved pose). It holds the controller's
-   * execution session, which keeps the controller in control mode.
+   * execution session, which keeps the controller in control mode: also
+   * when the store has no plan any more (the robot arrived, the move
+   * failed), since NOVA keeps the trajectory.
    */
   private async releasePlannedMove() {
     if (this.targetPose.staged) {
@@ -283,7 +285,8 @@ export class RobotSession {
     }
     if (
       this.trajectory.plannedTrajectory ||
-      this.trajectory.trajectoryState !== "idle"
+      this.trajectory.trajectoryState !== "idle" ||
+      this.trajectory.holdsExecutionSession
     ) {
       await this.trajectory.stopAndReset()
     }
