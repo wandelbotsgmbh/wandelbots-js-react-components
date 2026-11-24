@@ -12,7 +12,7 @@ const webgl = vi.hoisted(() => ({
   canvas: undefined as HTMLCanvasElement | undefined,
 }))
 
-vi.mock("./webglSupport", () => ({
+vi.mock("../utils/webglSupport", () => ({
   isWebGLAvailable: () => webgl.available,
 }))
 

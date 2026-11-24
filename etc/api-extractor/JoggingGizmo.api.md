@@ -41,6 +41,7 @@ export type JoggingGizmoProps = JogControlsProps & {
     orientation: RefObject<Quaternion | null>;
     frameQuaternion?: Quaternion | (() => Quaternion);
     size?: number;
+    onWebGLUnavailable?: (context: WebGLUnavailableContext) => void;
 };
 
 // @public
@@ -48,6 +49,9 @@ export type JogHandle = {
     axis: JogAxis;
     direction: JogDirection;
 };
+
+// @public
+export type WebGLUnavailableContext = "preflight" | "renderer";
 
 // (No @packageDocumentation comment for this package)
 

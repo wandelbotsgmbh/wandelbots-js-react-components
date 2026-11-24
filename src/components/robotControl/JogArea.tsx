@@ -4,12 +4,13 @@ import Tooltip from "@mui/material/Tooltip"
 import Typography from "@mui/material/Typography"
 import { Jog } from "@wandelbots/icons/Jog"
 import { ViewModuleFilled } from "@wandelbots/icons/ViewModuleFilled"
-import type { RefObject } from "react"
+import { type RefObject, useState } from "react"
 import { useTranslation } from "react-i18next"
 import type { Quaternion } from "three"
 import { JoggingGizmo } from "../jogging/gizmo/JoggingGizmo"
 import { JoggingButtons } from "../jogging/JoggingButtons"
 import type { JogControlsProps } from "../jogging/useJogControls"
+import { isWebGLAvailable } from "../utils/webglSupport"
 import type { JogMode } from "./JogModeToggle"
 
 /** Which jog controls the jog area shows */
@@ -21,7 +22,10 @@ type JogAreaProps = {
   mode: JogMode
   /** The props of the gizmo or the buttons, whichever is shown */
   controls: JogControlsProps
-  /** Without it, there is no gizmo: the buttons, and no switch */
+  /**
+   * Without it, there is no gizmo: the buttons, and no switch. Nor is there
+   * one when the browser cannot draw it (no WebGL).
+   */
   gizmoOrientation?: RefObject<Quaternion | null>
   gizmoFrameQuaternion?: Quaternion | (() => Quaternion)
 }
@@ -39,7 +43,11 @@ export function JogArea({
   gizmoFrameQuaternion,
 }: JogAreaProps) {
   const { t } = useTranslation()
-  const showsGizmo = view === "gizmo" && gizmoOrientation !== undefined
+  // Checked here too, so that the gizmo's message does not show first; the
+  // gizmo also says when its renderer cannot be made
+  const [canDrawGizmo, setCanDrawGizmo] = useState(isWebGLAvailable)
+  const hasGizmo = gizmoOrientation !== undefined && canDrawGizmo
+  const showsGizmo = view === "gizmo" && hasGizmo
 
   const hint = showsGizmo
     ? mode === "increment"
@@ -57,7 +65,7 @@ export function JogArea({
       data-testid="jog-area"
       sx={{ position: "relative", alignItems: "center", gap: "16px" }}
     >
-      {gizmoOrientation && (
+      {hasGizmo && (
         <Tooltip title={switchLabel} placement="left">
           <IconButton
             aria-label={switchLabel}
@@ -84,6 +92,7 @@ export function JogArea({
           orientation={gizmoOrientation}
           frameQuaternion={gizmoFrameQuaternion}
           size={180}
+          onWebGLUnavailable={() => setCanDrawGizmo(false)}
         />
       ) : (
         <JoggingButtons {...controls} />

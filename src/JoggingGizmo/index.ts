@@ -15,3 +15,4 @@ export type {
   JogHandle,
 } from "../components/jogging/jogHandle"
 export type { JogControlsProps } from "../components/jogging/useJogControls"
+export type { WebGLUnavailableContext } from "../components/utils/useWebGLRenderer"

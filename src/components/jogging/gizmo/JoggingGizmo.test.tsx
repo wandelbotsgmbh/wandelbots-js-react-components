@@ -7,6 +7,12 @@ import { i18n } from "../../../i18n/config"
 import type { JogHandle } from "../jogHandle"
 import { JoggingGizmo } from "./JoggingGizmo"
 
+// Whether the browser can draw 3D (the test setup gives jsdom a WebGL context)
+const webgl = vi.hoisted(() => ({ available: true }))
+vi.mock("../../utils/webglSupport", () => ({
+  isWebGLAvailable: () => webgl.available,
+}))
+
 function setup({
   disabled = false,
   orientation = { current: new Quaternion() },
@@ -40,9 +46,34 @@ function setup({
 
 afterEach(() => {
   vi.useRealTimers()
+  webgl.available = true
 })
 
 describe("JoggingGizmo", () => {
+  it("says it cannot be drawn, with no handles nobody sees, and tells the app, when the browser has no WebGL", () => {
+    webgl.available = false
+    const onWebGLUnavailable = vi.fn()
+
+    render(
+      <I18nextProvider i18n={i18n}>
+        <JoggingGizmo
+          orientation={{ current: new Quaternion() }}
+          onJogStart={vi.fn()}
+          onJogStop={vi.fn()}
+          onWebGLUnavailable={onWebGLUnavailable}
+        />
+      </I18nextProvider>,
+    )
+
+    expect(
+      screen.getByText(
+        "Gizmo controls need WebGL, which this browser does not provide.",
+      ),
+    ).toBeVisible()
+    expect(screen.queryByRole("button", { name: /^Jog / })).toBeNull()
+    expect(onWebGLUnavailable).toHaveBeenCalledExactlyOnceWith("preflight")
+  })
+
   it("has a handle for each direction of each axis", () => {
     setup()
 

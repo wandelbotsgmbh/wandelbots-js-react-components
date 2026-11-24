@@ -72,6 +72,8 @@ export {
   RobotView,
   type RobotViewProps,
 } from "./components/robotView/RobotView"
+// Where the 3D views found that the browser cannot draw 3D
+export type { WebGLUnavailableContext } from "./components/utils/useWebGLRenderer"
 export * from "./components/robots/LinearAxis"
 export * from "./components/robots/MotionGroupVisualizer"
 export * from "./components/robots/Robot"

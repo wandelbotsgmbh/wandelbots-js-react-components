@@ -1,8 +1,14 @@
 import Box from "@mui/material/Box"
+import Typography from "@mui/material/Typography"
 import { Canvas } from "@react-three/fiber"
 import { type RefObject, useEffect, useMemo, useRef, useState } from "react"
+import { useTranslation } from "react-i18next"
 import { Quaternion } from "three"
 import { externalizeComponent } from "../../../externalizeComponent"
+import {
+  useWebGLRenderer,
+  type WebGLUnavailableContext,
+} from "../../utils/useWebGLRenderer"
 import type { JogHandle } from "../jogHandle"
 import { type JogControlsProps, useJogControls } from "../useJogControls"
 import {
@@ -40,6 +46,12 @@ export type JoggingGizmoProps = JogControlsProps & {
   frameQuaternion?: Quaternion | (() => Quaternion)
   /** Side of the square the gizmo takes, in px. Defaults to 200. */
   size?: number
+  /**
+   * Called when the browser cannot draw the gizmo (no WebGL), which then
+   * says so instead of offering handles nobody sees: jog with
+   * `JoggingButtons` then
+   */
+  onWebGLUnavailable?: (context: WebGLUnavailableContext) => void
 }
 
 const WORLD = new Quaternion()
@@ -123,7 +135,12 @@ export const JoggingGizmo = externalizeComponent(
     activeHandle,
     disabled: disabledByApp = false,
     size = 200,
+    onWebGLUnavailable,
   }: JoggingGizmoProps) => {
+    const { t } = useTranslation()
+    const { unavailable, makeRenderer } = useWebGLRenderer({
+      onWebGLUnavailable,
+    })
     const hasOrientation = useHasOrientation(orientation)
     const disabled = disabledByApp || !hasOrientation
     const jogFrame = useJogFrameInView(orientation, frameQuaternion)
@@ -144,6 +161,28 @@ export const JoggingGizmo = externalizeComponent(
     const Handles = motion === "rotate" ? RotationHandles : TranslationHandles
     const overlay = useRef<GizmoOverlay>(new Map())
     const radius = fitGizmoRadiusPx(size, size, gizmoMeasures(size).marginPx)
+
+    if (unavailable) {
+      // The handles lie over the drawn gizmo: without it, nobody sees them
+      return (
+        <Box
+          data-testid="jogging-gizmo-unavailable"
+          sx={{
+            width: size,
+            height: size,
+            flexShrink: 0,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            textAlign: "center",
+          }}
+        >
+          <Typography variant="body2" color="text.secondary">
+            {t("JoggingGizmo.WebGLUnavailable.lb")}
+          </Typography>
+        </Box>
+      )
+    }
 
     return (
       <Box
@@ -172,7 +211,7 @@ export const JoggingGizmo = externalizeComponent(
             near: 0.1,
             far: 100,
           }}
-          gl={{ alpha: true, antialias: true }}
+          gl={makeRenderer}
           style={{ position: "absolute", inset: 0, pointerEvents: "none" }}
         >
           <Scene

@@ -2,17 +2,12 @@ import Box from "@mui/material/Box"
 import { type SxProps, type Theme, useTheme } from "@mui/material/styles"
 import { Grid, OrbitControls } from "@react-three/drei"
 import { Canvas } from "@react-three/fiber"
-import {
-  type ReactNode,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react"
-import { WebGLRenderer, type WebGLRendererParameters } from "three"
+import type { ReactNode } from "react"
 import { externalizeComponent } from "../../externalizeComponent"
-import { isWebGLAvailable } from "./webglSupport"
+import {
+  useWebGLRenderer,
+  type WebGLUnavailableContext,
+} from "../utils/useWebGLRenderer"
 import { WebGLUnavailable } from "./WebGLUnavailable"
 
 /** Props of {@link RobotCanvas} */
@@ -38,7 +33,7 @@ export type RobotCanvasProps = {
    * found before the canvas mounts ("preflight"), or when its renderer
    * cannot be made ("renderer")
    */
-  onWebGLUnavailable?: (context: "preflight" | "renderer") => void
+  onWebGLUnavailable?: (context: WebGLUnavailableContext) => void
   /** The scene, in NOVA's coordinates: Z up, in metres */
   children?: ReactNode
   /** The style of the box the view fills, which fills its parent */
@@ -75,51 +70,11 @@ export const RobotCanvas = externalizeComponent(function RobotCanvas({
   sx,
 }: RobotCanvasProps) {
   const theme = useTheme()
-  const webglAvailable = useMemo(() => isWebGLAvailable(), [])
-  const [rendererFailed, setRendererFailed] = useState(false)
-  const unavailable = !webglAvailable
-    ? "preflight"
-    : rendererFailed
-      ? "renderer"
-      : null
-
-  // The app's callbacks, as they are now, for the renderer's listeners
-  const callbacks = useRef({ onContextLost, onWebGLUnavailable })
-  callbacks.current = { onContextLost, onWebGLUnavailable }
-
-  useEffect(() => {
-    if (unavailable) callbacks.current.onWebGLUnavailable?.(unavailable)
-  }, [unavailable])
-
-  // Removing the canvas loses its context too: no loss to tell the app of
-  const shown = useRef(true)
-  useEffect(() => {
-    shown.current = true
-    return () => {
-      shown.current = false
-    }
-  }, [])
-
-  const makeRenderer = useCallback(
-    (defaults: WebGLRendererParameters) => {
-      let renderer: WebGLRenderer
-      try {
-        renderer = new WebGLRenderer({ ...defaults, antialias, alpha: true })
-      } catch (error) {
-        // The context can still fail here, though the check passed (lost
-        // between the two, say): show that instead of loading forever
-        console.warn("Failed to create WebGL renderer", error)
-        setRendererFailed(true)
-        throw error
-      }
-      renderer.domElement.addEventListener("webglcontextlost", (event) => {
-        event.preventDefault()
-        if (shown.current) callbacks.current.onContextLost?.()
-      })
-      return renderer
-    },
-    [antialias],
-  )
+  const { unavailable, makeRenderer } = useWebGLRenderer({
+    antialias,
+    onContextLost,
+    onWebGLUnavailable,
+  })
 
   const background = theme.palette.backgroundPaperElevation?.[1] ?? "#fff"
   const gridColor = theme.palette.backgroundPaperElevation?.[5]

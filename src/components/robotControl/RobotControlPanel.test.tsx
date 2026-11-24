@@ -1,12 +1,21 @@
 import { fireEvent, render, screen, within } from "@testing-library/react"
 import { I18nextProvider } from "react-i18next"
 import { Quaternion } from "three"
-import { describe, expect, it, vi } from "vitest"
+import { afterEach, describe, expect, it, vi } from "vitest"
 import { i18n } from "../../i18n/config"
 import {
   RobotControlPanel,
   type RobotControlPanelProps,
 } from "./RobotControlPanel"
+
+// Whether the browser can draw 3D (the test setup gives jsdom a WebGL context)
+const webgl = vi.hoisted(() => ({ available: true }))
+vi.mock("../utils/webglSupport", () => ({
+  isWebGLAvailable: () => webgl.available,
+}))
+afterEach(() => {
+  webgl.available = true
+})
 
 type Props = Partial<RobotControlPanelProps>
 
@@ -128,6 +137,19 @@ describe("RobotControlPanel", () => {
     expect(screen.getByTestId("jogging-buttons")).toBeVisible()
     fireEvent.click(screen.getByRole("button", { name: "Gizmo controls" }))
     expect(screen.getByTestId("jogging-gizmo")).toBeVisible()
+  })
+
+  it("jogs with the buttons, and offers no gizmo, when the browser cannot draw it", () => {
+    webgl.available = false
+
+    setup({ gizmoOrientation: { current: new Quaternion() } })
+
+    expect(screen.getByTestId("jogging-buttons")).toBeVisible()
+    expect(screen.queryByTestId("jogging-gizmo")).toBeNull()
+    expect(screen.queryByRole("button", { name: "Gizmo controls" })).toBeNull()
+    expect(
+      screen.getByText("Hold a button to jog · Release to stop"),
+    ).toBeVisible()
   })
 
   it("shows the velocity of the tab's motion in mm/s or °/s, and reports a change in NOVA's units", () => {

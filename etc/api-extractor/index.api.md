@@ -506,6 +506,7 @@ export type JoggingGizmoProps = JogControlsProps & {
     orientation: RefObject<Quaternion | null>;
     frameQuaternion?: Quaternion | (() => Quaternion);
     size?: number;
+    onWebGLUnavailable?: (context: WebGLUnavailableContext) => void;
 };
 
 // @public
@@ -994,7 +995,7 @@ export type RobotCanvasProps = {
     orbitTarget?: [number, number, number];
     antialias?: boolean;
     onContextLost?: () => void;
-    onWebGLUnavailable?: (context: "preflight" | "renderer") => void;
+    onWebGLUnavailable?: (context: WebGLUnavailableContext) => void;
     children?: ReactNode;
     sx?: SxProps<Theme>;
 };
@@ -1684,6 +1685,9 @@ export const VelocitySlider: ((props: VelocitySliderProps) => JSX.Element) & {
 
 // @public (undocumented)
 export function VelocitySliderLabel(input: VelocitySliderLabelProps): JSX.Element;
+
+// @public
+export type WebGLUnavailableContext = "preflight" | "renderer";
 
 // (No @packageDocumentation comment for this package)
 

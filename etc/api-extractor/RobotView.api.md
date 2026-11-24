@@ -40,7 +40,7 @@ export type RobotCanvasProps = {
     orbitTarget?: [number, number, number];
     antialias?: boolean;
     onContextLost?: () => void;
-    onWebGLUnavailable?: (context: "preflight" | "renderer") => void;
+    onWebGLUnavailable?: (context: WebGLUnavailableContext) => void;
     children?: ReactNode;
     sx?: SxProps<Theme>;
 };
@@ -61,6 +61,9 @@ export type RobotViewProps = RobotSceneProps & Omit<RobotCanvasProps, "orbitTarg
 
 // @public
 export function useRobotSession(): RobotSession;
+
+// @public
+export type WebGLUnavailableContext = "preflight" | "renderer";
 
 // (No @packageDocumentation comment for this package)
 
