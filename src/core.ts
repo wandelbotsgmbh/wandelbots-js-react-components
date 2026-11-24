@@ -74,19 +74,19 @@ export * from "./components/utils/useSmoothedMotionState"
 export * from "./components/VelocitySlider"
 export * from "./i18n/config"
 export * from "./lib/ConnectedMotionGroup"
-export {
-  ControllerStateStream,
-  type ControllerStateStreamError,
-  type ControllerStateStreamOptions,
-  MOTION_DELTA_THRESHOLD,
-} from "./lib/ControllerStateStream"
-export {
-  type ControllerStateSource,
-  controllerStateWebsocket,
-} from "./lib/controllerStateSource"
+// What a session's live state reads (`session.state.stream`); the session
+// makes it
+export { ControllerStateStream } from "./lib/ControllerStateStream"
+export type { ControllerStateSource } from "./lib/controllerStateSource"
 export type { ConnectionLogger } from "./lib/connectionLogger"
 export * from "./lib/JoggerConnection"
-export * from "./lib/motionStateUpdate"
+export {
+  jointValuesEqual,
+  type MotionStateReadout,
+  poseEqual,
+  tcpMotionEqual,
+  unwrapRotationVector,
+} from "./lib/motionStateUpdate"
 export * from "./lib/MotionStreamConnection"
 export type { NovaConnection } from "./lib/novaConnection"
 export { planErrorTranslationKey } from "./lib/planErrorTranslation"
@@ -139,14 +139,19 @@ export {
   RobotTargetPose,
   type StagedTargetPose,
 } from "./lib/robotSession/RobotTargetPose"
-// A pose or joints as typed and copied: "(x, y, z, rx, ry, rz)", "[j1, …]"
+// A pose or joints as copied: "(x, y, z, rx, ry, rz)", "[j1, …]"
 export {
   jointsToText,
-  parseJointsText,
-  parsePoseText,
   poseToText,
 } from "./components/robotControl/poseText"
-export * from "./lib/TrajectoryExecutionStore"
+// Move to of a session (`session.trajectory`); the session makes it
+export {
+  type PlannedTrajectory,
+  type PlanTrajectoryResult,
+  TrajectoryExecutionStore,
+  type TrajectoryState,
+  type TrajectoryTarget,
+} from "./lib/TrajectoryExecutionStore"
 // Gives connected components (e.g. RobotControl of /3d) their session
 export {
   RobotSessionProvider,

@@ -79,15 +79,12 @@ export type { WebGLUnavailableContext } from "./components/utils/useWebGLRendere
 export * from "./components/robots/LinearAxis"
 export * from "./components/robots/MotionGroupVisualizer"
 export * from "./components/robots/Robot"
-// The rotation from a model's Y-up frame to NOVA's Z-up frame
-export { MODEL_ROTATION } from "./components/robots/modelRotation"
+// The model download, and the joint naming for apps that read the drawn chain
 export {
   defaultGetModel,
   FLANGE_NODE_SUFFIX,
-  JOINT_NODE_NAME,
   JOINT_REST_SUFFIX,
   jointIndexOf,
-  revokeAllModelUrls,
 } from "./components/robots/robotModelLogic"
 // What Robot and LinearAxis draw, and the robot of a session as they draw it
 export {
@@ -104,7 +101,4 @@ export {
 export * from "./components/utils/useSmoothedMotionState"
 // Pose math with three.js objects; the plain-number transforms are in /core
 export { Pose3 } from "./lib/Pose3"
-export {
-  parseRotationToQuaternion,
-  quaternionToRotationVector,
-} from "./lib/rotation"
+export { parseRotationToQuaternion } from "./lib/rotation"

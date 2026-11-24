@@ -180,6 +180,7 @@ export class TrajectoryExecutionStore {
   private readonly disposers: IReactionDisposer[] = []
   private readonly logger: ConnectionLogger
 
+  /** @internal The session makes it, see RobotSession */
   constructor(private readonly options: TrajectoryExecutionStoreOptions) {
     this.logger = options.logger ?? console
     makeAutoObservable<this, "socket" | "disposers" | "logger" | "options">(

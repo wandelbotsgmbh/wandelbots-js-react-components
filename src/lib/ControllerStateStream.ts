@@ -57,7 +57,7 @@ export type ControllerStateStreamError = {
   url?: string
 }
 
-/** What an app can give a {@link ControllerStateStream} besides its source */
+/** What the session gives a {@link ControllerStateStream} besides its source */
 export type ControllerStateStreamOptions = {
   /**
    * A virtual robot: its stream can come more slowly, depending on the speed
@@ -114,6 +114,10 @@ export class ControllerStateStream {
   private readonly onError?: (error: ControllerStateStreamError) => void
   private readonly reconnectsOnFocus: boolean
 
+  /**
+   * @internal The session makes it from its `stateSource`, see
+   * `RobotSession` and `loadRobotSession`
+   */
   constructor(
     /** Where the controller state comes from; its owner closes it */
     readonly source: ControllerStateSource,
@@ -183,8 +187,8 @@ export class ControllerStateStream {
 
   /**
    * What pose and joint readouts show. Holds the previous reading while the
-   * joints only jitter, see {@link readoutsEqual}; kept alive so it also holds
-   * for untracked reads.
+   * joints only jitter (less than 0.0002 rad), and while the TCP and the
+   * coordinate system stay; kept alive so it also holds for untracked reads.
    */
   get readoutState(): MotionStateReadout {
     return readoutOf(this.rapidlyChangingMotionState)

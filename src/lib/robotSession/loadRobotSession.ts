@@ -46,7 +46,7 @@ export type LoadRobotSessionOptions = RobotSessionOptions & {
   controllerId?: string
   /**
    * Opens the source of the controller's live state. Defaults to NOVA's
-   * websocket (`controllerStateWebsocket`); `natsControllerStateSource` of
+   * websocket of the controller's state; `natsControllerStateSource` of
    * `/nats` is the alternative.
    */
   stateSource?: (options: {

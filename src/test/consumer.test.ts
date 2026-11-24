@@ -30,6 +30,7 @@ import {
 import { createRequire } from "node:module"
 import { dirname, relative, resolve } from "node:path"
 import { fileURLToPath } from "node:url"
+import ts from "typescript"
 import { afterAll, beforeAll, describe, expect, it } from "vitest"
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "../..")
@@ -421,6 +422,93 @@ describe("the library without React: /session", () => {
       )
     }
   }, 30_000)
+})
+
+describe("the public API leaves out the library's plumbing", () => {
+  const aggregates = ["index", "core", "3d", "session"]
+  let program: ts.Program
+
+  beforeAll(() => {
+    program = ts.createProgram(
+      aggregates.map((name) => resolve(distDir, `${name}.d.ts`)),
+      {
+        target: ts.ScriptTarget.ES2020,
+        module: ts.ModuleKind.Preserve,
+        moduleResolution: ts.ModuleResolutionKind.Bundler,
+        jsx: ts.JsxEmit.ReactJSX,
+        skipLibCheck: true,
+        noEmit: true,
+      },
+    )
+  }, 120_000)
+
+  /** What an app can import from an entry point: its types and its values */
+  function exportsOf(name: string): Map<string, ts.Symbol> {
+    const checker = program.getTypeChecker()
+    const file = program.getSourceFile(resolve(distDir, `${name}.d.ts`))
+    const entry = file && checker.getSymbolAtLocation(file)
+    if (!entry) throw new Error(`dist/${name}.d.ts has no exports`)
+    return new Map(
+      checker.getExportsOfModule(entry).map((symbol) => [symbol.name, symbol]),
+    )
+  }
+
+  // What the library's own code needs and no app does. An `export *` of a
+  // module that holds such helpers brings them back.
+  const plumbing = [
+    "ControllerStateStreamError",
+    "ControllerStateStreamOptions",
+    "controllerStateWebsocket",
+    "JOINT_NODE_NAME",
+    "jointValuesUnchanged",
+    "MODEL_ROTATION",
+    "MOTION_DELTA_THRESHOLD",
+    "parseJointsText",
+    "parsePoseText",
+    "quaternionToRotationVector",
+    "readoutOf",
+    "readoutsEqual",
+    "revokeAllModelUrls",
+    "TrajectoryExecutionStoreOptions",
+  ]
+
+  it.each(aggregates)("dist/%s.d.ts exports none of it", (name) => {
+    const names = exportsOf(name)
+    expect(plumbing.filter((plumber) => names.has(plumber))).toEqual([])
+  })
+
+  // An app receives these from a session: it names their types, but only
+  // the session makes them
+  it.each([
+    "ControllerStateStream",
+    "RobotActivation",
+    "RobotDescription",
+    "RobotLiveState",
+    "RobotSafety",
+    "RobotSession",
+    "RobotSessionLoad",
+    "RobotTargetPose",
+    "TrajectoryExecutionStore",
+  ])("/session exports %s without a constructor for apps", (name) => {
+    const checker = program.getTypeChecker()
+    const symbol = exportsOf("session").get(name)
+    if (!symbol) throw new Error(`/session does not export ${name}`)
+    const declared = checker.getAliasedSymbol(symbol)
+    const constructors = checker
+      .getTypeOfSymbol(declared)
+      .getConstructSignatures()
+    // Without a declared constructor, a class has the empty one
+    expect(constructors.map((c) => c.parameters.length)).toEqual([0])
+  })
+
+  // The test above compares the values only; this one the types too
+  it("/core exports every name of /session, types too", () => {
+    const core = exportsOf("core")
+    const missing = [...exportsOf("session").keys()].filter(
+      (name) => !core.has(name),
+    )
+    expect(missing).toEqual([])
+  })
 })
 
 describe("entry points for an app without a 3D view", () => {

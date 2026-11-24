@@ -8,11 +8,12 @@ import {
 } from "./novaConnection"
 
 /**
- * Where a robot's live controller state comes from: NOVA's websocket
- * (`controllerStateWebsocket` of `/core`), NATS (`natsControllerStateSource`
- * of `/nats`), or a source of the app's own. It works like a WebSocket that
- * reconnects itself: a `ControllerStateStream` listens to its messages and
- * asks it to reconnect when they stop coming.
+ * Where a robot's live controller state comes from: NOVA's websocket (what
+ * `loadRobotSession` opens without a `stateSource`), NATS
+ * (`natsControllerStateSource` of `/nats`), or a source of the app's own.
+ * It works like a WebSocket that reconnects itself: the session's
+ * `ControllerStateStream` listens to its messages and asks it to reconnect
+ * when they stop coming.
  */
 export type ControllerStateSource = {
   /** Where it connects, for error reports */

@@ -241,8 +241,9 @@ export class MotionStreamConnection {
 
   /**
    * What pose readouts show (joints, TCP pose): it holds the previous reading
-   * while the joints only jitter, see {@link readoutsEqual}. Kept alive, so it
-   * also holds for untracked reads, e.g. from requestAnimationFrame.
+   * while the joints only jitter (less than 0.0002 rad), and while the TCP and
+   * the coordinate system stay. Kept alive, so it also holds for untracked
+   * reads, e.g. from requestAnimationFrame.
    */
   get readoutState(): MotionStateReadout {
     return readoutOf(this.rapidlyChangingMotionState)

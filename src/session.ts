@@ -12,27 +12,25 @@ export {
   type JoggingStoreOptions,
   type JoggingStoreStorage,
 } from "./components/jogging/JoggingStore"
-// A pose or joints as typed and copied: "(x, y, z, rx, ry, rz)", "[j1, …]"
+// A pose or joints as copied: "(x, y, z, rx, ry, rz)", "[j1, …]"
 export {
   jointsToText,
-  parseJointsText,
-  parsePoseText,
   poseToText,
 } from "./components/robotControl/poseText"
 export type { ConnectionLogger } from "./lib/connectionLogger"
-export {
-  ControllerStateStream,
-  type ControllerStateStreamError,
-  type ControllerStateStreamOptions,
-  MOTION_DELTA_THRESHOLD,
-} from "./lib/ControllerStateStream"
-export {
-  type ControllerStateSource,
-  controllerStateWebsocket,
-} from "./lib/controllerStateSource"
+// What a session's live state reads (`session.state.stream`); the session
+// makes it
+export { ControllerStateStream } from "./lib/ControllerStateStream"
+export type { ControllerStateSource } from "./lib/controllerStateSource"
 export * from "./lib/JoggerConnection"
 export * from "./lib/MotionStreamConnection"
-export * from "./lib/motionStateUpdate"
+export {
+  jointValuesEqual,
+  type MotionStateReadout,
+  poseEqual,
+  tcpMotionEqual,
+  unwrapRotationVector,
+} from "./lib/motionStateUpdate"
 export type { NovaConnection } from "./lib/novaConnection"
 export { planErrorTranslationKey } from "./lib/planErrorTranslation"
 // Pose math with plain numbers
@@ -84,4 +82,11 @@ export {
   type RobotPose,
   trajectoryTargetOf,
 } from "./lib/robotSession/robotPose"
-export * from "./lib/TrajectoryExecutionStore"
+// Move to of a session (`session.trajectory`); the session makes it
+export {
+  type PlannedTrajectory,
+  type PlanTrajectoryResult,
+  TrajectoryExecutionStore,
+  type TrajectoryState,
+  type TrajectoryTarget,
+} from "./lib/TrajectoryExecutionStore"

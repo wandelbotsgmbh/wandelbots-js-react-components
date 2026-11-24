@@ -58,6 +58,7 @@ export class RobotActivation {
   /** Ends the wait of the pending mode change */
   private endPending: (() => void) | undefined
 
+  /** @internal The session makes it, see RobotSession */
   constructor(
     private readonly nova: Nova,
     private readonly ids: { cellId: string; controllerId: string },
