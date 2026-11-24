@@ -44,6 +44,7 @@
   "SafetyBar.ActivationToggle.Deactivating.bt": "Deactivating",
   "SafetyBar.ControllerType.Physical.lb": "Physical",
   "SafetyBar.ControllerType.Virtual.lb": "Virtual",
+  "SafetyBar.ControllerType.ti": "Controller type",
   "SafetyBar.MotionGroup.Physical.Explanation.lb": "<code>{{motionGroupId}}</code> is a physical robot controller. <strong>Safety precautions</strong> are active for the movement of this robot.",
   "SafetyBar.MotionGroup.Virtual.Explanation.lb": "<1>{{motionGroupId}}</1> is a virtual robot controller with no physical counterpart. It can be freely manipulated without safety precautions.",
   "SafetyBar.OperationMode.Auto.Explanation.lb": "Automatic operation mode active. Automated movement without manual confirmation enabled.",

@@ -415,6 +415,7 @@ Safety components for production environments.
 
 - Real-time safety monitoring
 - Emergency stop integration
+- Each indicator has a stable `data-testid` (`safety-state-indicator`, `operation-mode-indicator`, `controller-type-indicator`) and, as an image, a name that says its state, e.g. "Safety state: E-Stop", "Operation mode: Manual" or "Controller type: Virtual": the compact bar shows only icons, with their texts in a popover on hover
 
 ### App Frame
 
