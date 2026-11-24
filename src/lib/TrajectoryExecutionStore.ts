@@ -99,7 +99,7 @@ export type PlannedTrajectory = {
 /**
  * - "idle": no trajectory
  * - "planning": a trajectory is planned or waits for NOVA to accept it
- * - "planned": NOVA accepted the trajectory, `start` moves the robot
+ * - "planned": NOVA accepted the trajectory, `hold` or `start` moves the robot
  * - "moving": the robot moves along the trajectory
  * - "stopping": the robot decelerates after a pause
  */
@@ -490,6 +490,10 @@ export class TrajectoryExecutionStore {
       throw new Error("Cannot start trajectory: robot is already running")
     }
 
+    // One start is on its way already. A second one would also take back a
+    // release that waits for the first.
+    if (this.motion === "starting") return
+
     this.sendStart()
   }
 
@@ -692,6 +696,12 @@ export class TrajectoryExecutionStore {
         break
       case "MOTION_ERROR":
         this.lastError = data.message
+        // NOVA's answer to a start it did not take: none is on its way any
+        // more. A move that it had confirmed stays one to pause, which a
+        // release still does.
+        if (this.motion === "starting") {
+          this.motion = null
+        }
         this.reset()
         break
     }

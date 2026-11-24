@@ -1240,6 +1240,51 @@ describe("TrajectoryExecutionStore hold to move", () => {
     expect(sent("PauseMovementRequest")).toBe(1)
   })
 
+  test("a start that NOVA answers with an error is no longer on its way: the release ends, and the next trajectory can be held", async () => {
+    const { store, emit, sent } = await planned()
+    store.hold()
+    let released = false
+    void store.release().then(() => {
+      released = true
+    })
+
+    emit("MOTION_ERROR", { message: "The robot is not at the start" })
+    await flushPromises()
+    expect(released).toBe(true)
+
+    await store.planTrajectory(cartesianTarget("world"))
+    emit("INITIALIZE_RECEIVED")
+    expect(store.hold()).toBe(true)
+    expect(sent("StartMovementRequest")).toBe(2)
+  })
+
+  // The error drops the plan, but only NOVA's word that the trajectory
+  // ended says that nothing moves
+  test("a release still pauses a move that NOVA confirmed and then reported an error for", async () => {
+    const { store, emit, sent } = await planned()
+    store.hold()
+    emit("START_RECEIVED")
+    emit("MOTION_ERROR", { message: "Collision detected" })
+    expect(store.trajectoryState).toBe("idle")
+
+    await store.release()
+
+    expect(sent("PauseMovementRequest")).toBe(1)
+    expect(store.trajectoryState).toBe("idle")
+  })
+
+  test("start sends no second start while the first is unconfirmed, and leaves a release of it standing", async () => {
+    const { store, emit, sent } = await planned()
+    store.hold()
+    void store.release()
+
+    store.start()
+    expect(sent("StartMovementRequest")).toBe(1)
+
+    emit("START_RECEIVED")
+    expect(sent("PauseMovementRequest")).toBe(1)
+  })
+
   test("a release that waits for the start still pauses when the plan was reset meanwhile", async () => {
     const { store, emit, sent } = await planned()
     store.hold()
