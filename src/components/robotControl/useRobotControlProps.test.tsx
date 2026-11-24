@@ -391,6 +391,58 @@ describe("useRobotControlProps", () => {
     expect(result.current.jogDisabled).toBe(true)
   })
 
+  // The app's own lock stays the app's: `disabled` is what the app gave
+  it("turns jogging off while the robot may not move: not activated, activating, stopped by its safety", async () => {
+    const harness = makeHarness()
+    const session = await harness.load().ready
+    onTestFinished(() => session.dispose())
+    const { result, rerender } = renderHook(() => useRobotControlProps(session))
+    const expectJogging = (on: boolean) => {
+      rerender()
+      expect(result.current.jogDisabled).toBe(!on)
+      expect(session.jogging.isLocked).toBe(!on)
+      expect(result.current.disabled).toBe(false)
+    }
+
+    // Not activated: the controller monitors the robot
+    expect(session.activation.state).toBe("inactive")
+    expectJogging(false)
+
+    // Activating: NOVA was asked, the controller is not in control mode yet
+    await act(async () => {
+      await session.activation.activate()
+    })
+    expect(session.activation.state).toBe("activating")
+    expectJogging(false)
+
+    act(() => harness.source.send(controllerState({ mode: "MODE_CONTROL" })))
+    expect(session.activation.state).toBe("active")
+    expectJogging(true)
+
+    act(() =>
+      harness.source.send(
+        controllerState({
+          mode: "MODE_CONTROL",
+          safety_state: "SAFETY_STATE_STOP",
+        }),
+      ),
+    )
+    expectJogging(false)
+  })
+
+  // The session outlives the panel: another UI jogs with its store
+  it("leaves the session's jogging unlocked when the panel goes away", async () => {
+    const session = await loadSession()
+    const { unmount } = renderHook(() =>
+      useRobotControlProps(session, { disabled: true }),
+    )
+    expect(session.jogging.isLocked).toBe(true)
+
+    unmount()
+
+    expect(session.jogging.isLocked).toBe(false)
+  })
+
   it("reports a failed TCP change to the session's onError", async () => {
     const onError = vi.fn()
     const session = await loadSession({ onError })

@@ -102,6 +102,12 @@ function useJointValues(store: JoggingStore): number[] {
  * The tab, jog mode, step size and velocities are the jogging store's, so
  * the session's storage keeps them.
  *
+ * Jogging is off (`jogDisabled`) while the robot may not move
+ * (`session.safety.canBeMoved`): not activated or still activating, stopped
+ * by its safety, or without its live state. Also while a trajectory moves
+ * the robot and while another client jogs it. `disabled` is only the app's
+ * lock.
+ *
  * `<RobotControl />` is the panel with these props. An app that wants to
  * change a part takes the props and overrides it:
  *
@@ -127,10 +133,16 @@ export function useRobotControlProps(
   const trajectoryBusy =
     trajectory.trajectoryState === "moving" ||
     trajectory.trajectoryState === "stopping"
-  const locked = disabled || trajectoryBusy
+  // Jogging is off while the robot may not move: not activated or still
+  // activating, stopped by its safety, without its live state. The store
+  // would refuse the jog; the panel shows it.
+  const moveable = session.safety.canBeMoved
+  const locked = disabled || trajectoryBusy || !moveable
   useEffect(() => {
-    if (locked) store.lock("external")
-    else store.unlock("external")
+    if (!locked) return
+    store.lock("external")
+    // Also when the panel goes away: the session and its store live on
+    return () => store.unlock("external")
   }, [store, locked])
 
   // The tab, jog mode and step size are the store's: it jogs by them and
@@ -280,8 +292,9 @@ export function useRobotControlProps(
 
   return {
     disabled,
-    // Jogging waits for a trajectory, and for another client's jogging
-    jogDisabled: trajectoryBusy || store.blocked,
+    // Jogging waits for a trajectory, for another client's jogging, and for
+    // a robot that may move
+    jogDisabled: trajectoryBusy || store.blocked || !moveable,
     // A linear axis or a turntable jogs its joints only
     cartesian: store.canJogCartesian,
     tab,
