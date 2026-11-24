@@ -171,7 +171,7 @@ export function useRobotControlProps(
       : store.blocked
         ? "blocked"
         : null
-  const jogDisabledReason = {
+  const jogOffText = {
     // A robot that is activating or deactivating has no reason of its own
     // (see RobotSession): it is not activated yet, or no longer
     robot: () =>
@@ -326,7 +326,7 @@ export function useRobotControlProps(
     // Jogging waits for a trajectory, for another client's jogging, and for
     // a robot that may move
     jogDisabled: jogOff !== null,
-    jogDisabledReason: jogOff ? jogDisabledReason[jogOff]() : undefined,
+    jogDisabledReason: jogOff ? jogOffText[jogOff]() : undefined,
     // The store stays blocked until it is told to try again: the next jog
     // asks NOVA for the jogging connection anew
     onJogRetry: jogOff === "blocked" ? () => store.unblock() : undefined,
