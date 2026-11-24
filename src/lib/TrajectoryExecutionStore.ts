@@ -162,8 +162,12 @@ export class TrajectoryExecutionStore {
    * still open: it may hold the trajectory, whatever became of the plan here
    */
   private armed = false
-  /** Where the planned trajectory goes, as `planTrajectory` got it */
-  private plannedTarget: TrajectoryTarget | null = null
+  /**
+   * What the planned trajectory was planned for: where it goes, as
+   * `planTrajectory` got it, and its velocity limit
+   */
+  private plannedFor: { target: TrajectoryTarget; velocity: number } | null =
+    null
   /**
    * What NOVA was asked to do on the execution websocket, whatever became of
    * the plan here: a start is on its way ("starting"), NOVA confirmed it
@@ -177,17 +181,13 @@ export class TrajectoryExecutionStore {
 
   constructor(private readonly options: TrajectoryExecutionStoreOptions) {
     this.logger = options.logger ?? console
-    makeAutoObservable<
-      this,
-      "socket" | "disposers" | "logger" | "options" | "plannedTarget"
-    >(
+    makeAutoObservable<this, "socket" | "disposers" | "logger" | "options">(
       this,
       {
         socket: false,
         disposers: false,
         logger: false,
         options: false,
-        plannedTarget: false,
       },
       { autoBind: true },
     )
@@ -228,6 +228,23 @@ export class TrajectoryExecutionStore {
    */
   get holdsExecutionSession() {
     return this.armed
+  }
+
+  /**
+   * Whether the planned trajectory was planned with another velocity than
+   * the jogging store has now: the velocity is part of the trajectory, and
+   * the store's slider stays live. `hold` does not start such a trajectory;
+   * plan the target again to move at the velocity that shows.
+   */
+  get isPlanOutdated() {
+    return (
+      this.plannedFor !== null &&
+      // Not `!==`: a velocity that is no number would be outdated for ever
+      !Object.is(
+        this.plannedFor.velocity,
+        this.velocityFor(this.plannedFor.target),
+      )
+    )
   }
 
   /** The execution state that the motion stream reports, e.g. "RUNNING" */
@@ -273,6 +290,9 @@ export class TrajectoryExecutionStore {
       ...(tcp_offset && { tcp_offset }),
     }
 
+    // The velocity that shows now is planned into the trajectory
+    const velocity = this.velocityFor(target)
+
     let motionCommand: MotionCommand
     if (target.type === "cartesian") {
       let targetPose = target.pose
@@ -302,7 +322,7 @@ export class TrajectoryExecutionStore {
 
       motionCommand = {
         limits_override: {
-          tcp_velocity_limit: this.joggingStore.translationVelocityMmPerSec,
+          tcp_velocity_limit: velocity,
         },
         path: {
           target_pose: targetPose,
@@ -312,9 +332,7 @@ export class TrajectoryExecutionStore {
     } else {
       motionCommand = {
         limits_override: {
-          joint_velocity_limits: Array(currentJoints.length).fill(
-            this.joggingStore.rotationVelocityRadsPerSec,
-          ),
+          joint_velocity_limits: Array(currentJoints.length).fill(velocity),
         },
         path: {
           target_joint_position: target.joints,
@@ -382,7 +400,7 @@ export class TrajectoryExecutionStore {
     runInAction(() => {
       this.armed = true
       this.plannedTrajectory = { startJoints, endJoints }
-      this.plannedTarget = copyOfTarget(target)
+      this.plannedFor = { target: copyOfTarget(target), velocity }
     })
 
     return { ok: true }
@@ -391,8 +409,11 @@ export class TrajectoryExecutionStore {
   /**
    * The Move to button is held: starts the motion along the planned
    * trajectory, or goes on with a paused one. Returns whether the robot moves
-   * for this hold: not without a trajectory that NOVA accepted, and not
-   * while the move before it still stops. Safe to repeat while held.
+   * for this hold: not without a trajectory that NOVA accepted, not while
+   * the move before it still stops, and not along a trajectory that was
+   * planned with another velocity than now
+   * ({@link TrajectoryExecutionStore.isPlanOutdated}). Safe to repeat while
+   * held.
    * {@link TrajectoryExecutionStore.release} ends the hold.
    *
    * `target` is where the button says it moves to, as `planTrajectory` got
@@ -404,7 +425,7 @@ export class TrajectoryExecutionStore {
     if (!this.plannedTrajectory) return false
     if (
       target &&
-      !(this.plannedTarget && sameTarget(target, this.plannedTarget))
+      !(this.plannedFor && sameTarget(target, this.plannedFor.target))
     ) {
       return false
     }
@@ -416,7 +437,9 @@ export class TrajectoryExecutionStore {
     if (
       this.trajectoryState !== "planned" ||
       this.motion === "pausing" ||
-      this.executionState === "RUNNING"
+      this.executionState === "RUNNING" ||
+      // A move starts at the velocity that shows, or not at all
+      this.isPlanOutdated
     ) {
       return false
     }
@@ -521,7 +544,7 @@ export class TrajectoryExecutionStore {
    */
   reset() {
     this.plannedTrajectory = null
-    this.plannedTarget = null
+    this.plannedFor = null
     this.trajectoryState = "idle"
   }
 
@@ -549,6 +572,17 @@ export class TrajectoryExecutionStore {
       dispose()
     }
     this.closeSocket()
+  }
+
+  /**
+   * The velocity limit of a trajectory to a target: the jogging store's
+   * translation velocity (mm/s) for a pose, its rotation velocity (rad/s)
+   * for joints
+   */
+  private velocityFor(target: TrajectoryTarget) {
+    return target.type === "cartesian"
+      ? this.joggingStore.translationVelocityMmPerSec
+      : this.joggingStore.rotationVelocityRadsPerSec
   }
 
   /** Ends continuous jogging, unless the app has its own way */

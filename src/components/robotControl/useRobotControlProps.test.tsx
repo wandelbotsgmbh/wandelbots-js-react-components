@@ -426,6 +426,38 @@ describe("useRobotControlProps", () => {
     expect(sent("StartMovementRequest")).toBe(1)
   })
 
+  it("moves at the velocity that shows when the button is held, not at the one the pose was planned with", async () => {
+    const { session, execution, moveTo, sent, plan } = await loadMoveTo()
+    const { result, rerender } = renderHook(() => useRobotControlProps(session))
+    /** The TCP velocity limit of the last planned trajectory */
+    const plannedVelocity = () =>
+      execution.planTrajectory.mock.calls.at(-1)?.[1].motion_commands[0]
+        ?.limits_override?.tcp_velocity_limit
+    const fast = session.jogging.maxTranslationVelocityMmPerSec
+    const slow = session.jogging.minTranslationVelocityMmPerSec
+    expect(fast).toBeGreaterThan(slow)
+
+    act(() => result.current.onVelocityChange("translate", fast))
+    await plan(TARGET)
+    expect(plannedVelocity()).toBe(fast)
+
+    // The slider of the Move to tab goes down, then the button is held
+    act(() => result.current.onVelocityChange("translate", slow))
+    rerender()
+    expect(result.current.velocity.translate.value).toBe(slow)
+    act(() => moveTo().onMoveStart(TARGET))
+    // Not along the trajectory that was planned for the old velocity
+    expect(sent("StartMovementRequest")).toBe(0)
+
+    // The pose is planned again with the velocity that shows
+    await act(flush)
+    expect(plannedVelocity()).toBe(slow)
+    expect(moveTo().state).toBe("planning")
+    act(() => execution.emit("INITIALIZE_RECEIVED"))
+    act(() => moveTo().onMoveStart(TARGET))
+    expect(sent("StartMovementRequest")).toBe(1)
+  })
+
   it("starts nothing when the button is held for another pose than the planned one", async () => {
     const { moveTo, sent, plan } = await loadMoveTo()
     await plan(TARGET)

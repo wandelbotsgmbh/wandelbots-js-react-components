@@ -39,6 +39,7 @@ function makeFakeRobot() {
         release,
         trajectoryState: "idle" as TrajectoryExecutionStore["trajectoryState"],
         executionState: undefined as TrajectoryExecutionStore["executionState"],
+        isPlanOutdated: false,
       },
       state: {
         jointPose: [0, 0.5, 1, 1.5],
@@ -601,6 +602,92 @@ describe("RobotTargetPose", () => {
     expect(planTrajectory).toHaveBeenCalledTimes(1)
     expect(store.staged).toBeNull()
     expect(stopAndReset).toHaveBeenCalledTimes(1)
+  })
+
+  // A move runs at the velocity that shows when it starts. The trajectory
+  // carries the velocity it was planned with: it is outdated once the
+  // jogging store has another one.
+  describe("when the velocity changes", () => {
+    /** A staged pose whose trajectory NOVA accepted; a plan is up to date again */
+    async function staged() {
+      const made = makeStore()
+      made.planTrajectory.mockImplementation(async () => {
+        runInAction(() => {
+          made.robot.trajectory.isPlanOutdated = false
+        })
+        return { ok: true }
+      })
+      await made.store.plan(cartesianPose([1, 2, 3]))
+      runInAction(() => {
+        made.robot.trajectory.trajectoryState = "planned"
+      })
+      const outdate = () =>
+        runInAction(() => {
+          made.robot.trajectory.isPlanOutdated = true
+        })
+      return { ...made, outdate }
+    }
+
+    test("plans the staged pose again", async () => {
+      const { store, planTrajectory, outdate } = await staged()
+
+      outdate()
+      expect(store.confirming).toBe(true)
+      await vi.waitFor(() => expect(store.confirming).toBe(false))
+
+      expect(planTrajectory).toHaveBeenCalledTimes(2)
+      expect(planTrajectory).toHaveBeenLastCalledWith({
+        type: "cartesian",
+        pose: { position: [1, 2, 3], orientation: [0, 0, 0] },
+        coordinateSystemId: "world",
+      })
+      expect(store.stagedPose).toEqual(cartesianPose([1, 2, 3]))
+    })
+
+    test("plans it again once more when the velocity changed while it was planned", async () => {
+      const { store, robot, planTrajectory, outdate } = await staged()
+      // The velocity moves on during the first of the plans
+      planTrajectory.mockImplementationOnce(async () => ({ ok: true }))
+
+      outdate()
+      await vi.waitFor(() => expect(planTrajectory).toHaveBeenCalledTimes(3))
+      await vi.waitFor(() => expect(store.confirming).toBe(false))
+
+      expect(robot.trajectory.isPlanOutdated).toBe(false)
+      expect(planTrajectory).toHaveBeenCalledTimes(3)
+    })
+
+    test("plans nothing while the robot moves along the trajectory, and plans the rest once it stopped", async () => {
+      const { store, robot, planTrajectory, outdate } = await staged()
+      runInAction(() => {
+        robot.trajectory.trajectoryState = "moving"
+      })
+
+      outdate()
+      expect(store.confirming).toBe(false)
+      runInAction(() => {
+        robot.trajectory.trajectoryState = "stopping"
+      })
+      expect(store.confirming).toBe(false)
+
+      runInAction(() => {
+        robot.trajectory.trajectoryState = "planned"
+      })
+      expect(store.confirming).toBe(true)
+      await vi.waitFor(() => expect(store.confirming).toBe(false))
+      expect(planTrajectory).toHaveBeenCalledTimes(2)
+    })
+
+    test("plans nothing for a trajectory that is not a staged pose's", async () => {
+      const { store, planTrajectory, outdate } = await staged()
+      // RobotPad: a saved pose was selected and planned
+      store.clear()
+
+      outdate()
+
+      expect(store.confirming).toBe(false)
+      expect(planTrajectory).toHaveBeenCalledTimes(1)
+    })
   })
 
   describe("holding the Move to button", () => {

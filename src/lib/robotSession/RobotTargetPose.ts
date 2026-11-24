@@ -50,6 +50,7 @@ type TargetPoseParts = {
     | "release"
     | "trajectoryState"
     | "executionState"
+    | "isPlanOutdated"
   >
   /** Why the robot may not move now, or null: a typed pose plans nothing then */
   notMoveableReason: () => unknown
@@ -148,6 +149,26 @@ export class RobotTargetPose {
 
           if (arrived) {
             void this.resetToLive()
+          }
+        },
+      ),
+    )
+
+    // A move runs at the velocity that shows when it starts. The trajectory
+    // carries the velocity it was planned with, and does not start once the
+    // jogging store has another one: the staged pose is planned again then.
+    // Not while the robot moves along it: that move keeps its velocity, and
+    // what is left of it is planned once the robot stopped.
+    this.disposers.push(
+      reaction(
+        () =>
+          !this.confirming &&
+          this.robot.trajectory.trajectoryState === "planned" &&
+          this.robot.trajectory.isPlanOutdated,
+        (outdated) => {
+          // Only a staged pose's trajectory: an app plans its own again
+          if (outdated && this.stagedPose) {
+            void this.plan(this.stagedPose)
           }
         },
       ),

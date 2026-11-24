@@ -1032,6 +1032,73 @@ describe("TrajectoryExecutionStore hold to move", () => {
     })
   })
 
+  // The velocity is planned into the trajectory, and the slider stays live
+  describe("at the velocity of the jogging store", () => {
+    test("a trajectory is outdated once the velocity is another than it was planned with, and hold moves nothing along it", async () => {
+      const { store, joggingStore, sent } = await planned()
+      expect(store.isPlanOutdated).toBe(false)
+
+      joggingStore.translationVelocityMmPerSec = 10
+      expect(store.isPlanOutdated).toBe(true)
+      expect(store.hold()).toBe(false)
+      expect(sent("StartMovementRequest")).toBe(0)
+
+      // Back at the planned velocity, it is the trajectory to move along
+      joggingStore.translationVelocityMmPerSec = 50
+      expect(store.isPlanOutdated).toBe(false)
+      expect(store.hold()).toBe(true)
+    })
+
+    test("a trajectory to a pose is planned with the translation velocity, one to joints with the rotation velocity", async () => {
+      const toPose = await planned()
+      toPose.joggingStore.rotationVelocityRadsPerSec = 0.5
+      expect(toPose.store.isPlanOutdated).toBe(false)
+
+      const toJoints = makeStore()
+      await toJoints.store.planTrajectory({ type: "joint", joints: [0.1] })
+      toJoints.emit("INITIALIZE_RECEIVED")
+      toJoints.joggingStore.translationVelocityMmPerSec = 10
+      expect(toJoints.store.isPlanOutdated).toBe(false)
+      toJoints.joggingStore.rotationVelocityRadsPerSec = 0.5
+      expect(toJoints.store.isPlanOutdated).toBe(true)
+      expect(toJoints.store.hold()).toBe(false)
+    })
+
+    test("a move that runs keeps its velocity: it stays held, and is outdated for the next hold", async () => {
+      const { store, emit, joggingStore, sent } = await planned()
+      store.hold()
+      emit("START_RECEIVED")
+
+      joggingStore.translationVelocityMmPerSec = 10
+      expect(store.hold()).toBe(true)
+      await store.release()
+
+      expect(store.trajectoryState).toBe("planned")
+      expect(store.hold()).toBe(false)
+      expect(sent("StartMovementRequest")).toBe(1)
+    })
+
+    test("a velocity that is no number does not make every trajectory outdated", async () => {
+      const { store, emit, joggingStore } = makeStore()
+      joggingStore.translationVelocityMmPerSec = Number.NaN
+      await store.planTrajectory(cartesianTarget("world"))
+      emit("INITIALIZE_RECEIVED")
+
+      // Outdated for ever, it would be planned again for ever
+      expect(store.isPlanOutdated).toBe(false)
+    })
+
+    test("nothing is outdated without a trajectory, or with one that was dropped", async () => {
+      const { store, joggingStore } = await planned()
+      joggingStore.translationVelocityMmPerSec = 10
+
+      store.reset()
+
+      expect(store.isPlanOutdated).toBe(false)
+      expect(makeStore().store.isPlanOutdated).toBe(false)
+    })
+  })
+
   test("holding again while held starts nothing more", async () => {
     const { store, emit, sent } = await planned()
 
