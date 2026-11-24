@@ -3,7 +3,7 @@ import type {
   MotionGroupState,
   RobotControllerState,
 } from "@wandelbots/nova-js/v2"
-import isEqual from "lodash-es/isEqual.js"
+import { isEqual } from "lodash-es"
 import { computed, makeAutoObservable } from "mobx"
 import type { ControllerStateSource } from "./controllerStateSource"
 import {

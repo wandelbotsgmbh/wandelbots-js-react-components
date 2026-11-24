@@ -4,7 +4,7 @@ import type {
   Pose,
   RobotTcp,
 } from "@wandelbots/nova-js/v2"
-import keyBy from "lodash-es/keyBy.js"
+import { keyBy } from "lodash-es"
 import {
   composePoses,
   invertPose,

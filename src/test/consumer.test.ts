@@ -377,6 +377,35 @@ describe("the library without React: /session", () => {
     })
   })
 
+  // Run, not only loaded: a helper of another package that a build takes
+  // the wrong way (a default import of lodash-es in the CJS build) is there
+  // by name and throws when it is called
+  it.each([
+    { format: "CJS", load: "require(process.argv[1])", flags: [] },
+    {
+      format: "ESM",
+      load: "await import(process.argv[1])",
+      flags: ["--input-type=module"],
+    },
+  ])("its $format build computes a pose in Node", ({ load, flags }) => {
+    const output = execFileSync(
+      process.execPath,
+      [
+        ...flags,
+        "-e",
+        `const session = ${load}; ` +
+          "const world = { coordinate_system: 'world', name: 'World', " +
+          "reference_coordinate_system: '', position: [0, 0, 0], " +
+          "orientation: [0, 0, 0], orientation_type: 'ROTATION_VECTOR' }; " +
+          "const found = session.resolveCoordinateSystemInWorld('world', [world]); " +
+          "console.log(JSON.stringify(found.coordinate_system))",
+        `${pkgName}/session`,
+      ],
+      { cwd: sandbox, encoding: "utf8" },
+    ).trim()
+    expect(JSON.parse(output)).toBe("world")
+  })
+
   // /core exports all of /session, and one copy of it: a session of /session
   // is a session for the parts of /core
   it("/core exports everything of /session, the same objects", async () => {

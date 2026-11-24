@@ -7,9 +7,7 @@ import {
   type Pose,
   type RobotTcp,
 } from "@wandelbots/nova-js/v2"
-import { countBy } from "lodash-es"
-import keyBy from "lodash-es/keyBy.js"
-import uniqueId from "lodash-es/uniqueId.js"
+import { countBy, keyBy, uniqueId } from "lodash-es"
 import {
   autorun,
   makeAutoObservable,
