@@ -44,6 +44,7 @@ export function CartesianJogTab({
   onJogStart,
   onJogStop,
   increments,
+  jogDisabledReason,
   gizmoOrientation,
   gizmoFrameQuaternion,
 }: CartesianJogTabProps) {
@@ -149,6 +150,7 @@ export function CartesianJogTab({
             activeHandle: mode === "increment" ? increments?.running : null,
             disabled,
           }}
+          disabledReason={jogDisabledReason}
           gizmoOrientation={gizmoOrientation}
           gizmoFrameQuaternion={gizmoFrameQuaternion}
         />

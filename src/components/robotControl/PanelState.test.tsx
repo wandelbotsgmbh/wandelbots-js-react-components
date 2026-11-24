@@ -152,6 +152,44 @@ describe("RobotControlPanel's state", () => {
     await waitFor(() => expect(onMoveStart).toHaveBeenCalledTimes(1))
   })
 
+  it("says why jogging is off in place of the hint on Translate and Rotate, and under the joints on Joint", () => {
+    const reason = "The robot must be activated first"
+    const hint = "Hold a button to jog · Release to stop"
+    const { rerender } = setup({
+      jogDisabled: true,
+      jogDisabledReason: reason,
+      joints: {
+        joints: [{ value: 0, min: -2, max: 2 }],
+        velocity: { value: 0.5, min: 0.01, max: 1 },
+        onVelocityChange: vi.fn(),
+        onJogStart: vi.fn(),
+        onJogStop: vi.fn(),
+      },
+      moveTo: {
+        getCurrentPose: () => null,
+        onTargetChange: vi.fn(),
+        state: "idle",
+        onMoveStart: vi.fn(),
+        onMoveStop: vi.fn(),
+      },
+    })
+
+    for (const name of ["Translate", "Rotate", "Joint"]) {
+      fireEvent.click(tab(name))
+      expect(screen.getByText(reason)).toBeVisible()
+      expect(screen.queryByText(hint)).toBeNull()
+    }
+    // Move to says itself why it cannot move, when it has a target
+    fireEvent.click(tab("Move to"))
+    expect(screen.queryByText(reason)).toBeNull()
+
+    // Jogging is on again: the hint of how to jog is back
+    rerender({ jogDisabled: false, jogDisabledReason: undefined })
+    fireEvent.click(tab("Translate"))
+    expect(screen.getByText(hint)).toBeVisible()
+    expect(screen.queryByText(reason)).toBeNull()
+  })
+
   it("goes on moving to a pose when jogging becomes disabled meanwhile", async () => {
     const onMoveStart = vi.fn()
     const onMoveStop = vi.fn()

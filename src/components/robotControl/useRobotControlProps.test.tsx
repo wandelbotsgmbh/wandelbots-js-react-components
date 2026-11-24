@@ -2,6 +2,7 @@ import { act, renderHook } from "@testing-library/react"
 import { degreesToRadians } from "@wandelbots/nova-js"
 import { observable, runInAction } from "mobx"
 import { describe, expect, it, onTestFinished, vi } from "vitest"
+import { i18n } from "../../i18n/config"
 import {
   controllerState,
   fakeExecution,
@@ -651,6 +652,84 @@ describe("useRobotControlProps", () => {
       ),
     )
     expectJogging(false)
+  })
+
+  // The jog tabs show it where their hint is; Move to has its own text
+  it("says why jogging is off: the robot's reason, or a trajectory that moves it, in English and German", async () => {
+    const harness = makeHarness()
+    const session = await harness.load().ready
+    onTestFinished(() => session.dispose())
+    const fake = withFakeMoveTo(session)
+    const { result, rerender } = renderHook(
+      ({ disabled }) => useRobotControlProps(fake.robot, { disabled }),
+      { initialProps: { disabled: false } },
+    )
+    const reason = () => {
+      rerender({ disabled: false })
+      return result.current.jogDisabledReason
+    }
+
+    expect(reason()).toBe("The robot must be activated first")
+
+    // Activating: the controller is not in control mode yet
+    await act(async () => {
+      await session.activation.activate()
+    })
+    expect(session.activation.state).toBe("activating")
+    expect(reason()).toBe("The robot must be activated first")
+
+    act(() => harness.source.send(controllerState({ mode: "MODE_CONTROL" })))
+    expect(reason()).toBeUndefined()
+
+    act(() =>
+      runInAction(() => {
+        fake.trajectory.trajectoryState = "moving"
+      }),
+    )
+    expect(reason()).toBe("The robot is moving to a pose")
+    act(() =>
+      runInAction(() => {
+        fake.trajectory.trajectoryState = "idle"
+      }),
+    )
+
+    act(() =>
+      harness.source.send(
+        controllerState({
+          mode: "MODE_CONTROL",
+          safety_state: "SAFETY_STATE_STOP",
+        }),
+      ),
+    )
+    expect(reason()).toBe(
+      "The robot is in a non-moveable safety state: SAFETY_STATE_STOP",
+    )
+
+    await act(() => i18n.changeLanguage("de"))
+    onTestFinished(async () => {
+      await i18n.changeLanguage("en")
+    })
+    expect(reason()).toBe(
+      "Der Roboter befindet sich in einem nicht beweglichen Sicherheitszustand: SAFETY_STATE_STOP",
+    )
+    act(() => {
+      harness.source.send(controllerState({ mode: "MODE_CONTROL" }))
+      runInAction(() => {
+        fake.trajectory.trajectoryState = "stopping"
+      })
+    })
+    expect(reason()).toBe("Der Roboter bewegt sich zu einer Pose")
+  })
+
+  // The app knows why it locks the panel, the hook does not
+  it("gives no reason for the app's own lock", async () => {
+    const session = await loadSession()
+
+    const { result } = renderHook(() =>
+      useRobotControlProps(session, { disabled: true }),
+    )
+
+    expect(result.current.jogDisabledReason).toBeUndefined()
   })
 
   // The session outlives the panel: another UI jogs with its store

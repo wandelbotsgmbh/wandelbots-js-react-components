@@ -136,5 +136,6 @@
   "RobotControl.MoveTo.NotMoveable.Deactivated.lb": "The robot must be activated first",
   "RobotControl.MoveTo.NotMoveable.Disconnected.lb": "No connection to the robot",
   "RobotControl.MoveTo.NotMoveable.OperationMode.lb": "The robot is in a non-moveable operation mode: {{value}}",
-  "RobotControl.MoveTo.NotMoveable.SafetyState.lb": "The robot is in a non-moveable safety state: {{value}}"
+  "RobotControl.MoveTo.NotMoveable.SafetyState.lb": "The robot is in a non-moveable safety state: {{value}}",
+  "RobotControl.JogDisabled.Moving.lb": "The robot is moving to a pose"
 }

@@ -176,6 +176,14 @@ export type RobotControlPanelProps = {
    */
   jogDisabled?: boolean
   /**
+   * Why jogging is off, in the user's language, e.g. "The robot must be
+   * activated first". The Translate and Rotate tabs show it in place of
+   * their hint of how to jog, the Joint tab under its joints. The panel
+   * shows it whenever it is given: give it while `jogDisabled` (or
+   * `disabled`) is set for that reason.
+   */
+  jogDisabledReason?: string
+  /**
    * The robot can jog its TCP along axes: the Translate and Rotate tabs.
    * False for a motion group without an inverse solver, e.g. a linear axis
    * or a turntable (see `JoggingStore.canJogCartesian`). Defaults to true.
@@ -394,7 +402,11 @@ export const RobotControlPanel = externalizeComponent(
 
         <Stack sx={{ flexGrow: 1, overflowY: "auto", overflowX: "hidden" }}>
           {tab === "joint" && joints ? (
-            <JointJogTab joints={joints} disabled={disabled || jogDisabled} />
+            <JointJogTab
+              joints={joints}
+              disabled={disabled || jogDisabled}
+              disabledReason={props.jogDisabledReason}
+            />
           ) : tab === "moveTo" && moveTo ? (
             <MoveToTab
               moveTo={moveTo}

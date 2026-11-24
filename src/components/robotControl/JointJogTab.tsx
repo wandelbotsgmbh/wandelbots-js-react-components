@@ -3,6 +3,7 @@ import Stack from "@mui/material/Stack"
 import { useRef, useState } from "react"
 import type { JogDirection } from "../jogging/jogHandle"
 import { JoggingJointSlider } from "../jogging/joint/JoggingJointSlider"
+import { JogDisabledReason } from "./JogDisabledReason"
 import type { RobotControlJoints } from "./RobotControlPanel"
 import { Section } from "./Section"
 import { VelocityRow } from "./VelocityRow"
@@ -11,14 +12,17 @@ import { VelocityRow } from "./VelocityRow"
  * The Joint tab: a slider per joint across its limits, and the velocity.
  * One joint jogs at a time: the jogging joint is kept in a ref, which
  * changes at once, so a second finger on another slider in the same frame
- * jogs nothing; the other sliders show as unavailable meanwhile.
+ * jogs nothing; the other sliders show as unavailable meanwhile. Under the
+ * sliders it says why jogging is off, when the app gives a reason.
  */
 export function JointJogTab({
   joints,
   disabled,
+  disabledReason,
 }: {
   joints: RobotControlJoints
   disabled: boolean
+  disabledReason?: string
 }) {
   const jogging = useRef<number | null>(null)
   const [active, setActive] = useState<number | null>(null)
@@ -59,6 +63,7 @@ export function JointJogTab({
             />
           ))}
         </Stack>
+        {disabledReason && <JogDisabledReason text={disabledReason} />}
       </Section>
       <Divider sx={{ marginX: "20px" }} />
       <Section>

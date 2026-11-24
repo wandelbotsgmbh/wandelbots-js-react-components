@@ -135,5 +135,6 @@
   "RobotControl.MoveTo.NotMoveable.Deactivated.lb": "Der Roboter ist deaktiviert.",
   "RobotControl.MoveTo.NotMoveable.Disconnected.lb": "Keine Verbindung zum Roboter",
   "RobotControl.MoveTo.NotMoveable.OperationMode.lb": "Der Roboter befindet sich in einem nicht beweglichen Betriebsmodus: {{value}}",
-  "RobotControl.MoveTo.NotMoveable.SafetyState.lb": "Der Roboter befindet sich in einem nicht beweglichen Sicherheitszustand: {{value}}"
+  "RobotControl.MoveTo.NotMoveable.SafetyState.lb": "Der Roboter befindet sich in einem nicht beweglichen Sicherheitszustand: {{value}}",
+  "RobotControl.JogDisabled.Moving.lb": "Der Roboter bewegt sich zu einer Pose"
 }

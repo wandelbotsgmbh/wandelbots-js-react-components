@@ -119,8 +119,9 @@ function useJointValues(store: JoggingStore): number[] {
  * Jogging is off (`jogDisabled`) while the robot may not move
  * (`session.safety.canBeMoved`): not activated or still activating, stopped
  * by its safety, or without its live state. Also while a trajectory moves
- * the robot and while another client jogs it. `disabled` is only the app's
- * lock.
+ * the robot and while another client jogs it. `jogDisabledReason` says
+ * which it is, in the library's words (English or German). `disabled` is
+ * only the app's lock, for which the hook has no reason to give.
  *
  * `<RobotControl />` is the panel with these props. An app that wants to
  * change a part takes the props and overrides it:
@@ -152,6 +153,17 @@ export function useRobotControlProps(
   // would refuse the jog; the panel shows it.
   const moveable = session.safety.canBeMoved
   const locked = disabled || trajectoryBusy || !moveable
+  // Why, for the jog tabs to say. A robot that is activating or deactivating
+  // has no reason of its own (see RobotSession): it is not activated yet, or
+  // no longer. The app's lock has no reason here: the app knows it.
+  const jogDisabledReason = !moveable
+    ? notMoveableText(
+        session.safety.notMoveableReason ?? { code: "deactivated" },
+        t,
+      )
+    : trajectoryBusy
+      ? t("RobotControl.JogDisabled.Moving.lb")
+      : undefined
   useEffect(() => {
     if (!locked) return
     store.lock("external")
@@ -295,6 +307,7 @@ export function useRobotControlProps(
     // Jogging waits for a trajectory, for another client's jogging, and for
     // a robot that may move
     jogDisabled: trajectoryBusy || store.blocked || !moveable,
+    jogDisabledReason,
     // A linear axis or a turntable jogs its joints only
     cartesian: store.canJogCartesian,
     tab,

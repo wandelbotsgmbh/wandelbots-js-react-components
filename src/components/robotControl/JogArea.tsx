@@ -11,6 +11,7 @@ import { JoggingGizmo } from "../jogging/gizmo/JoggingGizmo"
 import { JoggingButtons } from "../jogging/JoggingButtons"
 import type { JogControlsProps } from "../jogging/useJogControls"
 import { isWebGLAvailable } from "../utils/webglSupport"
+import { JogDisabledReason } from "./JogDisabledReason"
 import type { JogMode } from "./JogModeToggle"
 
 /** Which jog controls the jog area shows */
@@ -22,6 +23,8 @@ type JogAreaProps = {
   mode: JogMode
   /** The props of the gizmo or the buttons, whichever is shown */
   controls: JogControlsProps
+  /** Why jogging is off: shown in place of the hint of how to jog */
+  disabledReason?: string
   /**
    * Without it, there is no gizmo: the buttons, and no switch. Nor is there
    * one when the browser cannot draw it (no WebGL).
@@ -32,13 +35,15 @@ type JogAreaProps = {
 
 /**
  * Where the jog controls go: the gizmo or the buttons, a switch between the
- * two in the corner, and a hint saying how to jog with what is shown
+ * two in the corner, and a hint saying how to jog with what is shown, or
+ * why jogging is off
  */
 export function JogArea({
   view,
   onViewChange,
   mode,
   controls,
+  disabledReason,
   gizmoOrientation,
   gizmoFrameQuaternion,
 }: JogAreaProps) {
@@ -98,9 +103,13 @@ export function JogArea({
         <JoggingButtons {...controls} />
       )}
 
-      <Typography variant="body2" color="text.secondary" textAlign="center">
-        {hint}
-      </Typography>
+      {disabledReason ? (
+        <JogDisabledReason text={disabledReason} />
+      ) : (
+        <Typography variant="body2" color="text.secondary" textAlign="center">
+          {hint}
+        </Typography>
+      )}
     </Stack>
   )
 }
