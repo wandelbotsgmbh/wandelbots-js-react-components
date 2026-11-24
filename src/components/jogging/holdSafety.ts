@@ -1,10 +1,11 @@
 import { useEffect } from "react"
 
-// The safety rules of every hold-to-jog control: the gizmo and the buttons
-// (useHold) and the joint slider (useJointJogHold). A motion must run exactly
-// as long as the user holds the control, so each rule below ends a hold the
-// user can no longer end, or keeps a press from starting one it could not.
-// A fix belongs here, so that it reaches every control.
+// The safety rules of every hold-to-move control: the gizmo, the buttons and
+// Move to (useHold) and the joint slider (useJointJogHold). A motion must run
+// exactly as long as the user holds the control with a pointer, so each rule
+// below ends a hold the user can no longer end, or keeps a press from
+// starting one it could not. The keyboard starts no hold: a key only ends
+// one. A fix belongs here, so that it reaches every control.
 
 /**
  * Whether a pointer press may start a hold: the primary button, and no Ctrl.
@@ -19,20 +20,9 @@ export function startsPointerHold(event: {
 }
 
 /**
- * Whether a key press may start a hold: not an auto-repeat, and no Cmd.
- * macOS sends no key release for a key released while Cmd is held.
- */
-export function startsKeyHold(event: {
-  repeat: boolean
-  metaKey: boolean
-}): boolean {
-  return !event.repeat && !event.metaKey
-}
-
-/**
  * Whether a key press ends a running hold: any new press does, as a key can
- * take the release away (Cmd, on macOS). Only an auto-repeat goes on: of the
- * key that holds, or of a key that was down before a pointer's press.
+ * take the pointer's release away (Cmd, on macOS). Only the auto-repeat of a
+ * key that was down before goes on.
  */
 export function endsHold(event: { repeat: boolean }): boolean {
   return !event.repeat

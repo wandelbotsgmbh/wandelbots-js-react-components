@@ -12,7 +12,6 @@ import {
 import { externalizeComponent } from "../../../externalizeComponent"
 import type { JogDirection } from "../jogHandle"
 import {
-  directionToward,
   formatJointLimit,
   formatJointValue,
   fractionOf,
@@ -26,7 +25,6 @@ import {
   endsHold,
   preventContextMenu,
   primaryReleased,
-  startsKeyHold,
   startsPointerHold,
 } from "../holdSafety"
 import { JointSliderTrack } from "./JointSliderTrack"
@@ -83,20 +81,14 @@ function deadZonePx(pointerType: string): number {
   return pointerType === "mouse" || pointerType === "pen" ? 1 : 4
 }
 
-/** Which way an arrow key jogs: up the track or down */
-function arrowDirection(key: string): JogDirection | null {
-  if (key === "ArrowRight" || key === "ArrowUp") return "+"
-  if (key === "ArrowLeft" || key === "ArrowDown") return "-"
-  return null
-}
-
 /**
  * One joint as a slider across its limits, with the thumb at the joint's
  * value and the limits below. Hovering the track shows the goal under the
  * pointer; pressing there jogs the joint toward it until it gets there or
  * the slider is let go. While held, the goal follows the pointer, and the
- * joint turns around when the goal passes it. An arrow key held on the
- * focused slider jogs toward that limit.
+ * joint turns around when the goal passes it. Only a pointer jogs: the
+ * keyboard reaches the slider, which says the joint's value, but an arrow
+ * key on it moves nothing.
  *
  * An app shows one slider per joint. It moves nothing itself: onJogStart and
  * onJogStop leave that to the app, which also keeps to one joint at a time.
@@ -116,7 +108,7 @@ export const JoggingJointSlider = externalizeComponent(
   }: JoggingJointSliderProps) => {
     const theme = useTheme()
     const rail = useRef<HTMLDivElement>(null)
-    const { hold, isHolding, heldBy, begin, moveGoal, end, endIfHeldBy } =
+    const { hold, isHolding, holdingPointer, begin, moveGoal, end } =
       useJointJogHold({ value, onJogStart, onJogStop, disabled })
     const [hoverGoal, setHoverGoal] = useState<number | null>(null)
 
@@ -151,14 +143,13 @@ export const JoggingJointSlider = externalizeComponent(
       } catch {
         // not a pointer the browser knows, e.g. in tests
       }
-      begin(at.goal, at.deadband, { pointer: event.pointerId })
+      begin(at.goal, at.deadband, event.pointerId)
     }
 
     function onPointerMove(event: PointerEvent<HTMLElement>) {
       const at = pointed(event)
       setHoverGoal(disabled ? null : (at?.goal ?? null))
-      const by = heldBy()
-      if (!by || !("pointer" in by) || by.pointer !== event.pointerId) return
+      if (holdingPointer() !== event.pointerId) return
       if (primaryReleased(event)) {
         end()
         return
@@ -167,26 +158,12 @@ export const JoggingJointSlider = externalizeComponent(
     }
 
     function endPointer(event: PointerEvent<HTMLElement>) {
-      endIfHeldBy((by) => "pointer" in by && by.pointer === event.pointerId)
+      if (holdingPointer() === event.pointerId) end()
     }
 
+    // The keyboard starts no jog: a key only ends one
     function onKeyDown(event: KeyboardEvent<HTMLElement>) {
-      const direction = arrowDirection(event.key)
-      if (direction) event.preventDefault()
-      if (isHolding()) {
-        if (endsHold(event)) end()
-        return
-      }
-      if (!direction || !startsKeyHold(event) || disabled || !range) return
-      const goal = direction === "+" ? range.max : range.min
-      const deadband = (range.max - range.min) * 1e-4
-      // Never against the key: at its limit, the key does nothing
-      if (directionToward(value, goal, deadband) !== direction) return
-      begin(goal, deadband, { key: event.key })
-    }
-
-    function onKeyUp(event: KeyboardEvent<HTMLElement>) {
-      endIfHeldBy((by) => "key" in by && by.key === event.key)
+      if (isHolding() && endsHold(event)) end()
     }
 
     const goal = hold?.goal ?? hoverGoal
@@ -259,7 +236,6 @@ export const JoggingJointSlider = externalizeComponent(
           onPointerCancel={endPointer}
           onLostPointerCapture={endPointer}
           onKeyDown={onKeyDown}
-          onKeyUp={onKeyUp}
           onBlur={end}
           onContextMenu={preventContextMenu}
           sx={{
@@ -272,8 +248,7 @@ export const JoggingJointSlider = externalizeComponent(
             touchAction: "none",
             userSelect: "none",
             outline: "none",
-            // The design system's focus mark, as on its buttons: the slider
-            // an arrow key jogs must be plain to see
+            // The design system's focus mark, as on its buttons
             "&:focus-visible": {
               outline: `2px solid ${theme.palette.primary.main}`,
               outlineOffset: "2px",

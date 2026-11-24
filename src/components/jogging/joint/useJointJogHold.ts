@@ -12,8 +12,8 @@ export type JointHold = {
    * must move away from it to jog the joint again
    */
   settledAt: number | null
-  /** What holds it: a pointer (by its id) or an arrow key (by its key) */
-  by: { pointer: number } | { key: string }
+  /** The pointer that holds it, by its id */
+  pointer: number
 }
 
 export type JointJogHoldOptions = {
@@ -27,7 +27,8 @@ export type JointJogHoldOptions = {
 /**
  * Holding a joint slider: the joint jogs toward the goal while the slider is
  * held, and stops when it gets there (still held: a new goal jogs it on) or
- * when the hold ends. One hold at a time: a second pointer or key is ignored.
+ * when the hold ends. One hold at a time: a second pointer is ignored. Only
+ * a pointer holds the slider: the keyboard does not jog.
  *
  * Every way a hold can end without a release reaching the slider stops it:
  * becoming disabled, the window losing focus, the tab being hidden, unmount
@@ -77,9 +78,9 @@ export function useJointJogHold({
 
   /** Starts a hold toward `goal`; false if the slider cannot be held now */
   const begin = useCallback(
-    (goal: number, deadband: number, by: JointHold["by"]): boolean => {
+    (goal: number, deadband: number, pointer: number): boolean => {
       if (disabled || holdRef.current) return false
-      steer({ goal, direction: null, settledAt: null, by }, goal, deadband)
+      steer({ goal, direction: null, settledAt: null, pointer }, goal, deadband)
       return true
     },
     [disabled, steer],
@@ -115,17 +116,8 @@ export function useJointJogHold({
     if (held.direction) latest.current.onJogStop()
   }, [setHold])
 
-  /** What holds the slider now, or null */
-  const heldBy = useCallback(() => holdRef.current?.by ?? null, [])
-
-  /** Ends the hold if what holds it matches, as of now */
-  const endIfHeldBy = useCallback(
-    (match: (by: JointHold["by"]) => boolean) => {
-      const held = holdRef.current
-      if (held && match(held.by)) end()
-    },
-    [end],
-  )
+  /** The pointer that holds the slider, as of now, or null */
+  const holdingPointer = useCallback(() => holdRef.current?.pointer ?? null, [])
 
   // Arrived: stop, but stay held, so a new goal jogs the joint on
   useEffect(() => {
@@ -138,5 +130,5 @@ export function useJointJogHold({
 
   useEndHoldWhenUnattended(hold !== null, disabled, end)
 
-  return { hold, isHolding, heldBy, begin, moveGoal, end, endIfHeldBy }
+  return { hold, isHolding, holdingPointer, begin, moveGoal, end }
 }

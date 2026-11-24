@@ -185,42 +185,31 @@ describe("JoggingJointSlider", () => {
     expect(screen.getByText("/ 57.3°")).toBeVisible()
   })
 
-  it("jogs toward a limit while an arrow key is held", () => {
+  // The keyboard does not jog, as in RobotPad: only a pointer that holds the
+  // slider moves the joint
+  it.each([
+    "ArrowRight",
+    "ArrowLeft",
+    "ArrowUp",
+    "ArrowDown",
+    " ",
+    "Enter",
+  ])("does not jog with the key %j, held or not, and leaves it to the browser", (key) => {
     const { onJogStart, onJogStop } = setup()
 
-    fireEvent.keyDown(track(), { key: "ArrowRight" })
-    expect(onJogStart).toHaveBeenLastCalledWith("+")
-    fireEvent.keyUp(track(), { key: "ArrowRight" })
-    expect(onJogStop).toHaveBeenCalledTimes(1)
-
-    fireEvent.keyDown(track(), { key: "ArrowLeft" })
-    expect(onJogStart).toHaveBeenLastCalledWith("-")
-  })
-
-  it("stops at the limit an arrow key jogs to", () => {
-    const { onJogStop, rerender } = setup()
-
-    fireEvent.keyDown(track(), { key: "ArrowRight" })
-    rerender({ value: 2 })
-
-    expect(onJogStop).toHaveBeenCalledTimes(1)
-  })
-
-  it("does not start with Cmd held, as macOS then sends no key release", () => {
-    const { onJogStart } = setup()
-
-    fireEvent.keyDown(track(), { key: "ArrowRight", metaKey: true })
+    // Still reached by the keyboard, and named
+    track().focus()
+    expect(track()).toHaveFocus()
+    const down = fireEvent.keyDown(track(), { key })
+    fireEvent.keyDown(track(), { key, repeat: true })
+    fireEvent.keyDown(track(), { key, metaKey: true })
+    const up = fireEvent.keyUp(track(), { key })
 
     expect(onJogStart).not.toHaveBeenCalled()
-  })
-
-  it("ends a key hold on any other key, as Cmd pressed during it swallows the release", () => {
-    const { onJogStop } = setup()
-
-    fireEvent.keyDown(track(), { key: "ArrowRight" })
-    fireEvent.keyDown(track(), { key: "Meta" })
-
-    expect(onJogStop).toHaveBeenCalledTimes(1)
+    expect(onJogStop).not.toHaveBeenCalled()
+    // Not prevented: an arrow key scrolls the page as anywhere else
+    expect(down).toBe(true)
+    expect(up).toBe(true)
   })
 
   it("ignores Ctrl+click and the context menu, whose menu would swallow the release", () => {
@@ -288,7 +277,7 @@ describe("JoggingJointSlider", () => {
   it("stops when the slider loses focus", () => {
     const { onJogStop } = setup()
 
-    fireEvent.keyDown(track(), { key: "ArrowRight" })
+    press(xOf(1))
     fireEvent.blur(track())
 
     expect(onJogStop).toHaveBeenCalledTimes(1)
@@ -331,43 +320,27 @@ describe("JoggingJointSlider", () => {
     expect(onJogStop).toHaveBeenCalledTimes(1)
   })
 
-  it("jogs up for ArrowUp and down for ArrowDown, and only the held key's release ends the hold", () => {
+  it("ends a pointer hold on a key press, as the gizmo and the buttons do: Cmd can take the release away", () => {
     const { onJogStart, onJogStop } = setup()
-
-    fireEvent.keyDown(track(), { key: "ArrowUp" })
-    fireEvent.keyUp(track(), { key: "ArrowLeft" })
-    expect(onJogStop).not.toHaveBeenCalled()
-    fireEvent.keyUp(track(), { key: "ArrowUp" })
-
-    fireEvent.keyDown(track(), { key: "ArrowDown" })
-    expect(onJogStart.mock.calls).toEqual([["+"], ["-"]])
-  })
-
-  it("ends a pointer hold on a key press too, as the gizmo and the buttons do", () => {
-    const { onJogStop } = setup()
 
     press(xOf(1))
     fireEvent.keyDown(track(), { key: "Meta", metaKey: true })
+    expect(onJogStop).toHaveBeenCalledTimes(1)
 
+    // No key starts a jog after that, nor does its auto-repeat
+    fireEvent.keyDown(track(), { key: "ArrowRight" })
+    fireEvent.keyDown(track(), { key: "ArrowRight", repeat: true })
+    expect(onJogStart).toHaveBeenCalledTimes(1)
     expect(onJogStop).toHaveBeenCalledTimes(1)
   })
 
-  it("does not restart from an auto-repeated key after a hold ended", () => {
-    const { onJogStart } = setup()
+  it("goes on through the auto-repeat of a key that was down before the press", () => {
+    const { onJogStop } = setup()
 
-    fireEvent.keyDown(track(), { key: "ArrowRight" })
-    fireEvent.keyDown(track(), { key: "Shift" })
-    fireEvent.keyDown(track(), { key: "ArrowRight", repeat: true })
+    press(xOf(1))
+    fireEvent.keyDown(track(), { key: "a", repeat: true })
 
-    expect(onJogStart).toHaveBeenCalledTimes(1)
-  })
-
-  it("never jogs against an arrow key: at its limit, the key does nothing", () => {
-    const { onJogStart } = setup({ value: 2 })
-
-    fireEvent.keyDown(track(), { key: "ArrowRight" })
-
-    expect(onJogStart).not.toHaveBeenCalled()
+    expect(onJogStop).not.toHaveBeenCalled()
   })
 
   it("steers by the joint's live value: after it arrived, a goal behind it jogs back", () => {
@@ -467,8 +440,12 @@ describe("JoggingJointSlider", () => {
 
     expect(screen.getByText("+180°")).toBeVisible()
     expect(screen.getByText("+540°")).toBeVisible()
-    fireEvent.keyDown(track(), { key: "ArrowRight" })
+    // The joint stands a quarter of the way along that turn
+    press(TRACK_LEFT + TRACK_WIDTH * 0.75)
     expect(onJogStart).toHaveBeenCalledWith("+")
+    release()
+    press(TRACK_LEFT + TRACK_WIDTH * 0.1)
+    expect(onJogStart).toHaveBeenLastCalledWith("-")
   })
 
   it("spans one turn from the one limit it has", () => {
