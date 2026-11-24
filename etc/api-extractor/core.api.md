@@ -934,7 +934,7 @@ export class RobotLiveState {
     // (undocumented)
     get connectionQuality(): "good" | "struggling" | "critical";
     get controllerState(): RobotControllerState;
-    get displayedTcpPose(): Required<Pose>;
+    get displayedTcpPose(): TcpReferencedPose["pose"] | null;
     get displayedTcpPoseReference(): TcpReferencedPose;
     isAt(pose: RobotPose): boolean;
     get jointPose(): number[];
@@ -1160,11 +1160,14 @@ export class RobotTargetPose {
     // (undocumented)
     get draftValid(): boolean;
     editing: boolean;
+    holdMove(pose: RobotPose): boolean;
     get isRobotAtStagedPose(): boolean;
     get liveDisplayString(): string;
     onBeforePlan?: () => Promise<void>;
     // (undocumented)
     get phase(): "view" | "editing" | "staged" | "error";
+    plan(pose: RobotPose): Promise<void>;
+    releaseMove(): Promise<void>;
     resetToLive(): Promise<void>;
     // (undocumented)
     setDraft(text: string): void;
@@ -1209,6 +1212,7 @@ export type StagedTargetPose = {
     pose: RobotPose;
     displayString: string;
     errorKey: string | null;
+    errorMessage?: string;
 };
 
 // @public (undocumented)
@@ -1225,10 +1229,14 @@ export class TrajectoryExecutionStore {
     clearError(): void;
     dispose(): void;
     get executionState(): "PAUSED_BY_USER" | "PAUSED_NEAR_COLLISION" | "PAUSED_NEAR_JOINT_LIMIT" | "PAUSED_NEAR_SINGULARITY" | "PAUSED_ON_IO" | "RUNNING" | "END_OF_TRAJECTORY" | "WAIT_FOR_IO" | undefined;
+    hold(target?: TrajectoryTarget): boolean;
+    get holdsExecutionSession(): boolean;
+    get isPlanOutdated(): boolean;
     lastError: string | null;
     pause(): Promise<void>;
     plannedTrajectory: PlannedTrajectory | null;
     planTrajectory(target: TrajectoryTarget): Promise<PlanTrajectoryResult>;
+    release(): Promise<void>;
     reset(): void;
     start(): void;
     stopAndReset(): Promise<void>;
