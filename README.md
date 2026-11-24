@@ -222,7 +222,7 @@ Manual robot control interfaces.
 - **JoggingCartesianAxisControl** - Single-axis cartesian movement
 - **JoggingJointValueControl** - Individual joint controls
 - **VelocitySlider** (and **VelocitySliderLabel**) - Speed adjustment interface
-- **JoggingStore** - The state of the jogging (velocity, coordinate system, the jogging connection). `JoggingPanel` gives it to `onSetup`, and `JoggingStore.loadFor` creates one for your own controls.
+- **JoggingStore** - The state of the jogging (velocity, coordinate system, the jogging connection). `JoggingPanel` gives it to `onSetup`, and `JoggingStore.loadFor` creates one for your own controls. It also jogs for them: `startCartesianJogging(motion, axis, direction)` or `startJointJogging(joint, direction)` when a control is pressed and `stopJogging()` when it is let go, and `runIncrementalCartesianJog(motion, axis, direction, increment)` for one step. The store keeps the order that hold-to-jog needs: a press that ends before the jogging connection is ready moves nothing, and one step runs at a time.
 
 **JoggingGizmo** and **JoggingGizmoOrientation** (from `/3d` or `/JoggingGizmo`) - Jogging by the axes of the jog frame as the camera of the 3D view sees them: orbit the view and the gizmo turns with it, so the arrow pointing right on screen moves the robot right on screen. Hold a handle to jog.
 

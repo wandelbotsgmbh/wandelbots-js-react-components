@@ -1,4 +1,4 @@
-import { tryParseJson } from "@wandelbots/nova-js"
+import { degreesToRadians, tryParseJson } from "@wandelbots/nova-js"
 import {
   JointTypeEnum,
   type CoordinateSystem,
@@ -62,6 +62,12 @@ export type IncrementJogInProgress = {
 type TabType = "cartesian" | "joint" | "debug"
 type JoggingTab = { id: TabType; label: string }
 export type CartesianMotionType = "translate" | "rotate"
+
+/**
+ * What a jog needs of the jogger: the jogging websocket for a held jog of the
+ * TCP or of a joint, a trajectory for a step
+ */
+type JogKind = "cartesian" | "cartesianStep" | "joint"
 
 /**
  * Where a jogging store keeps the user's jogging settings between visits: the
@@ -296,6 +302,15 @@ export class JoggingStore {
   /** Where the jogging settings are kept, see {@link JoggingStoreOptions} */
   private readonly storage: JoggingStoreStorage | undefined
 
+  /**
+   * Counts the starts and stops of held jogs, so that each one knows whether
+   * it is still the latest when its wait is over: a stop while the jogging
+   * websocket opens makes that press move nothing, and a stop keeps the
+   * websocket for a start that came in the same event (a joint slider that
+   * turns around)
+   */
+  private jogPress = 0
+
   constructor(
     readonly jogger: JoggerConnection,
     readonly coordSystems: CoordinateSystem[],
@@ -330,9 +345,9 @@ export class JoggingStore {
       JointTypeEnum.RevoluteJoint
 
     // Make all properties observable and actions auto-bound
-    makeAutoObservable<this, "storage">(
+    makeAutoObservable<this, "storage" | "jogPress">(
       this,
-      { storage: false },
+      { storage: false, jogPress: false },
       { autoBind: true },
     )
 
@@ -389,11 +404,27 @@ export class JoggingStore {
   }
 
   /**
-   * Activate the jogger with current settings. Resolves when the jogging
-   * websocket is initialized, or when the jogging was stopped before that
-   * (`deactivate`).
+   * Activate the jogger with current settings: for the tab that is selected
+   * and, on the Cartesian tab, for a step while an increment is selected.
+   * Resolves when the jogging websocket is initialized, or when the jogging
+   * was stopped before that (`deactivate`).
+   *
+   * {@link JoggingStore.startCartesianJogging},
+   * {@link JoggingStore.startJointJogging} and
+   * {@link JoggingStore.runIncrementalCartesianJog} activate what they need
+   * themselves.
    */
   async activate() {
+    if (this.currentTab.id !== "cartesian") {
+      return this.activateFor("joint")
+    }
+    return this.activateFor(
+      this.activeDiscreteIncrement ? "cartesianStep" : "cartesian",
+    )
+  }
+
+  /** Activates the jogger for a jog of the given kind */
+  private async activateFor(jog: JogKind) {
     // Clear any latched error from a previous jog now that the user is
     // starting a new one
     this.lastJogError = null
@@ -403,7 +434,7 @@ export class JoggingStore {
     // to jog while that session is alive
     await this.onBeforeActivate?.()
 
-    if (this.currentTab.id === "cartesian") {
+    if (jog !== "joint") {
       // Ensure jogger has the correct TCP and orientation before starting
       if (
         this.jogger.tcp !== this.selectedTcpId ||
@@ -418,17 +449,135 @@ export class JoggingStore {
       // "Move relative to" a coordinate system. Applied to each jog command,
       // so it needs no reconnect.
       this.jogger.coordinateSystem = this.jogCoordSystem
-
-      if (this.activeDiscreteIncrement) {
-        await this.jogger.setJoggingMode("trajectory")
-      } else {
-        await this.jogger.setJoggingMode("jogging")
-      }
-    } else {
-      await this.jogger.setJoggingMode("jogging")
     }
 
+    await this.jogger.setJoggingMode(
+      jog === "cartesianStep" ? "trajectory" : "jogging",
+    )
+
     return this.jogger
+  }
+
+  /**
+   * Starts jogging the TCP along an axis (`translate`) or about it
+   * (`rotate`) until {@link JoggingStore.stopJogging}, with the store's
+   * velocity, TCP and "Move relative to". For a jog control that is held:
+   * call this on the press and `stopJogging` on the release.
+   *
+   * The robot moves once the jogging websocket is ready, about 0.1 to 0.5 s
+   * later. A press that was stopped by then, or that another press followed,
+   * moves nothing. Does nothing while the store is locked.
+   */
+  async startCartesianJogging(
+    motion: CartesianMotionType,
+    axis: JoggingAxis,
+    direction: JoggingDirection,
+  ) {
+    const press = ++this.jogPress
+    if (this.isLocked) return
+    await this.activateFor("cartesian")
+    if (press !== this.jogPress) return
+
+    if (motion === "translate") {
+      await this.jogger.translateTCP({
+        axis,
+        direction,
+        velocityMmPerSec: this.translationVelocityMmPerSec,
+      })
+    } else {
+      await this.jogger.rotateTCP({
+        axis,
+        direction,
+        velocityRadsPerSec: this.rotationVelocityRadsPerSec,
+      })
+    }
+  }
+
+  /**
+   * Starts jogging one joint (by its index) until
+   * {@link JoggingStore.stopJogging}, with the store's rotation velocity, or
+   * its translation velocity for a linear axis. As
+   * {@link JoggingStore.startCartesianJogging}, for a control that is held.
+   */
+  async startJointJogging(joint: number, direction: JoggingDirection) {
+    const press = ++this.jogPress
+    await this.activateFor("joint")
+    if (press !== this.jogPress) return
+
+    const linear = this.jointType === JointTypeEnum.PrismaticJoint
+    await this.jogger.rotateJoints({
+      joint,
+      direction,
+      velocityUnit: linear ? "mm/s" : "rad/s",
+      velocityValue: linear
+        ? this.translationVelocityMmPerSec
+        : this.rotationVelocityRadsPerSec,
+    })
+  }
+
+  /**
+   * Stops the jog of {@link JoggingStore.startCartesianJogging} or
+   * {@link JoggingStore.startJointJogging} and closes the jogging websocket.
+   * Also while the store is locked: a jog always gets its stop.
+   *
+   * A start that comes while the robot is told to stop keeps the websocket,
+   * e.g. a joint slider that turns around stops and starts in one event.
+   */
+  async stopJogging() {
+    const press = ++this.jogPress
+    await this.jogger.stop()
+    if (press !== this.jogPress) return
+    await this.deactivate()
+  }
+
+  /**
+   * Moves the TCP one step along an axis (`translate`, by the increment's
+   * mm) or about it (`rotate`, by its degrees), with the store's velocity,
+   * TCP and "Move relative to". `increment` is one of
+   * {@link JoggingStore.discreteIncrementOptions}. Resolves once the robot
+   * has made the step.
+   *
+   * One step runs at a time: the store is locked while it runs (see
+   * {@link JoggingStore.withMotionLock}) and shows it as
+   * {@link JoggingStore.incrementJogInProgress}. Does nothing while the
+   * store is locked.
+   */
+  async runIncrementalCartesianJog(
+    motion: CartesianMotionType,
+    axis: JoggingAxis,
+    direction: JoggingDirection,
+    increment: DiscreteIncrementOption,
+  ) {
+    if (this.isLocked) return
+    await this.withMotionLock(async () => {
+      try {
+        const jogger = await this.activateFor("cartesianStep")
+        const state = jogger.motionStream.rapidlyChangingMotionState
+        if (!state.tcp_pose) return
+
+        this.setCurrentIncrementJog({ axis, direction })
+        await jogger.runIncrementalCartesianMotion({
+          currentTcpPose: state.tcp_pose,
+          currentJoints: state.joint_position as Vector3Simple,
+          velocityInRelevantUnits:
+            motion === "translate"
+              ? this.translationVelocityMmPerSec
+              : this.rotationVelocityRadsPerSec,
+          axis,
+          direction,
+          motion:
+            motion === "translate"
+              ? { type: "translate", distanceMm: increment.mm }
+              : {
+                  type: "rotate",
+                  distanceRads: degreesToRadians(increment.degrees),
+                },
+        })
+      } finally {
+        this.setCurrentIncrementJog(null)
+        await this.deactivate()
+      }
+    })
   }
 
   /**

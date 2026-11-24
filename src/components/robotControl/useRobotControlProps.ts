@@ -6,14 +6,12 @@ import { useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Quaternion } from "three"
 import { i18n } from "../../i18n/config"
-import type { Vector3Simple } from "../../lib/JoggerConnection"
 import { Pose3 } from "../../lib/Pose3"
 import type { RobotNotMoveableReason } from "../../lib/robotSession/RobotSafety"
 import type { RobotSession } from "../../lib/robotSession/RobotSession"
 import { parseRotationToQuaternion } from "../../lib/rotation"
 import { coordSystemLabel } from "../jogging/coordSystemLabel"
 import type { JoggingStore } from "../jogging/JoggingStore"
-import type { JogAxis, JogDirection } from "../jogging/jogHandle"
 import type {
   JogMotion,
   RobotControlJogMode,
@@ -165,97 +163,16 @@ export function useRobotControlProps(
   }
   const increment = lastIncrement.current
 
-  // The latest press: a release while the jogging connection opens makes
-  // that press move nothing, and a stop keeps the connection for a start
-  // that came in the same event (a joint slider turning around)
-  const press = useRef(0)
-
-  async function startCartesian(
-    motion: JogMotion,
-    axis: JogAxis,
-    direction: JogDirection,
-  ) {
-    const mine = ++press.current
-    if (store.isLocked) return
-    await store.activate()
-    if (mine !== press.current) return
-    if (motion === "translate") {
-      await store.jogger.translateTCP({
-        axis,
-        direction,
-        velocityMmPerSec: store.translationVelocityMmPerSec,
-      })
-    } else {
-      await store.jogger.rotateTCP({
-        axis,
-        direction,
-        velocityRadsPerSec: store.rotationVelocityRadsPerSec,
-      })
-    }
-  }
-
-  async function startJoint(joint: number, direction: JogDirection) {
-    const mine = ++press.current
-    await store.activate()
-    if (mine !== press.current) return
-    await store.jogger.rotateJoints({
-      joint,
-      direction,
-      velocityUnit: linear ? "mm/s" : "rad/s",
-      velocityValue: linear
-        ? store.translationVelocityMmPerSec
-        : store.rotationVelocityRadsPerSec,
-    })
-  }
-
-  async function stopJogging() {
-    const mine = ++press.current
-    await store.jogger.stop()
-    if (mine !== press.current) return
-    await store.deactivate()
-  }
-
-  /** One step of the chosen size along or about an axis */
-  async function step(
-    motion: JogMotion,
-    axis: JogAxis,
-    direction: JogDirection,
-    distance: number,
-  ) {
-    const chosen = store.discreteIncrementOptions.find((option) =>
+  /**
+   * The store's increment of a step size of the panel: mm to translate, rad
+   * to rotate
+   */
+  function incrementOf(motion: JogMotion, distance: number) {
+    return store.discreteIncrementOptions.find((option) =>
       motion === "translate"
         ? Math.abs(option.mm - distance) < 1e-9
         : Math.abs(degreesToRadians(option.degrees) - distance) < 1e-9,
     )
-    if (!chosen || store.isLocked) return
-    await store.withMotionLock(async () => {
-      try {
-        const jogger = await store.activate()
-        const state = jogger.motionStream.rapidlyChangingMotionState
-        if (!state.tcp_pose) return
-        store.setCurrentIncrementJog({ axis, direction })
-        await store.jogger.runIncrementalCartesianMotion({
-          currentTcpPose: state.tcp_pose,
-          currentJoints: state.joint_position as Vector3Simple,
-          velocityInRelevantUnits:
-            motion === "translate"
-              ? store.translationVelocityMmPerSec
-              : store.rotationVelocityRadsPerSec,
-          axis,
-          direction,
-          motion:
-            motion === "translate"
-              ? { type: "translate", distanceMm: chosen.mm }
-              : {
-                  type: "rotate",
-                  distanceRads: degreesToRadians(chosen.degrees),
-                },
-        })
-      } finally {
-        store.setCurrentIncrementJog(null)
-        await store.deactivate()
-      }
-    })
   }
 
   /** The jog frame, read every animation frame by the gizmo */
@@ -413,11 +330,13 @@ export function useRobotControlProps(
       motion === "rotate"
         ? store.setVelocityFromSlider(toDegrees(value), true)
         : store.setVelocityFromSlider(value, false),
+    // The store jogs: it makes a press that ends before the jogging
+    // connection is ready move nothing, and runs one step at a time
     onJogStart: (motion, axis, direction) => {
-      startCartesian(motion, axis, direction).catch(report)
+      store.startCartesianJogging(motion, axis, direction).catch(report)
     },
     onJogStop: () => {
-      stopJogging().catch(report)
+      store.stopJogging().catch(report)
     },
     increments: {
       steps: {
@@ -427,7 +346,11 @@ export function useRobotControlProps(
         ),
       },
       onStep: (motion, axis, direction, distance) => {
-        step(motion, axis, direction, distance).catch(report)
+        const increment = incrementOf(motion, distance)
+        if (!increment) return
+        store
+          .runIncrementalCartesianJog(motion, axis, direction, increment)
+          .catch(report)
       },
       running: store.incrementJogInProgress,
       // The store's increments pair a distance with an angle
@@ -471,10 +394,10 @@ export function useRobotControlProps(
           ? store.setVelocityFromSlider(value, false)
           : store.setVelocityFromSlider(toDegrees(value), true),
       onJogStart: (joint, direction) => {
-        startJoint(joint, direction).catch(report)
+        store.startJointJogging(joint, direction).catch(report)
       },
       onJogStop: () => {
-        stopJogging().catch(report)
+        store.stopJogging().catch(report)
       },
     },
     moveTo: {

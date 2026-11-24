@@ -1,4 +1,5 @@
 import { act, renderHook } from "@testing-library/react"
+import { degreesToRadians } from "@wandelbots/nova-js"
 import { observable, runInAction } from "mobx"
 import { describe, expect, it, onTestFinished, vi } from "vitest"
 import {
@@ -140,6 +141,88 @@ describe("useRobotControlProps", () => {
     await flush()
 
     expect(translateTCP).not.toHaveBeenCalled()
+  })
+
+  it("jogs a joint while its slider is held, and stops it on release", async () => {
+    const session = await loadSession()
+    const { jogger } = session.jogging
+    vi.spyOn(jogger, "setJoggingMode").mockResolvedValue(undefined as never)
+    const rotateJoints = vi
+      .spyOn(jogger, "rotateJoints")
+      .mockResolvedValue(undefined as never)
+    const stop = vi.spyOn(jogger, "stop").mockResolvedValue(undefined as never)
+    const { result } = renderHook(() => useRobotControlProps(session))
+
+    act(() => result.current.joints?.onJogStart(1, "-"))
+    await flush()
+    expect(rotateJoints).toHaveBeenCalledWith({
+      joint: 1,
+      direction: "-",
+      velocityUnit: "rad/s",
+      velocityValue: session.jogging.rotationVelocityRadsPerSec,
+    })
+
+    act(() => result.current.joints?.onJogStop())
+    await flush()
+    expect(stop).toHaveBeenCalledOnce()
+  })
+
+  // The panel's step sizes are in mm and rad, the store's increments pair
+  // mm with degrees
+  it("runs one step of the store's increment that has the panel's step size", async () => {
+    const onError = vi.fn()
+    const session = await loadSession({ onError })
+    const { jogger } = session.jogging
+    vi.spyOn(jogger, "setOptions").mockResolvedValue(undefined as never)
+    vi.spyOn(jogger, "setJoggingMode").mockResolvedValue(undefined as never)
+    const run = vi
+      .spyOn(jogger, "runIncrementalCartesianMotion")
+      .mockResolvedValue(undefined as never)
+    const { result } = renderHook(() => useRobotControlProps(session))
+    const step = result.current.increments?.onStep
+    if (!step) throw new Error("No increments")
+
+    act(() => step("translate", "z", "-", 10))
+    await flush()
+    expect(run).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        axis: "z",
+        direction: "-",
+        motion: { type: "translate", distanceMm: 10 },
+      }),
+    )
+
+    act(() => step("rotate", "x", "+", degreesToRadians(2.5)))
+    await flush()
+    expect(run).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        axis: "x",
+        direction: "+",
+        motion: { type: "rotate", distanceRads: degreesToRadians(2.5) },
+      }),
+    )
+
+    // Not a step size of the store: nothing moves, and nothing went wrong
+    act(() => step("translate", "x", "+", 7))
+    await flush()
+    expect(run).toHaveBeenCalledTimes(2)
+    expect(onError).not.toHaveBeenCalled()
+  })
+
+  it("reports a jog that failed to the session's onError", async () => {
+    const onError = vi.fn()
+    const session = await loadSession({ onError })
+    vi.spyOn(session.jogging.jogger, "setJoggingMode").mockRejectedValue(
+      new Error("No jogging websocket"),
+    )
+    const { result } = renderHook(() => useRobotControlProps(session))
+
+    act(() => result.current.joints?.onJogStart(0, "+"))
+    await flush()
+
+    expect(onError).toHaveBeenCalledWith(
+      expect.objectContaining({ kind: "jog", message: "No jogging websocket" }),
+    )
   })
 
   it("plans the pose of Move to as the session's typed pose, and moves only along a planned trajectory", async () => {

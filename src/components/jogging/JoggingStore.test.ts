@@ -1,15 +1,17 @@
-import type {
-  CoordinateSystem,
-  KinematicModel,
-  MotionGroupDescription,
-  MotionGroupState,
-  RobotTcp,
+import { degreesToRadians } from "@wandelbots/nova-js"
+import {
+  type CoordinateSystem,
+  JointTypeEnum,
+  type KinematicModel,
+  type MotionGroupDescription,
+  type MotionGroupState,
+  type RobotTcp,
 } from "@wandelbots/nova-js/v2"
 import { Vector3 } from "three"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import deTranslations from "../../i18n/locales/de/translations.json"
 import enTranslations from "../../i18n/locales/en/translations.json"
-import type { JoggerConnection } from "../../lib/JoggerConnection"
+import type { JoggerConnection, JoggerMode } from "../../lib/JoggerConnection"
 import type { MotionStreamConnection } from "../../lib/MotionStreamConnection"
 import { Pose3 } from "../../lib/Pose3"
 import {
@@ -71,11 +73,13 @@ function createMockMotionStream(
 function createMockJogger(
   motionStream: MotionStreamConnection = createMockMotionStream(),
 ): JoggerConnection {
-  return {
+  // With a prototype of its own, as the jogger: MobX would make the store's
+  // `jogger` an observable copy of a plain object, with a mode of its own
+  const jogger = Object.assign(Object.create({}), {
     nova: motionStream.nova,
     motionStream,
     motionGroupId: motionStream.motionGroupId,
-    mode: "off" as const,
+    mode: "off" as JoggerMode,
     tcp: "Flange",
     orientation: "coordsys" as const,
     coordinateSystem: undefined,
@@ -83,10 +87,39 @@ function createMockJogger(
     dispose: vi.fn().mockResolvedValue(undefined),
     translateTCP: vi.fn().mockResolvedValue(undefined),
     rotateTCP: vi.fn().mockResolvedValue(undefined),
+    rotateJoints: vi.fn().mockResolvedValue(undefined),
+    runIncrementalCartesianMotion: vi.fn().mockResolvedValue(undefined),
     setOptions: vi.fn().mockResolvedValue(undefined),
-    setJoggingMode: vi.fn().mockResolvedValue(undefined),
+    // As the jogger: the mode is set at once, the websocket opens later
+    setJoggingMode: vi.fn(async (mode: JoggerMode) => {
+      jogger.mode = mode
+    }),
     initializeJoggingWebsocket: vi.fn().mockResolvedValue(undefined),
-  } as unknown as JoggerConnection
+  })
+  return jogger as unknown as JoggerConnection
+}
+
+/** A promise that the test settles */
+function deferred() {
+  let resolve!: () => void
+  let reject!: (error: unknown) => void
+  const promise = new Promise<void>((res, rej) => {
+    resolve = res
+    reject = rej
+  })
+  return { promise, resolve, reject }
+}
+
+/** Lets queued promise callbacks run */
+async function flush() {
+  for (let i = 0; i < 20; i++) await Promise.resolve()
+}
+
+/** The jogger's mode changes that ask for `mode` */
+function modeChangesTo(jogger: JoggerConnection, mode: JoggerMode) {
+  return vi
+    .mocked(jogger.setJoggingMode)
+    .mock.calls.filter(([asked]) => asked === mode)
 }
 
 function createStore({
@@ -582,6 +615,305 @@ describe("onBeforeActivate", () => {
 
     await expect(store.activate()).rejects.toThrow("still moving")
     expect(jogger.setJoggingMode).not.toHaveBeenCalled()
+  })
+})
+
+// The sequencing of hold-to-jog, ported from RobotPad's Robot control (and
+// from useRobotControlProps, which had it before)
+describe("jogging while a control is held", () => {
+  it("jogs the TCP along an axis and about it, with the store's velocities", async () => {
+    const jogger = createMockJogger()
+    const store = createStore({ jogger })
+
+    await store.startCartesianJogging("translate", "x", "+")
+    expect(jogger.setJoggingMode).toHaveBeenCalledWith("jogging")
+    expect(jogger.translateTCP).toHaveBeenCalledWith({
+      axis: "x",
+      direction: "+",
+      velocityMmPerSec: store.translationVelocityMmPerSec,
+    })
+
+    await store.startCartesianJogging("rotate", "z", "-")
+    expect(jogger.rotateTCP).toHaveBeenCalledWith({
+      axis: "z",
+      direction: "-",
+      velocityRadsPerSec: store.rotationVelocityRadsPerSec,
+    })
+  })
+
+  it("jogs a joint in rad/s with the rotation velocity, and a linear axis in mm/s with the translation velocity", async () => {
+    const jogger = createMockJogger()
+    await createStore({ jogger }).startJointJogging(2, "-")
+    expect(jogger.setJoggingMode).toHaveBeenCalledWith("jogging")
+    expect(jogger.rotateJoints).toHaveBeenCalledWith({
+      joint: 2,
+      direction: "-",
+      velocityUnit: "rad/s",
+      velocityValue: degreesToRadians(5),
+    })
+
+    const axis = createMockJogger()
+    const linear = createStore({
+      jogger: axis,
+      description: {
+        ...ur5eDescription,
+        dh_parameters: [{ type: JointTypeEnum.PrismaticJoint }],
+      },
+    })
+    await linear.startJointJogging(0, "+")
+    expect(axis.rotateJoints).toHaveBeenCalledWith({
+      joint: 0,
+      direction: "+",
+      velocityUnit: "mm/s",
+      velocityValue: linear.translationVelocityMmPerSec,
+    })
+  })
+
+  // activate() opens a trajectory while an increment is selected, and sets
+  // the TCP's frame only on the Cartesian tab: a held jog needs neither
+  // setting to be right
+  it("opens the jogging connection for a held jog whatever tab and increment are selected", async () => {
+    const jogger = createMockJogger()
+    const store = createStore({ jogger })
+    store.setSelectedIncrementId("1")
+    store.setMoveRelativeToSelectedTcp()
+    store.onTabChange({} as React.SyntheticEvent, 1)
+    expect(store.currentTab.id).toBe("joint")
+
+    await store.startCartesianJogging("translate", "y", "+")
+
+    expect(jogger.setOptions).toHaveBeenCalledWith(
+      expect.objectContaining({ orientation: "tool" }),
+    )
+    expect(modeChangesTo(jogger, "trajectory")).toHaveLength(0)
+    expect(jogger.translateTCP).toHaveBeenCalledOnce()
+
+    store.onTabChange({} as React.SyntheticEvent, 0)
+    await store.stopJogging()
+    await store.startJointJogging(0, "+")
+
+    expect(modeChangesTo(jogger, "trajectory")).toHaveLength(0)
+    expect(jogger.rotateJoints).toHaveBeenCalledOnce()
+  })
+
+  // The jogging websocket takes about 0.1 to 0.5 s to open: a tap shorter
+  // than that must not start a jog that nothing stops
+  it("moves nothing when the jog is stopped before the jogging connection is ready", async () => {
+    const jogger = createMockJogger()
+    const store = createStore({ jogger })
+    const opening = deferred()
+    vi.mocked(jogger.setJoggingMode).mockImplementation(async (mode) => {
+      jogger.mode = mode
+      if (mode === "jogging") await opening.promise
+    })
+
+    const cartesian = store.startCartesianJogging("translate", "x", "+")
+    const stopped = store.stopJogging()
+    const joint = store.startJointJogging(1, "+")
+    const stoppedAgain = store.stopJogging()
+    opening.resolve()
+    await Promise.all([cartesian, stopped, joint, stoppedAgain])
+
+    expect(jogger.translateTCP).not.toHaveBeenCalled()
+    expect(jogger.rotateJoints).not.toHaveBeenCalled()
+    expect(jogger.mode).toBe("off")
+  })
+
+  it("moves only for the latest press when another one came before the jogging connection was ready", async () => {
+    const jogger = createMockJogger()
+    const store = createStore({ jogger })
+
+    await Promise.all([
+      store.startCartesianJogging("translate", "x", "+"),
+      store.startCartesianJogging("translate", "y", "-"),
+    ])
+
+    expect(jogger.translateTCP).toHaveBeenCalledOnce()
+    expect(jogger.translateTCP).toHaveBeenCalledWith(
+      expect.objectContaining({ axis: "y", direction: "-" }),
+    )
+  })
+
+  it("stops the motion and closes the jogging connection on a stop", async () => {
+    const jogger = createMockJogger()
+    const store = createStore({ jogger })
+    await store.startJointJogging(1, "+")
+
+    await store.stopJogging()
+
+    expect(jogger.stop).toHaveBeenCalledOnce()
+    expect(jogger.mode).toBe("off")
+  })
+
+  // A joint slider that turns around stops and starts in one event
+  it("keeps the jogging connection on a stop when a start came in the same event", async () => {
+    const jogger = createMockJogger()
+    const store = createStore({ jogger })
+    await store.startJointJogging(1, "+")
+
+    const stopped = store.stopJogging()
+    const started = store.startJointJogging(1, "-")
+    await Promise.all([stopped, started])
+
+    expect(jogger.stop).toHaveBeenCalledOnce()
+    expect(modeChangesTo(jogger, "off")).toHaveLength(0)
+    expect(jogger.rotateJoints).toHaveBeenLastCalledWith(
+      expect.objectContaining({ joint: 1, direction: "-" }),
+    )
+  })
+
+  // A lock that comes during a hold: the stop is the only one the jog gets
+  it("stops a jog also while the store is locked", async () => {
+    const jogger = createMockJogger()
+    const store = createStore({ jogger })
+    await store.startCartesianJogging("translate", "x", "+")
+    store.lock("external")
+
+    await store.stopJogging()
+
+    expect(jogger.stop).toHaveBeenCalledOnce()
+    expect(jogger.mode).toBe("off")
+  })
+
+  it("starts no Cartesian jog while the store is locked", async () => {
+    const jogger = createMockJogger()
+    const store = createStore({ jogger })
+    store.lock("external")
+
+    await store.startCartesianJogging("translate", "x", "+")
+
+    expect(jogger.setJoggingMode).not.toHaveBeenCalled()
+    expect(jogger.translateTCP).not.toHaveBeenCalled()
+  })
+})
+
+describe("a step", () => {
+  const tenMm = { id: "10", mm: 10, degrees: 5 }
+
+  it("moves the TCP one increment along an axis or about it, as a trajectory", async () => {
+    const jogger = createMockJogger()
+    const store = createStore({ jogger })
+    const state = jogger.motionStream.rapidlyChangingMotionState
+
+    await store.runIncrementalCartesianJog("translate", "z", "-", tenMm)
+    expect(jogger.setJoggingMode).toHaveBeenCalledWith("trajectory")
+    expect(jogger.runIncrementalCartesianMotion).toHaveBeenCalledWith({
+      currentTcpPose: state.tcp_pose,
+      currentJoints: state.joint_position,
+      velocityInRelevantUnits: store.translationVelocityMmPerSec,
+      axis: "z",
+      direction: "-",
+      motion: { type: "translate", distanceMm: 10 },
+    })
+
+    await store.runIncrementalCartesianJog("rotate", "x", "+", tenMm)
+    expect(jogger.runIncrementalCartesianMotion).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        velocityInRelevantUnits: store.rotationVelocityRadsPerSec,
+        axis: "x",
+        direction: "+",
+        motion: { type: "rotate", distanceRads: degreesToRadians(5) },
+      }),
+    )
+  })
+
+  // activate() opens the jogging connection while Continuous is selected:
+  // a step needs no setting to be right
+  it("runs as a trajectory whatever tab and increment are selected", async () => {
+    const jogger = createMockJogger()
+    const store = createStore({ jogger })
+    store.setSelectedIncrementId("continuous")
+    store.setMoveRelativeToSelectedTcp()
+    store.onTabChange({} as React.SyntheticEvent, 1)
+
+    await store.runIncrementalCartesianJog("translate", "x", "+", tenMm)
+
+    expect(jogger.setOptions).toHaveBeenCalledWith(
+      expect.objectContaining({ orientation: "tool" }),
+    )
+    expect(modeChangesTo(jogger, "jogging")).toHaveLength(0)
+    expect(jogger.runIncrementalCartesianMotion).toHaveBeenCalledOnce()
+  })
+
+  it("shows which step runs and locks the store until the robot has made it", async () => {
+    const jogger = createMockJogger()
+    const store = createStore({ jogger })
+    const moving = deferred()
+    vi.mocked(jogger.runIncrementalCartesianMotion).mockReturnValue(
+      moving.promise,
+    )
+
+    const step = store.runIncrementalCartesianJog("translate", "y", "+", tenMm)
+    await flush()
+    expect(store.incrementJogInProgress).toEqual({ axis: "y", direction: "+" })
+    expect(store.isLocked).toBe(true)
+
+    moving.resolve()
+    await step
+    expect(store.incrementJogInProgress).toBeNull()
+    expect(store.isLocked).toBe(false)
+  })
+
+  it("runs one step at a time: a step asked for while another runs moves nothing", async () => {
+    const jogger = createMockJogger()
+    const store = createStore({ jogger })
+    const moving = deferred()
+    vi.mocked(jogger.runIncrementalCartesianMotion).mockReturnValue(
+      moving.promise,
+    )
+
+    // The second comes before the first has even opened its trajectory
+    const first = store.runIncrementalCartesianJog("translate", "x", "+", tenMm)
+    const second = store
+      .runIncrementalCartesianJog("translate", "x", "+", tenMm)
+      .catch(() => {})
+    await flush()
+    const third = store
+      .runIncrementalCartesianJog("translate", "x", "-", tenMm)
+      .catch(() => {})
+    moving.resolve()
+    await Promise.all([first, second, third])
+
+    expect(jogger.runIncrementalCartesianMotion).toHaveBeenCalledOnce()
+    expect(modeChangesTo(jogger, "trajectory")).toHaveLength(1)
+  })
+
+  it("is over when it fails: the store is unlocked and shows no step", async () => {
+    const jogger = createMockJogger()
+    const store = createStore({ jogger })
+    vi.mocked(jogger.runIncrementalCartesianMotion).mockRejectedValue(
+      new Error("Collision"),
+    )
+
+    await expect(
+      store.runIncrementalCartesianJog("translate", "x", "+", tenMm),
+    ).rejects.toThrow("Collision")
+
+    expect(store.incrementJogInProgress).toBeNull()
+    expect(store.isLocked).toBe(false)
+  })
+
+  it("moves nothing while the robot's TCP pose is not known", async () => {
+    const jogger = createMockJogger(
+      createMockMotionStream({ ...ur5eMotionGroupState, tcp_pose: undefined }),
+    )
+    const store = createStore({ jogger })
+
+    await store.runIncrementalCartesianJog("translate", "x", "+", tenMm)
+
+    expect(jogger.runIncrementalCartesianMotion).not.toHaveBeenCalled()
+    expect(store.isLocked).toBe(false)
+  })
+
+  it("starts no step while the store is locked", async () => {
+    const jogger = createMockJogger()
+    const store = createStore({ jogger })
+    store.lock("external")
+
+    await store.runIncrementalCartesianJog("translate", "x", "+", tenMm)
+
+    expect(jogger.setJoggingMode).not.toHaveBeenCalled()
+    expect(jogger.runIncrementalCartesianMotion).not.toHaveBeenCalled()
   })
 })
 
