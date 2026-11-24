@@ -121,16 +121,18 @@ export type TrajectoryExecutionStoreOptions = {
   joggingStore: JoggingStore
 
   /**
-   * Whether the app locks the robot. `planTrajectory` refuses to plan then.
-   * Defaults to never locked.
+   * Whether the app locks the robot. `planTrajectory`, `start` and `hold`
+   * refuse then. Defaults to never locked.
    */
   isLocked?: () => boolean
 
   /**
-   * Why the robot may not move now, or null when it may. `hold` starts
-   * nothing while there is a reason: NOVA switches a controller to control
-   * mode by itself for a start. Defaults to a robot that may always move; a
-   * robot session gives the reason that its jogging follows.
+   * Why the robot may not move now, or null when it may. `planTrajectory`,
+   * `start` and `hold` refuse while there is a reason: NOVA switches a
+   * controller to control mode by itself for a movement request, the
+   * trajectory as its start, and holds it there while it holds the
+   * trajectory. Defaults to a robot that may always move; a robot session
+   * gives the reason that its jogging follows.
    */
   notMoveableReason?: () => RobotNotMoveableReason | null
 
@@ -270,17 +272,16 @@ export class TrajectoryExecutionStore {
    * Plans a trajectory from the current joints to the target and initializes
    * it on the execution websocket. The store is "planned" once NOVA accepted
    * it. Returns a planner rejection as a value; throws while the app locks
-   * the robot and when the planner cannot be reached. A target that cannot be
-   * planned leaves no trajectory, also not the one before it on the
-   * controller.
+   * the robot or the robot may not move (see
+   * `TrajectoryExecutionStoreOptions`), also when that came to be while the
+   * planner worked, and when the planner cannot be reached. A target that
+   * cannot be planned leaves no trajectory, also not the one before it on
+   * the controller.
    */
   async planTrajectory(
     target: TrajectoryTarget,
   ): Promise<PlanTrajectoryResult> {
-    if (this.options.isLocked?.()) {
-      await this.dropPlan()
-      throw new Error("Cannot plan trajectory: the robot is locked")
-    }
+    await this.dropPlanIfRefused()
 
     // A trajectory that the store dropped is still on the controller: the
     // robot arrived, the move failed, or NOVA refused it. The next one gets
@@ -417,6 +418,8 @@ export class TrajectoryExecutionStore {
       },
     }
 
+    // Planning took a round trip: the robot may no longer move by now
+    await this.dropPlanIfRefused()
     this.socket.sendJson(initRequest)
     runInAction(() => {
       this.armed = true
@@ -434,9 +437,8 @@ export class TrajectoryExecutionStore {
    * the move before it still stops, not along a trajectory that was
    * planned with another velocity than now
    * ({@link TrajectoryExecutionStore.isPlanOutdated}), and not while the
-   * robot may not move (see
-   * `TrajectoryExecutionStoreOptions.notMoveableReason`). Safe to
-   * repeat while held.
+   * robot may not move or the app locks it (see
+   * `TrajectoryExecutionStoreOptions`). Safe to repeat while held.
    * {@link TrajectoryExecutionStore.release} ends the hold.
    *
    * `target` is where the button says it moves to, as `planTrajectory` got
@@ -464,7 +466,7 @@ export class TrajectoryExecutionStore {
       // A move starts at the velocity that shows, or not at all
       this.isPlanOutdated ||
       // NOVA would switch the controller to control mode for the start
-      this.options.notMoveableReason?.()
+      this.refusal() !== null
     ) {
       return false
     }
@@ -498,7 +500,9 @@ export class TrajectoryExecutionStore {
 
   /**
    * Starts the motion along the planned trajectory. For a button that is
-   * held, use {@link TrajectoryExecutionStore.hold}.
+   * held, use {@link TrajectoryExecutionStore.hold}. Throws when nothing can
+   * start, and while the robot may not move or the app locks it (see
+   * `TrajectoryExecutionStoreOptions`).
    */
   start() {
     if (!this.plannedTrajectory) {
@@ -519,7 +523,35 @@ export class TrajectoryExecutionStore {
     // release that waits for the first.
     if (this.motion === "starting") return
 
+    // NOVA would switch the controller to control mode for the start
+    const refusal = this.refusal()
+    if (refusal) {
+      throw new Error(`Cannot start trajectory: ${refusal}`)
+    }
+
     this.sendStart()
+  }
+
+  /**
+   * Why the store sends the robot no trajectory and no start now, or null:
+   * the app locks the robot, or the robot may not move
+   */
+  private refusal(): string | null {
+    if (this.options.isLocked?.()) return "the robot is locked"
+    const reason = this.options.notMoveableReason?.()
+    return reason ? `the robot may not move (${reason.code})` : null
+  }
+
+  /**
+   * Drops the plan and throws while the store sends the robot no
+   * trajectory, see {@link TrajectoryExecutionStore.planTrajectory}
+   */
+  private async dropPlanIfRefused() {
+    const refusal = this.refusal()
+    if (refusal) {
+      await this.dropPlan()
+      throw new Error(`Cannot plan trajectory: ${refusal}`)
+    }
   }
 
   /**

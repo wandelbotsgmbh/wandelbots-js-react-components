@@ -492,7 +492,52 @@ describe("TrajectoryExecutionStore.planTrajectory", () => {
     expect(planTrajectory).not.toHaveBeenCalled()
     expect(store.plannedTrajectory).toBeNull()
   })
+
+  // NOVA switches a controller to control mode by itself for a movement
+  // request, and holds it there while it holds the trajectory
+  test("refuses to plan while the robot may not move", async () => {
+    const { store, planTrajectory, sockets } = makeStore({
+      notMoveableReason: () => ({ code: "deactivated" }),
+    })
+
+    await expect(
+      store.planTrajectory(cartesianTarget("world")),
+    ).rejects.toThrow("may not move (deactivated)")
+
+    expect(planTrajectory).not.toHaveBeenCalled()
+    expect(sentMessageTypes(sockets.at(-1))).toEqual([])
+  })
+
+  // Planning takes a round trip
+  test.each<[string, Partial<TrajectoryExecutionStoreOptions>, string]>([
+    [
+      "the robot may no longer move",
+      { notMoveableReason: () => (planned ? { code: "deactivated" } : null) },
+      "may not move (deactivated)",
+    ],
+    ["the app locks the robot", { isLocked: () => planned }, "locked"],
+  ])("sends no trajectory to NOVA when %s once it is planned", async (_name, options, message) => {
+    planned = false
+    const { store, planTrajectory, sockets } = makeStore(options)
+    const plan = planTrajectory.getMockImplementation()
+    planTrajectory.mockImplementation(async (...args) => {
+      planned = true
+      return plan?.(...args) as never
+    })
+
+    await expect(
+      store.planTrajectory(cartesianTarget("world")),
+    ).rejects.toThrow(message)
+
+    expect(planTrajectory).toHaveBeenCalledOnce()
+    expect(sentMessageTypes(sockets.at(-1))).toEqual([])
+    expect(store.trajectoryState).toBe("idle")
+    expect(store.plannedTrajectory).toBeNull()
+  })
 })
+
+/** Set by the planner of a test, once it has planned */
+let planned = false
 
 describe("TrajectoryExecutionStore movement ownership", () => {
   test("by default ends continuous jogging and puts the jogger into trajectory mode before planning", async () => {
@@ -613,6 +658,39 @@ describe("TrajectoryExecutionStore execution", () => {
     await plan(store)
 
     expect(() => store.start()).toThrow('expected state "planned"')
+  })
+
+  // NOVA switches a controller to control mode by itself for a start
+  test.each<
+    [
+      string,
+      (refused: () => boolean) => Partial<TrajectoryExecutionStoreOptions>,
+      string,
+    ]
+  >([
+    [
+      "the robot may not move",
+      (refused) => ({
+        notMoveableReason: () => (refused() ? { code: "deactivated" } : null),
+      }),
+      "may not move (deactivated)",
+    ],
+    ["the app locks the robot", (refused) => ({ isLocked: refused }), "locked"],
+  ])("refuses to start while %s, and starts once it may", async (_name, options, message) => {
+    let refused = false
+    const { store, emit, sockets } = makeStore(options(() => refused))
+    await plan(store)
+    emit("INITIALIZE_RECEIVED")
+    refused = true
+
+    expect(() => store.start()).toThrow(message)
+    expect(sentMessageTypes(sockets.at(-1))).not.toContain(
+      "StartMovementRequest",
+    )
+
+    refused = false
+    store.start()
+    expect(sentMessageTypes(sockets.at(-1))).toContain("StartMovementRequest")
   })
 
   test("keeps the error of a motion and drops the plan", async () => {
@@ -987,12 +1065,13 @@ describe("TrajectoryExecutionStore hold to move", () => {
   // NOVA switches a controller to control mode by itself for a start: a
   // robot that is deactivating would be moved, or one still activating
   test("hold moves nothing while the robot may not move, and moves once it may", async () => {
-    let reason: RobotNotMoveableReason | null = { code: "deactivated" }
+    let reason: RobotNotMoveableReason | null = null
     const { store, emit, sockets } = makeStore({
       notMoveableReason: () => reason,
     })
     await store.planTrajectory(cartesianTarget("world"))
     emit("INITIALIZE_RECEIVED")
+    reason = { code: "deactivated" }
 
     expect(store.hold()).toBe(false)
     expect(sentMessageTypes(sockets.at(-1))).not.toContain(
@@ -1002,6 +1081,23 @@ describe("TrajectoryExecutionStore hold to move", () => {
     reason = null
     expect(store.hold()).toBe(true)
     expect(sentMessageTypes(sockets.at(-1))).toContain("StartMovementRequest")
+  })
+
+  // "A locked app plans and starts no trajectory" (RobotSessionOptions)
+  test("hold moves nothing while the app locks the robot, and moves once it no longer does", async () => {
+    let locked = false
+    const { store, emit, sockets } = makeStore({ isLocked: () => locked })
+    await store.planTrajectory(cartesianTarget("world"))
+    emit("INITIALIZE_RECEIVED")
+    locked = true
+
+    expect(store.hold()).toBe(false)
+    expect(sentMessageTypes(sockets.at(-1))).not.toContain(
+      "StartMovementRequest",
+    )
+
+    locked = false
+    expect(store.hold()).toBe(true)
   })
 
   test("hold moves nothing without a trajectory that NOVA accepted", async () => {
