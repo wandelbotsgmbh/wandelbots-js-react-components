@@ -378,6 +378,19 @@ test("calls the connection critical and reconnects when no state came for 3 s", 
   stream.dispose()
 })
 
+// Else a disposed stream keeps the quality and the controller state it had
+// last: a robot that may move, for whatever still reads it
+test("calls the connection critical once it is disposed: no state comes any more", () => {
+  const { stream, source } = makeStream(jointsA)
+  expect(stream.connectionQuality).toBe("good")
+
+  stream.dispose()
+
+  expect(stream.connectionQuality).toBe("critical")
+  source.send(controllerState(jointsB))
+  expect(stream.connectionQuality).toBe("critical")
+})
+
 test("gives a virtual robot more time, as its stream can be slower", () => {
   vi.useFakeTimers()
   const { stream } = makeStream(jointsA, { isVirtual: true })

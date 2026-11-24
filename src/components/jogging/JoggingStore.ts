@@ -384,6 +384,12 @@ export class JoggingStore {
     over: Promise<void>
   } | null = null
 
+  /**
+   * Set by {@link JoggingStore.dispose}: a panel may still show the store,
+   * and it starts no jog any more
+   */
+  private disposed = false
+
   constructor(
     readonly jogger: JoggerConnection,
     readonly coordSystems: CoordinateSystem[],
@@ -473,7 +479,13 @@ export class JoggingStore {
     )
   }
 
+  /**
+   * Closes the jogger's websockets. The store starts no jog afterwards: a
+   * start rejects with a {@link JoggingRefusedError} ("disconnected"), and
+   * opens nothing.
+   */
   dispose() {
+    this.disposed = true
     for (const dispose of this.disposers) {
       dispose()
     }
@@ -608,7 +620,8 @@ export class JoggingStore {
   }
 
   /**
-   * Throws a {@link JoggingRefusedError} while a jog may not start: with the
+   * Throws a {@link JoggingRefusedError} while a jog may not start: once
+   * the store is disposed ("disconnected"), with the
    * owner's reason that the robot may not move, else while another client
    * holds the jogging connection ({@link JoggingStore.blocked}), else while
    * the store is locked. `ownLock` is the lock of the step that asks: it
@@ -627,6 +640,8 @@ export class JoggingStore {
    * which it stops.
    */
   private refusedReason(ownLock?: string): JoggingRefusedReason | null {
+    // Its connections are closed: no live state comes for it any more
+    if (this.disposed) return { code: "disconnected" }
     const reason = this.notMoveableReason?.() ?? null
     if (reason) return reason
     if (this.blocked) return { code: "blocked" }

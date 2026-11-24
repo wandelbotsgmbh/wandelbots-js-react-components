@@ -186,6 +186,8 @@ export class TrajectoryExecutionStore {
   private motion: "starting" | "running" | "pausing" | null = null
   /** The hold ended while "starting": pause once NOVA confirms the start */
   private releaseOnStart = false
+  /** Set by `dispose`: no execution websocket opens any more */
+  private disposed = false
   private readonly disposers: IReactionDisposer[] = []
   private readonly logger: ConnectionLogger
 
@@ -560,7 +562,9 @@ export class TrajectoryExecutionStore {
     } finally {
       this.reset()
       this.closeSocket()
-      this.socket = this.openSocket()
+      // A store that is disposed opens nothing: an app may still drop its
+      // plan, e.g. a panel that goes away after its session
+      if (!this.disposed) this.socket = this.openSocket()
     }
   }
 
@@ -593,8 +597,12 @@ export class TrajectoryExecutionStore {
     this.lastError = null
   }
 
-  /** Closes the execution websocket and stops following the motion stream */
+  /**
+   * Closes the execution websocket and stops following the motion stream.
+   * No execution websocket opens afterwards.
+   */
   dispose() {
+    this.disposed = true
     for (const dispose of this.disposers) {
       dispose()
     }

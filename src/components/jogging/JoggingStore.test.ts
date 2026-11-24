@@ -1190,6 +1190,40 @@ describe("a start that is refused", () => {
     expect(jogger.setJoggingMode).toHaveBeenCalledOnce()
   })
 
+  // A panel can still show a store that its app has disposed
+  it.each(
+    starts,
+  )("%s opens no jogging connection once the store is disposed", async (_name, start) => {
+    const jogger = createMockJogger()
+    const store = createStore({ jogger })
+
+    store.dispose()
+
+    expect(await refusalOf(start(store))).toEqual({ code: "disconnected" })
+    expectNothingSent(jogger)
+  })
+
+  it("changes no TCP and hands the jogger to no jogging once the store is disposed", async () => {
+    const jogger = createMockJogger()
+    const store = createStore({
+      jogger,
+      tcps: [
+        { id: "Flange", readable_name: "Flange" },
+        { id: "gripper", readable_name: "Gripper" },
+      ] as unknown as RobotTcp[],
+    })
+
+    store.dispose()
+
+    expect(await refusalOf(store.requestTcpChange("gripper"))).toEqual({
+      code: "disconnected",
+    })
+    expect(await refusalOf(store.claimForJogging())).toEqual({
+      code: "disconnected",
+    })
+    expect(jogger.setJoggingMode).not.toHaveBeenCalled()
+  })
+
   it("says why the robot may not move, not that the store is locked, when both hold", async () => {
     const store = createStore({
       notMoveableReason: () => ({

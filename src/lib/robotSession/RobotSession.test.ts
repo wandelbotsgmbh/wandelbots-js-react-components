@@ -649,6 +649,43 @@ describe("RobotSession", () => {
     })
   })
 
+  // A panel can still show a session that its app has disposed, e.g. while
+  // it switches to another robot
+  it("jogs, plans and moves nothing once it is disposed, and opens no connection: the robot counts as disconnected", async () => {
+    const session = await harness.load().ready
+    harness.source.send(controllerState({ mode: "MODE_CONTROL" }))
+    const execution = await fakeExecution(session)
+    const pose = {
+      type: "joint" as const,
+      motionGroupId: MOTION_GROUP_ID,
+      joints: [0.1, 0, 0, 0, 0, 0],
+    }
+    await session.targetPose.plan(pose)
+    execution.emit("INITIALIZE_RECEIVED")
+    const setJoggingMode = vi.spyOn(session.jogging.jogger, "setJoggingMode")
+    execution.planTrajectory.mockClear()
+    const socketsBefore = execution.sockets.length
+
+    session.dispose()
+
+    expect(session.safety.notMoveableReason).toEqual({ code: "disconnected" })
+    const jog = await session.jogging
+      .startCartesianJogging("translate", "z", "+")
+      .catch((error: unknown) => error)
+    expect((jog as JoggingRefusedError).reason).toEqual({
+      code: "disconnected",
+    })
+    expect(setJoggingMode).not.toHaveBeenCalled()
+    expect(session.targetPose.holdMove(pose)).toBe(false)
+    expect(session.trajectory.hold()).toBe(false)
+    // The panel drops its target, or plans another one
+    await session.targetPose.plan({ ...pose, joints: [0.2, 0, 0, 0, 0, 0] })
+    await session.targetPose.resetToLive()
+    expect(execution.planTrajectory).not.toHaveBeenCalled()
+    expect(execution.sent()).not.toContain("StartMovementRequest")
+    expect(execution.sockets).toHaveLength(socketsBefore)
+  })
+
   it("plans no typed pose while the app is locked", async () => {
     const session = await harness.load({ isLocked: () => true }).ready
     harness.source.send(controllerState({ mode: "MODE_CONTROL" }))

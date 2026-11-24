@@ -317,13 +317,19 @@ export class ControllerStateStream {
     this.setConnectionQuality("good")
   }
 
-  /** Stops listening to the source; the source's owner closes it */
+  /**
+   * Stops listening to the source; the source's owner closes it. The
+   * connection is critical from then on: no state comes any more, and the
+   * last one is not the robot's now (a robot that may move, for whatever
+   * still reads it).
+   */
   dispose() {
     this.source.removeEventListener("message", this.handleMessage)
     clearInterval(this.connectionQualityInterval)
     if (this.reconnectsOnFocus) {
       window.removeEventListener("focus", this.handleWindowFocus)
     }
+    this.setConnectionQuality("critical")
   }
 
   private handleMessage(event: MessageEvent) {
