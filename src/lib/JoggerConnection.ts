@@ -33,14 +33,6 @@ export type Vector3Simple = [number, number, number]
 const API_ERROR_CONNECTION_BLOCKED = `Movement request rejected. Another client is currently executing a 'Jogging' motion!`
 
 /**
- * How long to wait for the robot to actually start moving after the controller
- * acknowledged the start of an incremental jog. A short increment can be over
- * before the motion stream reports any movement, so this is a grace period,
- * not a requirement.
- */
-const MOTION_START_GRACE_MS = 500
-
-/**
  * Slack added on top of a jog's planned duration by {@link motionTimeoutMs}:
  * covers the two websocket round trips of the start handshake and the lag until
  * the motion stream reports standstill again.
@@ -49,8 +41,9 @@ const MOTION_HANDSHAKE_ALLOWANCE_MS = 5_000
 
 /**
  * Watchdog for a single incremental jog, after which the caller is released
- * even though the motion never reported completion. Without it, a lost
- * standstill update would leave the jogging UI locked for good.
+ * even though the motion never reported completion. Without it, a motion
+ * that never starts, or a lost update of the motion stream, would leave the
+ * jogging UI locked for good.
  *
  * Derived from the planned trajectory rather than fixed, so that a 0.1mm jog is
  * not given the same budget as a 5° one at the slowest 1°/s. Doubling the planned duration
@@ -612,12 +605,14 @@ export class JoggerConnection {
    * The axis is one of the tool in tool orientation, else one of
    * {@link JoggerConnection.coordinateSystem} (default: world).
    *
-   * Promise resolves only after the motion has completed: once the robot
-   * stands still again, or after a watchdog of twice the planned duration
-   * plus 5 s. A step requested while another one runs is dropped (resolves
-   * at once). Every error (a refused or failed plan, a refused trajectory, an
-   * error of the controller, the watchdog) goes to `onError`, or without it
-   * rejects the promise.
+   * Promise resolves only after the motion has completed: once NOVA reports
+   * the trajectory at its end, or no longer as running (`stop()`), and the
+   * robot stands still, or after a watchdog of twice the planned duration
+   * plus 5 s, which also ends a step that never starts. A step requested
+   * while another one runs is dropped (resolves at once). Every error (a
+   * refused or failed plan, a refused trajectory, an error of the
+   * controller, the watchdog) goes to `onError`, or without it rejects the
+   * promise.
    */
   async runIncrementalCartesianMotion(
     request: IncrementalCartesianMotionRequest,
@@ -756,8 +751,9 @@ export class JoggerConnection {
 
   /**
    * Execute a planned trajectory https://portal.wandelbots.io/docs/api/v2/ui/#/operations/executeTrajectory
-   * and resolve once the robot has come to a standstill again, so that the
-   * caller -- and with it the jogging UI's motion lock -- stays blocked for the
+   * and resolve once the robot has run it to its end and stands still again
+   * (see {@link JoggerConnection.waitForMotionToFinish}), so that the caller
+   * -- and with it the jogging UI's motion lock -- stays blocked for the
    * whole motion. It also resolves when the jogger closes the websocket
    * (`setJoggingMode`, `dispose`).
    *
@@ -864,9 +860,14 @@ export class JoggerConnection {
               return
             }
 
-            this.waitForMotionToFinish(abortWaiting.signal).then(succeed, fail)
+            this.waitForMotionToFinish(trajectory, abortWaiting.signal).then(
+              succeed,
+              fail,
+            )
           } else if (result.kind === "PAUSE_RECEIVED") {
-            // do nothing
+            // `stop()` paused the step: it is over once the robot stands
+            // still, also when the stream never showed it running
+            this.waitUntilStopped(abortWaiting.signal).then(succeed, fail)
           } else if (result.kind === "MOTION_ERROR" && result.message) {
             fail(result)
           } else {
@@ -907,22 +908,69 @@ export class JoggerConnection {
   /**
    * Resolve once the robot has finished executing a trajectory.
    *
-   * `standstill` from the motion stream is the only completion signal we get.
-   * The robot is still at standstill for a moment after the controller
-   * acknowledges the start, and a short increment can be over before the stream
-   * reports any movement at all -- so movement is waited for as a grace period,
-   * never required.
+   * What says so is the execution state in the motion stream (`execute`),
+   * which NOVA gives to follow a movement. `standstill` alone does not: it
+   * says that NOVA treats the measured joint velocities as 0, which is so
+   * before the robot picks up speed and can be so for the whole of a slow
+   * motion. A step that took `standstill` as its end closed its websocket,
+   * and with it stopped the robot, soon after the start of a 5° turn at
+   * 1 °/s.
+   *
+   * So the step is over when NOVA has run the trajectory to its end, or no
+   * longer runs it after it did (NOVA executes nothing any more), and the
+   * robot stands still. A step that never starts does not get here: the
+   * watchdog of `executeTrajectory` ends it with an error.
    */
-  private async waitForMotionToFinish(signal: AbortSignal) {
-    const atStandstill = () =>
-      this.motionStream.rapidlyChangingMotionState.standstill
+  private async waitForMotionToFinish(
+    trajectory: JointTrajectory,
+    signal: AbortSignal,
+  ) {
+    // NOVA calls both ends of a trajectory END_OF_TRAJECTORY: its first
+    // sample, for a move backward, and its last. A step moves forward, so an
+    // end at the first sample is a trajectory that has not run: the step
+    // ends on the half of the last one.
+    const { locations } = trajectory
+    const halfway =
+      ((locations?.[0] ?? 0) + (locations?.[locations.length - 1] ?? 0)) / 2
+    const isAtEnd = () => {
+      const executed = this.executedTrajectory
+      return (
+        executed?.state.kind === "END_OF_TRAJECTORY" &&
+        executed.location >= halfway
+      )
+    }
 
-    await when(() => !atStandstill(), {
-      timeout: MOTION_START_GRACE_MS,
-      signal,
-    }).catch(() => {})
+    // The move is on its way once NOVA reports it as running. A short step
+    // can be over before the stream showed that: then it shows its end.
+    await when(() => this.isTrajectoryRunning || isAtEnd(), { signal })
 
-    await when(atStandstill, { signal })
+    await this.waitUntilStopped(signal)
+  }
+
+  /**
+   * Resolve once NOVA no longer runs a trajectory and the robot stands
+   * still: at the end of the trajectory, or after a pause
+   */
+  private async waitUntilStopped(signal: AbortSignal) {
+    await when(
+      () =>
+        !this.isTrajectoryRunning &&
+        this.motionStream.rapidlyChangingMotionState.standstill,
+      { signal },
+    )
+  }
+
+  /** The trajectory that NOVA executes now, as the motion stream reports it */
+  private get executedTrajectory() {
+    const details =
+      this.motionStream.rapidlyChangingMotionState.execute?.details
+    return details?.kind === "TRAJECTORY" ? details : undefined
+  }
+
+  /** Whether NOVA moves the robot along a trajectory, or is about to */
+  private get isTrajectoryRunning() {
+    const state = this.executedTrajectory?.state.kind
+    return state === "RUNNING" || state === "WAIT_FOR_IO"
   }
 }
 

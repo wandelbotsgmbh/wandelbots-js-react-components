@@ -67,6 +67,9 @@ class FakeSocket {
 
 const tick = () => new Promise((resolve) => setTimeout(resolve, 0))
 
+/** The states of a trajectory's execution that the tests report */
+type ExecutionKind = "RUNNING" | "END_OF_TRAJECTORY" | "PAUSED_BY_USER"
+
 function setup({
   plannedDurationSeconds = 2,
   planResponse,
@@ -161,6 +164,29 @@ function setup({
       })
     },
 
+    /**
+     * What the motion stream reports of the trajectory that NOVA executes,
+     * and where on it the robot is: from 0 to 1, the end of a step. null:
+     * NOVA executes nothing (the stream has no `execute`).
+     */
+    setExecution(kind: ExecutionKind | null, location = 0) {
+      runInAction(() => {
+        state().execute =
+          kind === null
+            ? undefined
+            : {
+                joint_position: state().joint_position,
+                details: {
+                  kind: "TRAJECTORY",
+                  trajectory: "step",
+                  location,
+                  state:
+                    kind === "RUNNING" ? { kind, time_to_end: 0 } : { kind },
+                },
+              }
+      })
+    },
+
     /** Pretend the robot moved a little, as it does while a jog executes */
     nudgeJoints(delta: number) {
       runInAction(() => {
@@ -204,8 +230,29 @@ function setup({
     /** Drive a socket through a whole motion, until the robot stands still */
     finishMotionOn(socket: FakeSocket) {
       this.startMotionOn(socket)
+      this.setExecution("RUNNING", 0.5)
       this.setStandstill(false)
+      this.setExecution("END_OF_TRAJECTORY", 1)
       this.setStandstill(true)
+    },
+
+    /**
+     * Start a step with the fake clock: vi.waitUntil needs real timers, so
+     * the clock is stepped until planning has resolved and the execution
+     * socket is open. Returns the step, its socket and whether it is over.
+     */
+    async startJogWithFakeTimers() {
+      const step = { released: false }
+      const jog = this.jog().then(() => {
+        step.released = true
+      })
+      for (let i = 0; i < 20 && trajectorySockets.length === 0; i++) {
+        await vi.advanceTimersByTimeAsync(1)
+      }
+      const socket = trajectorySockets[0]
+      if (!socket) throw new Error("no trajectory socket")
+      this.startMotionOn(socket)
+      return { jog, socket, step }
     },
   }
 }
@@ -220,6 +267,7 @@ test("an incremental jog resolves only once the robot has stopped moving", async
 
   const socket = await h.waitForTrajectorySocket(1)
   h.startMotionOn(socket)
+  h.setExecution("RUNNING", 0.5)
   h.setStandstill(false)
   await tick()
 
@@ -227,11 +275,187 @@ test("an incremental jog resolves only once the robot has stopped moving", async
   // blocked while the robot is mid-motion
   expect(resolved).toBe(false)
 
+  // The last sample went out, and the robot still settles
+  h.setExecution("END_OF_TRAJECTORY", 1)
+  await tick()
+  expect(resolved).toBe(false)
+
   h.setStandstill(true)
   await jog
 
   expect(resolved).toBe(true)
   expect(socket.disposed).toBe(true)
+})
+
+// A 5° step at 1 °/s, planned for 5 s, ended after about 0.7 s on a real
+// NOVA instance: the robot had turned 0.6°. `standstill` says that NOVA
+// treats the measured joint velocities as 0, which it also does for a robot
+// that moves this slowly: it is no sign that a trajectory is over. NOVA
+// reports that in `execute` of the motion state.
+describe("a slow step, during which the robot counts as standing still", () => {
+  test("runs on while NOVA runs its trajectory, to its end", async () => {
+    vi.useFakeTimers()
+    try {
+      const h = setup({ plannedDurationSeconds: 5 })
+      const { jog, socket, step } = await h.startJogWithFakeTimers()
+
+      // The robot turns, and `standstill` never turns false
+      h.setExecution("RUNNING", 0.1)
+      await vi.advanceTimersByTimeAsync(700)
+      expect(step.released).toBe(false)
+      expect(socket.disposed).toBe(false)
+
+      h.setExecution("RUNNING", 0.9)
+      await vi.advanceTimersByTimeAsync(4000)
+      expect(step.released).toBe(false)
+      expect(socket.disposed).toBe(false)
+
+      h.setExecution("END_OF_TRAJECTORY", 1)
+      await jog
+      expect(socket.disposed).toBe(true)
+      expect(h.errors).toHaveLength(0)
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  test("runs on when `standstill` comes back on the way", async () => {
+    const h = setup({ plannedDurationSeconds: 5 })
+    let resolved = false
+    void h.jog().then(() => {
+      resolved = true
+    })
+    const socket = await h.waitForTrajectorySocket(1)
+    h.startMotionOn(socket)
+
+    h.setExecution("RUNNING", 0.1)
+    h.setStandstill(false)
+    await tick()
+    h.setStandstill(true)
+    await tick()
+
+    expect(resolved).toBe(false)
+    expect(socket.disposed).toBe(false)
+  })
+})
+
+describe("the end of a step", () => {
+  test("a step that was over before the stream showed it running ends at once", async () => {
+    vi.useFakeTimers()
+    try {
+      const h = setup()
+      const { socket, step } = await h.startJogWithFakeTimers()
+
+      h.setExecution("END_OF_TRAJECTORY", 1)
+      await vi.advanceTimersByTimeAsync(0)
+
+      expect(step.released).toBe(true)
+      expect(socket.disposed).toBe(true)
+      expect(h.errors).toHaveLength(0)
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  // NOVA calls the first sample of a trajectory its end as well, for a
+  // move backward: a trajectory that waits there has not run
+  test("a trajectory at its first sample is not at the end of the step", async () => {
+    const h = setup()
+    let resolved = false
+    void h.jog().then(() => {
+      resolved = true
+    })
+    const socket = await h.waitForTrajectorySocket(1)
+    h.startMotionOn(socket)
+
+    h.setExecution("END_OF_TRAJECTORY", 0)
+    await tick()
+
+    expect(resolved).toBe(false)
+    expect(socket.disposed).toBe(false)
+  })
+
+  test("a step that is stopped on the way ends once the robot stands still", async () => {
+    const h = setup()
+    let resolved = false
+    const jog = h.jog().then(() => {
+      resolved = true
+    })
+    const socket = await h.waitForTrajectorySocket(1)
+    h.startMotionOn(socket)
+    h.setExecution("RUNNING", 0.3)
+    h.setStandstill(false)
+
+    await h.jogger.stop()
+    expect(socket.sentMessageTypes).toContain("PauseMovementRequest")
+    // NOVA took the pause, and the stream still shows the move
+    socket.emit({ kind: "PAUSE_RECEIVED" })
+    await tick()
+    expect(resolved).toBe(false)
+
+    h.setExecution("PAUSED_BY_USER", 0.4)
+    await tick()
+    expect(resolved).toBe(false)
+
+    h.setStandstill(true)
+    await jog
+    expect(socket.disposed).toBe(true)
+    expect(h.errors).toHaveLength(0)
+  })
+
+  test("a step that is stopped before the stream showed it running ends as well", async () => {
+    const h = setup()
+    const jog = h.jog()
+    const socket = await h.waitForTrajectorySocket(1)
+    h.startMotionOn(socket)
+
+    await h.jogger.stop()
+    socket.emit({ kind: "PAUSE_RECEIVED" })
+    h.setExecution("PAUSED_BY_USER", 0)
+
+    await jog
+    expect(socket.disposed).toBe(true)
+    expect(h.errors).toHaveLength(0)
+  })
+
+  test("a step that NOVA no longer executes ends once the robot stands still", async () => {
+    const h = setup()
+    const jog = h.jog()
+    const socket = await h.waitForTrajectorySocket(1)
+    h.startMotionOn(socket)
+    h.setExecution("RUNNING", 0.3)
+    h.setStandstill(false)
+
+    // e.g. the controller left the control mode
+    h.setExecution(null)
+    h.setStandstill(true)
+
+    await jog
+    expect(socket.disposed).toBe(true)
+  })
+
+  test("a step that never starts ends with an error after the watchdog, not for ever and not as done", async () => {
+    vi.useFakeTimers()
+    try {
+      const h = setup({ plannedDurationSeconds: 2 })
+      const watchdogMs = 2 * 2000 + 5000
+      const { jog, socket, step } = await h.startJogWithFakeTimers()
+
+      // NOVA took the start, and the stream shows no trajectory running:
+      // the robot stands still, as before the step
+      await vi.advanceTimersByTimeAsync(watchdogMs - 100)
+      expect(step.released).toBe(false)
+      expect(socket.disposed).toBe(false)
+
+      await vi.advanceTimersByTimeAsync(200)
+      await jog
+      expect(h.errors).toHaveLength(1)
+      expect(String(h.errors[0])).toContain("did not complete")
+      expect(socket.disposed).toBe(true)
+    } finally {
+      vi.useRealTimers()
+    }
+  })
 })
 
 test.each([
