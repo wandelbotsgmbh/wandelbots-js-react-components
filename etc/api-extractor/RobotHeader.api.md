@@ -16,7 +16,6 @@ import { JSX } from 'react/jsx-runtime';
 import { KinematicModel } from '@wandelbots/nova-js/v2';
 import { MotionGroupDescription } from '@wandelbots/nova-js/v2';
 import { MotionGroupState } from '@wandelbots/nova-js/v2';
-import type { Nova } from '@wandelbots/nova-js/v2';
 import type { OperationMode } from '@wandelbots/nova-js/v2';
 import type { PopoverOrigin } from '@mui/material/Popover';
 import { Pose } from '@wandelbots/nova-js/v2';

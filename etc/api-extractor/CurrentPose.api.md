@@ -18,7 +18,6 @@ import { JSX } from 'react/jsx-runtime';
 import { KinematicModel } from '@wandelbots/nova-js/v2';
 import { MotionGroupDescription } from '@wandelbots/nova-js/v2';
 import { MotionGroupState } from '@wandelbots/nova-js/v2';
-import type { Nova } from '@wandelbots/nova-js/v2';
 import type { OrientationType as OrientationType_2 } from '@wandelbots/nova-js/v2';
 import { Pose } from '@wandelbots/nova-js/v2';
 import { ReactNode } from 'react';

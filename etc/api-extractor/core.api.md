@@ -19,7 +19,6 @@ import { JSX } from 'react/jsx-runtime';
 import { KinematicModel } from '@wandelbots/nova-js/v2';
 import { MotionGroupDescription } from '@wandelbots/nova-js/v2';
 import { MotionGroupState } from '@wandelbots/nova-js/v2';
-import type { Nova } from '@wandelbots/nova-js/v2';
 import type { OperationMode } from '@wandelbots/nova-js/v2';
 import type { OrientationType as OrientationType_2 } from '@wandelbots/nova-js/v2';
 import type { PopoverOrigin } from '@mui/material/Popover';
@@ -61,7 +60,7 @@ export type AppItem = {
     onClick?: () => void;
 };
 
-// @public (undocumented)
+// @public @deprecated
 export interface AxisControlComponentColors {
     // (undocumented)
     backgroundColor?: string;
@@ -160,7 +159,7 @@ export class ConnectedMotionGroup {
     toggleActivation(): void;
 }
 
-// @public (undocumented)
+// @public @deprecated (undocumented)
 export type ConnectedMotionGroupOptions = {
     cellId?: string;
 };
@@ -206,9 +205,6 @@ export type ControllerStateSource = {
 
 // @public
 export class ControllerStateStream {
-    constructor(
-    source: ControllerStateSource,
-    motionGroupId: string, initialControllerState: RobotControllerState, options?: ControllerStateStreamOptions);
     connectionQuality: "good" | "struggling" | "critical";
     get controllerState(): RobotControllerState;
     dispose(): void;
@@ -226,26 +222,6 @@ export class ControllerStateStream {
     get readoutState(): MotionStateReadout;
     readonly source: ControllerStateSource;
 }
-
-// @public
-export type ControllerStateStreamError = {
-    message: string;
-    url?: string;
-};
-
-// @public
-export type ControllerStateStreamOptions = {
-    isVirtual?: boolean;
-    onError?: (error: ControllerStateStreamError) => void;
-    reconnectOnFocus?: boolean;
-};
-
-// @public
-export function controllerStateWebsocket(connection: NovaConnection, input: {
-    controllerId: string;
-    cellId?: string;
-    responseRateMs?: number;
-}): ControllerStateSource;
 
 // @public
 export const CurrentPose: FunctionComponent<CurrentPoseProps>;
@@ -430,7 +406,7 @@ export const JoggingButtons: (props: JoggingButtonsProps) => JSX.Element;
 // @public
 export type JoggingButtonsProps = JogControlsProps;
 
-// @public
+// @public @deprecated
 export const JoggingCartesianAxisControl: ((input: JoggingCartesianAxisControlProps) => JSX.Element) & {
     displayName: string;
 };
@@ -452,17 +428,17 @@ export type JoggingJointSliderProps = {
     disabled?: boolean;
 };
 
-// @public
+// @public @deprecated
 export const JoggingJointValueControl: ((input: JoggingJointValueControlProps) => JSX.Element) & {
     displayName: string;
 };
 
-// @public
+// @public @deprecated
 export const JoggingPanel: ((props: JoggingPanelProps) => JSX.Element) & {
     displayName: string;
 };
 
-// @public (undocumented)
+// @public @deprecated (undocumented)
 export type JoggingPanelProps = {
     nova: NovaConnection;
     motionGroupId: string;
@@ -474,7 +450,7 @@ export type JoggingPanelProps = {
     store?: JoggingStore;
 };
 
-// @public (undocumented)
+// @public @deprecated (undocumented)
 export type JoggingPanelTabId = "cartesian" | "joint";
 
 // @public
@@ -492,7 +468,9 @@ export type JoggingRefusedReason = RobotNotMoveableReason | {
 // @public (undocumented)
 export class JoggingStore {
     constructor(jogger: JoggerConnection, coordSystems: CoordinateSystem[], motionGroupDescription: MotionGroupDescription, tcps: RobotTcp[], inverseSolverValue: string | null | undefined, options?: JoggingStoreOptions);
+    // @deprecated
     activate(): Promise<JoggerConnection>;
+    // @deprecated
     get activeCoordSystemId(): string;
     get activeDiscreteIncrement(): {
         id: string;
@@ -514,7 +492,6 @@ export class JoggingStore {
         description: MotionGroupDescription;
         kinematicModel: KinematicModel;
     }, options?: JoggingStoreOptions): JoggingStore;
-    // (undocumented)
     get currentTab(): JoggingTab;
     // (undocumented)
     deactivate(): Promise<void>;
@@ -580,7 +557,7 @@ export class JoggingStore {
     // (undocumented)
     readonly motionGroupDescription: MotionGroupDescription;
     onBeforeActivate: (() => void | Promise<void>) | null;
-    // (undocumented)
+    // @deprecated
     onTabChange(_event: React.SyntheticEvent, newValue: number): void;
     requestTcpChange(tcpId: string): Promise<void>;
     rotationVelocityDegPerSec: number;
@@ -594,7 +571,7 @@ export class JoggingStore {
     // (undocumented)
     selectedTabId: TabType;
     selectedTcpId: string;
-    // (undocumented)
+    // @deprecated (undocumented)
     setCurrentIncrementJog(incrementJog: IncrementJogInProgress | null): void;
     // (undocumented)
     setLastJogError(message: string | null): void;
@@ -611,22 +588,30 @@ export class JoggingStore {
     // @deprecated (undocumented)
     setSelectedTcpId(id: string): void;
     setVelocityFromSlider(velocity: number, useDegree: boolean): void;
+    // @deprecated
     showCoordSystemSelect: boolean;
+    // @deprecated
     showIncrementSelect: boolean;
+    // @deprecated
     showJointsLegend: boolean;
+    // @deprecated
     showOrientationSelect: boolean;
+    // @deprecated
     showTabIcons: boolean;
+    // @deprecated
     showTcpSelect: boolean;
+    // @deprecated
     showVelocityLegend: boolean;
+    // @deprecated
     showVelocitySliderLabel: boolean;
     startCartesianJogging(motion: CartesianMotionType, axis: JoggingAxis, direction: JoggingDirection): Promise<void>;
     startJointJogging(joint: number, direction: JoggingDirection): Promise<void>;
     stopJogging(): Promise<void>;
-    // (undocumented)
+    // @deprecated
     get tabIndex(): number;
-    // (undocumented)
+    // @deprecated
     get tabs(): [JoggingTab, ...JoggingTab[]];
-    // (undocumented)
+    // @deprecated (undocumented)
     get tabsById(): Dictionary<JoggingTab>;
     tcpChangeInProgress: boolean;
     tcpPoseIn(tcpId: string, coordinateSystemId: string): Pose | undefined;
@@ -664,9 +649,6 @@ export function jointsToText(joints: readonly number[]): string;
 // @public
 export function jointValuesEqual(oldJointValues: number[], newJointValues: number[], changeDeltaThreshold: number): boolean;
 
-// @public
-export function jointValuesUnchanged(oldJointValues: number[], newJointValues: number[], changeDeltaThreshold: number): boolean;
-
 // @public (undocumented)
 export const LoadingCover: (props: {
     message?: string;
@@ -696,10 +678,7 @@ export type LoadRobotSessionOptions = RobotSessionOptions & {
     socketTimeoutMs?: number;
 };
 
-// @public
-export const MOTION_DELTA_THRESHOLD = 0.0001;
-
-// @public (undocumented)
+// @public @deprecated (undocumented)
 export type MotionGroupOption = {
     selectionId: string;
 };
@@ -771,12 +750,6 @@ export type OrientationFormat = {
 };
 
 // @public
-export function parseJointsText(text: string, jointCount: number): number[] | null;
-
-// @public
-export function parsePoseText(text: string): RobotControlPose | null;
-
-// @public
 export function planErrorTranslationKey(errorFeedbackName: string): string;
 
 // @public
@@ -806,12 +779,6 @@ export function poseToText(pose: {
 }): string;
 
 // @public
-export function readoutOf(motionState: MotionGroupState): MotionStateReadout;
-
-// @public
-export function readoutsEqual(shown: MotionStateReadout, next: MotionStateReadout): boolean;
-
-// @public
 export type ReferencedPose = {
     pose: Required<Pose>;
     coordinateSystemId: string;
@@ -825,11 +792,6 @@ export const ROBOT_LOAD_STEP_IDS: readonly ["motionGroupDescription", "controlle
 
 // @public
 export class RobotActivation {
-    constructor(nova: Nova, ids: {
-        cellId: string;
-        controllerId: string;
-    }, live: RobotLiveState, safety: () => RobotSafety, logger: ConnectionLogger,
-    releaseControl?: () => Promise<void>);
     activate(): Promise<void>;
     deactivate(): Promise<void>;
     // (undocumented)
@@ -1177,7 +1139,7 @@ export class RobotTargetPose {
     get stagedPose(): RobotPose | null;
 }
 
-// @public (undocumented)
+// @public @deprecated
 export type RobotTcpLike = {
     id: string;
     readable_name: string;
@@ -1226,7 +1188,6 @@ export type TcpReferencedPose = ReferencedPose & {
 
 // @public
 export class TrajectoryExecutionStore {
-    constructor(options: TrajectoryExecutionStoreOptions);
     clearError(): void;
     dispose(): void;
     get executionState(): "END_OF_TRAJECTORY" | "PAUSED_BY_USER" | "PAUSED_ON_IO" | "RUNNING" | "WAIT_FOR_IO" | "PAUSED_NEAR_COLLISION" | "PAUSED_NEAR_JOINT_LIMIT" | "PAUSED_NEAR_SINGULARITY" | undefined;
@@ -1243,14 +1204,6 @@ export class TrajectoryExecutionStore {
     stopAndReset(): Promise<void>;
     trajectoryState: TrajectoryState;
 }
-
-// @public
-export type TrajectoryExecutionStoreOptions = {
-    joggingStore: JoggingStore;
-    isLocked?: () => boolean;
-    ensureMovementOwnership?: () => Promise<void>;
-    logger?: ConnectionLogger;
-};
 
 // @public
 export type TrajectoryState = "idle" | "planning" | "planned" | "moving" | "stopping";
@@ -1304,12 +1257,12 @@ export class ValueInterpolator {
 // @public (undocumented)
 export type Vector3Simple = [number, number, number];
 
-// @public
+// @public @deprecated
 export const VelocitySlider: ((props: VelocitySliderProps) => JSX.Element) & {
     displayName: string;
 };
 
-// @public (undocumented)
+// @public @deprecated
 export function VelocitySliderLabel(input: VelocitySliderLabelProps): JSX.Element;
 
 // (No @packageDocumentation comment for this package)
