@@ -9,7 +9,7 @@ import type {
   RobotControllerConfiguration,
   RobotControllerState,
 } from "@wandelbots/nova-js/v2"
-import { tryParseJson } from "../../components/utils/converters"
+import { tryParseJson } from "../../components/utils/json"
 import type { ControllerStateSource } from "../controllerStateSource"
 import {
   getMotionGroupModelResource,

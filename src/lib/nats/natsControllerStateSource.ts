@@ -1,6 +1,6 @@
 import type { RobotControllerState } from "@wandelbots/nova-js/v2"
 import { connect, type NatsConnection, type Subscription } from "nats.ws"
-import { tryParseJson } from "../../components/utils/converters"
+import { tryParseJson } from "../../components/utils/json"
 import type { ConnectionLogger } from "../connectionLogger"
 import type { ControllerStateSource } from "../controllerStateSource"
 import type { NovaConnection } from "../novaConnection"

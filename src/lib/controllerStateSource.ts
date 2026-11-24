@@ -1,6 +1,6 @@
 import type { AutoReconnectingWebsocket } from "@wandelbots/nova-js"
 import type { RobotControllerState } from "@wandelbots/nova-js/v2"
-import { tryParseJson } from "../components/utils/converters"
+import { tryParseJson } from "../components/utils/json"
 import {
   cellIdOf,
   createNovaClient,

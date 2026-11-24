@@ -25,7 +25,7 @@ import {
   writeFileSync,
 } from "node:fs"
 import { createRequire } from "node:module"
-import { dirname, resolve } from "node:path"
+import { dirname, relative, resolve } from "node:path"
 import { fileURLToPath } from "node:url"
 import { afterAll, beforeAll, describe, expect, it } from "vitest"
 
@@ -250,31 +250,108 @@ describe("aggregate barrel preserves named exports", () => {
 })
 
 /**
- * The packages that an ESM file of dist/ imports, with every relative import
- * followed: what an app needs installed to import it
+ * The packages that a file of dist/ (ESM or CJS) imports, with every relative
+ * import followed, each with the files of dist/ that import it: what an app
+ * needs installed to import the file
  */
-function packagesImportedBy(esmPath: string): Set<string> {
+function importsOf(distFile: string): Map<string, string[]> {
   const seen = new Set<string>()
-  const packages = new Set<string>()
+  const importers = new Map<string, string[]>()
   const visit = (file: string) => {
     if (seen.has(file)) return
     seen.add(file)
     const code = readFileSync(file, "utf8")
     for (const [, spec] of code.matchAll(
-      /(?:from|import)\s*\(?\s*"([^"]+)"/g,
+      /(?:from|import|require)\s*\(?\s*"([^"]+)"/g,
     )) {
       if (spec.startsWith(".")) visit(resolve(dirname(file), spec))
       else {
         const parts = spec.split("/")
-        packages.add(
-          spec.startsWith("@") ? parts.slice(0, 2).join("/") : parts[0],
-        )
+        const name = spec.startsWith("@")
+          ? parts.slice(0, 2).join("/")
+          : parts[0]
+        importers.set(name, [
+          ...(importers.get(name) ?? []),
+          relative(distDir, file),
+        ])
       }
     }
   }
-  visit(esmPath)
-  return packages
+  visit(distFile)
+  return importers
 }
+
+function packagesImportedBy(esmPath: string): Set<string> {
+  return new Set(importsOf(esmPath).keys())
+}
+
+/** React and what the library's UI is built with */
+const UI_PACKAGES = [
+  "react",
+  "react-dom",
+  "react-error-boundary",
+  "@mui/*",
+  "@emotion/*",
+  "@wandelbots/mui",
+  "@wandelbots/icons",
+  "@wandelbots/design-tokens",
+  "react-i18next",
+  "i18next",
+  "i18next-browser-languagedetector",
+  "mobx-react-lite",
+]
+
+/** three.js and what draws with it: an app without a 3D view installs none */
+const THREE_PACKAGES = ["three", "three-stdlib", "@react-three/*"]
+
+/**
+ * The packages of `unwanted` ("@mui/*" is every package of the scope) that a
+ * file of dist/ loads, each with the files that import it
+ */
+function unwantedImports(distFile: string, unwanted: string[]): string[] {
+  const isUnwanted = (name: string) =>
+    unwanted.some((pattern) =>
+      pattern.endsWith("/*")
+        ? name.startsWith(pattern.slice(0, -1))
+        : name === pattern,
+    )
+  return [...importsOf(distFile)]
+    .filter(([name]) => isUnwanted(name))
+    .map(([name, files]) => `${name} (${[...new Set(files)].join(", ")})`)
+    .sort()
+}
+
+describe("entry points for an app without a 3D view", () => {
+  // three.js is an optional peer: an app that does not install it must still
+  // build with the NATS source and with these components
+  it.each([
+    "nats",
+    "RobotHeader/index",
+    "CurrentPose/index",
+    "CurrentPoseBar/index",
+    "SafetyBar/index",
+    "JoggingButtons/index",
+    "JoggingJointSlider/index",
+  ])("dist/%s loads no three.js", (entry) => {
+    for (const extension of ["js", "cjs"]) {
+      expect(
+        unwantedImports(
+          resolve(distDir, `${entry}.${extension}`),
+          THREE_PACKAGES,
+        ),
+      ).toEqual([])
+    }
+  })
+
+  // The NATS source is for every app, also one without the library's UI
+  it("dist/nats loads no React and no MUI", () => {
+    for (const extension of ["js", "cjs"]) {
+      expect(
+        unwantedImports(resolve(distDir, `nats.${extension}`), UI_PACKAGES),
+      ).toEqual([])
+    }
+  })
+})
 
 describe("component imports bring only what the component needs", () => {
   // An app that shows only jog buttons or joint sliders needs no 3D: their
