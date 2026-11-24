@@ -1,6 +1,6 @@
 import type { Nova } from "@wandelbots/nova-js/v2"
 import { makeErrorMessage } from "@wandelbots/nova-js"
-import { makeAutoObservable, reaction, runInAction } from "mobx"
+import { makeAutoObservable, when } from "mobx"
 import type { ConnectionLogger } from "../connectionLogger"
 import type { RobotLiveState } from "./RobotLiveState"
 import type { RobotSafety } from "./RobotSafety"
@@ -18,6 +18,18 @@ export type RobotActivationState =
   | "active"
 
 type ControllerMode = "ROBOT_SYSTEM_MODE_CONTROL" | "ROBOT_SYSTEM_MODE_MONITOR"
+
+/** A mode change on its way to the controller */
+type ModeChange = "activating" | "deactivating"
+
+/**
+ * How long a mode change waits for the controller to report the new mode.
+ * NOVA accepts a request that the controller does not follow, e.g. in manual
+ * operation mode without the confirmation at its panel: the change is over
+ * then, and can be asked for again. A controller that confirms later is
+ * followed all the same.
+ */
+export const MODE_CHANGE_TIMEOUT_MS = 30_000
 
 /** A mode change that NOVA refused or that failed; `url` is the request's */
 export class RobotModeChangeError extends Error {
@@ -37,10 +49,14 @@ export class RobotModeChangeError extends Error {
  * and switches the mode on request
  */
 export class RobotActivation {
-  /** What the controller reports, or the mode change in progress */
-  state: RobotActivationState = "inactive"
+  /**
+   * The mode change that was asked for and that the controller has not
+   * reported yet
+   */
+  private pending: ModeChange | null = null
 
-  private readonly disposers: (() => void)[] = []
+  /** Ends the wait of the pending mode change */
+  private endPending: (() => void) | undefined
 
   constructor(
     private readonly nova: Nova,
@@ -54,10 +70,6 @@ export class RobotActivation {
      */
     private readonly releaseControl: () => Promise<void> = async () => {},
   ) {
-    if (live.controllerState.mode === "MODE_CONTROL") {
-      this.state = "active"
-    }
-
     makeAutoObservable<
       this,
       | "nova"
@@ -66,7 +78,7 @@ export class RobotActivation {
       | "safety"
       | "logger"
       | "releaseControl"
-      | "disposers"
+      | "endPending"
     >(
       this,
       {
@@ -76,33 +88,33 @@ export class RobotActivation {
         safety: false,
         logger: false,
         releaseControl: false,
-        disposers: false,
+        endPending: false,
       },
       { autoBind: true },
     )
+  }
 
-    // The controller's mode is the source of truth: the activation shows what
-    // NOVA reports
-    this.disposers.push(
-      reaction(
-        () => this.live.controllerState.mode,
-        (mode) => {
-          this.state = mode === "MODE_CONTROL" ? "active" : "inactive"
-        },
-      ),
-    )
+  /**
+   * What the controller reports, or null while its live state does not
+   * come: the mode cannot be confirmed then
+   */
+  private get reported(): "active" | "inactive" | null {
+    if (this.live.connectionQuality === "critical") {
+      return null
+    }
+    return this.live.controllerState.mode === "MODE_CONTROL"
+      ? "active"
+      : "inactive"
+  }
 
-    // Without the live state the mode cannot be confirmed
-    this.disposers.push(
-      reaction(
-        () => this.live.connectionQuality,
-        (quality) => {
-          if (quality === "critical") {
-            this.state = "inactive"
-          }
-        },
-      ),
-    )
+  /**
+   * The mode change in progress, else what the controller reports. The
+   * controller's mode is the source of truth: without a mode change, the
+   * state is derived from the live state and nothing else, so it cannot
+   * drift from it. Inactive while the live state does not come.
+   */
+  get state(): RobotActivationState {
+    return this.pending ?? this.reported ?? "inactive"
   }
 
   /**
@@ -125,21 +137,9 @@ export class RobotActivation {
       return
     }
 
-    this.state = "activating"
-    try {
-      await this.setMode("ROBOT_SYSTEM_MODE_CONTROL")
-      // A reaction only fires on a change: the mode may be reported already
-      runInAction(() => {
-        if (this.live.controllerState.mode === "MODE_CONTROL") {
-          this.state = "active"
-        }
-      })
-    } catch (err) {
-      runInAction(() => {
-        this.state = "inactive"
-      })
-      throw err
-    }
+    await this.changeMode("activating", () =>
+      this.setMode("ROBOT_SYSTEM_MODE_CONTROL"),
+    )
   }
 
   /**
@@ -153,23 +153,12 @@ export class RobotActivation {
       return
     }
 
-    this.state = "deactivating"
-    try {
+    await this.changeMode("deactivating", async () => {
       // Else the controller stays in control mode, and the activation would
-      // wait for monitor mode forever
+      // wait for monitor mode in vain
       await this.releaseControl()
       await this.setMode("ROBOT_SYSTEM_MODE_MONITOR")
-      runInAction(() => {
-        if (this.live.controllerState.mode !== "MODE_CONTROL") {
-          this.state = "inactive"
-        }
-      })
-    } catch (err) {
-      runInAction(() => {
-        this.state = "active"
-      })
-      throw err
-    }
+    })
   }
 
   /** Activates an inactive robot, deactivates an active one */
@@ -182,9 +171,46 @@ export class RobotActivation {
   }
 
   dispose() {
-    for (const dispose of this.disposers) {
-      dispose()
+    this.endPending?.()
+  }
+
+  /**
+   * Shows a mode change until it is over: the controller reports the mode
+   * that was asked for, the request fails, or the controller has not
+   * confirmed it after {@link MODE_CHANGE_TIMEOUT_MS}. Then the state is
+   * what the controller reports again, and the change can be asked for
+   * again.
+   */
+  private async changeMode(change: ModeChange, request: () => Promise<void>) {
+    const confirmed = change === "activating" ? "active" : "inactive"
+    let stopWatching = () => {}
+    let timer: ReturnType<typeof setTimeout> | undefined
+    // Only while this change is the pending one: a request that fails after
+    // its wait is over must not end the next change
+    const end = () => {
+      if (this.endPending !== end) return
+      this.endPending = undefined
+      stopWatching()
+      clearTimeout(timer)
+      this.setPending(null)
     }
+
+    this.endPending?.()
+    this.endPending = end
+    this.setPending(change)
+    timer = setTimeout(end, MODE_CHANGE_TIMEOUT_MS)
+    stopWatching = when(() => this.reported === confirmed, end)
+
+    try {
+      await request()
+    } catch (err) {
+      end()
+      throw err
+    }
+  }
+
+  private setPending(change: ModeChange | null) {
+    this.pending = change
   }
 
   private async setMode(mode: ControllerMode) {
