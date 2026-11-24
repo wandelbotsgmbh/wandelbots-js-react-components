@@ -227,7 +227,7 @@ What changes besides the names:
 
 ### From JoggingPanel to RobotControl
 
-`JoggingPanel` and its parts that take a `JoggingStore` (`JoggingCartesianAxisControl`, `JoggingJointValueControl`, `VelocitySlider`, `VelocitySliderLabel`) are deprecated. They keep working until a later major version removes them. `RobotControl` replaces the panel: the Robot control panel of the design (Translate, Rotate, Joint and Move to) for a [robot session](#from-connectedmotiongroup-to-robotsession).
+`JoggingPanel` and the older parts it is built from (`JoggingCartesianAxisControl`, `JoggingJointValueControl`, `VelocitySlider`, which reads a `JoggingStore`, and `VelocitySliderLabel`) are deprecated. They keep working until a later major version removes them. `RobotControl` replaces the panel: the Robot control panel of the design (Translate, Rotate, Joint and Move to) for a [robot session](#from-connectedmotiongroup-to-robotsession).
 
 ```tsx
 // Before
@@ -291,7 +291,7 @@ Breaking changes for each major version are documented in the [GitHub Releases](
 
 Manual robot control interfaces.
 
-**JoggingPanel** (deprecated, see [From JoggingPanel to RobotControl](#from-joggingpanel-to-robotcontrol)) - The jogging panel of earlier versions, with cartesian and joint controls. Its parts that take a `JoggingStore` are deprecated with it: **JoggingCartesianAxisControl** (use `JoggingButtons`), **JoggingJointValueControl** (use `JoggingJointSlider`), **VelocitySlider** and **VelocitySliderLabel** (use the velocity of `RobotControlPanel`).
+**JoggingPanel** (deprecated, see [From JoggingPanel to RobotControl](#from-joggingpanel-to-robotcontrol)) - The jogging panel of earlier versions, with cartesian and joint controls. The older parts it is built from are deprecated with it: **JoggingCartesianAxisControl** (use `JoggingButtons`), **JoggingJointValueControl** (use `JoggingJointSlider`), **VelocitySlider** and **VelocitySliderLabel** (use the velocity of `RobotControlPanel`).
 
 **JoggingStore** - The state of the jogging (velocity, coordinate system, the jogging connection). A robot session has one (`session.jogging`), and `JoggingStore.loadFor` creates one for your own controls. It also jogs for them: `startCartesianJogging(motion, axis, direction)` or `startJointJogging(joint, direction)` when a control is pressed and `stopJogging()` when it is let go, and `runIncrementalCartesianJog(motion, axis, direction, increment)` for one step. The store keeps the order that hold-to-jog needs: a press that ends before the jogging connection is ready moves nothing, and one step runs at a time. While the store is locked, or its owner says that the robot may not move (the option `notMoveableReason`, which a `RobotSession` gives its store), or after NOVA refused the jogging connection because another client jogs (`blocked`, until `unblock()`), it starts no jog: the start rejects with a `JoggingRefusedError`, whose `reason.code` says why. The same holds for everything else that opens the jogging connection, a TCP change (`requestTcpChange`) and `session.ensureMovementOwnership("jogging")`: NOVA switches a controller to control mode by itself for it. The store asks again once the connection is open, and closes it when the robot may no longer move by then.
 
