@@ -12,7 +12,6 @@ import {
   type StartMovementResponse,
 } from "@wandelbots/nova-js/v2"
 import { when } from "mobx"
-import { type Quaternion, Vector3 } from "three"
 import type { ConnectionLogger } from "./connectionLogger"
 import {
   computeIncrementalTargetPose,
@@ -20,7 +19,12 @@ import {
 } from "./incrementalCartesianMotion"
 import { MotionStreamConnection } from "./MotionStreamConnection"
 import type { NovaConnection } from "./novaConnection"
-import { Pose3 } from "./Pose3"
+import {
+  poseOfFrame,
+  type Quat,
+  rotateVector,
+  vectorAlongAxis,
+} from "./poseMath"
 
 export type { IncrementalMotion } from "./incrementalCartesianMotion"
 
@@ -579,11 +583,11 @@ export class JoggerConnection {
    * while jogging along its axes. Undefined when jogging along world or tool
    * axes.
    */
-  private get coordinateSystemRotation(): Quaternion | undefined {
+  private get coordinateSystemRotation(): Quat | undefined {
     if (this.orientation === "tool" || !this.coordinateSystem) {
       return undefined
     }
-    return Pose3.fromCoordinateSystem(this.coordinateSystem).quaternion
+    return poseOfFrame(this.coordinateSystem).quaternion
   }
 
   /**
@@ -595,13 +599,9 @@ export class JoggerConnection {
     axis: "x" | "y" | "z",
     velocity: number,
   ): Vector3Simple {
-    const vector = new Vector3()
-    vector[axis] = velocity
+    const vector = vectorAlongAxis(axis, velocity)
     const rotation = this.coordinateSystemRotation
-    if (rotation) {
-      vector.applyQuaternion(rotation)
-    }
-    return [vector.x, vector.y, vector.z]
+    return rotation ? rotateVector(vector, rotation) : vector
   }
 
   /**

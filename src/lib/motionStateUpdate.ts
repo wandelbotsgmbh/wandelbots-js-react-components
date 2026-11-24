@@ -1,6 +1,12 @@
 import type { MotionGroupState, Pose } from "@wandelbots/nova-js/v2"
 import type { Vector3Simple } from "./JoggerConnection"
-import { Vector3 } from "three"
+import {
+  dotVectors,
+  normalizeVector,
+  scaleVector,
+  type Vec3,
+  vectorLength,
+} from "./poseMath"
 
 /**
  * Whether two sets of joint values are the same within `changeDeltaThreshold`:
@@ -108,28 +114,22 @@ export function unwrapRotationVector(
   newRotationVectorApi: Vector3Simple,
   currentRotationVectorApi: Vector3Simple,
 ): Vector3Simple {
-  const currentRotationVector = new Vector3(
-    currentRotationVectorApi[0],
-    currentRotationVectorApi[1],
-    currentRotationVectorApi[2],
-  )
+  // A value that a stream's message misses counts as 0
+  const [currentX = 0, currentY = 0, currentZ = 0] = currentRotationVectorApi
+  const currentRotationVector: Vec3 = [currentX, currentY, currentZ]
+  const [newX = 0, newY = 0, newZ = 0] = newRotationVectorApi
+  const newRotationVector: Vec3 = [newX, newY, newZ]
 
-  const newRotationVector = new Vector3(
-    newRotationVectorApi[0],
-    newRotationVectorApi[1],
-    newRotationVectorApi[2],
-  )
+  const currentAngle = vectorLength(currentRotationVector)
+  const currentAxis = normalizeVector(currentRotationVector)
 
-  const currentAngle = currentRotationVector.length()
-  const currentAxis = currentRotationVector.normalize()
-
-  let newAngle = newRotationVector.length()
-  let newAxis = newRotationVector.normalize()
+  let newAngle = vectorLength(newRotationVector)
+  let newAxis = normalizeVector(newRotationVector)
 
   // Align rotation axes
-  if (newAxis.dot(currentAxis) < 0) {
+  if (dotVectors(newAxis, currentAxis) < 0) {
     newAngle = -newAngle
-    newAxis = newAxis.multiplyScalar(-1.0)
+    newAxis = scaleVector(newAxis, -1.0)
   }
 
   // Shift rotation angle close to previous one to extend domain of rotation angles beyond [0, pi]
@@ -140,7 +140,7 @@ export function unwrapRotationVector(
 
   newAngle = currentAngle + angleDifference
 
-  return [...newAxis.multiplyScalar(newAngle)] as Vector3Simple
+  return scaleVector(newAxis, newAngle)
 }
 
 /**

@@ -5,10 +5,17 @@ import type {
   RobotTcp,
 } from "@wandelbots/nova-js/v2"
 import keyBy from "lodash-es/keyBy.js"
-import { Pose3 } from "./Pose3"
+import {
+  composePoses,
+  invertPose,
+  type PlainPose,
+  poseOf,
+  poseOfFrame,
+  rotationVectorOfQuaternion,
+} from "./poseMath"
 
 // Ported from RobotPad (src/util/PoseTransformer.ts): the coordinate systems
-// and the TCPs.
+// and the TCPs. On plain numbers (poseMath), so it needs no three.js.
 
 /** A pose and the coordinate system that it is relative to */
 export type ReferencedPose = {
@@ -19,6 +26,14 @@ export type ReferencedPose = {
 /** A pose of a TCP, and the coordinate system that it is relative to */
 export type TcpReferencedPose = ReferencedPose & {
   tcpId: string
+}
+
+/** A pose as NOVA has it: the position, and the orientation as a rotation vector */
+function novaPoseOf({ position, quaternion }: PlainPose): Required<Pose> {
+  return {
+    position: [...position],
+    orientation: rotationVectorOfQuaternion(quaternion),
+  }
 }
 
 /** The id without the controller's suffix, e.g. "base" for "baseOnkuka" */
@@ -106,21 +121,11 @@ function normalizeCoordinateSystems(
       normalized = coordinateSystem
     } else {
       const reference = normalize(referenceCoordinateSystemId)
-      const combined = Pose3.fromCoordinateSystem(reference).multiply(
-        Pose3.fromCoordinateSystem(coordinateSystem),
-      )
       normalized = {
         ...coordinateSystem,
-        position: [
-          combined.position.x,
-          combined.position.y,
-          combined.position.z,
-        ],
-        orientation: [
-          combined.orientation.x,
-          combined.orientation.y,
-          combined.orientation.z,
-        ],
+        ...novaPoseOf(
+          composePoses(poseOfFrame(reference), poseOfFrame(coordinateSystem)),
+        ),
         orientation_type: "ROTATION_VECTOR",
         reference_coordinate_system: reference.reference_coordinate_system,
       }
@@ -203,28 +208,14 @@ export function transformPoseToCoordinateSystem<T extends ReferencedPose>(
     }
   }
 
-  const transformed = Pose3.fromCoordinateSystem(targetCoordinateSystem)
-    .inverse()
-    .multiply(
-      Pose3.fromCoordinateSystem(poseCoordinateSystem).multiply(
-        Pose3.fromPose(inputPose.pose),
-      ),
-    )
+  const transformed = composePoses(
+    invertPose(poseOfFrame(targetCoordinateSystem)),
+    composePoses(poseOfFrame(poseCoordinateSystem), poseOf(inputPose.pose)),
+  )
 
   return {
     ...inputPose,
-    pose: {
-      position: [
-        transformed.position.x,
-        transformed.position.y,
-        transformed.position.z,
-      ],
-      orientation: [
-        transformed.orientation.x,
-        transformed.orientation.y,
-        transformed.orientation.z,
-      ],
-    },
+    pose: novaPoseOf(transformed),
     coordinateSystemId: targetCoordinateSystem.coordinate_system,
   }
 }
@@ -245,14 +236,12 @@ export function transformPoseToTcp(
   poseTcp: TcpOffset,
   targetTcp: TcpOffset,
 ): Required<Pose> {
-  const transformed = Pose3.fromPose(pose)
-    .multiply(Pose3.fromRobotTcp(poseTcp).inverse())
-    .multiply(Pose3.fromRobotTcp(targetTcp))
-  const { position, orientation } = transformed
-  return {
-    position: [position.x, position.y, position.z],
-    orientation: [orientation.x, orientation.y, orientation.z],
-  }
+  return novaPoseOf(
+    composePoses(
+      composePoses(poseOf(pose), invertPose(poseOfFrame(poseTcp))),
+      poseOfFrame(targetTcp),
+    ),
+  )
 }
 
 /** The TCPs of a motion group by their id, as its description lists them */
