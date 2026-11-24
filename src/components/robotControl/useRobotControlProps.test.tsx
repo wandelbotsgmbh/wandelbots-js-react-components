@@ -1,7 +1,10 @@
 import { act, renderHook } from "@testing-library/react"
 import { observable, runInAction } from "mobx"
 import { describe, expect, it, onTestFinished, vi } from "vitest"
-import { makeHarness } from "../../lib/robotSession/__fixtures__/robotSessionHarness"
+import {
+  controllerState,
+  makeHarness,
+} from "../../lib/robotSession/__fixtures__/robotSessionHarness"
 import type { LoadRobotSessionOptions } from "../../lib/robotSession/loadRobotSession"
 import type { RobotSession } from "../../lib/robotSession/RobotSession"
 import { useRobotControlProps } from "./useRobotControlProps"
@@ -200,6 +203,47 @@ describe("useRobotControlProps", () => {
 
     expect(result.current.moveTo?.error).toMatch(/\w/)
     expect(result.current.moveTo?.error).not.toContain("Jogging.TargetPose")
+  })
+
+  it("says why a typed pose is not planned while the robot may not move, and plans it once it may", async () => {
+    const harness = makeHarness()
+    const session = await harness.load().ready
+    onTestFinished(() => session.dispose())
+    const fake = withFakeMoveTo(session)
+    const { result, rerender } = renderHook(() =>
+      useRobotControlProps(fake.robot),
+    )
+    // The robot is not activated: the controller monitors it
+    expect(session.safety.notMoveableReason?.code).toBe("deactivated")
+
+    act(() =>
+      result.current.moveTo?.onTargetChange({
+        position: [1, 2, 3],
+        orientation: [0, 0, 0],
+      }),
+    )
+    rerender()
+    expect(result.current.moveTo?.error).toBe(
+      "The robot must be activated first",
+    )
+
+    // Activated: the pose is planned, without typing it again
+    fake.setDraft.mockClear()
+    fake.confirmEdit.mockClear()
+    act(() =>
+      harness.source.send(
+        controllerState({
+          mode: "MODE_CONTROL",
+          safety_state: "SAFETY_STATE_NORMAL",
+        }),
+      ),
+    )
+    await act(flush)
+    rerender()
+    expect(session.safety.notMoveableReason).toBeNull()
+    expect(fake.setDraft).toHaveBeenCalledWith("(1, 2, 3, 0, 0, 0)")
+    expect(fake.confirmEdit).toHaveBeenCalledOnce()
+    expect(result.current.moveTo?.error ?? null).toBeNull()
   })
 
   it("stops jogging while the app is disabled or a trajectory moves the robot", async () => {

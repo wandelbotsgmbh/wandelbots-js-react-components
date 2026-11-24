@@ -129,5 +129,9 @@
   "RobotView.WebGLUnavailable.ti": "3D-Ansicht nicht verfügbar",
   "RobotView.WebGLUnavailable.pg": "Aktiviere WebGL in deinem Browser, damit das 3D-Modell angezeigt werden kann. Wird WebGL von den Grafiktreibern oder vom Browser nicht unterstützt, aktualisiere die Grafiktreiber und wechsle den Browser.",
   "RobotView.WebGLUnavailable.Reload.bt": "Neu laden",
-  "JoggingGizmo.WebGLUnavailable.lb": "Die Gizmo-Steuerung braucht WebGL, das dieser Browser nicht bietet."
+  "JoggingGizmo.WebGLUnavailable.lb": "Die Gizmo-Steuerung braucht WebGL, das dieser Browser nicht bietet.",
+  "RobotControl.MoveTo.NotMoveable.Deactivated.lb": "Der Roboter ist deaktiviert.",
+  "RobotControl.MoveTo.NotMoveable.Disconnected.lb": "Keine Verbindung zum Roboter",
+  "RobotControl.MoveTo.NotMoveable.OperationMode.lb": "Der Roboter befindet sich in einem nicht beweglichen Betriebsmodus: {{value}}",
+  "RobotControl.MoveTo.NotMoveable.SafetyState.lb": "Der Roboter befindet sich in einem nicht beweglichen Sicherheitszustand: {{value}}"
 }

@@ -1,12 +1,14 @@
 import { degreesToRadians, radiansToDegrees } from "@wandelbots/nova-js"
 import { JointTypeEnum } from "@wandelbots/nova-js/v2"
-import { runInAction, when } from "mobx"
+import type { TFunction } from "i18next"
+import { reaction, runInAction, when } from "mobx"
 import { useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Quaternion } from "three"
 import { i18n } from "../../i18n/config"
 import type { Vector3Simple } from "../../lib/JoggerConnection"
 import { Pose3 } from "../../lib/Pose3"
+import type { RobotNotMoveableReason } from "../../lib/robotSession/RobotSafety"
 import type { RobotSession } from "../../lib/robotSession/RobotSession"
 import { parseRotationToQuaternion } from "../../lib/rotation"
 import { coordSystemLabel } from "../jogging/coordSystemLabel"
@@ -51,6 +53,32 @@ const COORD_SYSTEM = "coordinate-system:"
 /** A shown velocity in °/s, without the float noise of the conversion */
 const toDegrees = (radians: number) =>
   Math.round(radiansToDegrees(radians) * 1e6) / 1e6
+
+/** Plans a pose of Move to as the session's typed pose */
+function planTarget(session: RobotSession, pose: RobotControlPose) {
+  session.targetPose.setDraft(
+    `(${[...pose.position, ...pose.orientation].join(", ")})`,
+  )
+  void session.targetPose.confirmEdit()
+}
+
+/** Why the robot may not move, in the library's words */
+function notMoveableText(reason: RobotNotMoveableReason, t: TFunction) {
+  switch (reason.code) {
+    case "disconnected":
+      return t("RobotControl.MoveTo.NotMoveable.Disconnected.lb")
+    case "safety_state":
+      return t("RobotControl.MoveTo.NotMoveable.SafetyState.lb", {
+        value: reason.value,
+      })
+    case "operation_mode":
+      return t("RobotControl.MoveTo.NotMoveable.OperationMode.lb", {
+        value: reason.value,
+      })
+    case "deactivated":
+      return t("RobotControl.MoveTo.NotMoveable.Deactivated.lb")
+  }
+}
 
 /**
  * The joints' positions, followed every animation frame: the motion state
@@ -266,17 +294,37 @@ export function useRobotControlProps(
   // Move to: the pose typed in the panel is planned and staged as the
   // session's typed pose, so its rules apply
   const started = useRef(false)
+  // The panel's target, while it has one. The session plans nothing while
+  // the robot may not move: the panel says why, and plans it once it may.
+  const [target, setTarget] = useState<RobotControlPose | null>(null)
+  const targetRef = useRef(target)
+  targetRef.current = target
 
   function onTargetChange(pose: RobotControlPose | null) {
+    setTarget(pose)
     if (!pose) {
       void targetPose.resetToLive()
       return
     }
-    targetPose.setDraft(
-      `(${[...pose.position, ...pose.orientation].join(", ")})`,
-    )
-    void targetPose.confirmEdit()
+    planTarget(session, pose)
   }
+
+  useEffect(
+    () =>
+      reaction(
+        () => session.safety.notMoveableReason === null,
+        (moveable) => {
+          const pose = targetRef.current
+          const { staged, confirming } = session.targetPose
+          if (moveable && pose && !staged && !confirming) {
+            planTarget(session, pose)
+          }
+        },
+      ),
+    [session],
+  )
+
+  const notMoveable = session.safety.notMoveableReason
 
   function onMoveStart() {
     if (
@@ -448,7 +496,12 @@ export function useRobotControlProps(
       onTargetChange,
       // The trajectory's states are the panel's
       state: targetPose.confirming ? "planning" : trajectory.trajectoryState,
-      error: staged?.errorKey ? t(staged.errorKey) : null,
+      error:
+        target && notMoveable
+          ? notMoveableText(notMoveable, t)
+          : staged?.errorKey
+            ? t(staged.errorKey)
+            : null,
       onMoveStart,
       onMoveStop: () => {
         onMoveStop().catch(report)
