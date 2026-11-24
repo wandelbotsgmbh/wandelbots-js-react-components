@@ -213,4 +213,33 @@ describe("RobotActivation", () => {
 
     expect(vi.getTimerCount()).toBe(timersOfAnIdleSession)
   })
+
+  // A header can still show a session that its app has disposed, e.g.
+  // while it switches to another robot
+  it("asks NOVA for no mode change once the session is disposed", async () => {
+    const session = await loadSession()
+    expect(session.activation.state).toBe("inactive")
+
+    session.dispose()
+    await session.activation.activate()
+    await session.activation.toggle()
+
+    expect(harness.api.controller.setDefaultMode).not.toHaveBeenCalled()
+  })
+
+  // Whatever the live state still says
+  it("asks NOVA for no mode change once it is disposed itself", async () => {
+    const session = await loadSession()
+    report({ mode: "MODE_CONTROL" })
+    expect(session.activation.state).toBe("active")
+
+    session.activation.dispose()
+    await session.activation.deactivate()
+    await session.activation.toggle()
+    report({ mode: "MODE_MONITOR" })
+    await session.activation.activate()
+
+    expect(harness.api.controller.setDefaultMode).not.toHaveBeenCalled()
+    session.dispose()
+  })
 })

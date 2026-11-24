@@ -58,6 +58,12 @@ export class RobotActivation {
   /** Ends the wait of the pending mode change */
   private endPending: (() => void) | undefined
 
+  /**
+   * Set by `dispose`: an app may still show the session, and its robot gets
+   * no mode change from it any more
+   */
+  private disposed = false
+
   /** @internal The session makes it, see RobotSession */
   constructor(
     private readonly nova: Nova,
@@ -121,11 +127,13 @@ export class RobotActivation {
 
   /**
    * Switches the controller to control mode. Does nothing while a mode change
-   * is in progress, or when the safety state or operation mode would make
-   * NOVA refuse it (see {@link RobotSafety.activationBlockedReason}). Rejects
-   * with a {@link RobotModeChangeError} when NOVA refuses it.
+   * is in progress, when the safety state or operation mode would make
+   * NOVA refuse it (see {@link RobotSafety.activationBlockedReason}), and
+   * once the session is disposed. Rejects with a
+   * {@link RobotModeChangeError} when NOVA refuses it.
    */
   async activate() {
+    if (this.refusedAsDisposed()) return
     if (this.state !== "inactive") {
       this.logger.warn("Tried to activate while already activating")
       return
@@ -146,10 +154,12 @@ export class RobotActivation {
 
   /**
    * Switches the controller to monitor mode, after handing back a planned
-   * move, which holds it in control mode. Rejects with a
-   * {@link RobotModeChangeError} when NOVA refuses it.
+   * move, which holds it in control mode. Does nothing once the session is
+   * disposed. Rejects with a {@link RobotModeChangeError} when NOVA refuses
+   * it.
    */
   async deactivate() {
+    if (this.refusedAsDisposed()) return
     if (this.state !== "active") {
       this.logger.warn("Tried to deactivate while already deactivating")
       return
@@ -172,8 +182,19 @@ export class RobotActivation {
     }
   }
 
+  /** Ends a mode change's wait; no mode change is asked for afterwards */
   dispose() {
+    this.disposed = true
     this.endPending?.()
+  }
+
+  /** Whether the session is disposed, which then asks NOVA for nothing */
+  private refusedAsDisposed() {
+    if (!this.disposed) return false
+    this.logger.warn(
+      `Not changing the mode of controller "${this.ids.controllerId}": its session is disposed`,
+    )
+    return true
   }
 
   /**
