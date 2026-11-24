@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react"
-import { useEndHoldWhenUnattended } from "../holdSafety"
+import { releasePointer, useEndHoldWhenUnattended } from "../holdSafety"
 import type { JogDirection } from "../jogHandle"
 import { directionToward, hasReachedGoal } from "./jointJog"
 
@@ -14,6 +14,8 @@ export type JointHold = {
   settledAt: number | null
   /** The pointer that holds it, by its id */
   pointer: number
+  /** The slider, which has the pointer's capture */
+  element: Element
 }
 
 export type JointJogHoldOptions = {
@@ -34,7 +36,8 @@ export type JointJogHoldOptions = {
  * becoming disabled, the window losing focus, the tab being hidden, unmount
  * (shared with the other jog controls: see holdSafety).
  * The hold is recorded before the app is called, so a failing onJogStart
- * still gets its onJogStop.
+ * still gets its onJogStop. A hold that ends while its pointer is still
+ * down, e.g. when the pointer left the slider, gives the capture back.
  */
 export function useJointJogHold({
   value,
@@ -78,9 +81,15 @@ export function useJointJogHold({
 
   /** Starts a hold toward `goal`; false if the slider cannot be held now */
   const begin = useCallback(
-    (goal: number, deadband: number, pointer: number): boolean => {
+    (
+      goal: number,
+      deadband: number,
+      pointer: number,
+      element: Element,
+    ): boolean => {
       if (disabled || holdRef.current) return false
-      steer({ goal, direction: null, settledAt: null, pointer }, goal, deadband)
+      const held = { goal, direction: null, settledAt: null, pointer, element }
+      steer(held, goal, deadband)
       return true
     },
     [disabled, steer],
@@ -113,6 +122,7 @@ export function useJointJogHold({
     const held = holdRef.current
     if (!held) return
     setHold(null)
+    releasePointer(held.element, held.pointer)
     if (held.direction) latest.current.onJogStop()
   }, [setHold])
 

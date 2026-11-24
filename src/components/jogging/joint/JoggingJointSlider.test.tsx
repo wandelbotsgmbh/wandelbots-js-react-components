@@ -10,6 +10,15 @@ import { JoggingJointSlider } from "./JoggingJointSlider"
 const TRACK_LEFT = 300
 const TRACK_WIDTH = 200
 const xOf = (value: number) => TRACK_LEFT + ((value + 2) / 4) * TRACK_WIDTH
+// The slider's box, as the mock below lays it out
+const BOX = {
+  left: TRACK_LEFT,
+  top: 0,
+  right: TRACK_LEFT + TRACK_WIDTH,
+  bottom: 20,
+}
+// How far off its box the holding pointer may stray before it has left
+const MARGIN = 8
 
 beforeEach(() => {
   vi.spyOn(Element.prototype, "getBoundingClientRect").mockReturnValue({
@@ -27,7 +36,38 @@ beforeEach(() => {
 
 afterEach(() => {
   vi.restoreAllMocks()
+  restorePointerCapture()
+  restorePointerCapture = () => {}
 })
+
+/** Gives jsdom the pointer capture of a browser, and says what was asked of it */
+function withPointerCapture() {
+  const captured = new Set<number>()
+  const proto = HTMLElement.prototype
+  const original = {
+    set: proto.setPointerCapture,
+    has: proto.hasPointerCapture,
+    release: proto.releasePointerCapture,
+  }
+  proto.setPointerCapture = vi.fn((id: number) => {
+    captured.add(id)
+  })
+  proto.hasPointerCapture = vi.fn((id: number) => captured.has(id))
+  proto.releasePointerCapture = vi.fn((id: number) => {
+    captured.delete(id)
+  })
+  const mocks = {
+    set: vi.mocked(proto.setPointerCapture),
+    release: vi.mocked(proto.releasePointerCapture),
+  }
+  restorePointerCapture = () => {
+    proto.setPointerCapture = original.set
+    proto.hasPointerCapture = original.has
+    proto.releasePointerCapture = original.release
+  }
+  return mocks
+}
+let restorePointerCapture = () => {}
 
 type Props = {
   value?: number
@@ -82,6 +122,14 @@ const move = (x: number, buttons = 1, pointerId = 1, pointerType?: string) =>
     pointerType,
   })
 const release = (pointerId = 1) => fireEvent.pointerUp(track(), { pointerId })
+/** A move of the holding pointer to a place on the page, its button still down */
+const moveTo = (x: number, y: number) =>
+  fireEvent.pointerMove(track(), {
+    pointerId: 1,
+    buttons: 1,
+    clientX: x,
+    clientY: y,
+  })
 
 /** The emotion style rules in the document */
 const styleRules = () => document.querySelectorAll("style[data-emotion]").length
@@ -240,6 +288,107 @@ describe("JoggingJointSlider", () => {
     move(xOf(1.2), 0)
 
     expect(onJogStop).toHaveBeenCalledTimes(1)
+  })
+
+  it("captures the pointer, so its moves and its release reach the slider wherever they happen", () => {
+    const capture = withPointerCapture()
+    setup()
+
+    press(xOf(1), { pointerId: 7 })
+
+    expect(capture.set).toHaveBeenCalledWith(7)
+  })
+
+  it("stops when the pointer leaves the slider, as on a release, and stops once", () => {
+    const { onJogStart, onJogStop } = setup()
+
+    press(xOf(1))
+    moveTo(xOf(1.2), 120)
+    expect(onJogStop).toHaveBeenCalledTimes(1)
+
+    // Out there, it steers nothing, and the release that still comes stops
+    // nothing more
+    moveTo(xOf(-1), 120)
+    release()
+    expect(onJogStart).toHaveBeenCalledTimes(1)
+    expect(onJogStop).toHaveBeenCalledTimes(1)
+  })
+
+  it("does not jog again when the pointer comes back without a new press", () => {
+    const { onJogStart } = setup()
+
+    press(xOf(1))
+    moveTo(xOf(1), 120)
+    moveTo(xOf(-1), 10)
+
+    expect(onJogStart.mock.calls).toEqual([["+"]])
+  })
+
+  // A drag to a limit overshoots the end of the track, where the thumb
+  // overhangs it, and a finger wanders off a strip this narrow
+  it.each([
+    ["past the upper limit", { x: BOX.right + MARGIN, y: 10 }, { x: 1, y: 0 }],
+    ["past the lower limit", { x: BOX.left - MARGIN, y: 10 }, { x: -1, y: 0 }],
+    ["above", { x: xOf(1.5), y: BOX.top - MARGIN }, { x: 0, y: -1 }],
+    ["below", { x: xOf(1.5), y: BOX.bottom + MARGIN }, { x: 0, y: 1 }],
+  ])("lets the holding pointer stray a little off the slider %s, and stops a pixel further", (_, at, further) => {
+    const { onJogStop } = setup()
+
+    // On the side of the joint that the pointer strays to: no turning around
+    press(at.x < xOf(0) ? xOf(-1) : xOf(1))
+    moveTo(at.x, at.y)
+    expect(onJogStop).not.toHaveBeenCalled()
+
+    moveTo(at.x + further.x, at.y + further.y)
+    expect(onJogStop).toHaveBeenCalledTimes(1)
+  })
+
+  it("jogs to the limit for a pointer that strayed past the end of the track", () => {
+    const { onJogStart, onJogStop } = setup()
+
+    press(xOf(1))
+    moveTo(BOX.right + MARGIN, 10)
+
+    // +2 rad, the upper limit
+    expect(screen.getByText("/ 114.6°")).toBeVisible()
+    expect(onJogStart.mock.calls).toEqual([["+"]])
+    expect(onJogStop).not.toHaveBeenCalled()
+  })
+
+  it("shows no goal once the holding pointer has left", () => {
+    setup()
+
+    move(xOf(1), 0)
+    press(xOf(1))
+    moveTo(xOf(1.2), 10)
+    expect(screen.getByText("/ 68.8°")).toBeVisible()
+    moveTo(xOf(1.2), 120)
+
+    expect(screen.queryByText(/^\/ /)).toBeNull()
+  })
+
+  // A captured pointer never leaves the slider for the browser; one that
+  // could not be captured does
+  it("stops when a pointer it could not capture leaves the slider, but not for another pointer", () => {
+    const { onJogStop } = setup()
+
+    press(xOf(1))
+    fireEvent.pointerLeave(track(), { pointerId: 2 })
+    expect(onJogStop).not.toHaveBeenCalled()
+
+    fireEvent.pointerLeave(track(), { pointerId: 1 })
+    expect(onJogStop).toHaveBeenCalledTimes(1)
+  })
+
+  it("gives the pointer back when the hold ends before its release, so the slider it left shows no goal for it", () => {
+    const capture = withPointerCapture()
+    setup()
+
+    press(xOf(1))
+    expect(capture.release).not.toHaveBeenCalled()
+    moveTo(xOf(1), 120)
+
+    expect(capture.release).toHaveBeenCalledExactlyOnceWith(1)
   })
 
   it("stops when the window loses focus", () => {

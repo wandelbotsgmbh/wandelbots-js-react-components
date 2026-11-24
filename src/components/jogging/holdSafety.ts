@@ -95,6 +95,24 @@ export function isPointerOn(
   return under !== null && isControl(under)
 }
 
+/**
+ * As {@link isPointerOn}, for a control that is a plain box and lets the
+ * holding pointer stray a little: whether the pointer of a move is within
+ * `marginPx` of the element that handles it
+ */
+export function isPointerWithin(
+  event: { clientX: number; clientY: number; currentTarget: Element },
+  marginPx: number,
+): boolean {
+  const box = event.currentTarget.getBoundingClientRect()
+  return (
+    event.clientX >= box.left - marginPx &&
+    event.clientX <= box.right + marginPx &&
+    event.clientY >= box.top - marginPx &&
+    event.clientY <= box.bottom + marginPx
+  )
+}
+
 /** The context menu of a control would swallow the release of a hold */
 export function preventContextMenu(event: { preventDefault: () => void }) {
   event.preventDefault()

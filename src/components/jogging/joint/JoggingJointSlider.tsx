@@ -22,7 +22,9 @@ import {
   zeroFraction,
 } from "./jointJog"
 import {
+  capturePointer,
   endsHold,
+  isPointerWithin,
   preventContextMenu,
   primaryReleased,
   startsPointerHold,
@@ -65,7 +67,10 @@ export type JoggingJointSliderProps = {
    * jogging connection on that stop.
    */
   onJogStart: (direction: JogDirection) => void
-  /** The joint must stop: it got to its goal, or the slider was let go */
+  /**
+   * The joint must stop: it got to its goal, the slider was let go, or the
+   * pointer left it
+   */
   onJogStop: () => void
   disabled?: boolean
 }
@@ -82,13 +87,22 @@ function deadZonePx(pointerType: string): number {
 }
 
 /**
+ * How far (px) off the slider the pointer that holds it may stray before it
+ * has left it, which ends the hold as a release does: half a thumb, by which
+ * the thumb overhangs the track at a limit. A drag to a limit overshoots the
+ * end of the track, and a finger wanders off a strip as narrow as the
+ * slider. The press itself must be on the slider.
+ */
+const LEAVE_MARGIN_PX = 8
+
+/**
  * One joint as a slider across its limits, with the thumb at the joint's
  * value and the limits below. Hovering the track shows the goal under the
- * pointer; pressing there jogs the joint toward it until it gets there or
- * the slider is let go. While held, the goal follows the pointer, and the
- * joint turns around when the goal passes it. Only a pointer jogs: the
- * keyboard reaches the slider, which says the joint's value, but an arrow
- * key on it moves nothing.
+ * pointer; pressing there jogs the joint toward it until it gets there, the
+ * slider is let go, or the pointer leaves the slider. While held, the goal
+ * follows the pointer, and the joint turns around when the goal passes it.
+ * Only a pointer jogs: the keyboard reaches the slider, which says the
+ * joint's value, but an arrow key on it moves nothing.
  *
  * An app shows one slider per joint. It moves nothing itself: onJogStart and
  * onJogStop leave that to the app, which also keeps to one joint at a time.
@@ -136,20 +150,25 @@ export const JoggingJointSlider = externalizeComponent(
       if (!startsPointerHold(event) || disabled || isHolding()) return
       const at = pointed(event)
       if (!at) return
-      try {
-        // Before the jog starts: dragging off the track keeps steering, and
-        // a release anywhere ends the jog, even if the app fails to start it
-        event.currentTarget.setPointerCapture?.(event.pointerId)
-      } catch {
-        // not a pointer the browser knows, e.g. in tests
-      }
-      begin(at.goal, at.deadband, event.pointerId)
+      // Before the jog starts: the pointer's moves and its release reach the
+      // slider wherever they happen, so a release anywhere and a leave end
+      // the jog, even if the app fails to start it
+      capturePointer(event.currentTarget, event.pointerId)
+      begin(at.goal, at.deadband, event.pointerId, event.currentTarget)
     }
 
     function onPointerMove(event: PointerEvent<HTMLElement>) {
       const at = pointed(event)
+      const holds = holdingPointer() === event.pointerId
+      // The holding pointer left the slider: as a release. Its capture
+      // brings its moves here from anywhere, so the browser sends no leave.
+      if (holds && !isPointerWithin(event, LEAVE_MARGIN_PX)) {
+        setHoverGoal(null)
+        end()
+        return
+      }
       setHoverGoal(disabled ? null : (at?.goal ?? null))
-      if (holdingPointer() !== event.pointerId) return
+      if (!holds) return
       if (primaryReleased(event)) {
         end()
         return
@@ -231,7 +250,11 @@ export const JoggingJointSlider = externalizeComponent(
           aria-disabled={disabled || undefined}
           onPointerDown={onPointerDown}
           onPointerMove={onPointerMove}
-          onPointerLeave={() => setHoverGoal(null)}
+          onPointerLeave={(event) => {
+            setHoverGoal(null)
+            // Only a pointer that could not be captured leaves for the browser
+            endPointer(event)
+          }}
           onPointerUp={endPointer}
           onPointerCancel={endPointer}
           onLostPointerCapture={endPointer}
