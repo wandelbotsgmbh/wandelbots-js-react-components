@@ -4,14 +4,7 @@ import type {
   MotionGroupState,
   Pose,
 } from "@wandelbots/nova-js/v2"
-import {
-  Suspense,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react"
+import { Suspense, useCallback, useMemo, useRef } from "react"
 import { ErrorBoundary } from "react-error-boundary"
 import type * as THREE from "three"
 import { externalizeComponent } from "../../externalizeComponent"
@@ -22,7 +15,7 @@ import { GenericRobot } from "./GenericRobot"
 import LinearAxisAnimator, {
   type LinearAxisAnimatorHandle,
 } from "./LinearAxisAnimator"
-import { applyGhostStyle, removeGhostStyle } from "./ghostStyle"
+import { useGhostStyle } from "./ghostStyle"
 import { defaultGetModel } from "./robotModelLogic"
 
 export type DHLinearAxisProps = {
@@ -86,31 +79,20 @@ export const SupportedLinearAxisExact = externalizeComponent(
     instanceUrl,
     ...props
   }: SupportedLinearAxisProps) => {
-    const [robotGroup, setRobotGroup] = useState<THREE.Group | null>(null)
     const linearAxisAnimatorRef = useRef<LinearAxisAnimatorHandle>(null)
-
-    const setRobotRef = useCallback((instance: THREE.Group | null) => {
-      setRobotGroup(instance)
-    }, [])
+    const ghost = useGhostStyle(transparentColor)
 
     // The model is loaded asynchronously, so its joint meshes mount into the
     // scene only after LinearAxisAnimator's group ref has already fired.
     // Trigger a joint re-scan once the model is actually rendered so the
-    // streamed position is applied instead of the model's default position.
+    // streamed position is applied instead of the model's default position,
+    // and style its meshes as a ghost.
+    const { styleDrawnModel } = ghost
     const handlePostModelRender = useCallback(() => {
       linearAxisAnimatorRef.current?.recollectJoints()
+      styleDrawnModel()
       postModelRender?.()
-    }, [postModelRender])
-
-    useEffect(() => {
-      if (!robotGroup) return
-
-      if (transparentColor) {
-        applyGhostStyle(robotGroup, transparentColor)
-      } else {
-        removeGhostStyle(robotGroup)
-      }
-    }, [robotGroup, transparentColor])
+    }, [postModelRender, styleDrawnModel])
 
     // One call of getModel per model, not one per render: after a failed
     // download, each call of defaultGetModel starts a new download
@@ -143,7 +125,7 @@ export const SupportedLinearAxisExact = externalizeComponent(
         }}
       >
         <Suspense fallback={dhLinearAxis}>
-          <group ref={setRobotRef}>
+          <group ref={ghost.groupRef}>
             <LinearAxisAnimator
               ref={linearAxisAnimatorRef}
               rapidlyChangingMotionState={rapidlyChangingMotionState}

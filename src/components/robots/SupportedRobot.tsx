@@ -4,14 +4,7 @@ import type {
   MotionGroupState,
   Pose,
 } from "@wandelbots/nova-js/v2"
-import {
-  Suspense,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react"
+import { Suspense, useCallback, useMemo, useRef } from "react"
 import { DHRobot } from "./DHRobot"
 
 import { ErrorBoundary } from "react-error-boundary"
@@ -21,7 +14,7 @@ import ConsoleFilter from "../ConsoleFilter"
 import { useSmoothedMotionState } from "../utils/useSmoothedMotionState"
 import { GenericRobot } from "./GenericRobot"
 import RobotAnimator, { type RobotAnimatorHandle } from "./RobotAnimator"
-import { applyGhostStyle, removeGhostStyle } from "./ghostStyle"
+import { useGhostStyle } from "./ghostStyle"
 import { defaultGetModel } from "./robotModelLogic"
 
 export type DHRobotProps = {
@@ -89,31 +82,20 @@ export const SupportedRobotExact = externalizeComponent(
     instanceUrl,
     ...props
   }: SupportedRobotProps) => {
-    const [robotGroup, setRobotGroup] = useState<THREE.Group | null>(null)
     const robotAnimatorRef = useRef<RobotAnimatorHandle>(null)
-
-    const setRobotRef = useCallback((instance: THREE.Group | null) => {
-      setRobotGroup(instance)
-    }, [])
+    const ghost = useGhostStyle(transparentColor)
 
     // The robot model is loaded asynchronously, so its joint meshes mount
     // into the scene only after RobotAnimator's group ref has already fired.
     // Trigger a joint re-scan once the model is actually rendered so the
-    // streamed pose is applied instead of the model's default pose.
+    // streamed pose is applied instead of the model's default pose, and
+    // style its meshes as a ghost.
+    const { styleDrawnModel } = ghost
     const handlePostModelRender = useCallback(() => {
       robotAnimatorRef.current?.recollectJoints()
+      styleDrawnModel()
       postModelRender?.()
-    }, [postModelRender])
-
-    useEffect(() => {
-      if (!robotGroup) return
-
-      if (transparentColor) {
-        applyGhostStyle(robotGroup, transparentColor)
-      } else {
-        removeGhostStyle(robotGroup)
-      }
-    }, [robotGroup, transparentColor])
+    }, [postModelRender, styleDrawnModel])
 
     const modelURL = useMemo(() => {
       const result = getModel(modelFromController, instanceUrl, serialNumber)
@@ -143,7 +125,7 @@ export const SupportedRobotExact = externalizeComponent(
         }}
       >
         <Suspense fallback={dhrobot}>
-          <group ref={setRobotRef}>
+          <group ref={ghost.groupRef}>
             <RobotAnimator
               ref={robotAnimatorRef}
               rapidlyChangingMotionState={rapidlyChangingMotionState}

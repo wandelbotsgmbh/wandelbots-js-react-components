@@ -207,6 +207,82 @@ describe("postModelRender", () => {
   })
 })
 
+describe("transparentColor", () => {
+  /** A model with a mesh on its first joint, in a material of its own */
+  function modelWithMesh(name: string, jointCount: number) {
+    const model = modelWithJoints(name, jointCount)
+    const material = new THREE.MeshStandardMaterial({ color: "#808080" })
+    const link = new THREE.Mesh(new THREE.SphereGeometry(0.1), material)
+    link.name = `${name}_link`
+    model.scene.getObjectByName(`${name}_J00`)?.add(link)
+    return { model, material }
+  }
+
+  /** The meshes that draw a colour: shown, with a material that writes it */
+  function coloredMeshes(scene: THREE.Object3D) {
+    const meshes: THREE.Mesh<THREE.BufferGeometry, THREE.Material>[] = []
+    scene.traverseVisible((object) => {
+      if (
+        object instanceof THREE.Mesh &&
+        object.material instanceof THREE.Material &&
+        object.material.colorWrite
+      ) {
+        meshes.push(object)
+      }
+    })
+    return meshes
+  }
+
+  test.each([
+    {
+      name: "robot",
+      draw: (color: string) => (
+        <SupportedRobotExact
+          modelFromController="TestRobot"
+          dhParameters={dhParameters(2, JointTypeEnum.RevoluteJoint)}
+          rapidlyChangingMotionState={standstill([0, 0])}
+          getModel={() => Promise.resolve("blob:robot")}
+          transparentColor={color}
+        />
+      ),
+    },
+    {
+      name: "axis",
+      draw: (color: string) => (
+        <SupportedLinearAxisExact
+          modelFromController="TestAxis"
+          dhParameters={dhParameters(1, JointTypeEnum.PrismaticJoint)}
+          rapidlyChangingMotionState={standstill([0])}
+          getModel={() => Promise.resolve("blob:axis")}
+          transparentColor={color}
+        />
+      ),
+    },
+  ])("draws the $name as a see-through ghost once its model has loaded, and leaves its model's materials to the other robots", async ({
+    name,
+    draw,
+  }) => {
+    const { model, material } = modelWithMesh(name, name === "axis" ? 1 : 2)
+    const download = modelDownload(model)
+    gltf.load = download.load
+
+    const scene = await renderInCanvas(draw("#00ff00"))
+    await act(async () => {
+      download.finish()
+      await nextTask()
+    })
+
+    const colored = coloredMeshes(scene)
+    expect(colored).toHaveLength(1)
+    expect(colored[0]?.material.transparent).toBe(true)
+    expect(
+      (colored[0]?.material as THREE.MeshStandardMaterial).color.getHexString(),
+    ).toBe("00ff00")
+    // Every robot drawn from the same model file shares the model's materials
+    expect(material.colorWrite).toBe(true)
+  })
+})
+
 describe("the model of Robot", () => {
   test("comes from the instance of its ConnectedMotionGroup, with the client of the connection", async () => {
     const nova = new Nova({
