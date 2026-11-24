@@ -109,6 +109,7 @@
   "RobotControl.MoveTo.ConfirmEdit.lb": "Save pose edit",
   "RobotControl.MoveTo.InvalidPose.lb": "Please enter valid pose coordinates.",
   "RobotControl.MoveTo.Reset.lb": "Reset pose to previous one",
+  "RobotControl.MoveTo.PlanDropped.lb": "The move to this target is no longer planned.",
   "RobotControl.MoveTo.PlanAgain.lb": "Plan the move again",
   "RobotControl.MoveTo.MoveTo.bt": "Move to",
   "RobotControl.MoveTo.Moving.bt": "Moving…",

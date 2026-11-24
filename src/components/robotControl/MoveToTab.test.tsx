@@ -366,6 +366,69 @@ describe("RobotControlPanel's Move to tab, as RobotPad's pose field", () => {
     expect(queryButton("Plan the move again")).toBeNull()
   })
 
+  // RobotPad: a saved pose gets selected and takes the trajectory. The tab
+  // still shows its target, and its button moved nowhere, without a word.
+  it("says when the app dropped the plan of the target it shows, and offers to plan it again", () => {
+    const NOT_PLANNED = "The move to this target is no longer planned."
+    const { onTargetChange, rerender } = setup({ state: "planned" })
+    fireEvent.click(tab("Move to"))
+    confirmPose("(1, 2, 3, 0, 0, 0)")
+    expect(coordinates()).toHaveAccessibleDescription("")
+    expect(queryButton("Plan the move again")).toBeNull()
+
+    rerender({ state: "idle" })
+    expect(coordinates()).toHaveAccessibleDescription(NOT_PLANNED)
+    expect(moveButton()).toBeDisabled()
+    // The target stays, so it need not be typed again
+    expect(coordinates()).toHaveValue("(1, 2, 3, 0, 0, 0)")
+
+    fireEvent.click(button("Plan the move again"))
+    expect(onTargetChange).toHaveBeenCalledTimes(2)
+    expect(onTargetChange).toHaveBeenLastCalledWith(TARGET)
+    // Said until the app plans it
+    expect(coordinates()).toHaveAccessibleDescription(NOT_PLANNED)
+
+    rerender({ state: "planning" })
+    expect(coordinates()).toHaveAccessibleDescription("")
+    rerender({ state: "planned" })
+    expect(queryButton("Plan the move again")).toBeNull()
+    expect(moveButton()).toBeEnabled()
+  })
+
+  it("does not call a target dropped that the app has not planned yet", () => {
+    const { rerender } = setup({ state: "planned" })
+    fireEvent.click(tab("Move to"))
+    confirmPose("(1, 2, 3, 0, 0, 0)")
+    rerender({ state: "idle" })
+    expect(button("Plan the move again")).toBeEnabled()
+
+    // Another target is saved, and the app has yet to say that it plans it
+    confirmPose("(9, 9, 9, 0, 0, 0)")
+    expect(coordinates()).toHaveAccessibleDescription("")
+    expect(queryButton("Plan the move again")).toBeNull()
+  })
+
+  it("does not call a target dropped that the robot stands at: there is no move to plan", async () => {
+    let pose: RobotControlPose = CURRENT_POSE
+    const { rerender } = setup({
+      getCurrentPose: () => pose,
+      state: "planned",
+    })
+    fireEvent.click(tab("Move to"))
+    confirmPose("(539.94, 0, 895, -3.14, -0.04, 0.8)")
+    await waitFor(() => expect(moveButton()).toBeDisabled())
+
+    rerender({ state: "idle" })
+    expect(coordinates()).toHaveAccessibleDescription("")
+    expect(queryButton("Plan the move again")).toBeNull()
+
+    // Jogged away from it, the target is one to move to again
+    pose = { position: [600, 0, 895], orientation: [-3.14, -0.04, 0.8] }
+    expect(
+      await screen.findByRole("button", { name: "Plan the move again" }),
+    ).toBeEnabled()
+  })
+
   it("shows the live pose again when another tab is chosen, and stops a held move", async () => {
     const { onMoveStart, onMoveStop, onTargetChange } = setup({
       state: "planned",

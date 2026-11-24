@@ -108,6 +108,7 @@
   "RobotControl.MoveTo.ConfirmEdit.lb": "Bearbeitete Pose übernehmen",
   "RobotControl.MoveTo.InvalidPose.lb": "Bitte gültige Posen-Koordinaten eingeben.",
   "RobotControl.MoveTo.Reset.lb": "Pose auf vorherige Position zurücksetzen",
+  "RobotControl.MoveTo.PlanDropped.lb": "Die Bewegung zu diesem Ziel ist nicht mehr geplant.",
   "RobotControl.MoveTo.PlanAgain.lb": "Bewegung erneut planen",
   "RobotControl.MoveTo.MoveTo.bt": "Hierhin bewegen",
   "RobotControl.MoveTo.Moving.bt": "Bewegung aktiv…",

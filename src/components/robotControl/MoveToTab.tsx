@@ -115,6 +115,16 @@ export function MoveToTab({
   // field shows and takes without brackets
   const movesJoints = target ? isJointTarget(target.target) : !cartesian
 
+  // The app planned the target, or was about to, and has no plan now: it
+  // dropped it, e.g. for another move (RobotPad: a saved pose takes the
+  // trajectory). The tab keeps its target, so it says so and offers to
+  // plan it again. Not at the target: a move that got there needs no plan.
+  const planSeen = useRef(false)
+  if (target === null) planSeen.current = false
+  else if (moveTo.state !== "idle") planSeen.current = true
+  const planDropped =
+    ready && planSeen.current && moveTo.state === "idle" && !atPose
+
   // The move to the target has run: arriving there ends it
   const moveStarted = useRef(false)
   // Ends a held move: before the target goes, so the app pauses the move
@@ -132,6 +142,8 @@ export function MoveToTab({
   function confirm() {
     if (draftTarget === null || disabled) return
     moveStarted.current = false
+    // The plan of this target is yet to come
+    planSeen.current = false
     setTarget({
       target: draftTarget,
       text: isJointTarget(draftTarget)
@@ -190,7 +202,8 @@ export function MoveToTab({
         ? t("RobotControl.MoveTo.InvalidPose.lb")
         : null
       : target
-        ? (moveTo.error ?? null)
+        ? (moveTo.error ??
+          (planDropped ? t("RobotControl.MoveTo.PlanDropped.lb") : null))
         : null
 
   return (
@@ -250,7 +263,8 @@ export function MoveToTab({
 
       {/* Move to stays, off without a target; Reset shows with one, as
           RobotPad's, not while another pose is typed; Plan again with a
-          target the app cannot move to, so it need not be typed again */}
+          target the app cannot move to, or whose plan it dropped, so it
+          need not be typed again */}
       <Stack direction="row" sx={{ gap: "12px", alignItems: "center" }}>
         {target && !editing && (
           <Tooltip title={t("RobotControl.MoveTo.Reset.lb")} placement="top">
@@ -263,7 +277,7 @@ export function MoveToTab({
             </span>
           </Tooltip>
         )}
-        {target && !editing && moveTo.error && (
+        {target && !editing && (moveTo.error || planDropped) && (
           <Tooltip
             title={t("RobotControl.MoveTo.PlanAgain.lb")}
             placement="top"
