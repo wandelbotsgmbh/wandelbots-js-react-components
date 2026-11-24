@@ -311,8 +311,10 @@ export function useRobotControlProps(
 
   useEffect(
     () =>
+      // Once the robot can move: while it is activating, there is no reason
+      // not to, but an app may still lock it, and the session plans nothing
       reaction(
-        () => session.safety.notMoveableReason === null,
+        () => session.safety.canBeMoved,
         (moveable) => {
           const pose = targetRef.current
           const { staged, confirming } = session.targetPose

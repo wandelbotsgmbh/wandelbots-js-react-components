@@ -227,9 +227,17 @@ describe("useRobotControlProps", () => {
       "The robot must be activated first",
     )
 
-    // Activated: the pose is planned, without typing it again
+    // Activating, the robot cannot move yet: an app may still lock it (as
+    // RobotPad does), and the session would plan nothing
     fake.setDraft.mockClear()
     fake.confirmEdit.mockClear()
+    await act(async () => {
+      await session.activation.activate()
+    })
+    expect(session.activation.state).toBe("activating")
+    expect(fake.confirmEdit).not.toHaveBeenCalled()
+
+    // Activated: the pose is planned, without typing it again
     act(() =>
       harness.source.send(
         controllerState({
