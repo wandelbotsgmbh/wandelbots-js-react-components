@@ -447,11 +447,16 @@ describe("RobotControlPanel's Move to tab, as RobotPad's pose field", () => {
     const { onVelocityChange } = setup()
     fireEvent.click(tab("Move to"))
 
-    expect(screen.getByText("125 mm/s")).toBeVisible()
+    const field = screen.getByRole("textbox", { name: "Velocity" })
+    expect(field).toHaveValue("125")
+    expect(screen.getByText("mm/s")).toBeVisible()
     fireEvent.change(screen.getByRole("slider", { name: "Velocity" }), {
       target: { value: 200 },
     })
-    expect(onVelocityChange).toHaveBeenCalledWith("translate", 200)
+    expect(onVelocityChange).toHaveBeenLastCalledWith("translate", 200)
+    fireEvent.change(field, { target: { value: "30" } })
+    fireEvent.keyDown(field, { key: "Enter" })
+    expect(onVelocityChange).toHaveBeenLastCalledWith("translate", 30)
   })
 
   it("shows the TCP and the frame the pose is relative to", () => {

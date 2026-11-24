@@ -29,8 +29,21 @@ export function formatStep(motion: JogMotion, distance: number): string {
   return motion === "rotate" ? `${shown}°` : `${shown} mm`
 }
 
-/** A velocity as shown, e.g. "125 mm/s" or "10°/s": in whole units */
-export function formatVelocity(motion: JogMotion, velocity: number): string {
-  const shown = Math.round(shownValue(motion, velocity))
+/**
+ * A velocity as the panel shows it, in mm/s or °/s, to two decimals. That
+ * also takes away what rad/s in °/s is off by: 60 °/s as rad/s and back is
+ * 59.99999999999999.
+ */
+export function shownVelocity(motion: JogMotion, velocity: number): number {
+  return Number(shownValue(motion, velocity).toFixed(2))
+}
+
+/** The unit of a shown velocity */
+export function velocityUnit(motion: JogMotion): string {
+  return motion === "rotate" ? "°/s" : "mm/s"
+}
+
+/** A shown velocity with its unit, e.g. "125 mm/s" or "10°/s" */
+export function formatVelocity(motion: JogMotion, shown: number): string {
   return motion === "rotate" ? `${shown}°/s` : `${shown} mm/s`
 }

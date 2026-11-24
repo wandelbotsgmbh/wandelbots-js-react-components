@@ -155,17 +155,29 @@ describe("RobotControlPanel", () => {
   it("shows the velocity of the tab's motion in mm/s or °/s, and reports a change in NOVA's units", () => {
     const { onVelocityChange } = setup()
     const slider = () => screen.getByRole("slider", { name: "Velocity" })
+    const field = () => screen.getByRole("textbox", { name: "Velocity" })
 
-    expect(screen.getByText("125 mm/s")).toBeVisible()
+    expect(field()).toHaveValue("125")
+    expect(screen.getByText("mm/s")).toBeVisible()
     fireEvent.change(slider(), { target: { value: 200 } })
     expect(onVelocityChange).toHaveBeenLastCalledWith("translate", 200)
+    fireEvent.change(field(), { target: { value: "30" } })
+    fireEvent.keyDown(field(), { key: "Enter" })
+    expect(onVelocityChange).toHaveBeenLastCalledWith("translate", 30)
 
     fireEvent.click(tab("Rotate"))
-    expect(screen.getByText("10°/s")).toBeVisible()
+    expect(field()).toHaveValue("10")
+    expect(screen.getByText("°/s")).toBeVisible()
     fireEvent.change(slider(), { target: { value: 20 } })
     expect(onVelocityChange).toHaveBeenLastCalledWith(
       "rotate",
       expect.closeTo(Math.PI / 9, 10),
+    )
+    fireEvent.change(field(), { target: { value: "45" } })
+    fireEvent.keyDown(field(), { key: "Enter" })
+    expect(onVelocityChange).toHaveBeenLastCalledWith(
+      "rotate",
+      expect.closeTo(Math.PI / 4, 10),
     )
   })
 

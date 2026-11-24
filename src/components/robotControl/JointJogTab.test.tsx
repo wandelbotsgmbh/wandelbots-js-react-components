@@ -173,12 +173,19 @@ describe("RobotControlPanel's Joint tab", () => {
     const { onVelocityChange } = setup()
     fireEvent.click(jointTab())
 
-    expect(screen.getByText("50°/s")).toBeVisible()
+    const field = screen.getByRole("textbox", { name: "Velocity" })
+    expect(field).toHaveValue("50")
+    expect(screen.getByText("°/s")).toBeVisible()
     fireEvent.change(screen.getByRole("slider", { name: "Velocity" }), {
       target: { value: 20 },
     })
-    expect(onVelocityChange).toHaveBeenCalledWith(
+    expect(onVelocityChange).toHaveBeenLastCalledWith(
       expect.closeTo(Math.PI / 9, 10),
+    )
+    fireEvent.change(field, { target: { value: "45" } })
+    fireEvent.keyDown(field, { key: "Enter" })
+    expect(onVelocityChange).toHaveBeenLastCalledWith(
+      expect.closeTo(Math.PI / 4, 10),
     )
   })
 
@@ -190,7 +197,8 @@ describe("RobotControlPanel's Joint tab", () => {
     })
     fireEvent.click(jointTab())
 
-    expect(screen.getByText("100 mm/s")).toBeVisible()
+    expect(screen.getByRole("textbox", { name: "Velocity" })).toHaveValue("100")
+    expect(screen.getByText("mm/s")).toBeVisible()
     expect(joint("J1")).toHaveAttribute("aria-valuetext", "250.0 mm")
   })
 

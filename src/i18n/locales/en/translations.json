@@ -81,6 +81,8 @@
   "RobotControl.JogMode.Continuous.bt": "Continuous",
   "RobotControl.JogMode.Increment.bt": "Increment",
   "RobotControl.Velocity.lb": "Velocity",
+  "RobotControl.Velocity.NotANumber.lb": "Enter a number",
+  "RobotControl.Velocity.OutOfRange.lb": "Enter a value between {{min}} and {{max}}",
   "RobotControl.StepSize.lb": "Step size",
   "RobotControl.JogArea.ShowGizmo.bt": "Gizmo controls",
   "RobotControl.JogArea.ShowButtons.bt": "Button controls",
