@@ -2,14 +2,15 @@ import {
   type AutoReconnectingWebsocket,
   tryParseJson,
 } from "@wandelbots/nova-js"
-import type {
-  ExecuteTrajectoryResponse,
-  InitializeMovementRequest,
-  MotionCommand,
-  PauseMovementRequest,
-  PlanTrajectoryResponse,
-  Pose,
-  StartMovementRequest,
+import {
+  type ExecuteTrajectoryResponse,
+  type InitializeMovementRequest,
+  JointTypeEnum,
+  type MotionCommand,
+  type PauseMovementRequest,
+  type PlanTrajectoryResponse,
+  type Pose,
+  type StartMovementRequest,
 } from "@wandelbots/nova-js/v2"
 import {
   type IReactionDisposer,
@@ -588,11 +589,15 @@ export class TrajectoryExecutionStore {
 
   /**
    * The velocity limit of a trajectory to a target: the jogging store's
-   * translation velocity (mm/s) for a pose, its rotation velocity (rad/s)
-   * for joints
+   * translation velocity (mm/s) for a pose, and for joints the velocity
+   * they are jogged with, which is its rotation velocity (rad/s), or its
+   * translation velocity (mm/s) for linear axes
    */
   private velocityFor(target: TrajectoryTarget) {
-    return target.type === "cartesian"
+    const linear =
+      target.type === "cartesian" ||
+      this.joggingStore.jointType === JointTypeEnum.PrismaticJoint
+    return linear
       ? this.joggingStore.translationVelocityMmPerSec
       : this.joggingStore.rotationVelocityRadsPerSec
   }

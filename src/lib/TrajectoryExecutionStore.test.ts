@@ -1,8 +1,9 @@
-import type {
-  CoordinateSystem,
-  MotionGroupState,
-  PlanTrajectoryRequest,
-  PlanTrajectoryResponse,
+import {
+  type CoordinateSystem,
+  JointTypeEnum,
+  type MotionGroupState,
+  type PlanTrajectoryRequest,
+  type PlanTrajectoryResponse,
 } from "@wandelbots/nova-js/v2"
 import { autorun, observable, runInAction } from "mobx"
 import { describe, expect, onTestFinished, test, vi } from "vitest"
@@ -87,10 +88,13 @@ type FakeSocket = ReturnType<typeof makeFakeSocket>
 function makeStore({
   joggerMode = "trajectory",
   motionGroupModel = "custom-TestRobot-1",
+  jointType = JointTypeEnum.RevoluteJoint,
   ...options
 }: Partial<Omit<TrajectoryExecutionStoreOptions, "joggingStore">> & {
   joggerMode?: JoggerMode
   motionGroupModel?: string
+  /** The joints of the motion group: revolute, or the linear axes of a rail */
+  jointType?: JointTypeEnum
 } = {}) {
   const planTrajectory = vi.fn(
     async (
@@ -158,6 +162,7 @@ function makeStore({
     coordSystems: coordinateSystems,
     translationVelocityMmPerSec: 50,
     rotationVelocityRadsPerSec: 1,
+    jointType,
     deactivate: vi.fn(async () => {}),
   }
 
@@ -357,6 +362,26 @@ describe("TrajectoryExecutionStore.planTrajectory", () => {
     expect(command?.limits_override).toEqual({
       joint_velocity_limits: [1, 1, 1, 1, 1, 1],
     })
+  })
+
+  // A linear axis moves in mm: its joint velocity is the jogging store's
+  // translation velocity, as when it is jogged. The rotation velocity is a
+  // number of rad/s, which as mm/s is no speed at all.
+  test("plans the joints of a linear axis with the translation velocity, and is outdated when that one changes", async () => {
+    const { store, planTrajectory, emit, joggingStore } = makeStore({
+      jointType: JointTypeEnum.PrismaticJoint,
+    })
+
+    await store.planTrajectory({ type: "joint", joints: [250, 0, 0, 0, 0, 0] })
+    emit("INITIALIZE_RECEIVED")
+
+    expect(
+      plannedRequest(planTrajectory).motion_commands[0]?.limits_override,
+    ).toEqual({ joint_velocity_limits: [50, 50, 50, 50, 50, 50] })
+    joggingStore.rotationVelocityRadsPerSec = 0.5
+    expect(store.isPlanOutdated).toBe(false)
+    joggingStore.translationVelocityMmPerSec = 10
+    expect(store.isPlanOutdated).toBe(true)
   })
 
   test("plans from the current joints of the motion stream", async () => {
