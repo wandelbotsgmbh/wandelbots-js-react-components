@@ -117,6 +117,37 @@ describe("RobotControlPanel's state", () => {
     expect(steps.onStep).toHaveBeenCalledWith("translate", "z", "+", 5)
   })
 
+  // One step runs at a time, so a press during a step moves nothing: the
+  // controls show that they are off for it, as RobotPad's sidebar did
+  it("turns the jog controls and the TCP select off while a step runs, and on again after it", () => {
+    const tcp = {
+      options: [{ id: "flange", label: "Flange" }],
+      value: "flange",
+      onChange: vi.fn(),
+    }
+    const running = increments({ running: { axis: "z", direction: "+" } })
+    const { rerender } = setup({
+      jogMode: "increment",
+      increments: running,
+      tcp,
+    })
+    const tcpSelect = () => screen.getByRole("combobox", { name: "TCP" })
+
+    expect(button("Jog X+")).toBeDisabled()
+    press(button("Jog X+"))
+    expect(running.onStep).not.toHaveBeenCalled()
+    expect(tcpSelect()).toHaveAttribute("aria-disabled", "true")
+    // What moves nothing stays usable
+    expect(screen.getByRole("slider", { name: "Velocity" })).toBeEnabled()
+
+    const idle = increments()
+    rerender({ increments: idle })
+    expect(button("Jog X+")).toBeEnabled()
+    press(button("Jog X+"))
+    expect(idle.onStep).toHaveBeenCalledOnce()
+    expect(tcpSelect()).not.toHaveAttribute("aria-disabled", "true")
+  })
+
   it("with jogDisabled, jogs nothing but still moves to a pose", async () => {
     const onMoveStart = vi.fn()
     const onMoveStop = vi.fn()

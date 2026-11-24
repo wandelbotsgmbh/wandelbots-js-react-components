@@ -38,7 +38,9 @@ type CartesianJogTabProps = Omit<
  * and the TCP select, whose change needs the jogging connection as a jog
  * does. The settings that move nothing stay usable: the frame to jog along,
  * the jog mode, the velocity and the step size are the user's to prepare
- * while the robot may not move. `disabled` turns off everything.
+ * while the robot may not move. A running step (`increments.running`) turns
+ * off the same as `jogDisabled`: only one step runs at a time. `disabled`
+ * turns off everything.
  */
 export function CartesianJogTab({
   motion,
@@ -62,6 +64,12 @@ export function CartesianJogTab({
   const steps = increments?.steps[motion] ?? []
   const stepIndex = Math.min(settings.step[motion], steps.length - 1)
   const step = steps[stepIndex]
+
+  // One step runs at a time: a press during a step would move nothing, and
+  // a change of the TCP would be refused. So what jogs is off while a step
+  // runs, and shows it; the running handle stays lit.
+  const stepRunning = Boolean(increments?.running)
+  const jogOff = disabled || jogDisabled || stepRunning
 
   // A press in Continuous mode jogs until its release. The release must
   // stop it whatever the mode is by then, and only then: a step needs none.
@@ -94,7 +102,7 @@ export function CartesianJogTab({
                 <PanelSelect
                   label={t("RobotControl.Tcp.lb")}
                   {...tcp}
-                  disabled={disabled || jogDisabled}
+                  disabled={jogOff}
                 />
               )}
               {jogFrame && (
@@ -157,7 +165,7 @@ export function CartesianJogTab({
             onJogStart: start,
             onJogStop: stop,
             activeHandle: mode === "increment" ? increments?.running : null,
-            disabled: disabled || jogDisabled,
+            disabled: jogOff,
           }}
           disabledReason={jogDisabledReason}
           gizmoOrientation={gizmoOrientation}

@@ -59,7 +59,11 @@ export type RobotControlIncrements = {
     direction: JogDirection,
     distance: number,
   ) => void
-  /** The step that runs now: its control shows as pressed */
+  /**
+   * The step that runs now: its control shows as pressed, and the jog
+   * controls and the TCP select are off until it is over, as only one step
+   * runs at a time
+   */
   running?: JogHandle | null
   /**
    * The chosen step size of a motion, one of its `steps`. Without it, the
