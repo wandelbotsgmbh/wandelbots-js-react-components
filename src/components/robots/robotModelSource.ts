@@ -18,6 +18,12 @@ export type RobotModelSource = {
   modelFromController?: string
   /** The joints' DH parameters; without them nothing is drawn */
   dhParameters?: DHParameter[]
+  /**
+   * The model's inverse solver; null for a linear axis or a turntable.
+   * `RobotSceneView` draws the motion group by it, as `MotionGroupVisualizer`
+   * does; `Robot` and `LinearAxis` leave the choice to the app.
+   */
+  inverseSolver?: string | null
   /** The robot's serial number, for a copy of its model registered for it */
   serialNumber?: string
   /**
@@ -56,6 +62,7 @@ export function robotModelOf(session: RobotSession): RobotModelSource {
     nova: session.nova,
     modelFromController: description.motionGroupModel,
     dhParameters: description.dhParameters,
+    inverseSolver: description.inverseSolver,
     serialNumber: description.serialNumber,
     kinematicChainOffset: description.kinematicChainOffset,
     rapidlyChangingMotionState: state.rapidlyChangingMotionState,

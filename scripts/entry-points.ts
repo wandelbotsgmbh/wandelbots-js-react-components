@@ -27,6 +27,7 @@ export const componentNames = [
   "RobotControl",
   "CurrentPoseBar",
   "CurrentPose",
+  "RobotScene",
   "RobotHeader",
 ] as const
 

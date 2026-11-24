@@ -32,6 +32,7 @@ import { Pose } from '@wandelbots/nova-js/v2';
 import { Quaternion } from 'three';
 import { default as React_2 } from 'react';
 import { ReactNode } from 'react';
+import { Ref } from 'react';
 import { RefObject } from 'react';
 import { RobotControllerConfiguration } from '@wandelbots/nova-js/v2';
 import { RobotControllerState } from '@wandelbots/nova-js/v2';
@@ -465,6 +466,18 @@ export type JoggerMode = "jogging" | "trajectory" | "off";
 
 // @public (undocumented)
 export type JoggerOrientation = "coordsys" | "tool";
+
+// @public
+export function JoggingAxes(input: JoggingAxesProps): JSX.Element;
+
+// @public
+export type JoggingAxesProps = {
+    base?: CoordinateSystem;
+    tcpOffset?: Pose;
+    rapidlyChangingMotionState: MotionGroupState;
+    orientation: OrientationId;
+    rotate?: boolean;
+};
 
 // @public
 export const JoggingButtons: (props: JoggingButtonsProps) => JSX.Element;
@@ -1254,6 +1267,7 @@ export function robotModelOf(session: RobotSession): RobotModelSource;
 export type RobotModelSource = {
     modelFromController?: string;
     dhParameters?: DHParameter[];
+    inverseSolver?: string | null;
     serialNumber?: string;
     kinematicChainOffset?: Pose | null;
     rapidlyChangingMotionState: MotionGroupState;
@@ -1332,6 +1346,31 @@ export class RobotSafety {
 
 // @public
 export function robotSafetyOf(session: RobotSession): Pick<SafetyBarProps, "isVirtual" | "motionGroupId" | "operationMode" | "safetyState">;
+
+// @public
+export const RobotScene: FunctionComponent<RobotSceneProps>;
+
+// @public
+export type RobotSceneProps = Partial<RobotSceneViewProps> & {
+    session?: RobotSession;
+};
+
+// @public
+export function RobotSceneView(input: RobotSceneViewProps): JSX.Element | null;
+
+// @public
+export type RobotSceneViewProps = {
+    robot: RobotModelSource;
+    getModel?: SupportedRobotProps["getModel"];
+    safetyZones?: MotionGroupDescription["safety_zones"];
+    plannedJoints?: number[] | null;
+    jogAxes?: JoggingAxesProps;
+    robotVisible?: boolean;
+    robotRef?: Ref<Group>;
+    onModelDrawn?: () => void;
+    lighting?: boolean;
+    children?: ReactNode;
+};
 
 // @public
 export class RobotSession {
@@ -1591,6 +1630,9 @@ export function useInterpolation(initialValues?: number[], options?: Interpolati
 
 // @public
 export function useRobotControlProps(session: RobotSession, options?: RobotControlOptions): RobotControlPanelProps;
+
+// @public
+export function useRobotSceneProps(session: RobotSession): RobotSceneViewProps;
 
 // @public
 export function useRobotSession(): RobotSession;

@@ -189,6 +189,7 @@ describe("package exports — deep component imports", () => {
     "RobotControlPanel",
     "RobotControl",
     "CurrentPose",
+    "RobotScene",
   ]
 
   it.each(specs)("%s resolves ESM, CJS, and types", (sub) => {
@@ -216,6 +217,7 @@ describe("MUI-style default + named exports", () => {
     { sub: "RobotControlPanel", name: "RobotControlPanel" },
     { sub: "RobotControl", name: "RobotControl" },
     { sub: "CurrentPose", name: "CurrentPose" },
+    { sub: "RobotScene", name: "RobotScene" },
   ]
 
   it.each(cases)("$sub exposes $name as both named and default", async ({
@@ -306,6 +308,7 @@ describe("component imports bring only what the component needs", () => {
     { sub: "RobotControlPanel", aggregate: "3d", name: "RobotControlPanel" },
     { sub: "RobotControl", aggregate: "3d", name: "RobotControl" },
     { sub: "CurrentPose", aggregate: "core", name: "CurrentPose" },
+    { sub: "RobotScene", aggregate: "3d", name: "RobotScene" },
   ])("$sub and /$aggregate share one $name", async ({
     sub,
     aggregate,
@@ -348,6 +351,7 @@ describe("CJS interop", () => {
     "RobotControlPanel",
     "RobotControl",
     "CurrentPose",
+    "RobotScene",
   ])("Node strict ESM can import %s and its transitive deps", (sub) => {
     // Redirect stderr to stdout so the assertion message surfaces any
     // "Cannot find module" errors from the child process.

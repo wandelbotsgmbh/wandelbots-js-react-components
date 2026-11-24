@@ -49,6 +49,20 @@ export {
   type RobotControlOptions,
   useRobotControlProps,
 } from "./components/robotControl/useRobotControlProps"
+// The 3D scene of a robot session, ready to use, its props and its parts
+export {
+  JoggingAxes,
+  type JoggingAxesProps,
+} from "./components/robotScene/JoggingAxes"
+export {
+  RobotScene,
+  type RobotSceneProps,
+} from "./components/robotScene/RobotScene"
+export {
+  RobotSceneView,
+  type RobotSceneViewProps,
+} from "./components/robotScene/RobotSceneView"
+export { useRobotSceneProps } from "./components/robotScene/useRobotSceneProps"
 export * from "./components/robots/LinearAxis"
 export * from "./components/robots/MotionGroupVisualizer"
 export * from "./components/robots/Robot"
