@@ -10,8 +10,15 @@ import type { ConnectionWarningProps } from "./ConnectionWarning"
  * `ConnectionWarning` takes it:
  *
  * ```tsx
- * <ConnectionWarning {...connectionWarningOf(session)} />
+ * const Warning = observer(({ session }: { session: RobotSession }) => (
+ *   <ConnectionWarning {...connectionWarningOf(session)} />
+ * ))
  * ```
+ *
+ * It reads the session's MobX state when it is called and returns plain
+ * props, so the component that calls it must be an `observer` (of
+ * mobx-react-lite): any other keeps what it read at its last render, e.g.
+ * no warning after the live state stopped.
  */
 export function connectionWarningOf(
   session: RobotSession,

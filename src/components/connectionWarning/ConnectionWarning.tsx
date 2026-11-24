@@ -38,7 +38,7 @@ function useNow(active: boolean) {
  * A warning in a robot app's header that the robot's live state stopped
  * arriving: an icon, and in its tooltip when the last update came and the
  * last message that could not be used. Shows nothing while the live state
- * arrives. For a robot session: `<ConnectionWarning
+ * arrives. For a robot session, in an `observer`: `<ConnectionWarning
  * {...connectionWarningOf(session)} />`.
  */
 export const ConnectionWarning = externalizeComponent(

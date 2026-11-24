@@ -10,8 +10,15 @@ import type { SafetyBarProps } from "../../SafetyBar/SafetyBar"
  * `RobotHeader`'s `safety` or `SafetyBar` take them:
  *
  * ```tsx
- * <SafetyBar {...robotSafetyOf(session)} />
+ * const RobotSafety = observer(({ session }: { session: RobotSession }) => (
+ *   <SafetyBar {...robotSafetyOf(session)} />
+ * ))
  * ```
+ *
+ * It reads the session's MobX state when it is called and returns plain
+ * props, so the component that calls it must be an `observer` (of
+ * mobx-react-lite): any other keeps what it read at its last render, e.g.
+ * no emergency stop after one was pressed.
  */
 export function robotSafetyOf(
   session: RobotSession,
