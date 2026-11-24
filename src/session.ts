@@ -4,6 +4,10 @@
 
 // Jogging the robot, with the user's jogging settings
 export {
+  JoggingRefusedError,
+  type JoggingRefusedReason,
+} from "./components/jogging/JoggingRefusedError"
+export {
   JoggingStore,
   type JoggingStoreOptions,
   type JoggingStoreStorage,
