@@ -47,7 +47,9 @@ jobs:
       github.event_name != 'pull_request' ||
       (github.event.pull_request.head.repo.full_name == github.repository &&
       github.event.pull_request.user.login != 'dependabot[bot]')
-    runs-on: ubuntu-latest
+    # Not ubuntu-latest: Playwright installs Chromium only on the Ubuntu
+    # releases it knows, and the newest runner image is ahead of it
+    runs-on: ubuntu-24.04
     timeout-minutes: 40
     env:
       PORTAL_AUTH_URL: https://auth.portal.wandelbots.io/oauth/token
