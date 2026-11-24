@@ -1,12 +1,15 @@
 import { Nova } from "@wandelbots/nova-js/v2"
+import { Vector3 } from "three"
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest"
 import { delay } from "../components/utils/errorHandling"
+import { randomFrame, seededRandom } from "./__fixtures__/randomPoses"
 import {
   JoggerConnection,
   type JoggerConnectionOptions,
 } from "./JoggerConnection"
 import { MotionStreamConnection } from "./MotionStreamConnection"
 import { jointValuesEqual } from "./motionStateUpdate"
+import { Pose3 } from "./Pose3"
 
 // Notes:
 // - In mock mode, no joint comparison takes place (always successful)
@@ -379,6 +382,46 @@ describe("continuous jogging of the TCP", () => {
 
     await setOptions({ coordinateSystem: undefined })
     expect(await move()).toEqual([10, 0, 0])
+  })
+
+  // The velocity goes to the robot as it is computed here. It was computed
+  // with three.js objects before the jogger took plain numbers: the numbers
+  // must be the same to the last bit.
+  test("sends the same velocities as with three.js objects", async () => {
+    const random = seededRandom(6)
+    const { jogger, sockets } = joggerWithFakeSockets({ mode: "jogging" })
+
+    for (let run = 0; run < 200; run++) {
+      const coordinateSystem = {
+        coordinate_system: "random",
+        ...randomFrame(random),
+      }
+      const reinitialized = jogger.setOptions({ coordinateSystem })
+      const socket = sockets[sockets.length - 1] as FakeJoggingSocket
+      socket.receive({ kind: "INITIALIZE_RECEIVED" })
+      await reinitialized
+
+      const axis = (["x", "y", "z"] as const)[Math.floor(random() * 3)] ?? "x"
+      const direction = random() < 0.5 ? "-" : "+"
+      const velocity = random() * 250
+      const expected = new Vector3()
+      expected[axis] = direction === "-" ? -velocity : velocity
+      expected.applyQuaternion(
+        Pose3.fromCoordinateSystem(coordinateSystem).quaternion,
+      )
+
+      await jogger.translateTCP({ axis, direction, velocityMmPerSec: velocity })
+      expect(
+        lastRequest(socket).translation,
+        JSON.stringify({ coordinateSystem, axis, direction, velocity }),
+      ).toEqual([...expected])
+
+      await jogger.rotateTCP({ axis, direction, velocityRadsPerSec: velocity })
+      expect(
+        lastRequest(socket).rotation,
+        JSON.stringify({ coordinateSystem, axis, direction, velocity }),
+      ).toEqual([...expected])
+    }
   })
 })
 

@@ -1,6 +1,14 @@
 import type { CoordinateSystem } from "@wandelbots/nova-js/v2"
 import { Vector3 } from "three"
 import { describe, expect, test } from "vitest"
+import {
+  EDGE_ROTATION_VECTORS,
+  type RandomFrame,
+  randomFrame,
+  randomPosition,
+  randomRotationVector,
+  seededRandom,
+} from "./__fixtures__/randomPoses"
 import { Pose3 } from "./Pose3"
 import {
   deriveSelectedTcpPose,
@@ -276,5 +284,152 @@ describe("transformPoseToTcp", () => {
 
     expectVectorCloseTo(back.position, pose.position)
     expectVectorCloseTo(back.orientation, pose.orientation)
+  })
+})
+
+// The transformer gives a robot its Move to targets and an app the poses it
+// shows. Pose3 computes the same on three.js objects, as the transformer did
+// before it took plain numbers: the numbers must be the same to the last bit.
+describe("the same numbers as the pose math on three.js objects (Pose3)", () => {
+  const RUNS = 2000
+
+  const coordinateSystemOf = (
+    id: string,
+    reference: string,
+    frame: RandomFrame,
+  ): CoordinateSystem => ({
+    coordinate_system: id,
+    reference_coordinate_system: reference,
+    ...frame,
+  })
+
+  /** A frame's pose in world, as the transformer keeps it: a rotation vector */
+  function inWorld(frame: RandomFrame, referenceInWorld: RandomFrame) {
+    const combined = Pose3.fromCoordinateSystem(
+      coordinateSystemOf("reference", "", referenceInWorld),
+    ).multiply(
+      Pose3.fromCoordinateSystem(coordinateSystemOf("frame", "", frame)),
+    )
+    return {
+      position: [...combined.position],
+      orientation: [...combined.orientation],
+      orientation_type: "ROTATION_VECTOR" as const,
+    }
+  }
+
+  /** Coordinate systems a, b and c: a is in world, b in a, c in b */
+  function randomChain(random: () => number) {
+    const a = randomFrame(random)
+    const b = randomFrame(random)
+    const c = randomFrame(random)
+    const bInWorld = inWorld(b, a)
+    return {
+      coordinateSystems: [
+        world,
+        coordinateSystemOf("a", "", a),
+        coordinateSystemOf("b", "a", b),
+        coordinateSystemOf("c", "b", c),
+      ],
+      inWorld: {
+        world,
+        a,
+        b: bInWorld,
+        c: inWorld(c, bInWorld),
+      } as Record<string, RandomFrame>,
+    }
+  }
+
+  const randomPose = (random: () => number) => ({
+    position: randomPosition(random),
+    orientation:
+      random() < 0.2
+        ? (EDGE_ROTATION_VECTORS[
+            Math.floor(random() * EDGE_ROTATION_VECTORS.length)
+          ] as number[])
+        : randomRotationVector(random),
+  })
+
+  test("a coordinate system in world, through the coordinate systems it refers to", () => {
+    const random = seededRandom(1)
+    for (let run = 0; run < RUNS; run++) {
+      const chain = randomChain(random)
+      for (const id of ["a", "b", "c"]) {
+        const resolved = resolveCoordinateSystemInWorld(
+          id,
+          chain.coordinateSystems,
+        )
+        const expected = chain.inWorld[id] as RandomFrame
+        expect(
+          {
+            position: resolved.position,
+            orientation: resolved.orientation,
+            orientation_type: resolved.orientation_type,
+          },
+          JSON.stringify(chain.coordinateSystems),
+        ).toEqual({
+          position: expected.position,
+          orientation: expected.orientation,
+          orientation_type: expected.orientation_type,
+        })
+      }
+    }
+  })
+
+  test("a pose in another coordinate system", () => {
+    const random = seededRandom(2)
+    const ids = ["world", "a", "b", "c"]
+    for (let run = 0; run < RUNS; run++) {
+      const chain = randomChain(random)
+      const pose = randomPose(random)
+      const from = ids[Math.floor(random() * ids.length)] as string
+      const to = ids.filter((id) => id !== from)[
+        Math.floor(random() * (ids.length - 1))
+      ] as string
+
+      const transformed = transformPoseToCoordinateSystem(
+        { pose, coordinateSystemId: from },
+        to,
+        chain.coordinateSystems,
+      )
+
+      const expected = Pose3.fromCoordinateSystem(
+        coordinateSystemOf(to, "", chain.inWorld[to] as RandomFrame),
+      )
+        .inverse()
+        .multiply(
+          Pose3.fromCoordinateSystem(
+            coordinateSystemOf(from, "", chain.inWorld[from] as RandomFrame),
+          ).multiply(Pose3.fromPose(pose)),
+        )
+      expect(
+        transformed.pose,
+        JSON.stringify({ pose, from, to, chain: chain.coordinateSystems }),
+      ).toEqual({
+        position: [...expected.position],
+        orientation: [...expected.orientation],
+      })
+    }
+  })
+
+  test("a TCP's pose as the pose of another TCP", () => {
+    const random = seededRandom(3)
+    const randomTcp = () => ({ position: [0, 0, 0], ...randomFrame(random) })
+    for (let run = 0; run < RUNS; run++) {
+      const pose = randomPose(random)
+      const poseTcp = randomTcp()
+      const targetTcp = randomTcp()
+
+      const transformed = transformPoseToTcp(pose, poseTcp, targetTcp)
+
+      const expected = Pose3.fromPose(pose)
+        .multiply(Pose3.fromRobotTcp(poseTcp).inverse())
+        .multiply(Pose3.fromRobotTcp(targetTcp))
+      expect(transformed, JSON.stringify({ pose, poseTcp, targetTcp })).toEqual(
+        {
+          position: [...expected.position],
+          orientation: [...expected.orientation],
+        },
+      )
+    }
   })
 })

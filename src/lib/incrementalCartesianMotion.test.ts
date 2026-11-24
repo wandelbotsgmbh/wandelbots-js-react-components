@@ -1,7 +1,18 @@
 import type { Pose } from "@wandelbots/nova-js/v2"
 import { Quaternion, Vector3 } from "three"
 import { describe, expect, test } from "vitest"
-import { computeIncrementalTargetPose } from "./incrementalCartesianMotion"
+import {
+  EDGE_ROTATION_VECTORS,
+  randomFrame,
+  randomPosition,
+  randomRotationVector,
+  seededRandom,
+} from "./__fixtures__/randomPoses"
+import {
+  computeIncrementalTargetPose,
+  type IncrementalMotion,
+} from "./incrementalCartesianMotion"
+import { Pose3 } from "./Pose3"
 import {
   parseRotationToQuaternion,
   quaternionToRotationVector,
@@ -322,5 +333,130 @@ describe("tool rotate (intrinsic)", () => {
       quaternionFromRotationVector(orientationOf(coordsys)),
     )
     expect(angle).toBeGreaterThan(0.1)
+  })
+})
+
+// The target of a step jog goes to the planner as it is computed here. It was
+// computed with three.js objects before the code took plain numbers: the
+// numbers must be the same to the last bit.
+describe("the same numbers as with three.js objects", () => {
+  type StepJog = Parameters<typeof computeIncrementalTargetPose>[0] & {
+    currentTcpPose: { position: number[]; orientation: number[] }
+    coordinateSystemRotation?: Quaternion
+  }
+
+  /** The target pose of a step jog, computed with three.js objects */
+  function threeTargetPose({
+    currentTcpPose,
+    axis,
+    direction,
+    motion,
+    useToolCoordinateSystem,
+    coordinateSystemRotation,
+  }: StepJog): { position?: number[]; orientation?: number[] } {
+    const sign = direction === "-" ? -1 : 1
+    const alongAxis = (length: number) => {
+      const vector = new Vector3()
+      vector[axis] = length
+      return vector
+    }
+    const currentOrientation = () =>
+      parseRotationToQuaternion(currentTcpPose.orientation, "ROTATION_VECTOR")
+
+    if (motion.type === "translate") {
+      const displacement = alongAxis(motion.distanceMm * sign)
+      if (useToolCoordinateSystem) {
+        displacement.applyQuaternion(currentOrientation())
+      } else if (coordinateSystemRotation) {
+        displacement.applyQuaternion(coordinateSystemRotation)
+      }
+      return {
+        position: [
+          (currentTcpPose.position[0] ?? 0) + displacement.x,
+          (currentTcpPose.position[1] ?? 0) + displacement.y,
+          (currentTcpPose.position[2] ?? 0) + displacement.z,
+        ],
+        orientation: currentTcpPose.orientation,
+      }
+    }
+
+    const rotationAxis = alongAxis(1)
+    if (!useToolCoordinateSystem && coordinateSystemRotation) {
+      rotationAxis.applyQuaternion(coordinateSystemRotation)
+    }
+    const deltaRotation = new Quaternion().setFromAxisAngle(
+      rotationAxis,
+      motion.distanceRads * sign,
+    )
+    const targetOrientation = useToolCoordinateSystem
+      ? currentOrientation().multiply(deltaRotation)
+      : deltaRotation.multiply(currentOrientation())
+    return {
+      position: currentTcpPose.position,
+      orientation: [...quaternionToRotationVector(targetOrientation)],
+    }
+  }
+
+  const pick = <T>(random: () => number, values: readonly T[]): T =>
+    values[Math.floor(random() * values.length)] as T
+
+  /** Step sizes of the jogging panel, a half and a full turn, and no step */
+  const DISTANCES_MM = [0.1, 1, 5, 10, 0]
+  const DISTANCES_RADS = [
+    (0.1 * Math.PI) / 180,
+    (1 * Math.PI) / 180,
+    (5 * Math.PI) / 180,
+    Math.PI,
+    2 * Math.PI,
+    0,
+  ]
+
+  function randomStepJog(random: () => number): StepJog {
+    const motion: IncrementalMotion =
+      random() < 0.5
+        ? {
+            type: "translate",
+            distanceMm:
+              random() < 0.5 ? pick(random, DISTANCES_MM) : random() * 500,
+          }
+        : {
+            type: "rotate",
+            distanceRads:
+              random() < 0.5
+                ? pick(random, DISTANCES_RADS)
+                : random() * 2 * Math.PI,
+          }
+    return {
+      currentTcpPose: {
+        position: randomPosition(random),
+        orientation:
+          random() < 0.2
+            ? pick(random, EDGE_ROTATION_VECTORS)
+            : randomRotationVector(random),
+      },
+      axis: pick(random, ["x", "y", "z"] as const),
+      direction: pick(random, ["-", "+"] as const),
+      motion,
+      useToolCoordinateSystem: random() < 0.4,
+      // As the jogger gives it: the rotation of its coordinate system
+      coordinateSystemRotation:
+        random() < 0.3
+          ? undefined
+          : Pose3.fromCoordinateSystem({
+              coordinate_system: "random",
+              ...randomFrame(random),
+            }).quaternion,
+    }
+  }
+
+  test("for every kind of step, in tool, world and coordinate system orientation", () => {
+    const random = seededRandom(4)
+    for (let run = 0; run < 5000; run++) {
+      const stepJog = randomStepJog(random)
+      expect(
+        computeIncrementalTargetPose(stepJog),
+        JSON.stringify(stepJog),
+      ).toEqual(threeTargetPose(stepJog))
+    }
   })
 })
