@@ -96,9 +96,12 @@ export function MoveToTab({
           poses: cartesian,
           jointCount: moveTo.getCurrentJoints?.()?.length ?? null,
         })
+  // Why the robot cannot move to the target: it may not move at all, or
+  // the app's reason for this target
+  const targetError = moveTo.notMoveableReason || moveTo.error || null
   // A target the app could plan, as RobotPad's staged pose. Not while
   // another pose is typed: the button would move to a pose not shown.
-  const ready = target !== null && !moveTo.error && !editing
+  const ready = target !== null && !targetError && !editing
   const atPose =
     useEveryFrame(
       () =>
@@ -196,13 +199,16 @@ export function MoveToTab({
     [],
   )
 
+  // While a pose is typed: what is wrong with the text, else why the
+  // robot may not move, which no typing changes. The reason for the target
+  // that was saved before is not one for the pose typed now.
   const error =
     draft !== null
       ? draftTarget === null
         ? t("RobotControl.MoveTo.InvalidPose.lb")
-        : null
+        : moveTo.notMoveableReason || null
       : target
-        ? (moveTo.error ??
+        ? (targetError ??
           (planDropped ? t("RobotControl.MoveTo.PlanDropped.lb") : null))
         : null
 
@@ -277,7 +283,7 @@ export function MoveToTab({
             </span>
           </Tooltip>
         )}
-        {target && !editing && (moveTo.error || planDropped) && (
+        {target && !editing && (targetError || planDropped) && (
           <Tooltip
             title={t("RobotControl.MoveTo.PlanAgain.lb")}
             placement="top"

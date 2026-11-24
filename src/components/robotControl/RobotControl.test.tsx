@@ -206,6 +206,45 @@ describe("RobotControl", () => {
     expect(field).toHaveValue("[0.5, 0, 0, 0, 0, 0]")
   })
 
+  // RobotPad's e2e test reads the reason at the coordinates field
+  it("says in the Move to field why a robot that is not activated cannot move, while a pose is typed and after, and plans the pose once the robot is activated", async () => {
+    const harness = makeHarness()
+    const session = await harness.load().ready
+    onTestFinished(() => session.dispose())
+    const execution = await fakeExecution(session)
+    const settle = () =>
+      act(async () => {
+        for (let i = 0; i < 20; i++) await Promise.resolve()
+      })
+    const MUST_BE_ACTIVATED = "The robot must be activated first"
+
+    render(<RobotControl session={session} />)
+    fireEvent.click(screen.getByRole("tab", { name: "Move to" }))
+    const field = screen.getByRole("textbox", { name: /^Coordinates/ })
+    expect(field).toHaveAccessibleDescription("")
+
+    fireEvent.click(screen.getByRole("button", { name: "Edit pose" }))
+    expect(field).toHaveAccessibleDescription(MUST_BE_ACTIVATED)
+    fireEvent.change(field, {
+      target: { value: "(400, 0, 310, 3.1416, 0, 0)" },
+    })
+    expect(field).toHaveAccessibleDescription(MUST_BE_ACTIVATED)
+
+    // Enter keeps the typed pose: nothing is planned for it yet
+    fireEvent.keyDown(field, { key: "Enter" })
+    await settle()
+    expect(field).toHaveValue("(400, 0, 310, 3.1416, 0, 0)")
+    expect(field).toHaveAttribute("readonly")
+    expect(field).toHaveAccessibleDescription(MUST_BE_ACTIVATED)
+    expect(execution.planTrajectory).not.toHaveBeenCalled()
+
+    act(() => harness.source.send(controllerState({ mode: "MODE_CONTROL" })))
+    await settle()
+    expect(execution.planTrajectory).toHaveBeenCalledOnce()
+    expect(field).toHaveAccessibleDescription("")
+    expect(field).toHaveValue("(400, 0, 310, 3.1416, 0, 0)")
+  })
+
   it("says what is missing without a session", () => {
     vi.spyOn(console, "error").mockImplementation(() => {})
 

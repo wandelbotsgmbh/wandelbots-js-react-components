@@ -366,6 +366,87 @@ describe("RobotControlPanel's Move to tab, as RobotPad's pose field", () => {
     expect(queryButton("Plan the move again")).toBeNull()
   })
 
+  // Typing a pose moves nothing, so it stays possible while the robot may
+  // not move. The field says why Move to will not, before Enter as after.
+  describe("while the robot may not move", () => {
+    const REASON = "The robot must be activated first"
+
+    it("says why while a pose is typed, after what is wrong with the text, and still takes the typed target", () => {
+      const { onTargetChange, rerender } = setup({ notMoveableReason: REASON })
+      fireEvent.click(tab("Move to"))
+      // The live pose is no target: nothing to say of it
+      expect(coordinates()).toHaveAccessibleDescription("")
+
+      fireEvent.click(button("Edit pose"))
+      expect(coordinates()).toHaveAccessibleDescription(REASON)
+      fireEvent.change(coordinates(), { target: { value: "(1, 2" } })
+      expect(coordinates()).toHaveAccessibleDescription(
+        "Please enter valid pose coordinates.",
+      )
+      fireEvent.change(coordinates(), {
+        target: { value: "(1, 2, 3, 0, 0, 0)" },
+      })
+      expect(coordinates()).toHaveAccessibleDescription(REASON)
+
+      expect(button("Save pose edit")).toBeEnabled()
+      fireEvent.keyDown(coordinates(), { key: "Enter" })
+      expect(onTargetChange).toHaveBeenLastCalledWith(TARGET)
+      expect(coordinates()).toHaveValue("(1, 2, 3, 0, 0, 0)")
+      expect(coordinates()).toHaveAccessibleDescription(REASON)
+      // Off, whatever the app says of the plan
+      rerender({ state: "planned" })
+      expect(moveButton()).toBeDisabled()
+
+      rerender({ notMoveableReason: null })
+      expect(coordinates()).toHaveAccessibleDescription("")
+      expect(moveButton()).toBeEnabled()
+    })
+
+    it("says why when the robot stops being moveable midway through an edit, until the edit is left", () => {
+      const { rerender } = setup()
+      fireEvent.click(tab("Move to"))
+      fireEvent.click(button("Edit pose"))
+      expect(coordinates()).toHaveAccessibleDescription("")
+
+      rerender({ notMoveableReason: REASON })
+      expect(coordinates()).toHaveAccessibleDescription(REASON)
+      expect(coordinates()).not.toHaveAttribute("readonly")
+
+      fireEvent.keyDown(coordinates(), { key: "Escape" })
+      expect(coordinates()).toHaveAttribute("readonly")
+      expect(coordinates()).toHaveAccessibleDescription("")
+    })
+
+    // The reason for a target is the app's word on that one pose
+    it("says nothing of the saved target's own reason while another pose is typed", () => {
+      const { rerender } = setup()
+      fireEvent.click(tab("Move to"))
+      confirmPose("(5000, 2, 3, 0, 0, 0)")
+      rerender({ error: "The current pose is not reachable." })
+      expect(coordinates()).toHaveAccessibleDescription(
+        "The current pose is not reachable.",
+      )
+
+      fireEvent.click(button("Edit pose"))
+      fireEvent.change(coordinates(), {
+        target: { value: "(1, 2, 3, 0, 0, 0)" },
+      })
+      expect(coordinates()).toHaveAccessibleDescription("")
+    })
+
+    it("stops a held move, and says why", async () => {
+      const { onMoveStart, onMoveStop, rerender } = setup({ state: "planned" })
+      fireEvent.click(tab("Move to"))
+      confirmPose("(1, 2, 3, 0, 0, 0)")
+      await holdUntilStarted(onMoveStart)
+      rerender({ state: "moving" })
+
+      rerender({ notMoveableReason: REASON })
+      expect(onMoveStop).toHaveBeenCalledTimes(1)
+      expect(coordinates()).toHaveAccessibleDescription(REASON)
+    })
+  })
+
   // RobotPad: a saved pose gets selected and takes the trajectory. The tab
   // still shows its target, and its button moved nowhere, without a word.
   it("says when the app dropped the plan of the target it shows, and offers to plan it again", () => {

@@ -322,7 +322,15 @@ export function useRobotControlProps(
     [session],
   )
 
+  // Why the robot may not move now, in the library's words. A robot that
+  // is activating or deactivating has no reason of its own: it is not
+  // activated, as the session tells a jog that it refuses then.
   const notMoveable = session.safety.notMoveableReason
+  const notMoveableReason = notMoveable
+    ? notMoveableText(notMoveable, t)
+    : moveable
+      ? null
+      : t("RobotControl.MoveTo.NotMoveable.Deactivated.lb")
 
   const staged = targetPose.staged
   // The trajectory is the one of the panel's target only while the session
@@ -494,8 +502,8 @@ export function useRobotControlProps(
           ? trajectory.trajectoryState
           : "idle",
       error:
-        target && notMoveable
-          ? notMoveableText(notMoveable, t)
+        target && notMoveableReason
+          ? notMoveableReason
           : staged?.errorKey
             ? t(staged.errorKey, {
                 // NOVA's reason for a failed move, as it is: React escapes it
@@ -503,6 +511,8 @@ export function useRobotControlProps(
                 interpolation: { escapeValue: false },
               })
             : null,
+      // Also without a target: the panel says it while a pose is typed
+      notMoveableReason,
       // The button is held and let go: the session sees to it that the
       // robot moves only while it is held, and only to the target it shows
       onMoveStart: (shown) => {

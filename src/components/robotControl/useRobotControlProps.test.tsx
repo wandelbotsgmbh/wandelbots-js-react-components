@@ -657,6 +657,45 @@ describe("useRobotControlProps", () => {
     expect(moveTo().error ?? null).toBeNull()
   })
 
+  // The reason of the robot, not of a target: the panel shows it while a
+  // pose is typed as well
+  it("gives Move to the reason why the robot may not move, also without a target and while it is activating", async () => {
+    const MUST_BE_ACTIVATED = "The robot must be activated first"
+    const { harness, session, moveTo, type } = await loadMoveTo({
+      activated: false,
+    })
+    expect(moveTo().notMoveableReason).toBe(MUST_BE_ACTIVATED)
+    // No target: no reason of a target
+    expect(moveTo().error ?? null).toBeNull()
+
+    // Activating: not moveable yet, and the session has no reason of its own
+    await type(TARGET)
+    await act(async () => {
+      await session.activation.activate()
+    })
+    expect(session.activation.state).toBe("activating")
+    expect(session.safety.notMoveableReason).toBeNull()
+    expect(moveTo().notMoveableReason).toBe(MUST_BE_ACTIVATED)
+    expect(moveTo().error).toBe(MUST_BE_ACTIVATED)
+
+    act(() => harness.source.send(controllerState({ mode: "MODE_CONTROL" })))
+    await act(flush)
+    expect(moveTo().notMoveableReason ?? null).toBeNull()
+    expect(moveTo().error ?? null).toBeNull()
+
+    act(() =>
+      harness.source.send(
+        controllerState({
+          mode: "MODE_CONTROL",
+          safety_state: "SAFETY_STATE_STOP",
+        }),
+      ),
+    )
+    expect(moveTo().notMoveableReason).toBe(
+      "The robot is in a non-moveable safety state: SAFETY_STATE_STOP",
+    )
+  })
+
   it("stops jogging while the app is disabled or a trajectory moves the robot", async () => {
     const session = await loadSession()
     const fake = withFakeMoveTo(session)

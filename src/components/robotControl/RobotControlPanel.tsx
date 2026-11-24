@@ -179,6 +179,14 @@ export type RobotControlMoveTo = {
   /** Why the robot cannot move to the target, e.g. it is out of reach */
   error?: string | null
   /**
+   * Why the robot may not move now, whatever the target, e.g. it is not
+   * activated. The field says so with a target and also while one is typed,
+   * and Move to stays off. Typing stays possible, since it moves nothing: a
+   * typed target still comes (`onTargetChange`), to plan once the robot may
+   * move.
+   */
+  notMoveableReason?: string | null
+  /**
    * The button was held 200 ms while the move was "planned": start it.
    * `target` is the one that the field shows.
    */
