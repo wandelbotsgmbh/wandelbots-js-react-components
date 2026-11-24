@@ -220,9 +220,12 @@ function grabElementsOf(handle: JogHandle, overlay: RefObject<GizmoOverlay>) {
  * area, e.g. along its band and on to its arrowhead, and ends when the
  * pointer has left them all: a press there would no longer reach the handle.
  *
- * That is asked when the pointer moves. A gizmo that turns under a pointer
- * that keeps still (jogging about the axes of the tool turns its frame)
- * goes on jogging until the pointer moves or lets go.
+ * That is asked when the pointer moves. The gizmo can also turn under a
+ * pointer that keeps still: jogging about the axes of the tool turns its
+ * frame. The hold then ends when the pointer next moves and the handle is
+ * no longer under it, or earlier where the browser itself looks again at
+ * what lies under the pointer: WebKit sends the pointer's leave as soon as
+ * the handle has turned away, Chromium waits for a move.
  */
 export function gripProps(
   handle: JogHandle,
