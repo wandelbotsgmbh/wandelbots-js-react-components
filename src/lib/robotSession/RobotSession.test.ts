@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
+import { JoggingRefusedError } from "../../components/jogging/JoggingRefusedError"
 import {
   CONTROLLER_ID,
   MOTION_GROUP_ID,
@@ -6,6 +7,7 @@ import {
   makeHarness,
 } from "./__fixtures__/robotSessionHarness"
 import { RobotModeChangeError } from "./RobotActivation"
+import type { RobotSession } from "./RobotSession"
 
 // The load flow is ported from RobotPad (unit/robotPadRobotLoad.test.ts), the
 // session from its ActiveRobotStore
@@ -324,6 +326,136 @@ describe("RobotSession", () => {
 
     expect(plannedWhenAsked).toBeNull()
     session.dispose()
+  })
+
+  // NOVA switches the controller to control mode by itself for a movement
+  // request: a robot shown as deactivated made a step of 1 mm
+  describe("jogging", () => {
+    const oneMm = { id: "1", mm: 1, degrees: 0.5 }
+
+    /** The jogger's calls that would move the robot, to look at */
+    function spyOnJogger(session: RobotSession) {
+      const { jogger } = session.jogging
+      return {
+        setJoggingMode: vi
+          .spyOn(jogger, "setJoggingMode")
+          .mockResolvedValue(undefined as never),
+        setOptions: vi
+          .spyOn(jogger, "setOptions")
+          .mockResolvedValue(undefined as never),
+        step: vi
+          .spyOn(jogger, "runIncrementalCartesianMotion")
+          .mockResolvedValue(undefined as never),
+      }
+    }
+
+    /** The reason a jog was refused with, or the test fails */
+    async function refusalOf(start: Promise<unknown>) {
+      const error = await start.then(
+        () => undefined,
+        (e: unknown) => e,
+      )
+      expect(error).toBeInstanceOf(JoggingRefusedError)
+      return (error as JoggingRefusedError).reason
+    }
+
+    it("moves a robot that is not activated by no step, and opens no connection to jog it", async () => {
+      const session = await harness.load().ready
+      const jogger = spyOnJogger(session)
+      expect(session.activation.state).toBe("inactive")
+
+      expect(
+        await refusalOf(
+          session.jogging.runIncrementalCartesianJog(
+            "translate",
+            "z",
+            "+",
+            oneMm,
+          ),
+        ),
+      ).toEqual({ code: "deactivated" })
+      expect(
+        await refusalOf(
+          session.jogging.startCartesianJogging("translate", "z", "+"),
+        ),
+      ).toEqual({ code: "deactivated" })
+      expect(
+        await refusalOf(session.jogging.startJointJogging(0, "+")),
+      ).toEqual({ code: "deactivated" })
+      expect(await refusalOf(session.jogging.activate())).toEqual({
+        code: "deactivated",
+      })
+
+      expect(jogger.setJoggingMode).not.toHaveBeenCalled()
+      expect(jogger.setOptions).not.toHaveBeenCalled()
+      expect(jogger.step).not.toHaveBeenCalled()
+      session.dispose()
+    })
+
+    it("jogs an activated robot, and no longer once its safety stops it", async () => {
+      const session = await harness.load().ready
+      const jogger = spyOnJogger(session)
+      harness.source.send(controllerState({ mode: "MODE_CONTROL" }))
+
+      await session.jogging.runIncrementalCartesianJog(
+        "translate",
+        "z",
+        "+",
+        oneMm,
+      )
+      expect(jogger.step).toHaveBeenCalledOnce()
+
+      harness.source.send(
+        controllerState({
+          mode: "MODE_CONTROL",
+          safety_state: "SAFETY_STATE_STOP",
+        }),
+      )
+      expect(await refusalOf(session.jogging.activate())).toEqual({
+        code: "safety_state",
+        value: "SAFETY_STATE_STOP",
+      })
+      session.dispose()
+    })
+
+    // The safety has no reason then (the robot is not "deactivated", and
+    // Move to waits for it), but the controller is not in control mode yet
+    it("jogs no robot that is still activating, until its controller is in control mode", async () => {
+      const session = await harness.load().ready
+      const jogger = spyOnJogger(session)
+
+      await session.activation.activate()
+      expect(session.activation.state).toBe("activating")
+      expect(session.safety.notMoveableReason).toBeNull()
+
+      expect(
+        await refusalOf(
+          session.jogging.startCartesianJogging("translate", "z", "+"),
+        ),
+      ).toEqual({ code: "deactivated" })
+      expect(jogger.setJoggingMode).not.toHaveBeenCalled()
+
+      harness.source.send(controllerState({ mode: "MODE_CONTROL" }))
+      expect(session.activation.state).toBe("active")
+      await session.jogging.activate()
+      expect(jogger.setJoggingMode).toHaveBeenCalledOnce()
+      session.dispose()
+    })
+
+    it("jogs no robot that is deactivating, whose controller is still in control mode", async () => {
+      const session = await harness.load().ready
+      const jogger = spyOnJogger(session)
+      harness.source.send(controllerState({ mode: "MODE_CONTROL" }))
+
+      await session.activation.deactivate()
+      expect(session.activation.state).toBe("deactivating")
+
+      expect(await refusalOf(session.jogging.activate())).toEqual({
+        code: "deactivated",
+      })
+      expect(jogger.setJoggingMode).not.toHaveBeenCalled()
+      session.dispose()
+    })
   })
 
   it("plans no typed pose while the app is locked", async () => {

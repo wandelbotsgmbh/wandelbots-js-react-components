@@ -13,9 +13,16 @@ import { useRobotControlProps } from "./useRobotControlProps"
 // RobotPad's wiring of the Robot control panel to its stores, as the
 // library's connected component has it: a real session on a fake NOVA
 
+/**
+ * The session of a robot that may move: activated, as its controller
+ * reports. A robot that is not is jogged by nothing.
+ */
 async function loadSession(options: LoadRobotSessionOptions = {}) {
-  const session = await makeHarness().load(options).ready
+  const harness = makeHarness()
+  const session = await harness.load(options).ready
   onTestFinished(() => session.dispose())
+  harness.source.send(controllerState({ mode: "MODE_CONTROL" }))
+  expect(session.safety.canBeMoved).toBe(true)
   return session
 }
 

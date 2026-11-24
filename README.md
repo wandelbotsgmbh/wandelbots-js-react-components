@@ -152,7 +152,7 @@ load.dispose()
 What changes besides the names:
 
 - **Loading:** `loadRobotSession` returns at once. `load.state` ("loading", "ready", "failed") and `load.progress` tell how far it is, `load.retry()` loads again after a failure, `await load.ready` gives the session. A failed step is retried on its own, after 1 and 2 seconds unless `retryDelaysMs` says otherwise.
-- **Jogging comes with it:** `session.jogging` is the robot's `JoggingStore`. An app no longer opens it with `JoggerConnection.open` and `JoggingStore.loadFor`.
+- **Jogging comes with it:** `session.jogging` is the robot's `JoggingStore`. An app no longer opens it with `JoggerConnection.open` and `JoggingStore.loadFor`. It starts no jog while the robot may not move (`safety.canBeMoved` is false, so also while the robot is activating): the start rejects with a `JoggingRefusedError`.
 - **Nothing happens unasked:** without `storage` the jogging settings are not kept (pass `localStorage` to keep them), and a virtual robot is activated only with `autoActivateVirtual: true`.
 - **Errors:** what the app calls rejects (`session.activation.activate()` with a `RobotModeChangeError`); what fails in the background (a jog, a message of the live state) goes to `onError`.
 - **Several robots:** load one session per robot instead of `ConnectedMotionGroup.connectMultiple`.

@@ -13,7 +13,7 @@ import type { RobotLoadResources } from "./loadRobotResources"
 import { RobotActivation, RobotModeChangeError } from "./RobotActivation"
 import { RobotDescription } from "./RobotDescription"
 import { RobotLiveState } from "./RobotLiveState"
-import { RobotSafety } from "./RobotSafety"
+import { type RobotNotMoveableReason, RobotSafety } from "./RobotSafety"
 import { RobotTargetPose } from "./RobotTargetPose"
 
 // Built from RobotPad's ActiveRobotStore
@@ -83,7 +83,11 @@ export class RobotSession {
   readonly safety: RobotSafety
   /** The robot's activation (control mode) */
   readonly activation: RobotActivation
-  /** Jogging the robot, with the user's jogging settings */
+  /**
+   * Jogging the robot, with the user's jogging settings. It starts no jog
+   * while the robot may not move ({@link RobotSafety.canBeMoved}): the start
+   * rejects with a `JoggingRefusedError` that says why.
+   */
   readonly jogging: JoggingStore
   /** Moving the robot to a pose along a planned trajectory (Move to) */
   readonly trajectory: TrajectoryExecutionStore
@@ -142,7 +146,11 @@ export class RobotSession {
         description: resources.motionGroupDescription,
         kinematicModel: resources.kinematicModel,
       },
-      { storage: options.storage ?? NO_STORAGE },
+      {
+        storage: options.storage ?? NO_STORAGE,
+        // The store starts no jog while the robot may not move
+        notMoveableReason: () => this.jogRefusedReason,
+      },
     )
 
     // The jogging store has made the controller's default coordinate system
@@ -248,6 +256,20 @@ export class RobotSession {
 
     await this.jogging.deactivate()
     await this.jogging.jogger.setJoggingMode(target)
+  }
+
+  /**
+   * Why the jogging store starts no jog now, or null when the robot can move.
+   * While the robot is activating or deactivating its safety has no reason
+   * (the robot is not deactivated, and Move to waits for it). But its
+   * controller is not in control mode yet, where NOVA would switch it for
+   * the jog, or is about to leave it: no jog then either.
+   */
+  private get jogRefusedReason(): RobotNotMoveableReason | null {
+    return (
+      this.safety.notMoveableReason ??
+      (this.safety.canBeMoved ? null : { code: "deactivated" })
+    )
   }
 
   /**
