@@ -7,8 +7,12 @@
 
 import type { RobotControlPose } from "./RobotControlPanel"
 
-/** One plain or scientific-notation number, no separators */
-const NUMBER_PATTERN = /^[+-]?(\d+\.?\d*|\.\d+)([eE][+-]?\d+)?$/
+/**
+ * One plain or scientific-notation number, no separators. The digits after
+ * the point belong to the point: without it, a run of digits could be split
+ * between two groups in many ways, and a long one took seconds to reject.
+ */
+const NUMBER_PATTERN = /^[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?$/
 
 const round = (value: number, digits: number) =>
   Number.parseFloat(value.toFixed(digits))

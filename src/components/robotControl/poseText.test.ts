@@ -113,6 +113,14 @@ describe("parsePoseText", () => {
     expect(parsePoseText("(1, 2, Infinity, 4, 5, 6)")).toBeNull()
   })
 
+  it("rejects a long run of digits at once", () => {
+    // A pasted blob: checking one value must not go over its digits again
+    // and again (seconds for 50,000 of them)
+    const started = performance.now()
+    expect(parsePoseText(`${"1".repeat(50_000)}x, 0, 0, 0, 0, 0`)).toBeNull()
+    expect(performance.now() - started).toBeLessThan(500)
+  })
+
   it("rejects empty entries and trailing commas", () => {
     expect(parsePoseText("(1, 2, , 4, 5, 6)")).toBeNull()
     expect(parsePoseText("(1, 2, 3, 4, 5, 6,)")).toBeNull()
