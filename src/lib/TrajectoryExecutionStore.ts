@@ -22,6 +22,7 @@ import {
 import type { JoggingStore } from "../components/jogging/JoggingStore"
 import type { ConnectionLogger } from "./connectionLogger"
 import { transformPoseToCoordinateSystem } from "./PoseTransformer"
+import { type RobotPose, trajectoryTargetOf } from "./robotSession/robotPose"
 import type { RobotNotMoveableReason } from "./robotSession/RobotSafety"
 
 // Ported from RobotPad (src/util/TrajectoryExecutionStore.ts)
@@ -262,6 +263,13 @@ export class TrajectoryExecutionStore {
     )
   }
 
+  /** The target of a pose of this motion group; null for another's */
+  private targetOf(to: TrajectoryTarget | RobotPose): TrajectoryTarget | null {
+    if (!("motionGroupId" in to)) return to
+    if (to.motionGroupId !== this.jogger.motionGroupId) return null
+    return trajectoryTargetOf(to)
+  }
+
   /** The execution state that the motion stream reports, e.g. "RUNNING" */
   get executionState() {
     return this.motionStream.rapidlyChangingMotionState.execute?.details?.state
@@ -277,10 +285,20 @@ export class TrajectoryExecutionStore {
    * planner worked, and when the planner cannot be reached. A target that
    * cannot be planned leaves no trajectory, also not the one before it on
    * the controller.
+   *
+   * `to` is a target, or a pose as an app saves it (`RobotPose`): its joints,
+   * or its TCP pose in its coordinate system, planned for the selected TCP.
+   * Throws for a pose of another motion group, and plans nothing then.
    */
   async planTrajectory(
-    target: TrajectoryTarget,
+    to: TrajectoryTarget | RobotPose,
   ): Promise<PlanTrajectoryResult> {
+    const target = this.targetOf(to)
+    if (!target) {
+      throw new Error(
+        `Not planning a pose of motion group "${(to as RobotPose).motionGroupId}" for motion group "${this.jogger.motionGroupId}"`,
+      )
+    }
     await this.dropPlanIfRefused()
 
     // A trajectory that the store dropped is still on the controller: the
@@ -441,18 +459,22 @@ export class TrajectoryExecutionStore {
    * `TrajectoryExecutionStoreOptions`). Safe to repeat while held.
    * {@link TrajectoryExecutionStore.release} ends the hold.
    *
-   * `target` is where the button says it moves to, as `planTrajectory` got
-   * it: the robot does not move along a trajectory that was planned for
-   * another target, e.g. while the plan for the shown one is still to come
-   * or failed. Without it, the hold starts whatever is planned.
+   * `to` is where the button says it moves to, as `planTrajectory` got it:
+   * the robot does not move along a trajectory that was planned for another
+   * target, e.g. while the plan for the shown one is still to come or
+   * failed, nor for a pose of another motion group. Without it, the hold
+   * starts whatever is planned.
    */
-  hold(target?: TrajectoryTarget): boolean {
+  hold(to?: TrajectoryTarget | RobotPose): boolean {
     if (!this.plannedTrajectory) return false
-    if (
-      target &&
-      !(this.plannedFor && sameTarget(target, this.plannedFor.target))
-    ) {
-      return false
+    if (to) {
+      const target = this.targetOf(to)
+      if (
+        !target ||
+        !(this.plannedFor && sameTarget(target, this.plannedFor.target))
+      ) {
+        return false
+      }
     }
     // Held already: a second start would be one too many. Not after the
     // release: then the pause is to come, or on its way.

@@ -9,6 +9,7 @@ import { autorun, observable, runInAction } from "mobx"
 import { describe, expect, onTestFinished, test, vi } from "vitest"
 import type { JoggingStore } from "../components/jogging/JoggingStore"
 import type { JoggerConnection, JoggerMode } from "./JoggerConnection"
+import type { RobotPose } from "./robotSession/robotPose"
 import type { RobotNotMoveableReason } from "./robotSession/RobotSafety"
 import {
   type TrajectoryExecutionStoreOptions,
@@ -1176,6 +1177,58 @@ describe("TrajectoryExecutionStore hold to move", () => {
       expect(sentMessageTypes(sockets[0])).not.toContain("StartMovementRequest")
 
       expect(store.hold(plannedFor)).toBe(true)
+    })
+
+    // An app's saved pose goes in as it is: the app converts nothing
+    test("plans a saved pose of its robot as the pose in its coordinate system, and holds for it", async () => {
+      const { store, emit, planTrajectory } = makeStore()
+      const saved: RobotPose = {
+        type: "cartesian",
+        motionGroupId: "0@controller",
+        tcpPose: {
+          pose: { position: [100, 50, 25], orientation: [0, 0, 0] },
+          coordSystemId: "offset-300x",
+          tcpId: "Flange",
+        },
+      }
+
+      expect(await store.planTrajectory(saved)).toEqual({ ok: true })
+      expect(plannedTargetPose(planTrajectory).position?.[0]).toBeCloseTo(400)
+      emit("INITIALIZE_RECEIVED")
+
+      expect(store.hold(saved)).toBe(true)
+    })
+
+    test("plans saved joints of its robot", async () => {
+      const { store, planTrajectory } = makeStore()
+
+      await store.planTrajectory({
+        type: "joint",
+        motionGroupId: "0@controller",
+        joints: [0.1, 0.2, 0.3, 0, 0, 0],
+      })
+
+      const path = plannedRequest(planTrajectory).motion_commands[0]?.path
+      expect(path).toMatchObject({
+        target_joint_position: [0.1, 0.2, 0.3, 0, 0, 0],
+      })
+    })
+
+    // A saved pose of another robot would be planned for this one
+    test("plans and moves nothing for a saved pose of another robot", async () => {
+      const { store, emit, planTrajectory, sockets } = makeStore()
+      await store.planTrajectory(pose([1, 2, 3]))
+      emit("INITIALIZE_RECEIVED")
+      const other: RobotPose = {
+        type: "joint",
+        motionGroupId: "1@other",
+        joints: [1, 2, 3, 0, 0, 0],
+      }
+
+      await expect(store.planTrajectory(other)).rejects.toThrow("1@other")
+      expect(planTrajectory).toHaveBeenCalledTimes(1)
+      expect(store.hold(other)).toBe(false)
+      expect(sentMessageTypes(sockets[0])).not.toContain("StartMovementRequest")
     })
 
     test("hold takes a pose without an orientation or a coordinate system as the one in world without a rotation", async () => {

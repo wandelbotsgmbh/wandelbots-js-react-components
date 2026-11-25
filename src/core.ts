@@ -129,10 +129,7 @@ export {
   type RobotNotMoveableReason,
   RobotSafety,
 } from "./lib/robotSession/RobotSafety"
-export {
-  type RobotPose,
-  trajectoryTargetOf,
-} from "./lib/robotSession/robotPose"
+export type { RobotPose } from "./lib/robotSession/robotPose"
 export {
   RobotSession,
   type RobotSessionError,

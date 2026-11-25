@@ -25,8 +25,9 @@ export type RobotPose =
     }
 
 /**
- * Where a trajectory goes for a pose: the pose in its coordinate system, or
- * the joints. The trajectory store plans for the selected TCP.
+ * @internal Where a trajectory goes for a pose: the pose in its coordinate
+ * system, or the joints. The trajectory store plans for the selected TCP and
+ * takes a pose as it is, so an app does not need this.
  */
 export function trajectoryTargetOf(pose: RobotPose): TrajectoryTarget {
   if (pose.type === "joint") {

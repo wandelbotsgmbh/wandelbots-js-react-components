@@ -78,10 +78,7 @@ export {
   RobotTargetPose,
   type StagedTargetPose,
 } from "./lib/robotSession/RobotTargetPose"
-export {
-  type RobotPose,
-  trajectoryTargetOf,
-} from "./lib/robotSession/robotPose"
+export type { RobotPose } from "./lib/robotSession/robotPose"
 // Move to of a session (`session.trajectory`); the session makes it
 export {
   type PlannedTrajectory,
