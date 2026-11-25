@@ -37,6 +37,14 @@ import * as THREE from 'three';
 import type { TrajectoryDetailsState } from '@wandelbots/nova-js/v2';
 
 // @public
+export const ActivationSwitch: FunctionComponent<RobotHeaderActivation | ActivationSwitchOfSessionProps>;
+
+// @public
+export type ActivationSwitchOfSessionProps = {
+    session: RobotSession | undefined;
+};
+
+// @public
 export const AppHeader: ((props: AppHeaderProps) => JSX.Element) & {
     displayName: string;
 };
@@ -175,13 +183,15 @@ export type ConnectionLogger = {
 export type ConnectionQuality = "good" | "struggling" | "critical";
 
 // @public
-export const ConnectionWarning: (input: ConnectionWarningProps) => JSX.Element | null;
+export const ConnectionWarning: FunctionComponent<ConnectionWarningProps>;
 
 // @public
-export function connectionWarningOf(session: RobotSession): ConnectionWarningProps;
+export type ConnectionWarningProps = Partial<ConnectionWarningState> & {
+    session?: RobotSession;
+};
 
-// @public (undocumented)
-export type ConnectionWarningProps = {
+// @public
+export type ConnectionWarningState = {
     quality: ConnectionQuality;
     lastMessageAt: number;
     lastInvalidMessage?: {
@@ -800,9 +810,6 @@ export class RobotActivation {
 }
 
 // @public
-export function robotActivationOf(session: RobotSession): RobotHeaderActivation;
-
-// @public
 export type RobotActivationState = "inactive" | "activating" | "deactivating" | "active";
 
 // @public
@@ -885,6 +892,7 @@ export type RobotHeaderProps = {
     onAppSelect?: (app: AppItem) => void;
     onSearch?: () => void;
     motionGroup?: RobotControlSelect;
+    session?: RobotSession;
     safety?: Pick<SafetyBarProps, "isVirtual" | "motionGroupId" | "operationMode" | "safetyState">;
     activation?: RobotHeaderActivation;
     actions?: ReactNode;
@@ -1036,9 +1044,6 @@ export class RobotSafety {
 }
 
 // @public
-export function robotSafetyOf(session: RobotSession): Pick<SafetyBarProps, "isVirtual" | "motionGroupId" | "operationMode" | "safetyState">;
-
-// @public
 export class RobotSession {
     readonly activation: RobotActivation;
     // (undocumented)
@@ -1146,9 +1151,14 @@ export type RobotTcpLike = {
     orientation: Vector3Simple;
 };
 
-// @public (undocumented)
-export const SafetyBar: ((input: SafetyBarProps) => JSX.Element) & {
+// @public
+export const SafetyBar: ((props: SafetyBarProps | SafetyBarOfSessionProps) => JSX.Element | null) & {
     displayName: string;
+};
+
+// @public
+export type SafetyBarOfSessionProps = Partial<SafetyBarProps> & {
+    session: RobotSession | undefined;
 };
 
 // @public (undocumented)
@@ -1190,13 +1200,13 @@ export class TrajectoryExecutionStore {
     clearError(): void;
     dispose(): void;
     get executionState(): "PAUSED_BY_USER" | "PAUSED_NEAR_COLLISION" | "PAUSED_NEAR_JOINT_LIMIT" | "PAUSED_NEAR_SINGULARITY" | "PAUSED_ON_IO" | "RUNNING" | "END_OF_TRAJECTORY" | "WAIT_FOR_IO" | undefined;
-    hold(target?: TrajectoryTarget): boolean;
+    hold(to?: TrajectoryTarget | RobotPose): boolean;
     get holdsExecutionSession(): boolean;
     get isPlanOutdated(): boolean;
     lastError: string | null;
     pause(): Promise<void>;
     plannedTrajectory: PlannedTrajectory | null;
-    planTrajectory(target: TrajectoryTarget): Promise<PlanTrajectoryResult>;
+    planTrajectory(to: TrajectoryTarget | RobotPose): Promise<PlanTrajectoryResult>;
     release(): Promise<void>;
     reset(): void;
     start(): void;
@@ -1216,9 +1226,6 @@ export type TrajectoryTarget = {
     type: "joint";
     joints: number[];
 };
-
-// @public
-export function trajectoryTargetOf(pose: RobotPose): TrajectoryTarget;
 
 // @public
 export function transformPoseToCoordinateSystem<T extends ReferencedPose>(inputPose: T, targetCoordinateSystemId: string, coordinateSystems: CoordinateSystem[]): T;

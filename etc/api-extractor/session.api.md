@@ -791,13 +791,13 @@ export class TrajectoryExecutionStore {
     clearError(): void;
     dispose(): void;
     get executionState(): "PAUSED_BY_USER" | "PAUSED_NEAR_COLLISION" | "PAUSED_NEAR_JOINT_LIMIT" | "PAUSED_NEAR_SINGULARITY" | "PAUSED_ON_IO" | "RUNNING" | "END_OF_TRAJECTORY" | "WAIT_FOR_IO" | undefined;
-    hold(target?: TrajectoryTarget): boolean;
+    hold(to?: TrajectoryTarget | RobotPose): boolean;
     get holdsExecutionSession(): boolean;
     get isPlanOutdated(): boolean;
     lastError: string | null;
     pause(): Promise<void>;
     plannedTrajectory: PlannedTrajectory | null;
-    planTrajectory(target: TrajectoryTarget): Promise<PlanTrajectoryResult>;
+    planTrajectory(to: TrajectoryTarget | RobotPose): Promise<PlanTrajectoryResult>;
     release(): Promise<void>;
     reset(): void;
     start(): void;
@@ -817,9 +817,6 @@ export type TrajectoryTarget = {
     type: "joint";
     joints: number[];
 };
-
-// @public
-export function trajectoryTargetOf(pose: RobotPose): TrajectoryTarget;
 
 // @public
 export function transformPoseToCoordinateSystem<T extends ReferencedPose>(inputPose: T, targetCoordinateSystemId: string, coordinateSystems: CoordinateSystem[]): T;

@@ -47,8 +47,9 @@ export { RobotScene }
 export default RobotScene;
 
 // @public
-export type RobotSceneProps = Partial<RobotSceneViewProps> & {
+export type RobotSceneProps = Partial<Omit<RobotSceneViewProps, "robot">> & {
     session?: RobotSession;
+    robot?: Partial<RobotModelSource>;
 };
 
 // @public

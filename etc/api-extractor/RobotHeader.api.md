@@ -9,6 +9,7 @@ import { Collider } from '@wandelbots/nova-js/v2';
 import { CoordinateSystem } from '@wandelbots/nova-js/v2';
 import { DHParameter } from '@wandelbots/nova-js/v2';
 import { Dictionary } from 'lodash';
+import { FunctionComponent } from 'react';
 import { IReactionDisposer } from 'mobx';
 import { JointLimits } from '@wandelbots/nova-js/v2';
 import { JointTypeEnum } from '@wandelbots/nova-js/v2';
@@ -28,6 +29,14 @@ import type { SxProps } from '@mui/material/styles';
 import { TcpOffset } from '@wandelbots/nova-js/v2';
 import type { Theme } from '@mui/material/styles';
 
+// @public
+export const ActivationSwitch: FunctionComponent<RobotHeaderActivation | ActivationSwitchOfSessionProps>;
+
+// @public
+export type ActivationSwitchOfSessionProps = {
+    session: RobotSession | undefined;
+};
+
 // @public (undocumented)
 export type AppItem = {
     id: string;
@@ -41,13 +50,15 @@ export type AppItem = {
 export type ConnectionQuality = "good" | "struggling" | "critical";
 
 // @public
-export const ConnectionWarning: (input: ConnectionWarningProps) => JSX.Element | null;
+export const ConnectionWarning: FunctionComponent<ConnectionWarningProps>;
 
 // @public
-export function connectionWarningOf(session: RobotSession): ConnectionWarningProps;
+export type ConnectionWarningProps = Partial<ConnectionWarningState> & {
+    session?: RobotSession;
+};
 
-// @public (undocumented)
-export type ConnectionWarningProps = {
+// @public
+export type ConnectionWarningState = {
     quality: ConnectionQuality;
     lastMessageAt: number;
     lastInvalidMessage?: {
@@ -55,9 +66,6 @@ export type ConnectionWarningProps = {
         data: unknown;
     } | null;
 };
-
-// @public
-export function robotActivationOf(session: RobotSession): RobotHeaderActivation;
 
 // @public
 export type RobotControlOption = {
@@ -95,6 +103,7 @@ export type RobotHeaderProps = {
     onAppSelect?: (app: AppItem) => void;
     onSearch?: () => void;
     motionGroup?: RobotControlSelect;
+    session?: RobotSession;
     safety?: Pick<SafetyBarProps, "isVirtual" | "motionGroupId" | "operationMode" | "safetyState">;
     activation?: RobotHeaderActivation;
     actions?: ReactNode;
@@ -102,7 +111,14 @@ export type RobotHeaderProps = {
 };
 
 // @public
-export function robotSafetyOf(session: RobotSession): Pick<SafetyBarProps, "isVirtual" | "motionGroupId" | "operationMode" | "safetyState">;
+export const SafetyBar: ((props: SafetyBarProps | SafetyBarOfSessionProps) => JSX.Element | null) & {
+    displayName: string;
+};
+
+// @public
+export type SafetyBarOfSessionProps = Partial<SafetyBarProps> & {
+    session: RobotSession | undefined;
+};
 
 // @public (undocumented)
 export interface SafetyBarProps {

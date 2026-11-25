@@ -26,14 +26,16 @@ import type { SafetyStateType } from '@wandelbots/nova-js/v2';
 import { TcpOffset } from '@wandelbots/nova-js/v2';
 
 // @public
-export function robotSafetyOf(session: RobotSession): Pick<SafetyBarProps, "isVirtual" | "motionGroupId" | "operationMode" | "safetyState">;
-
-// @public (undocumented)
-const SafetyBar: ((input: SafetyBarProps) => JSX.Element) & {
+const SafetyBar: ((props: SafetyBarProps | SafetyBarOfSessionProps) => JSX.Element | null) & {
     displayName: string;
 };
 export { SafetyBar }
 export default SafetyBar;
+
+// @public
+export type SafetyBarOfSessionProps = Partial<SafetyBarProps> & {
+    session: RobotSession | undefined;
+};
 
 // @public (undocumented)
 export interface SafetyBarProps {
