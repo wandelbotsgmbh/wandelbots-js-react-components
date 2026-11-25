@@ -1,28 +1,17 @@
 import type { RobotSession } from "../../lib/robotSession/RobotSession"
-import type { ConnectionWarningProps } from "./ConnectionWarning"
+import type { ConnectionWarningState } from "./ConnectionWarning"
 
-// Ported from RobotPad (src/safetyBar/ConnectionWarningIndicator.tsx). A
-// plain function, not a hook, as robotSafetyOf: for a header that also shows
-// while no robot is loaded
+// Ported from RobotPad (src/safetyBar/ConnectionWarningIndicator.tsx)
 
 /**
- * How well the live state of a session's robot arrives, as
- * `ConnectionWarning` takes it:
- *
- * ```tsx
- * const Warning = observer(({ session }: { session: RobotSession }) => (
- *   <ConnectionWarning {...connectionWarningOf(session)} />
- * ))
- * ```
- *
- * It reads the session's MobX state when it is called and returns plain
- * props, so the component that calls it must be an `observer` (of
- * mobx-react-lite): any other keeps what it read at its last render, e.g.
- * no warning after the live state stopped.
+ * @internal How well the live state of a session's robot arrives, as
+ * ConnectionWarning shows it for its `session`. It reads the session's MobX
+ * state, so only an `observer` may call it: any other component keeps what
+ * it read at its last render, e.g. no warning after the live state stopped.
  */
 export function connectionWarningOf(
   session: RobotSession,
-): ConnectionWarningProps {
+): ConnectionWarningState {
   const { connectionQuality, lastValidStateMessage, lastInvalidStateMessage } =
     session.state
   return {

@@ -11,8 +11,8 @@ export {
   type ConnectionQuality,
   ConnectionWarning,
   type ConnectionWarningProps,
+  type ConnectionWarningState,
 } from "./components/connectionWarning/ConnectionWarning"
-export { connectionWarningOf } from "./components/connectionWarning/connectionWarningOf"
 export {
   CurrentPose,
   type CurrentPoseProps,
@@ -59,9 +59,12 @@ export {
   type RobotHeaderActivationState,
   type RobotHeaderProps,
 } from "./components/robotHeader/RobotHeader"
-// The header's parts that are the robot's: its safety and its activation
-export { robotActivationOf } from "./components/robotHeader/robotActivationOf"
-export { robotSafetyOf } from "./components/robotHeader/robotSafetyOf"
+// The header's activation switch, also for an app's own header (SafetyBar
+// is below)
+export {
+  ActivationSwitch,
+  type ActivationSwitchOfSessionProps,
+} from "./components/robotHeader/ActivationSwitch"
 // Also in /3d, with the panel: the bar takes them without three.js
 export type {
   RobotControlOption,

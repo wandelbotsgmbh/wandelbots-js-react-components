@@ -1,5 +1,15 @@
-import { fireEvent, render, screen } from "@testing-library/react"
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
+import { act, fireEvent, render, screen } from "@testing-library/react"
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  onTestFinished,
+  vi,
+} from "vitest"
+import { makeHarness } from "../../lib/robotSession/__fixtures__/robotSessionHarness"
+import { RobotSessionProvider } from "../robotSession/RobotSessionProvider"
 import { ConnectionWarning } from "./ConnectionWarning"
 
 const NOW = Date.parse("2026-11-23T12:00:00Z")
@@ -70,5 +80,45 @@ describe("ConnectionWarning", () => {
 
     await screen.findByText(/The last motion update/)
     expect(screen.queryByText("not json")).toBeNull()
+  })
+})
+
+// A real session on a fake NOVA: the warning reads the robot itself, so an
+// app cannot forget to follow it
+describe("ConnectionWarning for a robot session", () => {
+  async function loadSession() {
+    const session = await makeHarness().load().ready
+    onTestFinished(() => session.dispose())
+    return session
+  }
+
+  it("warns once the robot's live state stops arriving", async () => {
+    const session = await loadSession()
+    render(<ConnectionWarning session={session} />)
+    expect(screen.queryByLabelText("Connection interrupted")).toBeNull()
+
+    // No state comes from a disposed session any more
+    act(() => session.dispose())
+
+    expect(screen.getByLabelText("Connection interrupted")).toBeVisible()
+  })
+
+  it("takes the robot of the nearest RobotSessionProvider", async () => {
+    const session = await loadSession()
+    render(
+      <RobotSessionProvider session={session}>
+        <ConnectionWarning />
+      </RobotSessionProvider>,
+    )
+
+    act(() => session.dispose())
+
+    expect(screen.getByLabelText("Connection interrupted")).toBeVisible()
+  })
+
+  // It sits in the header, which shows before a robot is loaded
+  it("shows nothing without a robot", () => {
+    const { container } = render(<ConnectionWarning session={undefined} />)
+    expect(container).toBeEmptyDOMElement()
   })
 })

@@ -4,10 +4,12 @@ import type { SxProps, Theme } from "@mui/material/styles"
 import { type ReactNode, useId } from "react"
 import { useTranslation } from "react-i18next"
 import { externalizeComponent } from "../../externalizeComponent"
+import type { RobotSession } from "../../lib/robotSession/RobotSession"
 import { SafetyBar, type SafetyBarProps } from "../../SafetyBar/SafetyBar"
 import type { AppItem } from "../AppHeader"
 import type { RobotControlSelect } from "../robotControl/RobotControlPanel"
 import { SmallSelect } from "../robotControl/SmallSelect"
+import { useOptionalRobotSessionOf } from "../robotSession/RobotSessionProvider"
 import { ActivationSwitch } from "./ActivationSwitch"
 import { AppNavigation } from "./AppNavigation"
 
@@ -39,12 +41,24 @@ export type RobotHeaderProps = {
   onSearch?: () => void
   /** The motion group select */
   motionGroup?: RobotControlSelect
-  /** The safety state, operation mode and controller type: the SafetyBar */
+  /**
+   * The robot whose safety state and activation switch the header shows;
+   * else the one of the nearest `RobotSessionProvider`. Without either, e.g.
+   * while no robot is loaded, the header shows neither.
+   */
+  session?: RobotSession
+  /**
+   * The safety state, operation mode and controller type (the SafetyBar),
+   * instead of the session's: for an app without a `RobotSession`
+   */
   safety?: Pick<
     SafetyBarProps,
     "isVirtual" | "motionGroupId" | "operationMode" | "safetyState"
   >
-  /** The activation switch */
+  /**
+   * The activation switch, instead of the session's: for an app without a
+   * `RobotSession`
+   */
   activation?: RobotHeaderActivation
   /** The app's own buttons at the right, e.g. notifications and Add robot */
   actions?: ReactNode
@@ -68,7 +82,15 @@ const VISUALLY_HIDDEN = {
  * The header of a robot app, as Figma's top bar: the app menu, search and
  * the app's name at the left; the motion group, its safety state, operation
  * mode and controller type, and the activation switch in the middle; the
- * app's own buttons at the right
+ * app's own buttons at the right.
+ *
+ * Given a robot session, it shows the robot's safety state and activation
+ * switch and follows them: the switch is off while NOVA would refuse it, and
+ * a refused mode change goes to the session's `onError`.
+ *
+ * ```tsx
+ * <RobotHeader appName="My app" session={session} actions={<ConnectionWarning session={session} />} />
+ * ```
  */
 export const RobotHeader = externalizeComponent(
   ({
@@ -78,6 +100,7 @@ export const RobotHeader = externalizeComponent(
     onAppSelect,
     onSearch,
     motionGroup,
+    session,
     safety,
     activation,
     actions,
@@ -85,6 +108,7 @@ export const RobotHeader = externalizeComponent(
   }: RobotHeaderProps) => {
     const { t } = useTranslation()
     const motionGroupLabelId = useId()
+    const robot = useOptionalRobotSessionOf(session)
 
     return (
       <Stack
@@ -129,8 +153,16 @@ export const RobotHeader = externalizeComponent(
               />
             </>
           )}
-          {safety && <SafetyBar {...safety} />}
-          {activation && <ActivationSwitch {...activation} />}
+          {safety ? (
+            <SafetyBar {...safety} />
+          ) : (
+            robot && <SafetyBar session={robot} />
+          )}
+          {activation ? (
+            <ActivationSwitch {...activation} />
+          ) : (
+            robot && <ActivationSwitch session={robot} />
+          )}
         </Stack>
 
         <Stack direction="row" sx={{ gap: "24px", alignItems: "center" }}>

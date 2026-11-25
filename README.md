@@ -74,7 +74,7 @@ Browse the full icon set at https://wandelbotsgmbh.github.io/nova-design-system/
 - **`/session`** — The library without React: a robot of a NOVA cell, loaded and connected (`loadRobotSession`, `RobotSession` with its description, live state, safety, activation, jogging and Move to), `JoggingStore`, the NOVA connections (`JoggerConnection`, `MotionStreamConnection`), the pose math and the motion state helpers. Loads no React, no MUI and no three.js. `/core` exports all of it as well.
 - **`/3d`** — The 3D parts (`Robot`, `MotionGroupVisualizer`, `SafetyZonesRenderer`, …). Requires in addition three, three-stdlib, @react-three/fiber and @react-three/drei.
 - **`/nats`** — A robot's live controller state over NOVA's NATS server (`natsControllerStateSource`, `natsUrlOf`): the `stateSource` of `loadRobotSession` instead of NOVA's websocket. Requires in addition nats.ws; no other entry point loads it.
-- **`/SafetyBar`** — Only `SafetyBar` (also as the default export), and `robotSafetyOf` for a robot session.
+- **`/SafetyBar`** — Only `SafetyBar` (also as the default export), also for a robot session (`session`).
 - **`/JoggingGizmo`** — Only `JoggingGizmo` (also as the default export) and `JoggingGizmoOrientation`. Requires in addition three and @react-three/fiber.
 - **`/JoggingButtons`** — Only `JoggingButtons` (also as the default export). No 3D packages needed.
 - **`/JoggingJointSlider`** — Only `JoggingJointSlider` (also as the default export). No 3D packages needed.
@@ -84,9 +84,9 @@ Browse the full icon set at https://wandelbotsgmbh.github.io/nova-design-system/
 - **`/RobotScene`** — `RobotScene` (also as the default export), the 3D scene of a robot session for the app's own `<Canvas>`, `RobotSceneView`, `useRobotSceneProps` and `JoggingAxes`. Requires in addition three, three-stdlib, @react-three/fiber and @react-three/drei.
 - **`/CurrentPose`** — `CurrentPose` (also as the default export), the current pose bar of a robot session, and `useCurrentPoseProps`. No 3D packages needed.
 - **`/CurrentPoseBar`** — Only `CurrentPoseBar` (also as the default export). No 3D packages needed.
-- **`/RobotHeader`** — `RobotHeader` (also as the default export), `robotSafetyOf`, `robotActivationOf`, `ConnectionWarning` and `connectionWarningOf`. No 3D packages needed.
+- **`/RobotHeader`** — `RobotHeader` (also as the default export), and its parts for an app's own header: `SafetyBar`, `ActivationSwitch` and `ConnectionWarning`. No 3D packages needed.
 
-The entry points of a robot session's parts (`/RobotControl`, `/RobotView`, `/RobotScene`, `/CurrentPose`) also export `RobotSessionProvider` and `useRobotSession`.
+The entry points of a robot session's parts (`/RobotControl`, `/RobotView`, `/RobotScene`, `/CurrentPose`) also export `RobotSessionProvider` and `useRobotSession`. Each part takes its robot as `session`, else from the nearest `RobotSessionProvider`, and follows it by itself: the app passes the session, nothing else.
 
 A component's own entry point brings only what that component needs, e.g. `/JoggingButtons` no three.js and no NOVA client, unlike `/core`. The entry points share their common code, so an app that imports a component from both `/core` and its own entry point gets one copy of it:
 
@@ -458,7 +458,7 @@ const orientation = useRef<Quaternion | null>(null)
 
 **CurrentPose** (from `/core` or `/CurrentPose`) - The current pose bar of a session: the TCP's pose in a TCP and a coordinate system of the bar's own, the state of the motion stream and the last jog error. `CurrentPoseBar` is its UI component, `useCurrentPoseProps(session)` its props.
 
-**RobotHeader**, **robotSafetyOf**, **robotActivationOf**, **ConnectionWarning** and **connectionWarningOf** (from `/core` or `/RobotHeader`) - The header of a robot app, as Figma's top bar: the app menu and the app's name, the motion group select, the `SafetyBar`, the activation switch and the app's own `actions`. It takes props only. `robotSafetyOf(session)` gives its `safety` (also the props of `SafetyBar`), `robotActivationOf(session)` its `activation` (a refused mode change goes to the session's `onError`), and `connectionWarningOf(session)` the props of `ConnectionWarning`, an icon that shows once the robot's live state stops arriving. They are plain functions, not hooks, so a header that shows while no robot is loaded passes `session ? robotSafetyOf(session) : undefined`. They read the session's MobX state when they are called and return plain props, so the component that calls them must be an `observer` of mobx-react-lite, as `AppBar` below: any other keeps what it read at its last render, e.g. no emergency stop after one was pressed.
+**RobotHeader** and **ConnectionWarning** (from `/core` or `/RobotHeader`) - The header of a robot app, as Figma's top bar: the app menu and the app's name, the motion group select, the robot's `SafetyBar` and activation switch, and the app's own `actions`. Given a `session` (or inside a `RobotSessionProvider`) it shows the robot's safety state, operation mode and controller type and follows them, e.g. an emergency stop as soon as NOVA reports it; its switch is off while NOVA would refuse a mode change, and a refused change goes to the session's `onError`. Without a robot, e.g. while none is loaded, it shows the app's name and menu only. `ConnectionWarning` goes into its `actions`: an icon that shows once the robot's live state stops arriving, also for the `session` or the provider's robot. An app that builds its own header places `SafetyBar`, `ActivationSwitch` and `ConnectionWarning` itself, each with `session`; an app without a `RobotSession` gives the header `safety` and `activation` as plain props instead.
 
 #### Placing the parts
 
@@ -470,29 +470,15 @@ import Stack from "@mui/material/Stack"
 import {
   ConnectionWarning,
   CurrentPose,
-  connectionWarningOf,
   JoggingGizmoOrientation,
   RobotControl,
   RobotHeader,
   type RobotSession,
   RobotSessionProvider,
   RobotView,
-  robotActivationOf,
-  robotSafetyOf,
 } from "@wandelbots/wandelbots-js-react-components"
-import { observer } from "mobx-react-lite"
 import { useRef } from "react"
 import type { Quaternion } from "three"
-
-// An observer: the header follows the session's safety, mode and connection
-const AppBar = observer(({ session }: { session: RobotSession }) => (
-  <RobotHeader
-    appName="My robot app"
-    safety={robotSafetyOf(session)}
-    activation={robotActivationOf(session)}
-    actions={<ConnectionWarning {...connectionWarningOf(session)} />}
-  />
-))
 
 export function RobotApp({ session }: { session: RobotSession }) {
   // The camera of the 3D view, for the panel's gizmo
@@ -501,7 +487,7 @@ export function RobotApp({ session }: { session: RobotSession }) {
   return (
     <RobotSessionProvider session={session}>
       <Stack sx={{ height: "100vh" }}>
-        <AppBar session={session} />
+        <RobotHeader appName="My robot app" actions={<ConnectionWarning />} />
         <Box sx={{ position: "relative", flex: 1, minHeight: 0 }}>
           <Box sx={{ position: "absolute", inset: 0 }}>
             <RobotView>

@@ -2,16 +2,46 @@ import CircularProgress from "@mui/material/CircularProgress"
 import Stack from "@mui/material/Stack"
 import Switch from "@mui/material/Switch"
 import Typography from "@mui/material/Typography"
+import { observer } from "mobx-react-lite"
 import { useId } from "react"
 import { useTranslation } from "react-i18next"
+import { externalizeComponent } from "../../externalizeComponent"
+import type { RobotSession } from "../../lib/robotSession/RobotSession"
+import { useOptionalRobotSessionOf } from "../robotSession/RobotSessionProvider"
 import type { RobotHeaderActivation } from "./RobotHeader"
+import { robotActivationOf } from "./robotActivationOf"
+
+/**
+ * The activation switch of a robot session (`session`, else the
+ * provider's). Without a robot, e.g. while none is loaded, nothing.
+ */
+export type ActivationSwitchOfSessionProps = {
+  session: RobotSession | undefined
+}
 
 /**
  * Whether the robot is activated (its controller in control mode), as
  * RobotPad's ServoActivationToggle: on while active or deactivating, off and
- * waiting while it changes, with a spinner
+ * waiting while it changes, with a spinner. Given a robot session, it
+ * switches the robot's controller and is off while NOVA would refuse it; a
+ * refused mode change goes to the session's `onError`:
+ * `<ActivationSwitch session={session} />`. RobotHeader has it already.
  */
-export function ActivationSwitch({
+export const ActivationSwitch = externalizeComponent(
+  observer(function ActivationSwitch(
+    props: RobotHeaderActivation | ActivationSwitchOfSessionProps,
+  ) {
+    const robot = useOptionalRobotSessionOf(
+      "session" in props ? props.session : undefined,
+    )
+    const activation =
+      "session" in props ? robot && robotActivationOf(robot) : props
+    if (!activation) return null
+    return <ActivationSwitchView {...activation} />
+  }),
+)
+
+function ActivationSwitchView({
   state,
   disabled = false,
   onToggle,

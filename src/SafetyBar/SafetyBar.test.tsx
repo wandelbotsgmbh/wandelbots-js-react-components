@@ -1,7 +1,11 @@
 import { ThemeProvider } from "@mui/material/styles"
-import { render, screen } from "@testing-library/react"
+import { act, render, screen } from "@testing-library/react"
 import { createNovaMuiTheme } from "@wandelbots/mui"
-import { describe, expect, it } from "vitest"
+import { describe, expect, it, onTestFinished } from "vitest"
+import {
+  controllerState,
+  makeHarness,
+} from "../lib/robotSession/__fixtures__/robotSessionHarness"
 import { SafetyBar, type SafetyBarProps } from "./SafetyBar"
 
 // What a test of an app holds on to: the compact bar shows three icons, and
@@ -71,5 +75,43 @@ describe("SafetyBar", () => {
 
     expect(safetyState()).toHaveAccessibleName("Safety state: Safe")
     expect(safetyState()).toHaveTextContent("Safe")
+  })
+})
+
+// A real session on a fake NOVA: the bar reads the robot itself, so an app
+// that builds its own header cannot forget to follow it
+describe("SafetyBar for a robot session", () => {
+  it("shows the robot's safety state, and an emergency stop as soon as NOVA reports it", async () => {
+    const { load, source } = makeHarness()
+    const session = await load().ready
+    onTestFinished(() => session.dispose())
+    render(
+      <ThemeProvider theme={theme}>
+        <SafetyBar session={session} />
+      </ThemeProvider>,
+    )
+
+    expect(safetyState()).toHaveAccessibleName("Safety state: Safe")
+    expect(operationMode()).toHaveAccessibleName("Operation mode: Automatic")
+    expect(controllerType()).toHaveAccessibleName("Controller type: Virtual")
+
+    source.send(
+      controllerState({ safety_state: "SAFETY_STATE_DEVICE_EMERGENCY_STOP" }),
+    )
+    await act(async () => {
+      for (let i = 0; i < 20; i++) await Promise.resolve()
+    })
+
+    expect(safetyState()).toHaveAccessibleName("Safety state: E-Stop")
+  })
+
+  // E.g. in a header while no robot is loaded
+  it("shows nothing without a robot", () => {
+    const { container } = render(
+      <ThemeProvider theme={theme}>
+        <SafetyBar session={undefined} />
+      </ThemeProvider>,
+    )
+    expect(container).toBeEmptyDOMElement()
   })
 })

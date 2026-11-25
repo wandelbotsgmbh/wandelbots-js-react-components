@@ -32,12 +32,22 @@ export function useRobotSession(): RobotSession {
  * its {@link RobotSessionProvider}
  */
 export function useRobotSessionOf(session: RobotSession | undefined) {
-  const provided = useContext(RobotSessionContext)
-  const robot = session ?? provided
+  const robot = useOptionalRobotSessionOf(session)
   if (!robot) {
     throw new Error(
       "No robot session: put the component inside a RobotSessionProvider, or give it a `session`",
     )
   }
   return robot
+}
+
+/**
+ * @internal As {@link useRobotSessionOf}, but null without either: for the
+ * parts that show before a robot is loaded, e.g. the header
+ */
+export function useOptionalRobotSessionOf(
+  session: RobotSession | undefined,
+): RobotSession | null {
+  const provided = useContext(RobotSessionContext)
+  return session ?? provided
 }
