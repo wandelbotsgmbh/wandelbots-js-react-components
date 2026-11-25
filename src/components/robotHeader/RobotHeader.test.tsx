@@ -225,9 +225,10 @@ describe("RobotHeader for a robot session", () => {
     expect(activation()).toBeEnabled()
   })
 
-  // The header shows before a robot is loaded: the app's name and menu
+  // The header shows before a robot is loaded: the app's name and menu. An
+  // app's store may hold no robot as null, e.g. RobotPad's
   it("shows neither safety state nor switch without a robot", () => {
-    inApp(<RobotHeader appName="Robot Pad" session={undefined} />)
+    inApp(<RobotHeader appName="Robot Pad" session={null} />)
 
     expect(screen.getByRole("heading", { name: "Robot Pad" })).toBeVisible()
     expect(screen.queryByTestId("safety-state-indicator")).toBeNull()

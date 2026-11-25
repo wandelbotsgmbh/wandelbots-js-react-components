@@ -34,7 +34,7 @@ export default SafetyBar;
 
 // @public
 export type SafetyBarOfSessionProps = Partial<SafetyBarProps> & {
-    session: RobotSession | undefined;
+    session: RobotSession | null | undefined;
 };
 
 // @public (undocumented)

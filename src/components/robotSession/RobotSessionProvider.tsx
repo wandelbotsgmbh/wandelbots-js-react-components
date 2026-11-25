@@ -46,7 +46,7 @@ export function useRobotSessionOf(session: RobotSession | undefined) {
  * parts that show before a robot is loaded, e.g. the header
  */
 export function useOptionalRobotSessionOf(
-  session: RobotSession | undefined,
+  session: RobotSession | null | undefined,
 ): RobotSession | null {
   const provided = useContext(RobotSessionContext)
   return session ?? provided

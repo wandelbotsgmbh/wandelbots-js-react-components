@@ -34,7 +34,7 @@ export type ConnectionWarningState = {
  */
 export type ConnectionWarningProps = Partial<ConnectionWarningState> & {
   /** The robot; else the one of the nearest `RobotSessionProvider` */
-  session?: RobotSession
+  session?: RobotSession | null
 }
 
 /** The current time, again every second while `active` */

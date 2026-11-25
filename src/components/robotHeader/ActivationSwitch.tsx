@@ -16,7 +16,7 @@ import { robotActivationOf } from "./robotActivationOf"
  * provider's). Without a robot, e.g. while none is loaded, nothing.
  */
 export type ActivationSwitchOfSessionProps = {
-  session: RobotSession | undefined
+  session: RobotSession | null | undefined
 }
 
 /**

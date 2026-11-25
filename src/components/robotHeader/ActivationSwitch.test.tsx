@@ -40,7 +40,7 @@ describe("ActivationSwitch for a robot session", () => {
 
   // E.g. in a header while no robot is loaded
   it("shows nothing without a robot", () => {
-    const { container } = render(<ActivationSwitch session={undefined} />)
+    const { container } = render(<ActivationSwitch session={null} />)
     expect(container).toBeEmptyDOMElement()
   })
 })

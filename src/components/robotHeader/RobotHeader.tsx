@@ -46,7 +46,7 @@ export type RobotHeaderProps = {
    * else the one of the nearest `RobotSessionProvider`. Without either, e.g.
    * while no robot is loaded, the header shows neither.
    */
-  session?: RobotSession
+  session?: RobotSession | null
   /**
    * The safety state, operation mode and controller type (the SafetyBar),
    * instead of the session's: for an app without a `RobotSession`

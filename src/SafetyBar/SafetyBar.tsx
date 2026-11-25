@@ -27,7 +27,7 @@ export interface SafetyBarProps {
  * given here replaces. Without a robot, e.g. while none is loaded, nothing.
  */
 export type SafetyBarOfSessionProps = Partial<SafetyBarProps> & {
-  session: RobotSession | undefined
+  session: RobotSession | null | undefined
 }
 
 /**

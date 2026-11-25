@@ -118,7 +118,7 @@ describe("ConnectionWarning for a robot session", () => {
 
   // It sits in the header, which shows before a robot is loaded
   it("shows nothing without a robot", () => {
-    const { container } = render(<ConnectionWarning session={undefined} />)
+    const { container } = render(<ConnectionWarning session={null} />)
     expect(container).toBeEmptyDOMElement()
   })
 })

@@ -109,7 +109,7 @@ describe("SafetyBar for a robot session", () => {
   it("shows nothing without a robot", () => {
     const { container } = render(
       <ThemeProvider theme={theme}>
-        <SafetyBar session={undefined} />
+        <SafetyBar session={null} />
       </ThemeProvider>,
     )
     expect(container).toBeEmptyDOMElement()

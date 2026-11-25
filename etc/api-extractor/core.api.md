@@ -41,7 +41,7 @@ export const ActivationSwitch: FunctionComponent<RobotHeaderActivation | Activat
 
 // @public
 export type ActivationSwitchOfSessionProps = {
-    session: RobotSession | undefined;
+    session: RobotSession | null | undefined;
 };
 
 // @public
@@ -187,7 +187,7 @@ export const ConnectionWarning: FunctionComponent<ConnectionWarningProps>;
 
 // @public
 export type ConnectionWarningProps = Partial<ConnectionWarningState> & {
-    session?: RobotSession;
+    session?: RobotSession | null;
 };
 
 // @public
@@ -892,7 +892,7 @@ export type RobotHeaderProps = {
     onAppSelect?: (app: AppItem) => void;
     onSearch?: () => void;
     motionGroup?: RobotControlSelect;
-    session?: RobotSession;
+    session?: RobotSession | null;
     safety?: Pick<SafetyBarProps, "isVirtual" | "motionGroupId" | "operationMode" | "safetyState">;
     activation?: RobotHeaderActivation;
     actions?: ReactNode;
@@ -1158,7 +1158,7 @@ export const SafetyBar: ((props: SafetyBarProps | SafetyBarOfSessionProps) => JS
 
 // @public
 export type SafetyBarOfSessionProps = Partial<SafetyBarProps> & {
-    session: RobotSession | undefined;
+    session: RobotSession | null | undefined;
 };
 
 // @public (undocumented)
