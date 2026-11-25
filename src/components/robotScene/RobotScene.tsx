@@ -1,5 +1,6 @@
 import { observer } from "mobx-react-lite"
 import type { RobotSession } from "../../lib/robotSession/RobotSession"
+import type { RobotModelSource } from "../robots/robotModelSource"
 import { useRobotSessionOf } from "../robotSession/RobotSessionProvider"
 import { RobotSceneView, type RobotSceneViewProps } from "./RobotSceneView"
 import { useRobotSceneProps } from "./useRobotSceneProps"
@@ -8,9 +9,14 @@ import { useRobotSceneProps } from "./useRobotSceneProps"
  * The robot (`session`, else the provider's), and any prop of
  * `RobotSceneView` to replace the session's
  */
-export type RobotSceneProps = Partial<RobotSceneViewProps> & {
+export type RobotSceneProps = Partial<Omit<RobotSceneViewProps, "robot">> & {
   /** The robot; else the one of the nearest `RobotSessionProvider` */
   session?: RobotSession
+  /**
+   * Parts of the robot to replace the session's, e.g. the joints to show;
+   * the rest stays the session's
+   */
+  robot?: Partial<RobotModelSource>
 }
 
 /**
@@ -32,9 +38,15 @@ export type RobotSceneProps = Partial<RobotSceneViewProps> & {
  */
 export const RobotScene = observer(function RobotScene({
   session,
+  robot,
   ...overrides
 }: RobotSceneProps) {
-  const robot = useRobotSessionOf(session)
-  const props = useRobotSceneProps(robot)
-  return <RobotSceneView {...props} {...overrides} />
+  const props = useRobotSceneProps(useRobotSessionOf(session))
+  return (
+    <RobotSceneView
+      {...props}
+      {...overrides}
+      robot={robot ? { ...props.robot, ...robot } : props.robot}
+    />
+  )
 })

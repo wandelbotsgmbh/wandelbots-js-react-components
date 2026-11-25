@@ -451,7 +451,7 @@ const orientation = useRef<Quaternion | null>(null)
 
 **RobotView**, **RobotCanvas**, **RobotScene**, **RobotSceneView**, **useRobotSceneProps** and **JoggingAxes** (from `/3d`, `/RobotView` or `/RobotScene`) - The 3D view of a session:
 
-- `RobotView` is the view, ready to use: `RobotScene` in a `RobotCanvas` whose camera orbits the robot's base. It fills its parent. Its children are the app's own parts of the scene, in NOVA's coordinates (Z up, metres), e.g. a `JoggingGizmoOrientation`.
+- `RobotView` is the view, ready to use: `RobotScene` in a `RobotCanvas` whose camera orbits the robot's base. It fills its parent. Its children are the app's own parts of the scene, in NOVA's coordinates (Z up, metres), e.g. a `JoggingGizmoOrientation`. Any prop of `RobotSceneView` given to it replaces the session's; `robot` replaces only the parts it gives, e.g. `robot={{ rapidlyChangingMotionState }}` for other joints to show.
 - `RobotCanvas` is the canvas alone, prop-only: a floor grid and a camera that orbits `orbitTarget`. When the browser cannot draw 3D, it says so (and calls `onWebGLUnavailable`) instead of loading forever.
 - `RobotScene` goes into the app's own `<Canvas>`, whose camera and controls are the app's: the robot at its mounting, the ghost of a planned motion's end, the safety zones, the axes that jogging moves along and the light. It draws in NOVA's coordinates; in a scene that is Y up, turn it: `<group rotation={[-Math.PI / 2, 0, 0]}>`. `RobotSceneView` is its UI component, `useRobotSceneProps(session)` its props.
 - `JoggingAxes` is one part of that scene alone: the axes of a coordinate system and of the TCP, with those that jogging does not move along in grey.
