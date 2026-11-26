@@ -93,6 +93,8 @@ These packages are peer dependencies because the app and the library must use th
 
 ### From 6.x to 7.0.0
 
+> **6.4.0 was meant to be 7.0.0.** The release lost its breaking-change marker, so it was published as 6.4.0, a minor version. 7.0.0 has the same code. On 6.4.0 you already have every change below. On 6.3.x or older, read this section before you update, and pin `6.3.x` if you are not ready.
+
 7.0.0 keeps only the robotics parts and the logic that connects them to NOVA. All styles come from the Nova Design System.
 
 **Removed exports.** A removed component also takes its `…Props` type with it.
