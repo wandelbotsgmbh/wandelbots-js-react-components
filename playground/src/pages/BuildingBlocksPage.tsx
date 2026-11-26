@@ -528,7 +528,7 @@ const SimpleParts = observer(({ store }: { store: JoggingStore }) => {
         getCurrentPose={() => {
           const pose =
             store.jogger.motionStream.rapidlyChangingMotionState.tcp_pose
-          if (!pose) return null
+          if (!pose?.position || !pose.orientation) return null
           const [x = 0, y = 0, z = 0] = pose.position
           const [rx = 0, ry = 0, rz = 0] = pose.orientation
           return { position: [x, y, z], orientation: [rx, ry, rz] }
