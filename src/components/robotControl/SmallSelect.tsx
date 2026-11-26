@@ -5,7 +5,7 @@ import { memo } from "react"
 import type {
   RobotControlOption,
   RobotControlSelect,
-} from "./RobotControlPanel"
+} from "./robotControlTypes"
 
 /** The same options: the same ids and labels in the same order */
 function sameOptions(a: RobotControlOption[], b: RobotControlOption[]) {

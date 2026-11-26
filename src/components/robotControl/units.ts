@@ -1,4 +1,4 @@
-import type { JogMotion } from "./RobotControlPanel"
+import type { JogMotion } from "./robotControlTypes"
 
 /** Radians as degrees */
 export function toDegrees(radians: number): number {

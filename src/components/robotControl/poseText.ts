@@ -5,7 +5,7 @@
  * target pose, so a pose copied in one app reads the same in the other.
  */
 
-import type { RobotControlPose, RobotControlTarget } from "./RobotControlPanel"
+import type { RobotControlPose, RobotControlTarget } from "./robotControlTypes"
 
 /**
  * One plain or scientific-notation number, no separators. The digits after

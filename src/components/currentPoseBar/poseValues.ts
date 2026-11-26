@@ -1,4 +1,4 @@
-import type { RobotControlPose } from "../robotControl/RobotControlPanel"
+import type { RobotControlPose } from "../robotControl/robotControlTypes"
 import type { OrientationFormat } from "./CurrentPoseBar"
 import {
   parseEulerConvention,

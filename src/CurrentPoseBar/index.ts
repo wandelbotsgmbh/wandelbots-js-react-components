@@ -12,4 +12,4 @@ export type {
   RobotControlOption,
   RobotControlPose,
   RobotControlSelect,
-} from "../components/robotControl/RobotControlPanel"
+} from "../components/robotControl/robotControlTypes"

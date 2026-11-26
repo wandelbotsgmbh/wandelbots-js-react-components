@@ -14,30 +14,29 @@ import { type CartesianJogSettings, CartesianJogTab } from "./CartesianJogTab"
 import { JogDisabledReason } from "./JogDisabledReason"
 import { JointJogTab } from "./JointJogTab"
 import { MoveToTab } from "./MoveToTab"
+import type {
+  JogMotion,
+  RobotControlPose,
+  RobotControlSelect,
+  RobotControlTarget,
+} from "./robotControlTypes"
 
-/** Whether a jog moves the TCP along the axes or turns it about them */
-export type JogMotion = "translate" | "rotate"
+// The data types of the panel live on their own, so that the parts which
+// need only them (the pose bar) do not load the panel
+export type {
+  JogMotion,
+  RobotControlJointTarget,
+  RobotControlOption,
+  RobotControlPose,
+  RobotControlSelect,
+  RobotControlTarget,
+} from "./robotControlTypes"
 
 /** A tab of the panel */
 export type RobotControlTab = JogMotion | "joint" | "moveTo"
 
 /** Jogging while a control is held, or one step per press */
 export type RobotControlJogMode = "continuous" | "increment"
-
-/** A choice of one of the panel's selects */
-export type RobotControlOption = {
-  id: string
-  /** As shown, e.g. "Flange" */
-  label: string
-}
-
-/** A select of the panel, e.g. the TCP: the app gives its choices */
-export type RobotControlSelect = {
-  options: RobotControlOption[]
-  /** The `id` of the chosen option */
-  value: string
-  onChange: (id: string) => void
-}
 
 /**
  * A jog velocity and its range, in NOVA's units: mm/s to translate, rad/s
@@ -113,24 +112,6 @@ export type RobotControlJoints = {
   /** The joint must stop: it got to its goal, or its slider was let go */
   onJogStop: () => void
 }
-
-/**
- * A pose of the TCP: the position in mm and the orientation as a rotation
- * vector in rad, as NOVA gives it
- */
-export type RobotControlPose = {
-  position: [number, number, number]
-  orientation: [number, number, number]
-}
-
-/**
- * Joint values as a target of Move to, one per joint: in rad, or in mm for
- * a linear axis
- */
-export type RobotControlJointTarget = { joints: number[] }
-
-/** Where Move to goes: a pose of the TCP, or joint values */
-export type RobotControlTarget = RobotControlPose | RobotControlJointTarget
 
 /**
  * Where the move to the typed pose is, as RobotPad's trajectory: "planning"

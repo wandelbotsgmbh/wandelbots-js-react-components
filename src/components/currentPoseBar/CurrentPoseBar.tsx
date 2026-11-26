@@ -17,7 +17,7 @@ import { poseToText } from "../robotControl/poseText"
 import type {
   RobotControlPose,
   RobotControlSelect,
-} from "../robotControl/RobotControlPanel"
+} from "../robotControl/robotControlTypes"
 import { SmallSelect } from "../robotControl/SmallSelect"
 import { useCopyText } from "../robotControl/useCopyText"
 import { useEveryFrame } from "../robotControl/useEveryFrame"

@@ -4,7 +4,7 @@ import Stack from "@mui/material/Stack"
 import Typography from "@mui/material/Typography"
 import { AdornedSelect } from "@wandelbots/mui"
 import { useId } from "react"
-import type { RobotControlOption } from "./RobotControlPanel"
+import type { RobotControlOption } from "./robotControlTypes"
 
 type SelectProps = {
   label: string
