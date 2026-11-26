@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import type { RobotControlPose } from "../robotControl/RobotControlPanel"
+import type { RobotControlPose } from "../robotControl/robotControlTypes"
 import type { OrientationFormat } from "./CurrentPoseBar"
 import { DEFAULT_ORIENTATION_FORMAT, poseValues } from "./poseValues"
 

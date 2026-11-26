@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from "vitest"
 import type {
   RobotControlPose,
   RobotControlSelect,
-} from "../robotControl/RobotControlPanel"
+} from "../robotControl/robotControlTypes"
 import {
   CurrentPoseBar,
   type CurrentPoseBarProps,
