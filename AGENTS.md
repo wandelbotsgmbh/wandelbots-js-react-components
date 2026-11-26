@@ -132,7 +132,11 @@ tests pass. Fix all errors and warnings before considering the work complete.
 - `pnpm run test:unit:run` — unit tests (vitest)
 - `pnpm run build && pnpm run api:check` — when the public API changed. After
   an intended change, `pnpm run api:update`, and commit
-  `etc/api-extractor/*.api.md` with the change.
+  `etc/api-extractor/*.api.md` with the change. Then `pnpm run api:names`
+  writes `etc/public-names.md`: every public name with the reason it is
+  public. A new name that is not a part, the props of a part or a type that a
+  public member needs gets its reason in `REASONS` of
+  `scripts/publicNames.ts`; the unit test fails without one.
 - `pnpm run test:consumer` — when `package.json`, the entry points or the
   build changed
 - `pnpm run test:e2e` and `pnpm run test:playground` — when the change touches

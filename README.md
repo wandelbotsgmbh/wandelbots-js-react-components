@@ -365,7 +365,7 @@ pnpm test:e2e           # against a NOVA instance, see "e2e Tests"
 pnpm test:playground    # against a NOVA instance, see "e2e Tests"
 ```
 
-`pnpm api:check` compares the public API with the reports in `etc/api-extractor/`. After an intended change of the public API, `pnpm api:update` writes the reports again; commit them with the change.
+`pnpm api:check` compares the public API with the reports in `etc/api-extractor/`. After an intended change of the public API, `pnpm api:update` writes the reports again; commit them with the change. [etc/public-names.md](etc/public-names.md) lists every public name and why it is public (`pnpm api:names` writes it).
 
 ### e2e Tests
 

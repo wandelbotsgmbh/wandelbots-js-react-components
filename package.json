@@ -62,6 +62,7 @@
     "api:update": "pnpm run build && tsx scripts/api-extractor.ts --local",
     "api:check": "tsx scripts/api-extractor.ts",
     "api:check-breaking": "tsx scripts/check-breaking-api.ts",
+    "api:names": "tsx scripts/publicNames.ts",
     "lint": "biome check --error-on-warnings .",
     "format": "biome format . --write",
     "prepare": "husky || true",

@@ -598,7 +598,7 @@ export type JogHandle = {
 // @public
 export function jointsToText(joints: readonly number[]): string;
 
-// @public
+// @public @deprecated
 export function jointValuesEqual(oldJointValues: number[], newJointValues: number[], changeDeltaThreshold: number): boolean;
 
 // @public (undocumented)
@@ -718,7 +718,7 @@ export type PlanTrajectoryResult = {
     errorFeedbackName: string;
 };
 
-// @public (undocumented)
+// @public @deprecated (undocumented)
 export function poseEqual(oldTcp: Pose | undefined, newTcp: Pose | undefined, changeDeltaThreshold: number): boolean;
 
 // @public
@@ -1090,7 +1090,7 @@ export type StagedTargetPose = {
     errorMessage?: string;
 };
 
-// @public (undocumented)
+// @public @deprecated
 export function tcpMotionEqual(oldMotionState: MotionGroupState, newMotionState: MotionGroupState, changeDeltaThreshold: number): boolean;
 
 // @public
@@ -1133,7 +1133,7 @@ export type TrajectoryTarget = {
 // @public
 export function transformPoseToCoordinateSystem<T extends ReferencedPose>(inputPose: T, targetCoordinateSystemId: string, coordinateSystems: CoordinateSystem[]): T;
 
-// @public (undocumented)
+// @public @deprecated (undocumented)
 export function unwrapRotationVector(newRotationVectorApi: Vector3Simple, currentRotationVectorApi: Vector3Simple): Vector3Simple;
 
 // @public

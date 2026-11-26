@@ -11,6 +11,9 @@ import {
 /**
  * Whether two sets of joint values are the same within `changeDeltaThreshold`:
  * a different number of joints is never the same
+ *
+ * @deprecated A helper of the library's motion stream, not meant for apps.
+ * Compare the joints in the app. Removed in the next major version.
  */
 export function jointValuesEqual(
   oldJointValues: number[],
@@ -57,6 +60,10 @@ function jointsWithin(
   return true
 }
 
+/**
+ * @deprecated A helper of the library's motion stream, not meant for apps.
+ * Compare the poses in the app. Removed in the next major version.
+ */
 export function poseEqual(
   oldTcp: Pose | undefined,
   newTcp: Pose | undefined,
@@ -93,7 +100,12 @@ export function poseEqual(
   return changedDelta <= changeDeltaThreshold
 }
 
-// Runs poseEqual check + coordinate system/tcp name equality
+/**
+ * Runs poseEqual check + coordinate system/tcp name equality
+ *
+ * @deprecated A helper of the library's motion stream, not meant for apps.
+ * Compare the motion states in the app. Removed in the next major version.
+ */
 export function tcpMotionEqual(
   oldMotionState: MotionGroupState,
   newMotionState: MotionGroupState,
@@ -110,6 +122,10 @@ export function tcpMotionEqual(
   )
 }
 
+/**
+ * @deprecated A helper of the library's motion stream, not meant for apps.
+ * Removed in the next major version.
+ */
 export function unwrapRotationVector(
   newRotationVectorApi: Vector3Simple,
   currentRotationVectorApi: Vector3Simple,
