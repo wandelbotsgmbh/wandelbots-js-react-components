@@ -1,23 +1,31 @@
 import { Jog } from "@wandelbots/icons/Jog"
 import { JointKinematics } from "@wandelbots/icons/JointKinematics"
-import { RobotArm } from "@wandelbots/icons/RobotArm"
 import { Robot } from "@wandelbots/icons/Robot"
+import { RobotArm } from "@wandelbots/icons/RobotArm"
 import { SafetyStateNormal } from "@wandelbots/icons/SafetyStateNormal"
+import { SpaceDashboardFilled } from "@wandelbots/icons/SpaceDashboardFilled"
 import { ViewModuleFilled } from "@wandelbots/icons/ViewModuleFilled"
-import type { ConnectedMotionGroup } from "@wandelbots/wandelbots-js-react-components"
+import type { RobotSession } from "@wandelbots/wandelbots-js-react-components"
 import type { FC, ReactNode } from "react"
 import type { PlaygroundInstance } from "../instance"
 import { BuildingBlocksPage } from "./BuildingBlocksPage"
+import { GhostsPage } from "./GhostsPage"
 import { JoggingPage } from "./JoggingPage"
 import { JointLimitsPage } from "./JointLimitsPage"
+import { LayoutsPage } from "./LayoutsPage"
 import { ModelsPage } from "./ModelsPage"
 import { SafetyPage } from "./SafetyPage"
-import { SessionPartsPage } from "./SessionPartsPage"
 
-/** Every page gets the instance and the motion group of the top bar */
+/** Every page gets the instance and the session of the top bar's motion group */
 export type PageProps = {
   instance: PlaygroundInstance
-  motionGroup: ConnectedMotionGroup
+  session: RobotSession
+  /** All motion groups of the cell, for a page with a select of its own */
+  motionGroupIds: string[]
+  /** Selects another motion group, as the top bar's select does */
+  onMotionGroupChange: (motionGroupId: string) => void
+  /** Opens another page, as the top bar's app menu does */
+  onPageChange: (page: PageId) => void
 }
 
 type Page = {
@@ -50,16 +58,22 @@ export const PAGES = [
     Component: ModelsPage,
   },
   {
+    id: "ghosts",
+    name: "Ghosts",
+    icon: <Robot />,
+    Component: GhostsPage,
+  },
+  {
+    id: "layouts",
+    name: "Layouts",
+    icon: <SpaceDashboardFilled />,
+    Component: LayoutsPage,
+  },
+  {
     id: "building-blocks",
     name: "Building blocks",
     icon: <ViewModuleFilled />,
     Component: BuildingBlocksPage,
-  },
-  {
-    id: "session-parts",
-    name: "Session parts",
-    icon: <Robot />,
-    Component: SessionPartsPage,
   },
 ] as const satisfies readonly Page[]
 

@@ -42,6 +42,12 @@ export const REASONS: Record<string, string> = {
     "The model download that `Robot` uses by default, for an app that wraps it",
   useInterpolation:
     "Smooths a stream of joint values for a 3D view of the app's own",
+  FLANGE_NODE_SUFFIX:
+    "Names the flange in a drawn robot, for an app that reads the drawn chain (RobotPad's 3D debug tools)",
+  JOINT_REST_SUFFIX:
+    "Names a joint's rest frame in a drawn robot, for an app that reads the drawn chain",
+  jointIndexOf:
+    "Finds the joint of a node in a drawn robot, for an app that reads the drawn chain",
   useSmoothedMotionState:
     "Smooths a motion state for the `*Exact` parts, which draw it as given",
   ROBOT_LOAD_STEP_IDS:

@@ -62,10 +62,36 @@ async function moveToStartPose() {
 }
 
 /**
- * Waits until the 3D view has drawn the robot model: the marker
- * data-model-drawn of Viewport (playground/src/scene.tsx)
+ * The pose of the test robot's TCP from the NOVA API: the position in mm,
+ * the orientation as a rotation vector in rad
  */
-export async function expectModelDrawn(page: Page) {
+export async function tcpPose(): Promise<{
+  position: number[]
+  orientation: number[]
+}> {
+  const { motionGroup } = testData()
+  const group = (await controllerState()).motion_groups.find(
+    (group) => group.motion_group === motionGroup,
+  )
+  const position = group?.tcp_pose?.position
+  const orientation = group?.tcp_pose?.orientation
+  if (!position || !orientation) {
+    throw new Error("The controller state has no TCP pose")
+  }
+  return { position, orientation }
+}
+
+/** The height of the test robot's TCP, in mm, from the NOVA API */
+export async function tcpZ(): Promise<number> {
+  return (await tcpPose()).position[2]
+}
+
+/**
+ * Waits until the 3D view has drawn the robot model: the marker
+ * data-model-drawn of Viewport (playground/src/scene.tsx). On a page with
+ * more than one 3D view, pass the part of the page with the one to wait for.
+ */
+export async function expectModelDrawn(page: Page | Locator) {
   await expect(page.getByTestId("viewport")).toHaveAttribute(
     "data-model-drawn",
     "true",
@@ -116,6 +142,36 @@ export function screenshotOnFailure(pageId: PageId) {
 }
 
 /**
+ * Activates the test robot with the switch of the playground's top bar. What
+ * jogs with the session's JoggingStore (the pages Building blocks and Joint
+ * limits) moves only an activated robot, and shows its jog controls as off
+ * before. A test that calls this needs `deactivateRobot` in its afterEach.
+ */
+export async function activateRobot(page: Page) {
+  const activation = page
+    .getByTestId("playground-activation")
+    .getByRole("switch")
+  await activation.click()
+  await expect(activation).toBeChecked({ timeout: 30_000 })
+}
+
+/**
+ * For test.afterEach of tests that activated the robot: puts the controller
+ * back in monitor mode. The next test's openPage waits for MODE_MONITOR, and
+ * NOVA sets the start pose only then.
+ */
+export async function deactivateRobot() {
+  await nova().api.controller.setDefaultMode(
+    CELL,
+    testData().controller,
+    "ROBOT_SYSTEM_MODE_MONITOR",
+  )
+  await expect
+    .poll(async () => (await controllerState()).mode, { timeout: 30_000 })
+    .toBe("MODE_MONITOR")
+}
+
+/**
  * Presses a jog button with the mouse (the jog buttons react to pointer
  * events): at least 1 s, and until `moved` returns true. The robot moves
  * only after NOVA has confirmed the jogging websocket, and a press that
@@ -147,7 +203,8 @@ export async function jogPress(
 /**
  * Raises the velocity of a VelocitySlider by 10 with the key Page Up, so
  * that a jog press moves the robot clearly (the JoggingStore starts with
- * 1 °/s and 10 mm/s). Returns the new velocity.
+ * 5 °/s and 10 % of the robot's T1 limit, mostly 25 mm/s). Returns the new
+ * velocity.
  */
 export async function raiseVelocity(velocitySlider: Locator) {
   const slider = velocitySlider.getByRole("slider")

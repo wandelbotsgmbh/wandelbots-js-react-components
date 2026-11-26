@@ -18,16 +18,17 @@ export default defineWorkspace([
     // `exports` map. They must run in a plain Node environment (no jsdom,
     // no setup files, no Vite-driven source resolution) so that imports of
     // the package name resolve via Node the same way a downstream consumer
-    // would. The bare parts test (bare.test.tsx) renders in jsdom, still
-    // without setup files: an app gives a part nothing either.
+    // would.
+    // The bare parts test (bare.test.tsx) renders in jsdom, still without
+    // setup files: an app gives a part nothing either
     esbuild: { jsx: "automatic" },
     test: {
       name: "consumer",
       environment: "node",
       globals: true,
       include: ["src/test/consumer.test.ts", "src/test/bare.test.tsx"],
-      // The first import of a built entry takes a few seconds on a busy
-      // machine
+      // The first import of a built entry with three.js and React Three
+      // Fiber takes several seconds on a busy machine
       testTimeout: 30_000,
     },
   },

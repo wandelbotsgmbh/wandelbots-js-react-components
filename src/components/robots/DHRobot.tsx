@@ -8,6 +8,7 @@ import type * as THREE from "three"
 import { Matrix4, Quaternion, Vector3 } from "three"
 import type { LineGeometry } from "three/examples/jsm/lines/LineGeometry.js"
 import RobotAnimator from "./RobotAnimator"
+import { chainOffsetRestFrame } from "./robotModelLogic"
 import type { DHRobotProps } from "./SupportedRobot"
 
 const CHILD_LINE = "line"
@@ -16,6 +17,7 @@ const CHILD_MESH = "mesh"
 export function DHRobot({
   rapidlyChangingMotionState,
   dhParameters,
+  kinematicChainOffset,
   ...props
 }: DHRobotProps) {
   // reused in every update
@@ -24,6 +26,8 @@ export function DHRobot({
   // Store direct references to avoid searching by name
   const lineRefs = useRef<any[]>([])
   const meshRefs = useRef<(THREE.Mesh | null)[]>([])
+  // The DH chain starts at the kinematic chain offset
+  const chainOffset = chainOffsetRestFrame(kinematicChainOffset)
 
   // Initialize refs array when dhParameters change
   React.useEffect(() => {
@@ -108,42 +112,47 @@ export function DHRobot({
       onRotationChanged={setRotation}
     >
       <group {...props} name="Scene">
-        <mesh>
-          <sphereGeometry args={[0.01, 32, 32]} />
-          <meshStandardMaterial color={"black"} depthTest={true} />
-        </mesh>
-        {dhParameters?.map((param, index) => {
-          const { a, b } = getLinePoints(
-            param,
-            rapidlyChangingMotionState.joint_position[index] ?? 0,
-          )
-          const jointName = `dhrobot_J0${index}`
-          return (
-            <group name={jointName} key={jointName}>
-              <Line
-                ref={(ref) => {
-                  lineRefs.current[index] = ref
-                }}
-                name={CHILD_LINE}
-                points={[a, b]}
-                color={"white"}
-                lineWidth={5}
-              />
-              <mesh
-                ref={(ref) => {
-                  meshRefs.current[index] = ref
-                }}
-                name={CHILD_MESH}
-                // biome-ignore lint/suspicious/noArrayIndexKey: pre-biome code
-                key={`mesh_${index}`}
-                position={b}
-              >
-                <sphereGeometry args={[0.01, 32, 32]} />
-                <meshStandardMaterial color={"black"} depthTest={true} />
-              </mesh>
-            </group>
-          )
-        })}
+        <group
+          position={chainOffset.position}
+          quaternion={chainOffset.quaternion}
+        >
+          <mesh>
+            <sphereGeometry args={[0.01, 32, 32]} />
+            <meshStandardMaterial color={"black"} depthTest={true} />
+          </mesh>
+          {dhParameters?.map((param, index) => {
+            const { a, b } = getLinePoints(
+              param,
+              rapidlyChangingMotionState.joint_position[index] ?? 0,
+            )
+            const jointName = `dhrobot_J0${index}`
+            return (
+              <group name={jointName} key={jointName}>
+                <Line
+                  ref={(ref) => {
+                    lineRefs.current[index] = ref
+                  }}
+                  name={CHILD_LINE}
+                  points={[a, b]}
+                  color={"white"}
+                  lineWidth={5}
+                />
+                <mesh
+                  ref={(ref) => {
+                    meshRefs.current[index] = ref
+                  }}
+                  name={CHILD_MESH}
+                  // biome-ignore lint/suspicious/noArrayIndexKey: pre-biome code
+                  key={`mesh_${index}`}
+                  position={b}
+                >
+                  <sphereGeometry args={[0.01, 32, 32]} />
+                  <meshStandardMaterial color={"black"} depthTest={true} />
+                </mesh>
+              </group>
+            )
+          })}
+        </group>
       </group>
     </RobotAnimator>
   )

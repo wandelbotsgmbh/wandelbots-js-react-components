@@ -89,6 +89,8 @@ const RobotAnimator = forwardRef<RobotAnimatorHandle, RobotAnimatorProps>(
       } else {
         for (const [index, object] of jointObjects.current.entries()) {
           const dhParam = dhParameters[index]
+          // A model with more joint nodes than the DH chain has rows
+          if (!dhParam) continue
           const rotationOffset = dhParam.theta || 0
           const rotationSign = dhParam.reverse_rotation_direction ? -1 : 1
 

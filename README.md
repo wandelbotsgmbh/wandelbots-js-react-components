@@ -17,11 +17,13 @@ pnpm add @wandelbots/wandelbots-js-react-components \
  @wandelbots/mui mobx mobx-react-lite
 ```
 
-The 3D parts need three.js and React Three Fiber in addition. If you don't need 3D rendering in your application, always import from `/core`.
+An app without the library's UI, which takes only `/session`, installs the library and `mobx` (see [Peer dependencies](#peer-dependencies)).
+
+The 3D parts need three.js and React Three Fiber in addition. `/core` has the parts without 3D:
 
 ```typescript
 import {
-  JoggingPanel,
+  JoggingButtons,
   SafetyBar,
 } from "@wandelbots/wandelbots-js-react-components/core"
 ```
@@ -40,6 +42,8 @@ pnpm add three three-stdlib @react-three/fiber @react-three/drei
 ```
 
 You can also import from the top-level package, but then you'll need to provide all optional dependencies.
+
+An app that installs no three.js imports from `/session` and from the entry points of single components instead of `/core`, see [Without three.js or without React](#without-threejs-or-without-react).
 
 The parts use the theme of your app. Without the Nova theme they still work, in the default colours of MUI. For the Nova look, create the theme with `createNovaMuiTheme` of `@wandelbots/mui`:
 
@@ -66,9 +70,9 @@ Browse the full icon set at https://wandelbotsgmbh.github.io/nova-design-system/
 **Available Entry Points:**
 
 - **`.`** (Main) — All components. Requires the peer dependencies of `/core` and `/3d`.
-- **`/core`** — The parts without 3D (jogging, `RobotHeader`, `CurrentPose`, `SafetyBar`, `AppHeader`, `LoadingCover`, `NoMotionGroupModal`), the NOVA connections and `JoggingStore`, the motion state helpers, the deprecated `ConnectedMotionGroup` and `i18n`. It also exports everything of `/session`.
+- **`/core`** — The parts without 3D (jogging, `RobotHeader`, `CurrentPose`, `SafetyBar`, `AppHeader`, `LoadingCover`, `NoMotionGroupModal`), everything of `/session` (the robot session, `JoggingStore`, the NOVA connections, the motion state helpers), the deprecated `ConnectedMotionGroup` and `i18n`. Draws nothing in 3D, but still needs three.js installed (see [Without three.js or without React](#without-threejs-or-without-react)).
+- **`/session`** (beta) — The library without React: a robot of a NOVA cell, loaded and connected (`loadRobotSession`, `RobotSession` with its description, live state, safety, activation, jogging and Move to), `JoggingStore`, the NOVA connections (`JoggerConnection`, `MotionStreamConnection`), the pose math and the motion state helpers. Loads no React, no MUI and no three.js. `/core` exports all of it as well.
 - **`/3d`** — The 3D parts (`Robot`, `MotionGroupVisualizer`, `SafetyZonesRenderer`, …). Requires in addition three, three-stdlib, @react-three/fiber and @react-three/drei.
-- **`/session`** (beta) — The library without React: a robot of a NOVA cell, loaded and connected (`loadRobotSession`, `RobotSession` with its description, live state, safety, activation, jogging and Move to), `JoggingStore`, the NOVA connections and the pose math on plain numbers. It loads no React, no MUI and no three.js, and needs only `mobx`.
 - **`/nats`** — A robot's live controller state over NOVA's NATS server (`natsControllerStateSource`, `natsUrlOf`): the `stateSource` of `loadRobotSession` instead of NOVA's websocket. Requires in addition nats.ws; no other entry point loads it.
 - **`/SafetyBar`** — Only `SafetyBar` (also as the default export), also for a robot session (`session`).
 - **`/JoggingGizmo`** — Only `JoggingGizmo` (also as the default export) and `JoggingGizmoOrientation`. Requires in addition three and @react-three/fiber.
@@ -76,11 +80,13 @@ Browse the full icon set at https://wandelbotsgmbh.github.io/nova-design-system/
 - **`/JoggingJointSlider`** — Only `JoggingJointSlider` (also as the default export). No 3D packages needed.
 - **`/RobotControlPanel`** — The whole Robot control panel, `RobotControlPanel` (also as the default export). It shows the jog gizmo, so it requires in addition three and @react-three/fiber, as `/JoggingGizmo` does.
 - **`/RobotControl`** — `RobotControl` (also as the default export), the Robot control panel of a robot session. Requires in addition three and @react-three/fiber, as `/RobotControlPanel` does.
+- **`/RobotView`** — `RobotView` (also as the default export), the 3D view of a robot session, and `RobotCanvas`. Requires in addition three, three-stdlib, @react-three/fiber and @react-three/drei.
+- **`/RobotScene`** — `RobotScene` (also as the default export), the 3D scene of a robot session for the app's own `<Canvas>`, `RobotSceneView`, `JoggingAxes` and `RobotGhost`. Requires in addition three, three-stdlib, @react-three/fiber and @react-three/drei.
 - **`/CurrentPose`** — `CurrentPose` (also as the default export), the current pose bar of a robot session. No 3D packages needed.
 - **`/CurrentPoseBar`** — Only `CurrentPoseBar` (also as the default export). No 3D packages needed.
 - **`/RobotHeader`** — `RobotHeader` (also as the default export), and its parts for an app's own header: `SafetyBar`, `ActivationSwitch` and `ConnectionWarning`. No 3D packages needed.
 
-Each part of a robot session (`RobotControl`, `CurrentPose`, and `RobotHeader` with its parts) takes its robot as `session` and follows it by itself: the app passes the session, nothing else. Several robots on a page: each part gets its own.
+Each part of a robot session (`RobotControl`, `RobotView`, `RobotScene`, `CurrentPose`, and `RobotHeader` with its parts) takes its robot as `session` and follows it by itself: the app passes the session, nothing else. Several robots on a page: each part gets its own.
 
 A component's own entry point brings only what that component needs, e.g. `/JoggingButtons` no three.js and no NOVA client, unlike `/core`. The entry points share their common code, so an app that imports a component from both `/core` and its own entry point gets one copy of it:
 
@@ -112,8 +118,8 @@ All of them load i18next and react-i18next, which come with the library.
 ### Without three.js or without React
 
 - **An app without a 3D view** needs no three.js. It takes the robot from `/session` and its parts from the component entry points that draw nothing in 3D: `/RobotHeader`, `/CurrentPose`, `/CurrentPoseBar`, `/SafetyBar`, `/JoggingButtons` and `/JoggingJointSlider`.
-- **`/core` needs three.js installed**, although it draws nothing in 3D: `ConnectedMotionGroup`, which it exports, gives a three.js quaternion (`mountingQuaternion`).
-- **An app without React**, or with a UI of its own, uses `/session` alone (and `/nats`). Of the peer dependencies it needs only `mobx` (see [Peer dependencies](#peer-dependencies)). The parts of a session are MobX stores: such an app follows them with `autorun` or `reaction` of MobX. What it calls returns a promise that rejects when it fails (a jog that may not start rejects with a `JoggingRefusedError`), and what fails in the background goes to `onError`.
+- **`/core` needs three.js installed**, although it draws nothing in 3D: the deprecated `ConnectedMotionGroup` that it exports gives a three.js quaternion (`mountingQuaternion`). That ends when `ConnectedMotionGroup` is removed.
+- **An app without React**, or with a UI of its own, uses `/session` alone (and `/nats`). Of the peer dependencies it needs only `mobx` (see [Peer dependencies](#peer-dependencies)). The parts of a session are MobX stores: such an app follows them with `autorun` or `reaction` of MobX. What it calls returns a promise that rejects when it fails (a jog that may not start rejects with a `JoggingRefusedError`); what fails in the background goes to `onError`. `load.dispose()` closes the session's connections.
 
 ```typescript
 import { autorun } from "mobx"
@@ -149,13 +155,13 @@ load.dispose()
 | `@emotion/react`, `@emotion/styled` | ^11 | Every entry point with UI |
 | `@wandelbots/mui` | ^2 | Every entry point with UI (each simple part's needs are in [The simple parts on their own](#the-simple-parts-on-their-own)) |
 | `mobx-react-lite` | ^4.1.0 | Every entry point with UI |
-| `three` | >=0.182 | `.`, `/3d`, `/JoggingGizmo`, `/RobotControlPanel`, `/RobotControl`, and `/core` (`ConnectedMotionGroup`) |
-| `@react-three/fiber` | ^9 | `.`, `/3d`, `/JoggingGizmo`, `/RobotControlPanel`, `/RobotControl` |
-| `three-stdlib` | >=2 | `.`, `/3d` |
-| `@react-three/drei` | ^10 | `.`, `/3d` |
+| `three` | >=0.182 | `.`, `/3d`, `/JoggingGizmo`, `/RobotControlPanel`, `/RobotControl`, `/RobotScene`, `/RobotView`, and `/core` until `ConnectedMotionGroup` is removed |
+| `@react-three/fiber` | ^9 | `.`, `/3d`, `/JoggingGizmo`, `/RobotControlPanel`, `/RobotControl`, `/RobotScene`, `/RobotView` |
+| `three-stdlib` | >=2 | `.`, `/3d`, `/RobotScene`, `/RobotView` |
+| `@react-three/drei` | ^10 | `.`, `/3d`, `/RobotScene`, `/RobotView` |
 | `nats.ws` | ^1.30.3 | `/nats` |
 
-Only `mobx` is a required peer. The others are optional in `package.json`, so an app installs those of the entry points it imports: an app that takes only `/session` (and `/nats`) installs `mobx` (and `nats.ws`), and no React, MUI or three.js.
+Only `mobx` is a required peer. The others are optional in `package.json`, so an app installs those of the entry points it imports: an app that takes only `/session` (and `/nats`) installs `mobx` (and `nats.ws`), and no React, MUI or three.js. Three of the library's own dependencies (`react-i18next`, `react-error-boundary` and `@wandelbots/icons`) name `react` as their peer, so a package manager may still warn about React, or install it, for such an app; `/session` does not load it.
 
 These packages are peer dependencies because the app and the library must use the same copy: React, the MUI theme of the app, the MobX stores that the app reads with its own `observer`, and the `<Canvas>` of React Three Fiber.
 
@@ -205,7 +211,7 @@ motionGroup.dispose()
 // After
 const load = loadRobotSession(nova, "0@ur5e", { cellId })
 const session = await load.ready
-<RobotControl session={session} />
+<RobotScene session={session} />
 load.dispose()
 ```
 
@@ -228,7 +234,7 @@ What changes besides the names:
 | `isVirtual` | `description.isVirtual` |
 | `tcps` | `description.tcps` (id and name), `description.tcpOffsetsById` (position and orientation) |
 | `joints` | One per joint: `description.dhParameters`, or the joint limits in `description.jointLimits` |
-| `mountingPosition`, `mountingQuaternion` | `description.mounting` (mm and a rotation vector) |
+| `mountingPosition`, `mountingQuaternion` | `description.mounting` (mm and a rotation vector); `RobotScene` draws the robot at it |
 | `rapidlyChangingMotionState` | `state.rapidlyChangingMotionState` |
 | `controllerState` | `state.controllerState` |
 | `initialMotionState`, `controller`, `motionGroup`, `motionStateSocket` | No replacement: the session keeps its connections. Read `state` instead. |
@@ -238,7 +244,7 @@ What changes besides the names:
 | `joggingVelocity`, `joggingVelocityRads`, `setJoggingVelocity()` | The velocities of `jogging`: `rotationVelocityDegPerSec`, `rotationVelocityRadsPerSec`, `translationVelocityMmPerSec`, `setVelocityFromSlider()` |
 | `connectedJoggingSocket`, `planData` | No replacement (unused) |
 | `dispose()` | `load.dispose()`, or `session.dispose()` |
-| `<Robot connectedMotionGroup={…}>`, `<LinearAxis connectedMotionGroup={…}>` | No replacement yet: keep a `ConnectedMotionGroup` for the 3D view until the 3D parts of a session come |
+| `<Robot connectedMotionGroup={…}>`, `<LinearAxis connectedMotionGroup={…}>` | `<RobotScene session={session} />` draws the session's robot or linear axis. `Robot` and `LinearAxis` take `motionGroup`: a `ConnectedMotionGroup`, or the app's own data (see `RobotModelSource`). |
 
 ### From JoggingPanel to RobotControl
 
@@ -310,12 +316,87 @@ Manual robot control interfaces.
 
 **JoggingStore** - The state of the jogging (velocity, coordinate system, the jogging connection). A robot session has one (`session.jogging`), and `JoggingStore.loadFor` creates one for your own controls. It also jogs for them: `startCartesianJogging(motion, axis, direction)` or `startJointJogging(joint, direction)` when a control is pressed and `stopJogging()` when it is let go, and `runIncrementalCartesianJog(motion, axis, direction, increment)` for one step. The store keeps the order that hold-to-jog needs: a press that ends before the jogging connection is ready moves nothing, and one step runs at a time. While the store is locked, or its owner says that the robot may not move (the option `notMoveableReason`, which a `RobotSession` gives its store), or after NOVA refused the jogging connection because another client jogs (`blocked`, until `unblock()`), it starts no jog: the start rejects with a `JoggingRefusedError`, whose `reason.code` says why. The same holds for everything else that opens the jogging connection, a TCP change (`requestTcpChange`) and `session.ensureMovementOwnership("jogging")`: NOVA switches a controller to control mode by itself for it. The store asks again once the connection is open, and closes it when the robot may no longer move by then.
 
-**Simple jogging parts** (plain props and callbacks, see [The simple parts on their own](#the-simple-parts-on-their-own))
+**JoggingGizmo** and **JoggingGizmoOrientation** (from `/3d` or `/JoggingGizmo`) - Jogging by the axes of the jog frame as the camera of the 3D view sees them: orbit the view and the gizmo turns with it, so the arrow pointing right on screen moves the robot right on screen. Hold a handle to jog.
 
-- **JoggingGizmo** - Handles in 3D to move the TCP along or turn it about the X, Y and Z axes
-- **JoggingButtons** - A minus and a plus button per axis
-- **JoggingJointSlider** - A joint on its range between its limits: hold a point to move the joint toward it
-- **CurrentPoseBar** - The current pose of the TCP, its TCP and coordinate system, and the orientation format
+- The gizmo draws in its own small canvas, so it can sit in a panel next to the 3D view. `JoggingGizmoOrientation` goes inside the app's `<Canvas>` and passes the camera's view to the gizmo through a shared ref. Until it has, the gizmo stays disabled.
+- `JoggingGizmoOrientation` goes anywhere in the scene. It follows the camera's up: in a scene that is Y up, like that of this library's robots, it translates NOVA's axes (Z up), so NOVA's Z is the scene's Y. In a scene that is Z up like NOVA's world, whose camera has Z up, it takes NOVA's axes as they are.
+- `frameQuaternion` of `JoggingGizmo` is the frame the gizmo jogs along, in NOVA's coordinates: by default NOVA's world frame. The app gives it to the gizmo where it picks the frame, e.g. "Move along the axes of: Tool". Only the camera's view comes from the 3D scene. A frame that turns, such as the tool's, can be a function: the gizmo calls it every animation frame.
+- `motion` is `"translate"` (arrows, the default) or `"rotate"`: a circle about each axis with an arc per direction, whose arrowhead shows the way it turns (`+` counterclockwise seen from the tip of the axis). The handles are named as the jog buttons: "Jog X+", or "Jog Rx+" when rotating. A jog that runs when `motion` changes stops.
+- The gizmo moves nothing itself: `onJogStart(axis, direction)` and `onJogStop` leave that to the app, in the frame it jogs in. The app knows its `motion`, so it knows whether to move along the axis or turn about it.
+- A press jogs along the arrow drawn where it lands. Where a press could not tell two handles apart, it jogs neither: an arrow that points (almost) at or away from the viewer, or the farther of two arrowheads drawn over each other. To jog with such a handle, orbit the view, or use `JoggingButtons`.
+- A jog runs while a pointer holds a handle. It stops when the pointer is let go, wherever that happens, and when the pointer leaves the handle (the bar along its arrow, or the band along its arc and its arrowhead), as RobotPad's jog buttons do. A pointer that comes back without a new press jogs nothing.
+- Only a pointer jogs. A handle is a named button, so the keyboard's focus reaches it, but Space or Enter on it start nothing.
+- When rotating, a press turns the way the arc drawn there points: an arc is grabbed anywhere along it, an arrowhead above everything else. Where two arcs cross, the one drawn nearer there takes the press. An axis seen (almost) edge on, whose arcs lie over each other, takes no press.
+
+```tsx
+const orientation = useRef<Quaternion | null>(null)
+
+<Canvas>
+  {/* … the 3D view with the robot */}
+  <JoggingGizmoOrientation target={orientation} />
+</Canvas>
+
+<JoggingGizmo
+  orientation={orientation}
+  frameQuaternion={jogFrame} // optional: NOVA's world frame by default
+  motion={motion} // "translate" or "rotate"
+  onJogStart={(axis, direction) =>
+    motion === "rotate"
+      ? startRotating(axis, direction)
+      : startJogging(axis, direction)
+  }
+  onJogStop={() => stopJogging()}
+/>
+```
+
+**JoggingButtons** (from `/core` or `/JoggingButtons`) - Jogging by buttons: a row per axis with a minus and a plus button, held to jog (X-, X+; or Rx-, Rx+ when `motion` is `"rotate"`). It takes the same props as `JoggingGizmo` (`JogControlsProps`: `motion`, `onJogStart`, `onJogStop`, `activeHandle`, `disabled`), so an app wires both the same way and can offer both. Unlike the gizmo, the buttons do not turn with the 3D view: X+ is X+ of the jog frame, wherever the camera looks from. They draw nothing in 3D, so they need no `<Canvas>` and no `JoggingGizmoOrientation`. As with the gizmo, a jog stops when the pointer is let go or leaves the button, and only a pointer jogs: the keyboard's focus reaches a button, but Space or Enter on it start nothing.
+
+```tsx
+<JoggingButtons
+  motion={motion} // "translate" or "rotate"
+  onJogStart={(axis, direction) =>
+    motion === "rotate"
+      ? startRotating(axis, direction)
+      : startJogging(axis, direction)
+  }
+  onJogStop={() => stopJogging()}
+/>
+```
+
+**JoggingJointSlider** (from `/core` or `/JoggingJointSlider`) - One joint as a slider across its limits, with the thumb at the joint's value and the limits below; an app shows one per joint. Hover the track to see the goal under the pointer, and press there to jog the joint toward it: it stops when it gets there, when the slider is let go, wherever that happens, or when the pointer leaves the slider (it may stray 8 px off it, so a drag to a limit can overshoot the end of the track). While held, the goal follows the pointer, and the joint turns around when the goal passes it. Only a pointer jogs: the keyboard's focus reaches the slider, which says the joint's value, but an arrow key on it moves nothing.
+
+- `value`, `min` and `max` are in NOVA's units: radians, or mm with `linear`. A revolute joint with one limit spans one turn from it, and without limits the turn it stands in. A linear axis needs both limits to be jogged with the slider; without them it only shows its value. `angleUnit` shows degrees (default) or radians.
+- `onJogStart(direction)` and `onJogStop` leave the jogging to the app, as for `JoggingGizmo` and `JoggingButtons`. One press can bring several starts and stops, always in turn: the joint stops at the goal, and starts again when the goal moves on. When the goal passes the joint, `onJogStop` and the `onJogStart` of the other way come in the same event: an app with asynchronous jog commands must apply them in that order, and must not tear down its jogging connection on that stop.
+- One joint at a time is up to the app. Keep the jogging joint in a ref, which changes at once, and ignore the others' calls: `disabled` alone changes only with the next render, too late for two fingers that move in the same frame.
+
+```tsx
+const jogging = useRef<number | null>(null)
+const [active, setActive] = useState<number | null>(null)
+
+{jointValues.map((value, index) => (
+  <JoggingJointSlider
+    key={index}
+    label={`J${index + 1}`}
+    value={value}
+    min={limits[index].lower_limit}
+    max={limits[index].upper_limit}
+    onJogStart={(direction) => {
+      if (jogging.current !== null && jogging.current !== index) return
+      jogging.current = index
+      setActive(index)
+      startJointJogging(index, direction)
+    }}
+    onJogStop={() => {
+      if (jogging.current !== index) return
+      jogging.current = null
+      setActive(null)
+      stopJogging()
+    }}
+    // Shows the others as unavailable; the ref does the excluding
+    disabled={active !== null && active !== index}
+  />
+))}
+```
 
 **RobotControlPanel** (from `/3d` or `/RobotControlPanel`) - The Robot control panel of the design, built from the parts above: the tabs Translate and Rotate, with the TCP and the frame to jog along, Continuous or Increment, the velocity, the step size, and the gizmo or the buttons with a switch between them; the tab Joint, with a `JoggingJointSlider` per joint and the joint velocity; and the tab Move to, with a typed target (a pose of the TCP or joint values; else the current pose), the frame it is relative to, and a button to hold to move there. An app that wants the whole panel imports this; an app that wants one part imports that part.
 
@@ -372,14 +453,41 @@ const orientation = useRef<Quaternion | null>(null)
 
 ### The parts of a robot session
 
-`RobotControl` and `CurrentPose` are connected components: a UI component, which takes props and reports through callbacks, filled from the `RobotSession` given as `session`. A prop given to the connected component replaces the session's: `<RobotControl session={session} increments={undefined} />` has no Increment mode. An app without a `RobotSession` uses the UI component with props of its own.
+`RobotControl`, `RobotView`, `RobotScene` and `CurrentPose` are connected components: a UI component, which takes props and reports through callbacks, filled from the `RobotSession` given as `session`. A prop given to the connected component replaces the session's: `<RobotControl session={session} increments={undefined} />` has no Increment mode. An app without a `RobotSession` uses the UI component with props of its own.
 
 | Connected component | UI component |
 | --- | --- |
 | `RobotControl` | `RobotControlPanel` |
+| `RobotScene` | `RobotSceneView` |
+| `RobotView` | `RobotScene` in a `RobotCanvas` |
 | `CurrentPose` | `CurrentPoseBar` |
 
 **RobotControl** (from `/3d` or `/RobotControl`) - The Robot control panel (see `RobotControlPanel` above) of a session: Translate and Rotate jog the TCP with the session's jogging store, Joint jogs the joints, and Move to plans the typed pose and moves along it while held. `disabled` is the app's lock; jogging is also off, with the reason in the panel, while the robot may not move. `gizmoOrientation` gives the gizmo the camera of the app's 3D view; without it, the panel jogs with buttons. Another session gets a new panel: what the panel held for the old robot ends.
+
+**RobotView**, **RobotCanvas**, **RobotScene**, **RobotSceneView** and **JoggingAxes** (from `/3d`, `/RobotView` or `/RobotScene`) - The 3D view of a session:
+
+- `RobotView` is the view, ready to use: `RobotScene` in a `RobotCanvas` whose camera orbits the robot's base. It fills its parent. Its children are the app's own parts of the scene, in NOVA's coordinates (Z up, metres), e.g. a `JoggingGizmoOrientation`. Any prop of `RobotSceneView` given to it replaces the session's; `robot` replaces only the parts it gives, e.g. `robot={{ rapidlyChangingMotionState }}` for other joints to show.
+- `RobotCanvas` is the canvas alone, prop-only: a floor grid and a camera that orbits `orbitTarget`. When the browser cannot draw 3D, it says so (and calls `onWebGLUnavailable`) instead of loading forever.
+- `RobotScene` goes into the app's own `<Canvas>`, whose camera and controls are the app's: the robot at its mounting, the ghost of a planned motion's end, the safety zones, the axes that jogging moves along and the light. It draws in NOVA's coordinates; in a scene that is Y up, turn it: `<group rotation={[-Math.PI / 2, 0, 0]}>`. `RobotSceneView` is its UI component.
+- `JoggingAxes` is one part of that scene alone: the axes of a coordinate system and of the TCP, with those that jogging does not move along in grey.
+
+**RobotGhost** (from `/3d` or `/RobotScene`) - A robot at given joints, drawn as a see-through ghost: a stored pose, a planned target, a posture that collides. It stands at the robot's mounting and draws in NOVA's coordinates, so it goes among the children of `RobotView` or `RobotScene`. An app draws as many as it wants, each in its own `color` and `opacity` (0.3 by default): each ghost has materials of its own, so ghosts of one model do not change each other. It takes the robot as `session`, or as plain data (`robot`, a `RobotModelSource`). `flangeRef` gives the ghost's flange, where the app draws parts of its own with `createPortal` of React Three Fiber, e.g. a marker of the TCP; the ghost style leaves them as they are. The page Ghosts of the playground (`playground/src/pages/GhostsPage.tsx`) draws two ghosts and a marker.
+
+```tsx
+const [flange, setFlange] = useState<Group | null>(null)
+
+<RobotView session={session}>
+  <RobotGhost session={session} joints={storedJoints} color="grey" />
+  <RobotGhost
+    session={session}
+    joints={targetJoints}
+    color={collides ? "red" : "blue"}
+    opacity={0.5}
+    flangeRef={setFlange}
+  />
+  {flange && createPortal(<TcpMarker />, flange)}
+</RobotView>
+```
 
 **CurrentPose** (from `/core` or `/CurrentPose`) - The current pose bar of a session: the TCP's pose in a TCP and a coordinate system of the bar's own, the state of the motion stream and the last jog error. `CurrentPoseBar` is its UI component.
 
@@ -387,7 +495,7 @@ const orientation = useRef<Quaternion | null>(null)
 
 #### Placing the parts
 
-The library has no layout: an app puts `RobotHeader`, `RobotControl` and `CurrentPose` where it wants, next to its own 3D view, and each fills the box that the app gives it. Here they are placed as the Figma design does: the header on top, the 3D view under it, the panel floating at the view's top right and the pose bar along its bottom.
+The library has no layout: an app puts `RobotHeader`, `RobotView`, `RobotControl` and `CurrentPose` where it wants, and each fills the box that the app gives it. The Layouts page of the playground (`playground/src/pages/LayoutsPage.tsx`) places them as the Figma design does: the header on top, the 3D view under it, the panel floating at the view's top right and the pose bar along its bottom.
 
 ```tsx
 import Box from "@mui/material/Box"
@@ -399,8 +507,8 @@ import {
   RobotControl,
   RobotHeader,
   type RobotSession,
+  RobotView,
 } from "@wandelbots/wandelbots-js-react-components"
-import { Canvas } from "@react-three/fiber"
 import { useRef } from "react"
 import type { Quaternion } from "three"
 
@@ -417,10 +525,9 @@ export function RobotApp({ session }: { session: RobotSession }) {
       />
       <Box sx={{ position: "relative", flex: 1, minHeight: 0 }}>
         <Box sx={{ position: "absolute", inset: 0 }}>
-          {/* The app's 3D view of the robot */}
-          <Canvas>
+          <RobotView session={session}>
             <JoggingGizmoOrientation target={orientation} />
-          </Canvas>
+          </RobotView>
         </Box>
         <Box sx={{ position: "absolute", top: 12, right: 12, width: 444 }}>
           <RobotControl session={session} gizmoOrientation={orientation} />
@@ -440,12 +547,13 @@ export function RobotApp({ session }: { session: RobotSession }) {
 
 **Robot** - Real-time 3D robot rendering
 
-- Live pose updates from a `ConnectedMotionGroup`
+- Takes the robot as plain data (`RobotModelSource`): a `ConnectedMotionGroup`, or the app's own data. A `RobotSession`'s robot: `RobotScene`
+- Live pose updates from its motion state, at its mounting
 - The model of the motion group from the NOVA instance (`defaultGetModel`)
 
 **LinearAxis** - The same for a linear axis
 
-**SupportedRobot**, **SupportedLinearAxis** and **MotionGroupVisualizer** - The same without a `ConnectedMotionGroup`: they take a motion state, the model name and the DH parameters. `MotionGroupVisualizer` picks the robot or the linear axis. The `…Exact` variants show the pose without smoothing.
+**SupportedRobot**, **SupportedLinearAxis** and **MotionGroupVisualizer** - The same with single props: they take a motion state, the model name and the DH parameters. `MotionGroupVisualizer` picks the robot or the linear axis. The `…Exact` variants show the pose without smoothing. `transparentColor` draws one as a ghost, with `transparentOpacity` (0.3 by default); `flangeRef` gives its flange.
 
 **SafetyZonesRenderer** - 3D safety visualization
 
@@ -496,9 +604,9 @@ Safety components for production environments.
 
 Components integrate with the Wandelbots Nova ecosystem:
 
-- **NovaConnection** - Where the library connects to NOVA (`nova` of `JoggingPanel`, `ConnectedMotionGroup.connect`, `MotionStreamConnection.open`, `JoggerConnection.open`, `defaultGetModel`), it takes a `NovaConnection`: the URL of the instance, or the NOVA client of the app (`Nova` of `@wandelbots/nova-js`, of any version). The library reads only the URL and the access token of the client, and connects with its own client (nova-js 4.13.0). So the app configures the connection in one place.
+- **NovaConnection** - Where the library connects to NOVA (`nova` of `JoggingPanel`, `loadRobotSession`, `ConnectedMotionGroup.connect`, `MotionStreamConnection.open`, `JoggerConnection.open`, `defaultGetModel`), it takes a `NovaConnection`: the URL of the instance, or the NOVA client of the app (`Nova` of `@wandelbots/nova-js`, of any version). The library reads only the URL and the access token of the client, and connects with its own client (nova-js 4.13.0). So the app configures the connection in one place.
 - **Real-time Updates** - WebSocket connections for live robot state updates
-- **Motion Group Management** - Direct integration with `ConnectedMotionGroup` objects
+- **Motion Group Management** - One `RobotSession` per robot (`ConnectedMotionGroup` in earlier versions)
 - **State Synchronization** - Automatic state management with MobX reactivity
 
 ### Technical Foundation
@@ -552,7 +660,7 @@ pnpm playground:preview   # serves playground/dist on http://localhost:4180
 
 Vite reads these values when it starts (see [A NOVA instance](#a-nova-instance)). `CELL_ID` in the environment selects the cell (default `cell`). The cell needs a robot: without a motion group, the playground shows `NoMotionGroupModal`.
 
-The pages are Jogging, Joint limits, Safety and collisions, Robot models and Building blocks. Each page combines parts that work together. The app menu of the `AppHeader` switches the pages, and the URL selects the page and the motion group, for example `?page=jogging&motionGroup=0@ur5e`. The dev server uses React StrictMode, so a part that leaves a connection open shows up.
+The pages are Jogging, Joint limits, Safety and collisions, Robot models, Layouts and Building blocks. Each page combines parts that work together. Layouts puts `RobotControlPanel` and `CurrentPoseBar` over the robot's 3D view as the Figma design does; Building blocks shows the smaller parts alone. The app menu of the `AppHeader` switches the pages, and the URL selects the page and the motion group, for example `?page=jogging&motionGroup=0@ur5e`. The top bar has a switch that activates the robot: the parts that jog with the session's `JoggingStore` (on Layouts, Building blocks and Joint limits) move only an activated robot, and show their jog controls as off until then. The dev server uses React StrictMode, so a part that leaves a connection open shows up.
 
 The built playground contains the URL and the access token of the instance: never publish or upload `playground/dist`.
 

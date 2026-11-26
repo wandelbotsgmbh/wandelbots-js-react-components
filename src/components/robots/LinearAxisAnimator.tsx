@@ -1,7 +1,11 @@
 import { useThree } from "@react-three/fiber"
-import type { DHParameter, MotionGroupState } from "@wandelbots/nova-js/v2"
+import {
+  type DHParameter,
+  JointTypeEnum,
+  type MotionGroupState,
+} from "@wandelbots/nova-js/v2"
 import type React from "react"
-import { forwardRef, useImperativeHandle, useRef } from "react"
+import { forwardRef, useEffect, useImperativeHandle, useRef } from "react"
 import type { Group, Object3D, Quaternion } from "three"
 import { useAutorun } from "../utils/hooks"
 import { collectJoints } from "./robotModelLogic"
@@ -92,9 +96,16 @@ const LinearAxisAnimator = forwardRef<
       // For linear axes, we apply translation instead of rotation
       for (const [index, object] of jointObjects.current.entries()) {
         const dhParam = dhParameters[index]
+        // Only a prismatic row translates. A mixed chain does reach this
+        // component (MotionGroupVisualizer routes on the first row's type
+        // alone); translating a revolute joint of it would slide the link
+        // along its own axis instead of leaving it at the rest pose
+        // GenericRobot drew it in.
+        if (dhParam?.type !== JointTypeEnum.PrismaticJoint) continue
         const translationSign = dhParam.reverse_rotation_direction ? -1 : 1
 
-        // Apply linear translation along Y axis
+        // Apply linear translation along the joint node's own Y axis, which
+        // GenericRobot's rest-frame hoist leaves pointing along the rail.
         // Convert from millimeters to meters
         object.position.y = (translationSign * (values[index] || 0)) / 1000
       }
@@ -116,6 +127,16 @@ const LinearAxisAnimator = forwardRef<
   useAutorun(() => {
     applyMotionState(motionStateRef.current)
   })
+
+  /**
+   * Plain-prop path: a new motion state object, which MobX does not track.
+   * Applied here, not in a requestAnimationFrame per message: those never
+   * run in a backgrounded tab, so they would pile up while it is hidden.
+   */
+  // biome-ignore lint/correctness/useExhaustiveDependencies: applies the new state only
+  useEffect(() => {
+    applyMotionState(rapidlyChangingMotionState)
+  }, [rapidlyChangingMotionState])
 
   return (
     <group

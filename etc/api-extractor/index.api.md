@@ -21,6 +21,7 @@ import { KinematicModel } from '@wandelbots/nova-js/v2';
 import type { LimitRange } from '@wandelbots/nova-js/v2';
 import { MotionGroupDescription } from '@wandelbots/nova-js/v2';
 import { MotionGroupState } from '@wandelbots/nova-js/v2';
+import { Object3D } from 'three';
 import type { OperationMode } from '@wandelbots/nova-js/v2';
 import type { OrientationType as OrientationType_2 } from '@wandelbots/nova-js/v2';
 import type { PopoverOrigin } from '@mui/material/Popover';
@@ -28,6 +29,7 @@ import { Pose } from '@wandelbots/nova-js/v2';
 import { Quaternion } from 'three';
 import { default as React_2 } from 'react';
 import { ReactNode } from 'react';
+import { Ref } from 'react';
 import { RefObject } from 'react';
 import { RobotControllerConfiguration } from '@wandelbots/nova-js/v2';
 import { RobotControllerState } from '@wandelbots/nova-js/v2';
@@ -36,7 +38,7 @@ import type { SafetyStateType } from '@wandelbots/nova-js/v2';
 import Stack from '@mui/material/Stack';
 import { SxProps } from '@mui/material/styles';
 import { TcpOffset } from '@wandelbots/nova-js/v2';
-import type { Theme } from '@mui/material/styles';
+import { Theme } from '@mui/material/styles';
 import * as THREE from 'three';
 import type { ThreeElements } from '@react-three/fiber';
 import type { TrajectoryDetailsState } from '@wandelbots/nova-js/v2';
@@ -269,7 +271,7 @@ export type CurrentPoseProps = Partial<CurrentPoseBarProps> & {
 };
 
 // @public
-export function defaultGetModel(modelFromController: string, connection?: NovaConnection): Promise<string>;
+export function defaultGetModel(modelFromController: string, connection?: NovaConnection, serialNumber?: string): Promise<string>;
 
 // @public
 export function deriveSelectedTcpPose(input: {
@@ -292,10 +294,14 @@ export type DHLinearAxisProps = {
 export type DHRobotProps = {
     rapidlyChangingMotionState: MotionGroupState;
     dhParameters: Array<DHParameter>;
+    kinematicChainOffset?: Pose | null;
 } & ThreeElements["group"];
 
 // @public
 export type EulerConvention = Extract<OrientationType_2, `EULER_ANGLES_${string}`>;
+
+// @public (undocumented)
+export const FLANGE_NODE_SUFFIX = "_FLG";
 
 // @public (undocumented)
 export type GizmoChainOffset = Pose;
@@ -445,6 +451,18 @@ export type JoggerMode = "jogging" | "trajectory" | "off";
 
 // @public (undocumented)
 export type JoggerOrientation = "coordsys" | "tool";
+
+// @public
+export function JoggingAxes(input: JoggingAxesProps): JSX.Element;
+
+// @public
+export type JoggingAxesProps = {
+    base?: CoordinateSystem;
+    tcpOffset?: Pose;
+    rapidlyChangingMotionState: MotionGroupState;
+    orientation: OrientationId;
+    rotate?: boolean;
+};
 
 // @public
 export const JoggingButtons: (props: JoggingButtonsProps) => JSX.Element;
@@ -704,6 +722,12 @@ export type JogHandle = {
 // @public
 export type JogMotion = "translate" | "rotate";
 
+// @public (undocumented)
+export const JOINT_REST_SUFFIX = "_REST";
+
+// @public
+export function jointIndexOf(node: Object3D): number | null;
+
 // @public
 export function JointLimitGizmo(input: JointLimitGizmoProps): JSX.Element;
 
@@ -727,11 +751,11 @@ export function jointValuesEqual(oldJointValues: number[], newJointValues: numbe
 export function LinearAxis(input: LinearAxisProps): JSX.Element | null;
 
 // @public (undocumented)
-export type LinearAxisProps = {
-    connectedMotionGroup: ConnectedMotionGroup;
+export type LinearAxisProps = RobotMotionGroupProps & {
     getModel?: (modelFromController: string) => Promise<string>;
     flangeRef?: React.Ref<Group>;
     transparentColor?: string;
+    transparentOpacity?: number;
     postModelRender?: () => void;
 } & ThreeElements["group"];
 
@@ -930,6 +954,19 @@ export class RobotActivation {
 export type RobotActivationState = "inactive" | "activating" | "deactivating" | "active";
 
 // @public
+export const RobotCanvas: (input: RobotCanvasProps) => JSX.Element;
+
+// @public
+export type RobotCanvasProps = {
+    orbitTarget?: [number, number, number];
+    antialias?: boolean;
+    onContextLost?: () => void;
+    onWebGLUnavailable?: (context: WebGLUnavailableContext) => void;
+    children?: ReactNode;
+    sx?: SxProps<Theme>;
+};
+
+// @public
 export const RobotControl: FunctionComponent<RobotControlProps>;
 
 // @public
@@ -1097,6 +1134,27 @@ export class RobotDescription {
 }
 
 // @public
+export const RobotGhost: FunctionComponent<RobotGhostProps>;
+
+// @public
+export type RobotGhostProps = RobotGhostRobot & {
+    joints: number[];
+    color: string;
+    opacity?: number;
+    flangeRef?: Ref<Group>;
+    getModel?: SupportedRobotProps["getModel"];
+};
+
+// @public
+export type RobotGhostRobot = {
+    session: RobotSession;
+    robot?: never;
+} | {
+    robot: RobotModelSource;
+    session?: never;
+};
+
+// @public
 export const RobotHeader: (input: RobotHeaderProps) => JSX.Element;
 
 // @public
@@ -1218,6 +1276,28 @@ export class RobotModeChangeError extends Error {
 }
 
 // @public
+export type RobotModelSource = {
+    modelFromController?: string;
+    dhParameters?: DHParameter[];
+    inverseSolver?: string | null;
+    serialNumber?: string;
+    kinematicChainOffset?: Pose | null;
+    rapidlyChangingMotionState: MotionGroupState;
+    mountingPosition?: [number, number, number];
+    mountingQuaternion?: Quaternion;
+    nova?: NovaConnection;
+};
+
+// @public
+export type RobotMotionGroupProps = {
+    motionGroup: RobotModelSource;
+    connectedMotionGroup?: never;
+} | {
+    connectedMotionGroup: ConnectedMotionGroup;
+    motionGroup?: never;
+};
+
+// @public
 export type RobotNotMoveableReason =
 /** The live state stopped coming */
     {
@@ -1257,11 +1337,11 @@ export type RobotPose = {
 };
 
 // @public (undocumented)
-export type RobotProps = {
-    connectedMotionGroup: ConnectedMotionGroup;
+export type RobotProps = RobotMotionGroupProps & {
     getModel?: (modelFromController: string) => Promise<string>;
     flangeRef?: React.Ref<Group>;
     transparentColor?: string;
+    transparentOpacity?: number;
     postModelRender?: () => void;
 } & ThreeElements["group"];
 
@@ -1276,6 +1356,32 @@ export class RobotSafety {
     get isMoveableSafetyState(): boolean;
     get notMoveableReason(): RobotNotMoveableReason | null;
 }
+
+// @public
+export const RobotScene: FunctionComponent<RobotSceneProps>;
+
+// @public
+export type RobotSceneProps = Partial<Omit<RobotSceneViewProps, "robot">> & {
+    session: RobotSession;
+    robot?: Partial<RobotModelSource>;
+};
+
+// @public
+export function RobotSceneView(input: RobotSceneViewProps): JSX.Element | null;
+
+// @public
+export type RobotSceneViewProps = {
+    robot: RobotModelSource;
+    getModel?: SupportedRobotProps["getModel"];
+    safetyZones?: MotionGroupDescription["safety_zones"];
+    plannedJoints?: number[] | null;
+    jogAxes?: JoggingAxesProps;
+    robotVisible?: boolean;
+    robotRef?: Ref<Group>;
+    onModelDrawn?: () => void;
+    lighting?: boolean;
+    children?: ReactNode;
+};
 
 // @public
 export class RobotSession {
@@ -1380,6 +1486,12 @@ export type RobotTcpLike = {
 };
 
 // @public
+export const RobotView: FunctionComponent<RobotViewProps>;
+
+// @public
+export type RobotViewProps = RobotSceneProps & Omit<RobotCanvasProps, "orbitTarget">;
+
+// @public
 export const SafetyBar: ((props: SafetyBarProps | SafetyBarOfSessionProps) => JSX.Element | null) & {
     displayName: string;
 };
@@ -1435,13 +1547,16 @@ export type SupportedLinearAxisProps = {
     rapidlyChangingMotionState: MotionGroupState;
     modelFromController: string;
     dhParameters: DHParameter[];
+    serialNumber?: string;
+    kinematicChainOffset?: Pose | null;
     chainOffsetPosition?: [number, number, number];
     chainOffsetQuaternion?: THREE.Quaternion;
     flangeRef?: React.Ref<THREE.Group>;
     instanceUrl?: string;
-    getModel?: (modelFromController: string, instanceUrl?: string) => Promise<string> | undefined;
+    getModel?: (modelFromController: string, instanceUrl?: string, serialNumber?: string) => Promise<string> | undefined;
     postModelRender?: () => void;
     transparentColor?: string;
+    transparentOpacity?: number;
 } & ThreeElements["group"];
 
 // @public
@@ -1455,13 +1570,16 @@ export type SupportedRobotProps = {
     rapidlyChangingMotionState: MotionGroupState;
     modelFromController: string;
     dhParameters: DHParameter[];
+    serialNumber?: string;
+    kinematicChainOffset?: Pose | null;
     chainOffsetPosition?: [number, number, number];
     chainOffsetQuaternion?: THREE.Quaternion;
     flangeRef?: React.Ref<THREE.Group>;
     instanceUrl?: string;
-    getModel?: (modelFromController: string, instanceUrl?: string) => Promise<string> | undefined;
+    getModel?: (modelFromController: string, instanceUrl?: string, serialNumber?: string) => Promise<string> | undefined;
     postModelRender?: () => void;
     transparentColor?: string;
+    transparentOpacity?: number;
 } & ThreeElements["group"];
 
 // @public @deprecated

@@ -79,8 +79,17 @@ jobs:
           path: dist/
       - name: Fetch latest release version
         id: fetch_latest_release
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-          LATEST_VERSION=$(curl -s https://api.github.com/repos/${{ github.repository }}/releases/latest | jq -r .tag_name)
+          # With the job's token: a request without one counts against the
+          # runner's shared IP address, and GitHub refuses it once that is
+          # rate limited. The snapshot was then versioned "null-pr…".
+          LATEST_VERSION=$(gh api "repos/${{ github.repository }}/releases/latest" --jq .tag_name)
+          if [ -z "$LATEST_VERSION" ] || [ "$LATEST_VERSION" = "null" ]; then
+            echo "Could not read the latest release of ${{ github.repository }}" >&2
+            exit 1
+          fi
           echo "LATEST_VERSION=$LATEST_VERSION" >> $GITHUB_ENV
       - name: Update package.json version
         env:

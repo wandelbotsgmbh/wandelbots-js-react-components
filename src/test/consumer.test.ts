@@ -200,6 +200,8 @@ describe("package exports — deep component imports", () => {
     "RobotControlPanel",
     "RobotControl",
     "CurrentPose",
+    "RobotScene",
+    "RobotView",
   ]
 
   it.each(specs)("%s resolves ESM, CJS, and types", (sub) => {
@@ -228,6 +230,8 @@ describe("MUI-style default + named exports", () => {
     { sub: "RobotControlPanel", name: "RobotControlPanel" },
     { sub: "RobotControl", name: "RobotControl" },
     { sub: "CurrentPose", name: "CurrentPose" },
+    { sub: "RobotScene", name: "RobotScene" },
+    { sub: "RobotView", name: "RobotView" },
   ]
 
   it.each(cases)("$sub exposes $name as both named and default", async ({
@@ -602,6 +606,8 @@ describe("component imports bring only what the component needs", () => {
     { sub: "RobotControlPanel", aggregate: "3d", name: "RobotControlPanel" },
     { sub: "RobotControl", aggregate: "3d", name: "RobotControl" },
     { sub: "CurrentPose", aggregate: "core", name: "CurrentPose" },
+    { sub: "RobotScene", aggregate: "3d", name: "RobotScene" },
+    { sub: "RobotView", aggregate: "3d", name: "RobotView" },
   ])("$sub and /$aggregate share one $name", async ({
     sub,
     aggregate,
@@ -645,6 +651,8 @@ describe("CJS interop", () => {
     "RobotControlPanel",
     "RobotControl",
     "CurrentPose",
+    "RobotScene",
+    "RobotView",
   ])("Node strict ESM can import %s and its transitive deps", (sub) => {
     // Redirect stderr to stdout so the assertion message surfaces any
     // "Cannot find module" errors from the child process.
@@ -740,6 +748,8 @@ describe("the type declarations", () => {
     "RobotControlPanel/index.d.ts",
     "RobotControl/index.d.ts",
     "RobotHeader/index.d.ts",
+    "RobotScene/index.d.ts",
+    "RobotView/index.d.ts",
   ])("dist/%s imports only declared packages", (file) => {
     const undeclared = [...typePackagesOf(resolve(distDir, file))].filter(
       (name) => !declared.has(name) && !name.startsWith("node:"),

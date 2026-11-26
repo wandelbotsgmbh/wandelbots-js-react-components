@@ -1,8 +1,6 @@
-import { JointTypeEnum } from "@wandelbots/nova-js/v2"
 import {
-  ConnectedMotionGroup,
-  JoggerConnection,
-  JoggingStore,
+  JoggingRefusedError,
+  type JoggingStore,
   loadRobotSession,
   type RobotSession,
 } from "@wandelbots/wandelbots-js-react-components"
@@ -75,21 +73,6 @@ export async function listMotionGroupIds({
   )
 }
 
-/** The ConnectedMotionGroup of a motion group, as an app connects it */
-export function useConnectedMotionGroup(
-  instance: PlaygroundInstance,
-  motionGroupId: string | undefined,
-): Loading<ConnectedMotionGroup> {
-  return useAsync(
-    motionGroupId,
-    (id) =>
-      ConnectedMotionGroup.connect(instance.nova, id, {
-        cellId: instance.cellId,
-      }),
-    (motionGroup) => motionGroup.dispose(),
-  )
-}
-
 /**
  * The RobotSession of a motion group, as an app loads it: its jogging
  * settings kept in localStorage, a virtual robot not activated on its own
@@ -122,96 +105,67 @@ export function useLoadedSession(
 }
 
 /**
- * A JoggingStore of a motion group, opened as JoggingPanel does it:
- * `JoggerConnection.open`, then `JoggingStore.loadFor`.
+ * What a jog button moves: a joint, or the TCP along an axis or about it, of
+ * the world frame or (with `tool`) of the tool
  */
-export function useJoggingStore(
-  instance: PlaygroundInstance,
-  motionGroupId: string,
-): Loading<JoggingStore> {
-  return useAsync(
-    motionGroupId,
-    async (id) => {
-      const jogger = await JoggerConnection.open(instance.nova, id, {
-        cellId: instance.cellId,
-      })
-      try {
-        return await JoggingStore.loadFor(jogger)
-      } catch (error) {
-        // Also closes the motion stream that open() opened
-        jogger.dispose()
-        throw error
-      }
-    },
-    // Closes the jogger with its motion stream
-    (store) => store.dispose(),
+export type JogCommand =
+  | { joint: number; direction: "-" | "+" }
+  | {
+      axis: "x" | "y" | "z"
+      direction: "-" | "+"
+      rotate?: boolean
+      tool?: boolean
+    }
+
+/**
+ * Jogs while a control is held, with the velocity of the store: the store
+ * jogs (startJointJogging, startCartesianJogging), as for every UI that is
+ * built on it. So what holds for the library's own panel holds here: the jog
+ * command goes out only after NOVA has confirmed the jogging websocket (about
+ * 0.1 to 0.5 s), a press that ends before (stopJogging) moves nothing, and
+ * the store starts no jog while the robot may not move, e.g. while it is not
+ * activated (the top bar has the switch).
+ *
+ * The store jogs the TCP along its "Move relative to": the frame of the press
+ * becomes the store's, which the session keeps in its storage.
+ */
+export function startJogging(store: JoggingStore, command: JogCommand) {
+  if ("joint" in command) {
+    follow(store.startJointJogging(command.joint, command.direction))
+    return
+  }
+  if (command.tool) {
+    store.setMoveRelativeToSelectedTcp()
+  } else {
+    store.setMoveRelativeToCoordSystem("world")
+  }
+  follow(
+    store.startCartesianJogging(
+      command.rotate ? "rotate" : "translate",
+      command.axis,
+      command.direction,
+    ),
   )
 }
 
-/** What a jog button moves: a joint, or the TCP along an axis */
-export type JogCommand =
-  | { joint: number; direction: "-" | "+" }
-  | { axis: "x" | "y" | "z"; direction: "-" | "+"; rotate?: boolean }
-
-/** The number of the last press per store (see startJogging) */
-const jogPresses = new WeakMap<JoggingStore, number>()
-
-function nextJogPress(store: JoggingStore) {
-  const press = (jogPresses.get(store) ?? 0) + 1
-  jogPresses.set(store, press)
-  return press
+/**
+ * Ends the press of startJogging: stops the motion and the jogging. A press
+ * that starts while the stop is under way (a joint slider turning around
+ * calls onJogStop and onJogStart in one event) keeps the jogging connection.
+ */
+export function stopJogging(store: JoggingStore) {
+  follow(store.stopJogging())
 }
 
 /**
- * Jogs while a button is pressed, with the velocity of the store, as the
- * tabs of JoggingPanel do: the jog command goes out only after NOVA has
- * confirmed the jogging websocket (about 0.1 to 0.5 s). A press that ends
- * before (stopJogging) moves nothing, and an error goes to the console
- * instead of being uncaught.
+ * An error of a jog goes to the console instead of being uncaught. A jog
+ * that the store refused is none: the pages show their jog controls as off
+ * while it would refuse (see cannotJog), and a press that still comes moves
+ * nothing.
  */
-export async function startJogging(store: JoggingStore, command: JogCommand) {
-  const press = nextJogPress(store)
-  try {
-    // Not store.activate(): with an increment selected in JoggingPanel (saved
-    // in localStorage), it would open a trajectory instead of jogging
-    await store.jogger.setJoggingMode("jogging")
-
-    // The button was released (or another one pressed) while the jogging
-    // websocket opened: this press moves nothing
-    if (press !== jogPresses.get(store)) return
-
-    if ("joint" in command) {
-      // A prismatic joint (a linear axis) moves in mm/s
-      const revolute = store.jointType === JointTypeEnum.RevoluteJoint
-      await store.jogger.rotateJoints({
-        joint: command.joint,
-        direction: command.direction,
-        velocityUnit: revolute ? "rad/s" : "mm/s",
-        velocityValue: revolute
-          ? store.rotationVelocityRadsPerSec
-          : store.translationVelocityMmPerSec,
-      })
-    } else if (command.rotate) {
-      await store.jogger.rotateTCP({
-        axis: command.axis,
-        direction: command.direction,
-        velocityRadsPerSec: store.rotationVelocityRadsPerSec,
-      })
-    } else {
-      await store.jogger.translateTCP({
-        axis: command.axis,
-        direction: command.direction,
-        velocityMmPerSec: store.translationVelocityMmPerSec,
-      })
-    }
-  } catch (error) {
+function follow(jog: Promise<void>) {
+  jog.catch((error: unknown) => {
+    if (error instanceof JoggingRefusedError) return
     console.error("Jogging failed:", error)
-  }
-}
-
-/** Ends the press of startJogging: stops the motion and the jogging */
-export async function stopJogging(store: JoggingStore) {
-  nextJogPress(store)
-  await store.jogger.stop()
-  await store.deactivate()
+  })
 }
