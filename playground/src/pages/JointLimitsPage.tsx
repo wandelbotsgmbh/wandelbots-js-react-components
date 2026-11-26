@@ -2,18 +2,19 @@ import Stack from "@mui/material/Stack"
 import Typography from "@mui/material/Typography"
 import { JointTypeEnum } from "@wandelbots/nova-js/v2"
 import {
-  type ConnectedMotionGroup,
   JoggingJointValueControl,
-  type JoggingStore,
   JointLimitGizmo,
-  LoadingCover,
+  type RobotSession,
   useSmoothedMotionState,
   VelocitySlider,
   VelocitySliderLabel,
 } from "@wandelbots/wandelbots-js-react-components"
+// Internal: the robot's mounting in 3D units
+import { robotModelOf } from "../../../src/components/robots/robotModelSource"
 import { observer } from "mobx-react-lite"
 import { useMemo } from "react"
-import { startJogging, stopJogging, useJoggingStore } from "../connections"
+import { startJogging, stopJogging } from "../connections"
+import { cannotJog } from "../jogging"
 import {
   FitCamera,
   MotionGroupModel,
@@ -28,31 +29,20 @@ import type { PageProps } from "."
  * of the motion group), next to a JoggingJointValueControl per joint and the
  * VelocitySlider.
  */
-export function JointLimitsPage({ instance, motionGroup }: PageProps) {
-  const jogging = useJoggingStore(instance, motionGroup.motionGroupId)
-
+export function JointLimitsPage({ session }: PageProps) {
   return (
     <ViewWithSidePanel
       view={
         <Viewport>
           <FitCamera>
             {(refit) => (
-              <MotionGroupModel
-                motionGroup={motionGroup}
-                onModelLoaded={refit}
-              />
+              <MotionGroupModel session={session} onModelLoaded={refit} />
             )}
           </FitCamera>
-          <MotionGroupJointLimits motionGroup={motionGroup} />
+          <MotionGroupJointLimits session={session} />
         </Viewport>
       }
-      panel={
-        jogging.value ? (
-          <JointControls store={jogging.value} />
-        ) : (
-          <LoadingCover message="Loading jogging" error={jogging.error} />
-        )
-      }
+      panel={<JointControls session={session} />}
     />
   )
 }
@@ -63,35 +53,28 @@ export function JointLimitsPage({ instance, motionGroup }: PageProps) {
  * inside the mounting of the robot (see the documentation of JointLimitGizmo).
  */
 const MotionGroupJointLimits = observer(
-  ({ motionGroup }: { motionGroup: ConnectedMotionGroup }) => {
+  ({ session }: { session: RobotSession }) => {
+    const { description } = session
     // Robot smooths the joint positions in the same way
     const smoothed = useSmoothedMotionState(
-      motionGroup.rapidlyChangingMotionState,
-    )
-    const dhParameters = useMemo(
-      () => motionGroup.dhParameters ?? [],
-      [motionGroup],
+      session.state.rapidlyChangingMotionState,
     )
     const limits = useMemo(
       () =>
-        dhParameters.map(
-          (_, index) =>
-            motionGroup.description.operation_limits.auto_limits?.joints?.[
-              index
-            ]?.position ?? null,
+        description.dhParameters.map(
+          (_, index) => description.jointLimits[index]?.position ?? null,
         ),
-      [motionGroup, dhParameters],
+      [description],
     )
+    // The mounting in 3D units
+    const { mountingPosition, mountingQuaternion } = robotModelOf(session)
 
     return (
-      <group
-        position={motionGroup.mountingPosition}
-        quaternion={motionGroup.mountingQuaternion}
-      >
+      <group position={mountingPosition} quaternion={mountingQuaternion}>
         <NovaCoordinates>
           <JointLimitGizmo
-            dhParameters={dhParameters}
-            chainOffset={motionGroup.description.kinematic_chain_offset}
+            dhParameters={description.dhParameters}
+            chainOffset={description.kinematicChainOffset}
             limits={limits}
             jointPositions={[...smoothed.joint_position]}
             size={0.12}
@@ -102,8 +85,13 @@ const MotionGroupJointLimits = observer(
   },
 )
 
-/** The joint jogging of JoggingPanel, built from the public parts */
-const JointControls = observer(({ store }: { store: JoggingStore }) => {
+/**
+ * The joint jogging of JoggingPanel, built from the public parts. The
+ * session's JoggingStore jogs only a robot that may move: activate it with
+ * the switch of the top bar.
+ */
+const JointControls = observer(({ session }: { session: RobotSession }) => {
+  const store = session.jogging
   const revolute = store.jointType === JointTypeEnum.RevoluteJoint
 
   return (
@@ -141,7 +129,7 @@ const JointControls = observer(({ store }: { store: JoggingStore }) => {
               useDegree={revolute}
               lowerLimit={limits?.lower_limit}
               upperLimit={limits?.upper_limit}
-              disabled={store.isLocked}
+              disabled={cannotJog(session)}
               getValue={() =>
                 store.jogger.motionStream.rapidlyChangingMotionState
                   .joint_position[index]

@@ -14,7 +14,7 @@ import type {
 import { makeAutoObservable, runInAction } from "mobx"
 import * as THREE from "three"
 import type { Vector3Simple } from "./JoggerConnection"
-import { jointValuesEqual, tcpMotionEqual } from "./motionStateUpdate"
+import { jointValuesUnchanged, tcpMotionEqual } from "./motionStateUpdate"
 import {
   cellIdOf,
   createNovaClient,
@@ -23,6 +23,12 @@ import {
 
 const MOTION_DELTA_THRESHOLD = 0.0001
 
+/**
+ * A TCP of {@link ConnectedMotionGroup}
+ *
+ * @deprecated With `ConnectedMotionGroup`. A session has its TCPs in
+ * `description.tcps` and `description.tcpOffsetsById`.
+ */
 export type RobotTcpLike = {
   id: string
   readable_name: string
@@ -30,6 +36,7 @@ export type RobotTcpLike = {
   orientation: Vector3Simple
 }
 
+/** @deprecated Nothing uses it; no replacement */
 export type MotionGroupOption = {
   selectionId: string
 }
@@ -42,6 +49,10 @@ const EMPTY_DH_PARAMETER: DHParameter = {
   reverse_rotation_direction: false,
 }
 
+/**
+ * @deprecated With `ConnectedMotionGroup`. `loadRobotSession` takes
+ * `LoadRobotSessionOptions`.
+ */
 export type ConnectedMotionGroupOptions = {
   /** Cell id on the Nova instance. Defaults to "cell". */
   cellId?: string
@@ -49,7 +60,11 @@ export type ConnectedMotionGroupOptions = {
 
 /**
  * Store representing the current state of a connected motion group.
- * API v2 version, not used yet in the components.
+ *
+ * @deprecated Use `loadRobotSession`: its `RobotSession` has the same robot
+ * with its jogging and Move to, and `RobotScene` draws its robot. The
+ * README's "From ConnectedMotionGroup to
+ * RobotSession" maps each member.
  */
 export class ConnectedMotionGroup {
   static async connectMultiple(
@@ -247,7 +262,7 @@ export class ConnectedMotionGroup {
 
       // handle joint position changes
       if (
-        !jointValuesEqual(
+        !jointValuesUnchanged(
           this.rapidlyChangingMotionState.joint_position,
           latestMotionState.joint_position,
           MOTION_DELTA_THRESHOLD,

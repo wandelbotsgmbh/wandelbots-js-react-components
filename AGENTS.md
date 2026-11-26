@@ -15,10 +15,13 @@ NOVA apps (jogging, the 3D view of a robot, the safety state) and the logic
 that connects them to a NOVA instance. What it contains, its entry points and
 the migration from 6.x are in [README.md](README.md).
 
-- React, MUI, Emotion, the design system (`@wandelbots/mui`) and MobX stay peer
-  dependencies; three.js, React Three Fiber and drei stay optional peers. Never
-  make one of them a normal dependency: the app and the library must use the
-  same copy.
+- React, MUI, Emotion, the design system (`@wandelbots/mui`), MobX and
+  mobx-react-lite stay peer dependencies, as do three.js, React Three Fiber,
+  drei and nats.ws (only `/nats` loads it). Only `mobx` is a required peer,
+  because `/session` loads it; the others are optional, so an app with
+  `/session` alone needs none of them (`pnpm run test:consumer` checks it).
+  Never make one of them a normal dependency: the app and the library must
+  use the same copy.
 - No own theme and no own low-level parts (buttons, text fields, cards). Use
   the theme of the app, the parts of `@wandelbots/mui`, the tokens of
   `@wandelbots/design-tokens` and the icons of `@wandelbots/icons`.
@@ -26,8 +29,51 @@ the migration from 6.x are in [README.md](README.md).
   library connects with its own client: a public function takes a
   `NovaConnection` (`src/lib/novaConnection.ts`), never the `Nova` class, and
   the library's client stays out of the public API (`@internal`).
-- The public API is the entry points `.`, `/core`, `/3d` and `/SafetyBar`
-  (`scripts/entry-points.ts`), recorded in `etc/api-extractor/*.api.md`.
+- The public API is the entry points `.`, `/core`, `/3d`, `/nats` and
+  `/session`, and one per component of `componentNames` (`/SafetyBar`,
+  `/RobotControl`, …; all in `scripts/entry-points.ts`), recorded in
+  `etc/api-extractor/*.api.md`. An entry exports what an app needs: the
+  parts, their props, and the types of public members and parameters. What
+  only the library's own code uses stays unexported, so the entries name
+  their exports instead of `export *` of a module with helpers. A class that
+  an app only receives from a session (`session.activation`, `.trajectory`,
+  …) is exported with an `@internal` constructor. `/core` exports all of
+  `/session`.
+- `/session` (`src/session.ts`) is the library without React: an app with its
+  own UI, or without a 3D view, uses a robot session through it. So nothing
+  that it loads imports React, MUI or three.js. Its pose math is on plain
+  numbers (`src/lib/poseMath.ts`); `Pose3` and `rotation.ts` have the same
+  math on three.js objects for `/3d`, and both must give a robot the same
+  numbers. `/nats` and the component entries that draw nothing in 3D load no
+  three.js either. `pnpm run test:consumer` checks all of this on the built
+  files.
+- A UI component takes props and reports through callbacks: it never imports
+  a store (such as `JoggingStore`), the connection code in `src/lib/` or a
+  provider. So an app can use any one of them without the library's stores,
+  e.g. only the gizmo or only a joint slider. Each one is importable on its
+  own: add it to `componentNames` in `scripts/entry-points.ts`. The older
+  parts (`JoggingPanel` and its tabs, `JoggingCartesianAxisControl`,
+  `JoggingJointValueControl`, `VelocitySlider`, `VelocitySliderLabel`,
+  `ConnectedMotionGroup`) are deprecated, each with what to use instead:
+  build nothing new on them. `Robot` and `LinearAxis` take the robot as data
+  (`RobotModelSource`).
+- A connected component, one that reads a store or session, is only its UI
+  component plus a hook that turns the session into that component's props:
+  `<RobotControl session={session} />` is
+  `<RobotControlPanel {...useRobotControlProps(session)} />`. The UI
+  component is exported, the hook stays internal: a prop given to the
+  connected component replaces the session's (such as the app's own Move
+  to), so an app never imports a session-to-props helper.
+- No globals and no provider: a session reaches a component through its
+  `session` prop, never through a context, module state or `window`, so
+  several robots can be on one page and an app has one way to pass it.
+- Nothing assumes one app (RobotPad, the teaching app): no `localStorage`,
+  no `window` globals, no app's translation keys, routes or framework. What
+  to keep comes in as a storage adapter, errors and events go out through
+  callbacks, and a lock comes in as a `disabled` flag. One exception: a
+  `JoggingStore` made on its own keeps its settings in `localStorage` unless
+  it gets a `storage`. A robot session passes its own `storage` to its
+  store, and without one nothing is kept.
 
 ## NOVA instances
 
@@ -134,7 +180,7 @@ tests pass. Fix all errors and warnings before considering the work complete.
   an intended change, `pnpm run api:update`, and commit
   `etc/api-extractor/*.api.md` with the change.
 - `pnpm run test:consumer` — when `package.json`, the entry points or the
-  build changed
+  build changed, or a file got a new import (what an entry point loads)
 - `pnpm run test:e2e` and `pnpm run test:playground` — when the change touches
   the NOVA connections or a part of the playground (they need an instance)
 

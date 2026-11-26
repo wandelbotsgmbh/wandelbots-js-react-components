@@ -3,12 +3,12 @@ import type React from "react"
 import { useEffect, useMemo, useState } from "react"
 
 import { externalizeComponent } from "../../externalizeComponent"
-import { useSmoothedMotionState } from "../utils/useSmoothedMotionState"
 import {
   SupportedLinearAxisExact,
   type SupportedLinearAxisProps,
 } from "./SupportedLinearAxis"
 import { SupportedRobotExact, type SupportedRobotProps } from "./SupportedRobot"
+import { useFrameSmoothedMotionState } from "./useFrameSmoothedMotionState"
 
 export type MotionGroupVisualizerProps = {
   instanceUrl: string
@@ -80,14 +80,16 @@ export const MotionGroupVisualizerExact: React.FC<MotionGroupVisualizerProps> =
 /**
  * Motion group visualizer with built-in spring smoothing of the joint stream.
  *
- * Thin wrapper that runs the incoming motion state through
- * {@link useSmoothedMotionState} and renders {@link MotionGroupVisualizerExact}.
- * It is the batteries-included default; drop down to `MotionGroupVisualizerExact`
- * when you need to control or disable smoothing.
+ * Thin wrapper that runs the incoming motion state through the spring of
+ * {@link useSmoothedMotionState}, stepped in the canvas's frame loop so that
+ * each drawn frame shows the spring at its own time, and renders
+ * {@link MotionGroupVisualizerExact}. It is the batteries-included default;
+ * drop down to `MotionGroupVisualizerExact` when you need to control or
+ * disable smoothing.
  */
 export const MotionGroupVisualizer: React.FC<MotionGroupVisualizerProps> =
   externalizeComponent((props: MotionGroupVisualizerProps) => {
-    const smoothedMotionState = useSmoothedMotionState(
+    const smoothedMotionState = useFrameSmoothedMotionState(
       props.rapidlyChangingMotionState,
     )
 

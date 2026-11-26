@@ -1,5 +1,5 @@
 import { AxiosError } from "axios"
-import { tryStringifyJson } from "./converters"
+import { tryStringifyJson } from "./json"
 
 // Please note: These helper functions also exist in nova.js
 // (with slightly different formatting), and will be unified

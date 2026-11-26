@@ -29,7 +29,7 @@ import type { PageProps } from "."
  * The motion group models of the instance in a list, and the selected model
  * in a 3D view (SupportedRobot or SupportedLinearAxis), in its home joints.
  */
-export function ModelsPage({ instance, motionGroup }: PageProps) {
+export function ModelsPage({ instance, session }: PageProps) {
   const models = useAsync("models", () =>
     instance.nova.api.motionGroupModels.getMotionGroupModels(),
   )
@@ -39,8 +39,8 @@ export function ModelsPage({ instance, motionGroup }: PageProps) {
   // At the start, the model of the selected motion group
   const model =
     selectedModel ??
-    (modelNames.includes(motionGroup.modelFromController)
-      ? motionGroup.modelFromController
+    (modelNames.includes(session.description.motionGroupModel)
+      ? session.description.motionGroupModel
       : modelNames[0])
   const shownNames = modelNames.filter((name) =>
     name.toLowerCase().includes(filter.trim().toLowerCase()),

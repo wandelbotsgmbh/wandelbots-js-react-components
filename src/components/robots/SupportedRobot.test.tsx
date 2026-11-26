@@ -11,8 +11,15 @@ import { afterEach, describe, expect, test, vi } from "vitest"
 import type { ConnectedMotionGroup } from "../../lib/ConnectedMotionGroup"
 import { LinearAxis } from "./LinearAxis"
 import { Robot } from "./Robot"
+import { defaultGetModel } from "./robotModelLogic"
 import { SupportedLinearAxisExact } from "./SupportedLinearAxis"
 import { SupportedRobotExact } from "./SupportedRobot"
+
+// The robots' default model download, counted: it downloads as it is
+vi.mock("./robotModelLogic", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("./robotModelLogic")>()
+  return { ...actual, defaultGetModel: vi.fn(actual.defaultGetModel) }
+})
 
 // useGLTF of drei downloads and parses the model file: here, the test gives
 // the model
@@ -200,6 +207,82 @@ describe("postModelRender", () => {
   })
 })
 
+describe("transparentColor", () => {
+  /** A model with a mesh on its first joint, in a material of its own */
+  function modelWithMesh(name: string, jointCount: number) {
+    const model = modelWithJoints(name, jointCount)
+    const material = new THREE.MeshStandardMaterial({ color: "#808080" })
+    const link = new THREE.Mesh(new THREE.SphereGeometry(0.1), material)
+    link.name = `${name}_link`
+    model.scene.getObjectByName(`${name}_J00`)?.add(link)
+    return { model, material }
+  }
+
+  /** The meshes that draw a colour: shown, with a material that writes it */
+  function coloredMeshes(scene: THREE.Object3D) {
+    const meshes: THREE.Mesh<THREE.BufferGeometry, THREE.Material>[] = []
+    scene.traverseVisible((object) => {
+      if (
+        object instanceof THREE.Mesh &&
+        object.material instanceof THREE.Material &&
+        object.material.colorWrite
+      ) {
+        meshes.push(object)
+      }
+    })
+    return meshes
+  }
+
+  test.each([
+    {
+      name: "robot",
+      draw: (color: string) => (
+        <SupportedRobotExact
+          modelFromController="TestRobot"
+          dhParameters={dhParameters(2, JointTypeEnum.RevoluteJoint)}
+          rapidlyChangingMotionState={standstill([0, 0])}
+          getModel={() => Promise.resolve("blob:robot")}
+          transparentColor={color}
+        />
+      ),
+    },
+    {
+      name: "axis",
+      draw: (color: string) => (
+        <SupportedLinearAxisExact
+          modelFromController="TestAxis"
+          dhParameters={dhParameters(1, JointTypeEnum.PrismaticJoint)}
+          rapidlyChangingMotionState={standstill([0])}
+          getModel={() => Promise.resolve("blob:axis")}
+          transparentColor={color}
+        />
+      ),
+    },
+  ])("draws the $name as a see-through ghost once its model has loaded, and leaves its model's materials to the other robots", async ({
+    name,
+    draw,
+  }) => {
+    const { model, material } = modelWithMesh(name, name === "axis" ? 1 : 2)
+    const download = modelDownload(model)
+    gltf.load = download.load
+
+    const scene = await renderInCanvas(draw("#00ff00"))
+    await act(async () => {
+      download.finish()
+      await nextTask()
+    })
+
+    const colored = coloredMeshes(scene)
+    expect(colored).toHaveLength(1)
+    expect(colored[0]?.material.transparent).toBe(true)
+    expect(
+      (colored[0]?.material as THREE.MeshStandardMaterial).color.getHexString(),
+    ).toBe("00ff00")
+    // Every robot drawn from the same model file shares the model's materials
+    expect(material.colorWrite).toBe(true)
+  })
+})
+
 describe("the model of Robot", () => {
   test("comes from the instance of its ConnectedMotionGroup, with the client of the connection", async () => {
     const nova = new Nova({
@@ -230,6 +313,80 @@ describe("the model of Robot", () => {
     } finally {
       URL.createObjectURL = createObjectURL
     }
+  })
+})
+
+describe("Robot and LinearAxis with a plain motionGroup", () => {
+  /** A NOVA client whose model download gives a file */
+  function novaWithModels() {
+    const nova = new Nova({ instanceUrl: "https://mock.example.com" })
+    const downloadModel = vi
+      .spyOn(nova.api.motionGroupModels, "getMotionGroupGlbModel")
+      .mockResolvedValue(new File([], "model.glb"))
+    return { nova, downloadModel }
+  }
+
+  const createObjectURL = URL.createObjectURL
+  afterEach(() => {
+    URL.createObjectURL = createObjectURL
+    vi.mocked(defaultGetModel).mockClear()
+  })
+
+  test("Robot draws it, with the model downloaded from its connection", async () => {
+    const { nova, downloadModel } = novaWithModels()
+    URL.createObjectURL = vi.fn(() => "blob:plain-robot")
+    gltf.load = () => modelWithJoints("robot", 6)
+
+    // The app's own data: no ConnectedMotionGroup, no session
+    await renderInCanvas(
+      <Robot
+        motionGroup={{
+          nova,
+          modelFromController: "Plain_Robot",
+          dhParameters: dhParameters(6, JointTypeEnum.RevoluteJoint),
+          rapidlyChangingMotionState: standstill([0, 0, 0, 0, 0, 0]),
+        }}
+      />,
+    )
+
+    expect(downloadModel).toHaveBeenCalledWith("Plain_Robot", {
+      responseType: "blob",
+    })
+  })
+
+  // RobotScene passes `robotModelOf(session)`, as an app may its own data: a new object at
+  // every render, of the same robot. A failed download leaves the cache, so
+  // asking again at every render would download again at every render.
+  test.each([
+    ["Robot", Robot, "Every_Render_Robot", 6, JointTypeEnum.RevoluteJoint],
+    [
+      "LinearAxis",
+      LinearAxis,
+      "Every_Render_Axis",
+      1,
+      JointTypeEnum.PrismaticJoint,
+    ],
+  ] as const)("%s asks for its model once when every render gives a new object", async (_, Component, model, joints, type) => {
+    const { nova } = novaWithModels()
+    URL.createObjectURL = vi.fn(() => "blob:every-render")
+    gltf.load = () => modelWithJoints("robot", joints)
+    const robot = (position: number) => (
+      <Component
+        motionGroup={{
+          nova,
+          modelFromController: model,
+          dhParameters: dhParameters(joints, type),
+          rapidlyChangingMotionState: standstill(
+            Array.from({ length: joints }, () => position),
+          ),
+        }}
+      />
+    )
+
+    await renderInCanvas(robot(0.1))
+    await rerender(robot(0.2))
+
+    expect(defaultGetModel).toHaveBeenCalledTimes(1)
   })
 })
 
@@ -274,5 +431,45 @@ describe("the model of a linear axis", () => {
     await rerender(axis(200))
 
     expect(getModel).toHaveBeenCalledTimes(1)
+  })
+})
+
+describe("the joints' rest frames", () => {
+  // The animator writes `rotation.y = theta + q` onto a joint node. That
+  // replaces the node's Euler Y: for a joint authored at an oblique rest
+  // rotation, it only turns the joint about its own axis once the rest
+  // rotation lives in a parent of its own (ported from RobotPad)
+  it("turn a joint about its own axis from its authored rest pose", async () => {
+    const model = modelWithJoints("robot", 1)
+    const joint = model.scene.getObjectByName("robot_J00")
+    joint?.rotation.set(Math.PI / 2, 0, 0)
+    gltf.load = () => model
+    const theta = 0.3
+    const q = 0.5
+
+    const scene = await renderInCanvas(
+      <SupportedRobotExact
+        modelFromController="Oblique_Robot"
+        dhParameters={[
+          { ...dhParameters(1, JointTypeEnum.RevoluteJoint)[0], theta },
+        ]}
+        rapidlyChangingMotionState={standstill([q])}
+        getModel={() => Promise.resolve("blob:oblique")}
+      />,
+    )
+    await act(async () => {
+      await nextTask()
+    })
+
+    const drawn = scene.getObjectByName("robot_J00")
+    expect(scene.getObjectByName("robot_J00_REST")).toBeDefined()
+    const expected = new THREE.Quaternion()
+      .setFromEuler(new THREE.Euler(Math.PI / 2, 0, 0))
+      .multiply(
+        new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), q),
+      )
+    expect(
+      drawn?.getWorldQuaternion(new THREE.Quaternion()).angleTo(expected),
+    ).toBeCloseTo(0)
   })
 })
