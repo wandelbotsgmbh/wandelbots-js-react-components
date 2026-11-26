@@ -41,7 +41,7 @@ pnpm add three three-stdlib @react-three/fiber @react-three/drei
 
 You can also import from the top-level package, but then you'll need to provide all optional dependencies.
 
-The parts use the theme of your app. Create it with `createNovaMuiTheme` of `@wandelbots/mui`:
+The parts use the theme of your app. Without the Nova theme they still work, in the default colours of MUI. For the Nova look, create the theme with `createNovaMuiTheme` of `@wandelbots/mui`:
 
 ```tsx
 import { ThemeProvider } from "@mui/material/styles"
