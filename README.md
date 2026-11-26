@@ -66,15 +66,21 @@ Browse the full icon set at https://wandelbotsgmbh.github.io/nova-design-system/
 **Available Entry Points:**
 
 - **`.`** (Main) — All components. Requires the peer dependencies of `/core` and `/3d`.
-- **`/core`** — The parts without 3D (jogging, `SafetyBar`, `AppHeader`, `LoadingCover`, `NoMotionGroupModal`), the NOVA connections and `JoggingStore`, the motion state helpers and `i18n`. It also exports everything of `/session`.
+- **`/core`** — The parts without 3D (jogging, `RobotHeader`, `CurrentPose`, `SafetyBar`, `AppHeader`, `LoadingCover`, `NoMotionGroupModal`), the NOVA connections and `JoggingStore`, the motion state helpers, the deprecated `ConnectedMotionGroup` and `i18n`. It also exports everything of `/session`.
 - **`/3d`** — The 3D parts (`Robot`, `MotionGroupVisualizer`, `SafetyZonesRenderer`, …). Requires in addition three, three-stdlib, @react-three/fiber and @react-three/drei.
 - **`/session`** (beta) — The library without React: a robot of a NOVA cell, loaded and connected (`loadRobotSession`, `RobotSession` with its description, live state, safety, activation, jogging and Move to), `JoggingStore`, the NOVA connections and the pose math on plain numbers. It loads no React, no MUI and no three.js, and needs only `mobx`.
 - **`/nats`** — A robot's live controller state over NOVA's NATS server (`natsControllerStateSource`, `natsUrlOf`): the `stateSource` of `loadRobotSession` instead of NOVA's websocket. Requires in addition nats.ws; no other entry point loads it.
-- **`/SafetyBar`** — Only `SafetyBar` (also as the default export).
+- **`/SafetyBar`** — Only `SafetyBar` (also as the default export), also for a robot session (`session`).
 - **`/JoggingGizmo`** — Only `JoggingGizmo` (also as the default export) and `JoggingGizmoOrientation`. Requires in addition three and @react-three/fiber.
 - **`/JoggingButtons`** — Only `JoggingButtons` (also as the default export). No 3D packages needed.
 - **`/JoggingJointSlider`** — Only `JoggingJointSlider` (also as the default export). No 3D packages needed.
+- **`/RobotControlPanel`** — The whole Robot control panel, `RobotControlPanel` (also as the default export). It shows the jog gizmo, so it requires in addition three and @react-three/fiber, as `/JoggingGizmo` does.
+- **`/RobotControl`** — `RobotControl` (also as the default export), the Robot control panel of a robot session. Requires in addition three and @react-three/fiber, as `/RobotControlPanel` does.
+- **`/CurrentPose`** — `CurrentPose` (also as the default export), the current pose bar of a robot session. No 3D packages needed.
 - **`/CurrentPoseBar`** — Only `CurrentPoseBar` (also as the default export). No 3D packages needed.
+- **`/RobotHeader`** — `RobotHeader` (also as the default export), and its parts for an app's own header: `SafetyBar`, `ActivationSwitch` and `ConnectionWarning`. No 3D packages needed.
+
+Each part of a robot session (`RobotControl`, `CurrentPose`, and `RobotHeader` with its parts) takes its robot as `session` and follows it by itself: the app passes the session, nothing else. Several robots on a page: each part gets its own.
 
 A component's own entry point brings only what that component needs, e.g. `/JoggingButtons` no three.js and no NOVA client, unlike `/core`. The entry points share their common code, so an app that imports a component from both `/core` and its own entry point gets one copy of it:
 
@@ -105,7 +111,7 @@ All of them load i18next and react-i18next, which come with the library.
 
 ### Without three.js or without React
 
-- **An app without a 3D view** needs no three.js. It takes the robot from `/session` and its parts from the component entry points that draw nothing in 3D: `/CurrentPoseBar`, `/SafetyBar`, `/JoggingButtons` and `/JoggingJointSlider`.
+- **An app without a 3D view** needs no three.js. It takes the robot from `/session` and its parts from the component entry points that draw nothing in 3D: `/RobotHeader`, `/CurrentPose`, `/CurrentPoseBar`, `/SafetyBar`, `/JoggingButtons` and `/JoggingJointSlider`.
 - **`/core` needs three.js installed**, although it draws nothing in 3D: `ConnectedMotionGroup`, which it exports, gives a three.js quaternion (`mountingQuaternion`).
 - **An app without React**, or with a UI of its own, uses `/session` alone (and `/nats`). Of the peer dependencies it needs only `mobx` (see [Peer dependencies](#peer-dependencies)). The parts of a session are MobX stores: such an app follows them with `autorun` or `reaction` of MobX. What it calls returns a promise that rejects when it fails (a jog that may not start rejects with a `JoggingRefusedError`), and what fails in the background goes to `onError`.
 
