@@ -105,7 +105,7 @@ test("switches the pages with the app menu of AppHeader", async ({ page }) => {
     {
       id: "ghosts",
       name: "Ghosts",
-      content: page.getByRole("checkbox", { name: "Target collides" }),
+      content: page.getByText("Grey: a stored pose."),
     },
     {
       id: "layouts",
