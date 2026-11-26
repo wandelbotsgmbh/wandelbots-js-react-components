@@ -3,6 +3,8 @@ import {
   ConnectedMotionGroup,
   JoggerConnection,
   JoggingStore,
+  loadRobotSession,
+  type RobotSession,
 } from "@wandelbots/wandelbots-js-react-components"
 import { useEffect, useState } from "react"
 import type { PlaygroundInstance } from "./instance"
@@ -85,6 +87,37 @@ export function useConnectedMotionGroup(
         cellId: instance.cellId,
       }),
     (motionGroup) => motionGroup.dispose(),
+  )
+}
+
+/**
+ * The RobotSession of a motion group, as an app loads it: its jogging
+ * settings kept in localStorage, a virtual robot not activated on its own
+ */
+export function useLoadedSession(
+  instance: PlaygroundInstance,
+  motionGroupId: string | undefined,
+): Loading<RobotSession> {
+  return useAsync(
+    motionGroupId,
+    async (id) => {
+      const load = loadRobotSession(instance.nova, id, {
+        cellId: instance.cellId,
+        storage: localStorage,
+        // What fails in the background or in a connected component, e.g. a
+        // refused activation: an app shows it, the playground logs it
+        onError: (error) => console.error(`${id}: ${error.message}`, error),
+      })
+      try {
+        return await load.ready
+      } catch (error) {
+        // Closes what the load opened before it failed
+        load.dispose()
+        throw error
+      }
+    },
+    // Closes the session's connections
+    (session) => session.dispose(),
   )
 }
 

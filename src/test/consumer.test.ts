@@ -197,6 +197,9 @@ describe("package exports — deep component imports", () => {
     "JoggingButtons",
     "JoggingJointSlider",
     "CurrentPoseBar",
+    "RobotControlPanel",
+    "RobotControl",
+    "CurrentPose",
   ]
 
   it.each(specs)("%s resolves ESM, CJS, and types", (sub) => {
@@ -222,6 +225,9 @@ describe("MUI-style default + named exports", () => {
     { sub: "JoggingButtons", name: "JoggingButtons" },
     { sub: "JoggingJointSlider", name: "JoggingJointSlider" },
     { sub: "CurrentPoseBar", name: "CurrentPoseBar" },
+    { sub: "RobotControlPanel", name: "RobotControlPanel" },
+    { sub: "RobotControl", name: "RobotControl" },
+    { sub: "CurrentPose", name: "CurrentPose" },
   ]
 
   it.each(cases)("$sub exposes $name as both named and default", async ({
@@ -533,6 +539,8 @@ describe("entry points for an app without a 3D view", () => {
   // build with the session (see above), the NATS source and these components
   it.each([
     "nats",
+    "RobotHeader/index",
+    "CurrentPose/index",
     "CurrentPoseBar/index",
     "SafetyBar/index",
     "JoggingButtons/index",
@@ -591,6 +599,9 @@ describe("component imports bring only what the component needs", () => {
       name: "JoggingJointSlider",
     },
     { sub: "CurrentPoseBar", aggregate: "core", name: "CurrentPoseBar" },
+    { sub: "RobotControlPanel", aggregate: "3d", name: "RobotControlPanel" },
+    { sub: "RobotControl", aggregate: "3d", name: "RobotControl" },
+    { sub: "CurrentPose", aggregate: "core", name: "CurrentPose" },
   ])("$sub and /$aggregate share one $name", async ({
     sub,
     aggregate,
@@ -631,6 +642,9 @@ describe("CJS interop", () => {
     "JoggingButtons",
     "JoggingJointSlider",
     "CurrentPoseBar",
+    "RobotControlPanel",
+    "RobotControl",
+    "CurrentPose",
   ])("Node strict ESM can import %s and its transitive deps", (sub) => {
     // Redirect stderr to stdout so the assertion message surfaces any
     // "Cannot find module" errors from the child process.
@@ -722,6 +736,10 @@ describe("the type declarations", () => {
     "JoggingButtons/index.d.ts",
     "JoggingJointSlider/index.d.ts",
     "CurrentPoseBar/index.d.ts",
+    "CurrentPose/index.d.ts",
+    "RobotControlPanel/index.d.ts",
+    "RobotControl/index.d.ts",
+    "RobotHeader/index.d.ts",
   ])("dist/%s imports only declared packages", (file) => {
     const undeclared = [...typePackagesOf(resolve(distDir, file))].filter(
       (name) => !declared.has(name) && !name.startsWith("node:"),

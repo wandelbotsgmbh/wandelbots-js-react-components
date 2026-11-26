@@ -9,6 +9,7 @@ import { Collider } from '@wandelbots/nova-js/v2';
 import type { CollisionSetup } from '@wandelbots/nova-js/v2';
 import { CoordinateSystem } from '@wandelbots/nova-js/v2';
 import { DHParameter } from '@wandelbots/nova-js/v2';
+import { FunctionComponent } from 'react';
 import type { Group } from 'three';
 import type { i18n as i18n_2 } from 'i18next';
 import { IReactionDisposer } from 'mobx';
@@ -40,6 +41,14 @@ import * as THREE from 'three';
 import type { ThreeElements } from '@react-three/fiber';
 import type { TrajectoryDetailsState } from '@wandelbots/nova-js/v2';
 import { Vector3 } from 'three';
+
+// @public
+export const ActivationSwitch: FunctionComponent<RobotHeaderActivation | ActivationSwitchOfSessionProps>;
+
+// @public
+export type ActivationSwitchOfSessionProps = {
+    session: RobotSession | null | undefined;
+};
 
 // @public
 export const AppHeader: ((props: AppHeaderProps) => JSX.Element) & {
@@ -87,7 +96,7 @@ export interface AxisControlComponentColors {
 // @public (undocumented)
 export function CollisionSceneRenderer(input: CollisionSceneRendererProps): JSX.Element;
 
-// @public
+// @public @deprecated
 export class ConnectedMotionGroup {
     constructor(connection: NovaConnection, controller: RobotControllerState, motionGroup: MotionGroupState, initialMotionState: MotionGroupState, motionStateSocket: AutoReconnectingWebsocket, isVirtual: boolean, tcps: RobotTcpLike[], description: MotionGroupDescription, initialControllerState: RobotControllerState, controllerStateSocket: AutoReconnectingWebsocket, cellId?: string);
     // (undocumented)
@@ -167,7 +176,7 @@ export class ConnectedMotionGroup {
     toggleActivation(): void;
 }
 
-// @public (undocumented)
+// @public @deprecated (undocumented)
 export type ConnectedMotionGroupOptions = {
     cellId?: string;
 };
@@ -177,6 +186,27 @@ export type ConnectionLogger = {
     info: (message: string, data?: unknown) => void;
     debug: (message: string, data?: unknown) => void;
     warn: (message: string, data?: unknown) => void;
+};
+
+// @public
+export type ConnectionQuality = "good" | "struggling" | "critical";
+
+// @public
+export const ConnectionWarning: FunctionComponent<ConnectionWarningProps>;
+
+// @public
+export type ConnectionWarningProps = Partial<ConnectionWarningState> & {
+    session?: RobotSession | null;
+};
+
+// @public
+export type ConnectionWarningState = {
+    quality: ConnectionQuality;
+    lastMessageAt: number;
+    lastInvalidMessage?: {
+        receivedAt: number;
+        data: unknown;
+    } | null;
 };
 
 // @public
@@ -213,6 +243,9 @@ export class ControllerStateStream {
 }
 
 // @public
+export const CurrentPose: FunctionComponent<CurrentPoseProps>;
+
+// @public
 export const CurrentPoseBar: (input: CurrentPoseBarProps) => JSX.Element;
 
 // @public
@@ -229,6 +262,11 @@ export type CurrentPoseBarProps = {
 
 // @public
 export type CurrentPoseBarState = JoggingDetailsState["kind"] | TrajectoryDetailsState["kind"];
+
+// @public
+export type CurrentPoseProps = Partial<CurrentPoseBarProps> & {
+    session: RobotSession;
+};
 
 // @public
 export function defaultGetModel(modelFromController: string, connection?: NovaConnection): Promise<string>;
@@ -460,12 +498,12 @@ export const JoggingJointValueControl: ((input: JoggingJointValueControlProps) =
     displayName: string;
 };
 
-// @public
+// @public @deprecated
 export const JoggingPanel: ((props: JoggingPanelProps) => JSX.Element) & {
     displayName: string;
 };
 
-// @public (undocumented)
+// @public @deprecated (undocumented)
 export type JoggingPanelProps = {
     nova: NovaConnection;
     motionGroupId: string;
@@ -477,7 +515,7 @@ export type JoggingPanelProps = {
     store?: JoggingStore;
 };
 
-// @public (undocumented)
+// @public @deprecated (undocumented)
 export type JoggingPanelTabId = "cartesian" | "joint";
 
 // @public
@@ -495,7 +533,9 @@ export type JoggingRefusedReason = RobotNotMoveableReason | {
 // @public (undocumented)
 export class JoggingStore {
     constructor(jogger: JoggerConnection, coordSystems: CoordinateSystem[], motionGroupDescription: MotionGroupDescription, tcps: RobotTcp[], inverseSolverValue: string | null | undefined, options?: JoggingStoreOptions);
+    // @deprecated
     activate(): Promise<JoggerConnection>;
+    // @deprecated
     get activeCoordSystemId(): string;
     get activeDiscreteIncrement(): {
         id: string;
@@ -575,6 +615,7 @@ export class JoggingStore {
     // (undocumented)
     readonly motionGroupDescription: MotionGroupDescription;
     onBeforeActivate: (() => void | Promise<void>) | null;
+    // @deprecated
     onTabChange(_event: React.SyntheticEvent, newValue: number): void;
     requestTcpChange(tcpId: string): Promise<void>;
     rotationVelocityDegPerSec: number;
@@ -588,7 +629,7 @@ export class JoggingStore {
     // (undocumented)
     selectedTabId: TabType;
     selectedTcpId: string;
-    // (undocumented)
+    // @deprecated (undocumented)
     setCurrentIncrementJog(incrementJog: IncrementJogInProgress | null): void;
     // (undocumented)
     setLastJogError(message: string | null): void;
@@ -605,20 +646,30 @@ export class JoggingStore {
     // @deprecated (undocumented)
     setSelectedTcpId(id: string): void;
     setVelocityFromSlider(velocity: number, useDegree: boolean): void;
+    // @deprecated
     showCoordSystemSelect: boolean;
+    // @deprecated
     showIncrementSelect: boolean;
+    // @deprecated
     showJointsLegend: boolean;
+    // @deprecated
     showOrientationSelect: boolean;
+    // @deprecated
     showTabIcons: boolean;
+    // @deprecated
     showTcpSelect: boolean;
+    // @deprecated
     showVelocityLegend: boolean;
+    // @deprecated
     showVelocitySliderLabel: boolean;
     startCartesianJogging(motion: CartesianMotionType, axis: JoggingAxis, direction: JoggingDirection): Promise<void>;
     startJointJogging(joint: number, direction: JoggingDirection): Promise<void>;
     stopJogging(): Promise<void>;
+    // @deprecated
     get tabIndex(): number;
+    // @deprecated
     get tabs(): [JoggingTab, ...JoggingTab[]];
-    // (undocumented)
+    // @deprecated (undocumented)
     get tabsById(): Record<string, JoggingTab>;
     tcpChangeInProgress: boolean;
     tcpPoseIn(tcpId: string, coordinateSystemId: string): Pose | undefined;
@@ -649,6 +700,9 @@ export type JogHandle = {
     axis: JogAxis;
     direction: JogDirection;
 };
+
+// @public
+export type JogMotion = "translate" | "rotate";
 
 // @public
 export function JointLimitGizmo(input: JointLimitGizmoProps): JSX.Element;
@@ -876,9 +930,99 @@ export class RobotActivation {
 export type RobotActivationState = "inactive" | "activating" | "deactivating" | "active";
 
 // @public
+export const RobotControl: FunctionComponent<RobotControlProps>;
+
+// @public
+export type RobotControlIncrements = {
+    steps: Record<JogMotion, number[]>;
+    onStep: (motion: JogMotion, axis: JogAxis, direction: JogDirection, distance: number) => void;
+    running?: JogHandle | null;
+    onStepStop?: () => void;
+    step?: Partial<Record<JogMotion, number>>;
+    onStepChange?: (motion: JogMotion, distance: number) => void;
+};
+
+// @public
+export type RobotControlJogMode = "continuous" | "increment";
+
+// @public
+export type RobotControlJoint = {
+    value: number;
+    min?: number;
+    max?: number;
+    name?: string;
+};
+
+// @public
+export type RobotControlJoints = {
+    joints: RobotControlJoint[];
+    linear?: boolean;
+    velocity: RobotControlVelocity;
+    onVelocityChange: (value: number) => void;
+    onJogStart: (index: number, direction: JogDirection) => void;
+    onJogStop: () => void;
+};
+
+// @public
+export type RobotControlJointTarget = {
+    joints: number[];
+};
+
+// @public
+export type RobotControlMoveState = "idle" | "planning" | "planned" | "moving" | "stopping";
+
+// @public
+export type RobotControlMoveTo = {
+    getCurrentPose: () => RobotControlPose | null;
+    getCurrentJoints?: () => number[] | null;
+    frame?: RobotControlSelect;
+    onTargetChange: (target: RobotControlTarget | null) => void;
+    state: RobotControlMoveState;
+    error?: string | null;
+    notMoveableReason?: string | null;
+    onMoveStart: (target: RobotControlTarget) => void;
+    onMoveStop: () => void;
+};
+
+// @public
 export type RobotControlOption = {
     id: string;
     label: string;
+};
+
+// @public
+export type RobotControlOptions = {
+    disabled?: boolean;
+    gizmoOrientation?: RobotControlPanelProps["gizmoOrientation"];
+};
+
+// @public
+export const RobotControlPanel: (input: RobotControlPanelProps) => JSX.Element;
+
+// @public
+export type RobotControlPanelProps = {
+    onClose?: () => void;
+    disabled?: boolean;
+    jogDisabled?: boolean;
+    jogDisabledReason?: string;
+    onJogRetry?: () => void;
+    cartesian?: boolean;
+    tab?: RobotControlTab;
+    onTabChange?: (tab: RobotControlTab) => void;
+    jogMode?: RobotControlJogMode;
+    onJogModeChange?: (mode: RobotControlJogMode) => void;
+    tcp?: RobotControlSelect;
+    jogFrame?: RobotControlSelect;
+    velocity: Record<JogMotion, RobotControlVelocity>;
+    onVelocityChange: (motion: JogMotion, value: number) => void;
+    onJogStart: (motion: JogMotion, axis: JogAxis, direction: JogDirection) => void;
+    onJogStop: () => void;
+    increments?: RobotControlIncrements;
+    gizmoOrientation?: RefObject<Quaternion | null>;
+    gizmoFrameQuaternion?: Quaternion | (() => Quaternion);
+    joints?: RobotControlJoints;
+    moveTo?: RobotControlMoveTo;
+    sx?: SxProps<Theme>;
 };
 
 // @public
@@ -888,10 +1032,28 @@ export type RobotControlPose = {
 };
 
 // @public
+export type RobotControlProps = RobotControlOptions & Partial<RobotControlPanelProps> & {
+    session: RobotSession;
+};
+
+// @public
 export type RobotControlSelect = {
     options: RobotControlOption[];
     value: string;
     onChange: (id: string) => void;
+};
+
+// @public
+export type RobotControlTab = JogMotion | "joint" | "moveTo";
+
+// @public
+export type RobotControlTarget = RobotControlPose | RobotControlJointTarget;
+
+// @public
+export type RobotControlVelocity = {
+    value: number;
+    min: number;
+    max: number;
 };
 
 // @public
@@ -933,6 +1095,34 @@ export class RobotDescription {
         name: string;
     }[];
 }
+
+// @public
+export const RobotHeader: (input: RobotHeaderProps) => JSX.Element;
+
+// @public
+export type RobotHeaderActivation = {
+    state: RobotHeaderActivationState;
+    disabled?: boolean;
+    onToggle: () => void;
+};
+
+// @public
+export type RobotHeaderActivationState = "inactive" | "activating" | "active" | "deactivating";
+
+// @public
+export type RobotHeaderProps = {
+    appIcon?: ReactNode;
+    appName: string;
+    apps?: AppItem[];
+    onAppSelect?: (app: AppItem) => void;
+    onSearch?: () => void;
+    motionGroup?: RobotControlSelect;
+    session?: RobotSession | null;
+    safety?: Pick<SafetyBarProps, "isVirtual" | "motionGroupId" | "operationMode" | "safetyState">;
+    activation?: RobotHeaderActivation;
+    actions?: ReactNode;
+    sx?: SxProps<Theme>;
+};
 
 // @public
 export class RobotLiveState {
@@ -1181,7 +1371,7 @@ export class RobotTargetPose {
     get stagedPose(): RobotPose | null;
 }
 
-// @public
+// @public @deprecated
 export type RobotTcpLike = {
     id: string;
     readable_name: string;
@@ -1189,9 +1379,14 @@ export type RobotTcpLike = {
     orientation: Vector3Simple;
 };
 
-// @public (undocumented)
-export const SafetyBar: ((input: SafetyBarProps) => JSX.Element) & {
+// @public
+export const SafetyBar: ((props: SafetyBarProps | SafetyBarOfSessionProps) => JSX.Element | null) & {
     displayName: string;
+};
+
+// @public
+export type SafetyBarOfSessionProps = Partial<SafetyBarProps> & {
+    session: RobotSession | null | undefined;
 };
 
 // @public (undocumented)
@@ -1347,12 +1542,12 @@ export class ValueInterpolator {
 // @public (undocumented)
 export type Vector3Simple = [number, number, number];
 
-// @public
+// @public @deprecated
 export const VelocitySlider: ((props: VelocitySliderProps) => JSX.Element) & {
     displayName: string;
 };
 
-// @public
+// @public @deprecated
 export function VelocitySliderLabel(input: VelocitySliderLabelProps): JSX.Element;
 
 // @public

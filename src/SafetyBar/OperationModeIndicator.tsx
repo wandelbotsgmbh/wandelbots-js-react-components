@@ -26,12 +26,17 @@ export const OperationModeIndicator = observer(
     const { t } = useTranslation()
     const theme = useTheme()
     const componentId = useId()
+    /** The indicator's name: what it shows, and the mode it shows */
+    const named = (mode: string) =>
+      `${t("SafetyBar.OperationMode.ti")}: ${mode}`
 
     switch (operationMode) {
       case "OPERATION_MODE_AUTO":
         return (
           <IndicatorWithExplanation
             id={`operation-mode-auto-${componentId}`}
+            testId="operation-mode-indicator"
+            accessibleName={named(t("SafetyBar.OperationMode.Automatic.ti"))}
             icon={OperationModeAutomaticIcon}
             title={t("SafetyBar.OperationMode.ti")}
             name={t("SafetyBar.OperationMode.Automatic.ti")}
@@ -53,6 +58,8 @@ export const OperationModeIndicator = observer(
         return (
           <IndicatorWithExplanation
             id={`operation-mode-manual-${componentId}`}
+            testId="operation-mode-indicator"
+            accessibleName={named(t("SafetyBar.OperationMode.Manual.lb"))}
             icon={OperationModeManualIcon}
             color={theme.palette.warning.main}
             title={t("SafetyBar.OperationMode.ti")}
@@ -75,6 +82,8 @@ export const OperationModeIndicator = observer(
         return (
           <IndicatorWithExplanation
             id={`operation-mode-error-${componentId}`}
+            testId="operation-mode-indicator"
+            accessibleName={named(t("SafetyBar.OperationMode.Error.lb"))}
             icon={OperationModeErrorIcon}
             color={theme.palette.warning.main}
             title={t("SafetyBar.OperationMode.ti")}

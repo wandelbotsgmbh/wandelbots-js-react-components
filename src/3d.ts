@@ -24,6 +24,30 @@ export type {
   JogHandle,
 } from "./components/jogging/jogHandle"
 export type { JogControlsProps } from "./components/jogging/useJogControls"
+export {
+  type JogMotion,
+  RobotControlPanel,
+  type RobotControlIncrements,
+  type RobotControlJogMode,
+  type RobotControlJoint,
+  type RobotControlJoints,
+  type RobotControlJointTarget,
+  type RobotControlMoveState,
+  type RobotControlMoveTo,
+  type RobotControlOption,
+  type RobotControlPanelProps,
+  type RobotControlPose,
+  type RobotControlSelect,
+  type RobotControlTab,
+  type RobotControlTarget,
+  type RobotControlVelocity,
+} from "./components/robotControl/RobotControlPanel"
+// The panel of a robot session, ready to use, and its props
+export {
+  RobotControl,
+  type RobotControlProps,
+} from "./components/robotControl/RobotControl"
+export type { RobotControlOptions } from "./components/robotControl/useRobotControlProps"
 // Where the 3D views found that the browser cannot draw 3D
 export type { WebGLUnavailableContext } from "./components/utils/useWebGLRenderer"
 export * from "./components/robots/LinearAxis"

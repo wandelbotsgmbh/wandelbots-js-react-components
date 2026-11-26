@@ -214,41 +214,61 @@ export class JoggingStore {
 
   /**
    * Whether to show the coordinate system select dropdown in the UI
+   *
+   * @deprecated Only `JoggingPanel` (deprecated) reads it. `RobotControlPanel`
+   * shows a select where it gets one, e.g. `jogFrame`.
    */
   showCoordSystemSelect: boolean = false
 
   /**
    * Whether to show the TCP select dropdown in the UI
+   *
+   * @deprecated Only `JoggingPanel` (deprecated) reads it. `RobotControlPanel`
+   * shows the TCP select when it gets `tcp`.
    */
   showTcpSelect: boolean = true
 
   /**
    * Whether to show the orientation select dropdown in the UI
+   *
+   * @deprecated Only `JoggingPanel` (deprecated) reads it. `RobotControlPanel`
+   * has the tool among the frames of `jogFrame`.
    */
   showOrientationSelect: boolean = true
 
   /**
    * Whether to show the increment select dropdown in the UI
+   *
+   * @deprecated Only `JoggingPanel` (deprecated) reads it. `RobotControlPanel`
+   * offers the steps when it gets `increments`.
    */
   showIncrementSelect: boolean = true
 
   /**
    * Whether to show icons in the jogging tabs
+   *
+   * @deprecated Only `JoggingPanel` (deprecated) reads it
    */
   showTabIcons: boolean = false
 
   /**
    * Whether to show the label to the right of the velocity slider
+   *
+   * @deprecated Only `VelocitySlider` (deprecated) reads it
    */
   showVelocitySliderLabel: boolean = true
 
   /**
    * Whether to show the legend before the slider
+   *
+   * @deprecated Only `VelocitySlider` (deprecated) reads it
    */
   showVelocityLegend: boolean = false
 
   /**
    * Whether to show the legend before the joints
+   *
+   * @deprecated Only `JoggingPanel` (deprecated) reads it
    */
   showJointsLegend: boolean = false
 
@@ -513,6 +533,11 @@ export class JoggingStore {
    * {@link JoggingStore.startJointJogging} and
    * {@link JoggingStore.runIncrementalCartesianJog} activate what they need
    * themselves.
+   *
+   * @deprecated Only `JoggingPanel` (deprecated) calls it: it activates for
+   * the panel's tab. Jog with the methods above, which activate for their
+   * jog; a robot session hands the robot to jogging with
+   * `session.ensureMovementOwnership("jogging")`.
    */
   async activate() {
     if (this.currentTab.id !== "cartesian") {
@@ -1002,6 +1027,10 @@ export class JoggingStore {
   /**
    * The tabs of `JoggingPanel`: Cartesian (where the robot can jog its TCP)
    * and Joints
+   *
+   * @deprecated Only `JoggingPanel` (deprecated) reads it. Whether the robot
+   * can jog its TCP is {@link JoggingStore.canJogCartesian}; the tab is
+   * {@link JoggingStore.selectedTabId}.
    */
   get tabs(): [JoggingTab, ...JoggingTab[]] {
     const tempTabs: [JoggingTab, ...JoggingTab[]] = [
@@ -1035,6 +1064,7 @@ export class JoggingStore {
     return keyBy(this.incrementOptions, (o) => o.id)
   }
 
+  /** @deprecated See {@link JoggingStore.tabs} */
   get tabsById(): Record<string, JoggingTab> {
     return keyBy(this.tabs, (t) => t.id)
   }
@@ -1050,6 +1080,8 @@ export class JoggingStore {
   /**
    * The index of the selected tab in {@link JoggingStore.tabs}, for the MUI
    * `Tabs` of `JoggingPanel`
+   *
+   * @deprecated See {@link JoggingStore.tabs}
    */
   get tabIndex() {
     return this.tabs.indexOf(this.currentTab)
@@ -1063,6 +1095,11 @@ export class JoggingStore {
    * The id of the coordinate system to use for jogging.
    * If in tool orientation, this is set to "tool", not the
    * selected coordinate system.
+   *
+   * @deprecated Only `JoggingPanel` (deprecated) reads it: it jogs in the
+   * coordinate system that the values are shown in. The store's own jogs
+   * move along {@link JoggingStore.jogCoordSystem} ("Move relative to"), or
+   * along the tool's axes in tool orientation.
    */
   get activeCoordSystemId() {
     return this.selectedOrientation === "tool"
@@ -1175,6 +1212,10 @@ export class JoggingStore {
 
   /**
    * The `onChange` of the MUI `Tabs` of `JoggingPanel`
+   *
+   * @deprecated Only `JoggingPanel` (deprecated) calls it. Set
+   * {@link JoggingStore.selectedTabId}; `RobotControl` does that for the tabs
+   * of its panel.
    */
   onTabChange(_event: React.SyntheticEvent, newValue: number) {
     const tab = this.tabs[newValue] || this.tabs[0]
@@ -1323,6 +1364,11 @@ export class JoggingStore {
     this.selectedIncrementId = id
   }
 
+  /**
+   * @deprecated Only `JoggingPanel` (deprecated) calls it, for the steps it
+   * runs itself. {@link JoggingStore.runIncrementalCartesianJog} sets
+   * {@link JoggingStore.incrementJogInProgress} for its step.
+   */
   setCurrentIncrementJog(incrementJog: IncrementJogInProgress | null) {
     this.incrementJogInProgress = incrementJog
   }

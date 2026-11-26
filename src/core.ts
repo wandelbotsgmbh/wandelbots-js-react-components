@@ -6,6 +6,17 @@
 import "@wandelbots/mui"
 
 export * from "./components/AppHeader"
+// A warning that the robot's live state stopped arriving, e.g. in RobotHeader
+export {
+  type ConnectionQuality,
+  ConnectionWarning,
+  type ConnectionWarningProps,
+  type ConnectionWarningState,
+} from "./components/connectionWarning/ConnectionWarning"
+export {
+  CurrentPose,
+  type CurrentPoseProps,
+} from "./components/currentPoseBar/CurrentPose"
 export {
   CurrentPoseBar,
   type CurrentPoseBarProps,
@@ -40,13 +51,25 @@ export type {
   JogHandle,
 } from "./components/jogging/jogHandle"
 export type { JogControlsProps } from "./components/jogging/useJogControls"
-// The data types of the pose bar, without three.js
+export * from "./components/LoadingCover"
+export {
+  RobotHeader,
+  type RobotHeaderActivation,
+  type RobotHeaderActivationState,
+  type RobotHeaderProps,
+} from "./components/robotHeader/RobotHeader"
+// The header's activation switch, also for an app's own header (SafetyBar
+// is below)
+export {
+  ActivationSwitch,
+  type ActivationSwitchOfSessionProps,
+} from "./components/robotHeader/ActivationSwitch"
+// The data types of the pose bar, without three.js; also in /3d with the panel
 export type {
   RobotControlOption,
   RobotControlPose,
   RobotControlSelect,
 } from "./components/robotControl/robotControlTypes"
-export * from "./components/LoadingCover"
 export * from "./components/modal/NoMotionGroupModal"
 export * from "./components/utils/interpolation"
 export * from "./components/utils/useSmoothedMotionState"

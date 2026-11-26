@@ -130,6 +130,36 @@ const PARTS: Part[] = [
       "react-i18next",
     ],
   },
+  {
+    // The panel with plain props; RobotControl is the same panel filled from
+    // a robot session, so it needs a session and has no row here
+    entry: "RobotControlPanel",
+    element: ({ RobotControlPanel }) => (
+      <RobotControlPanel
+        velocity={{
+          translate: { value: 50, min: 1, max: 250 },
+          rotate: { value: 10, min: 1, max: 60 },
+        }}
+        onVelocityChange={() => {}}
+        onJogStart={() => {}}
+        onJogStop={() => {}}
+      />
+    ),
+    // It shows the jog gizmo: see JoggingGizmo
+    withoutWebGL: true,
+    packages: [
+      "react",
+      "@mui/material",
+      "@wandelbots/mui",
+      "@wandelbots/icons",
+      "@react-three/fiber",
+      "three",
+      "@wandelbots/design-tokens",
+      "i18next",
+      "i18next-browser-languagedetector",
+      "react-i18next",
+    ],
+  },
 ]
 
 /** The packages that a file of dist/ loads, with every relative import followed */

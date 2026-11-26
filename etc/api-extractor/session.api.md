@@ -197,7 +197,9 @@ export type JoggingRefusedReason = RobotNotMoveableReason | {
 // @public (undocumented)
 export class JoggingStore {
     constructor(jogger: JoggerConnection, coordSystems: CoordinateSystem[], motionGroupDescription: MotionGroupDescription, tcps: RobotTcp[], inverseSolverValue: string | null | undefined, options?: JoggingStoreOptions);
+    // @deprecated
     activate(): Promise<JoggerConnection>;
+    // @deprecated
     get activeCoordSystemId(): string;
     get activeDiscreteIncrement(): {
         id: string;
@@ -277,6 +279,7 @@ export class JoggingStore {
     // (undocumented)
     readonly motionGroupDescription: MotionGroupDescription;
     onBeforeActivate: (() => void | Promise<void>) | null;
+    // @deprecated
     onTabChange(_event: React.SyntheticEvent, newValue: number): void;
     requestTcpChange(tcpId: string): Promise<void>;
     rotationVelocityDegPerSec: number;
@@ -290,7 +293,7 @@ export class JoggingStore {
     // (undocumented)
     selectedTabId: TabType;
     selectedTcpId: string;
-    // (undocumented)
+    // @deprecated (undocumented)
     setCurrentIncrementJog(incrementJog: IncrementJogInProgress | null): void;
     // (undocumented)
     setLastJogError(message: string | null): void;
@@ -307,20 +310,30 @@ export class JoggingStore {
     // @deprecated (undocumented)
     setSelectedTcpId(id: string): void;
     setVelocityFromSlider(velocity: number, useDegree: boolean): void;
+    // @deprecated
     showCoordSystemSelect: boolean;
+    // @deprecated
     showIncrementSelect: boolean;
+    // @deprecated
     showJointsLegend: boolean;
+    // @deprecated
     showOrientationSelect: boolean;
+    // @deprecated
     showTabIcons: boolean;
+    // @deprecated
     showTcpSelect: boolean;
+    // @deprecated
     showVelocityLegend: boolean;
+    // @deprecated
     showVelocitySliderLabel: boolean;
     startCartesianJogging(motion: CartesianMotionType, axis: JoggingAxis, direction: JoggingDirection): Promise<void>;
     startJointJogging(joint: number, direction: JoggingDirection): Promise<void>;
     stopJogging(): Promise<void>;
+    // @deprecated
     get tabIndex(): number;
+    // @deprecated
     get tabs(): [JoggingTab, ...JoggingTab[]];
-    // (undocumented)
+    // @deprecated (undocumented)
     get tabsById(): Record<string, JoggingTab>;
     tcpChangeInProgress: boolean;
     tcpPoseIn(tcpId: string, coordinateSystemId: string): Pose | undefined;

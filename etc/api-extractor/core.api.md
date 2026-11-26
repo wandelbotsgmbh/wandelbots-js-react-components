@@ -8,6 +8,7 @@ import { AutoReconnectingWebsocket } from '@wandelbots/nova-js';
 import { Collider } from '@wandelbots/nova-js/v2';
 import { CoordinateSystem } from '@wandelbots/nova-js/v2';
 import { DHParameter } from '@wandelbots/nova-js/v2';
+import { FunctionComponent } from 'react';
 import type { i18n as i18n_2 } from 'i18next';
 import { IReactionDisposer } from 'mobx';
 import type { JoggingDetailsState } from '@wandelbots/nova-js/v2';
@@ -33,6 +34,14 @@ import { TcpOffset } from '@wandelbots/nova-js/v2';
 import type { Theme } from '@mui/material/styles';
 import * as THREE from 'three';
 import type { TrajectoryDetailsState } from '@wandelbots/nova-js/v2';
+
+// @public
+export const ActivationSwitch: FunctionComponent<RobotHeaderActivation | ActivationSwitchOfSessionProps>;
+
+// @public
+export type ActivationSwitchOfSessionProps = {
+    session: RobotSession | null | undefined;
+};
 
 // @public
 export const AppHeader: ((props: AppHeaderProps) => JSX.Element) & {
@@ -77,7 +86,7 @@ export interface AxisControlComponentColors {
     labelColor?: string;
 }
 
-// @public
+// @public @deprecated
 export class ConnectedMotionGroup {
     constructor(connection: NovaConnection, controller: RobotControllerState, motionGroup: MotionGroupState, initialMotionState: MotionGroupState, motionStateSocket: AutoReconnectingWebsocket, isVirtual: boolean, tcps: RobotTcpLike[], description: MotionGroupDescription, initialControllerState: RobotControllerState, controllerStateSocket: AutoReconnectingWebsocket, cellId?: string);
     // (undocumented)
@@ -157,7 +166,7 @@ export class ConnectedMotionGroup {
     toggleActivation(): void;
 }
 
-// @public (undocumented)
+// @public @deprecated (undocumented)
 export type ConnectedMotionGroupOptions = {
     cellId?: string;
 };
@@ -167,6 +176,27 @@ export type ConnectionLogger = {
     info: (message: string, data?: unknown) => void;
     debug: (message: string, data?: unknown) => void;
     warn: (message: string, data?: unknown) => void;
+};
+
+// @public
+export type ConnectionQuality = "good" | "struggling" | "critical";
+
+// @public
+export const ConnectionWarning: FunctionComponent<ConnectionWarningProps>;
+
+// @public
+export type ConnectionWarningProps = Partial<ConnectionWarningState> & {
+    session?: RobotSession | null;
+};
+
+// @public
+export type ConnectionWarningState = {
+    quality: ConnectionQuality;
+    lastMessageAt: number;
+    lastInvalidMessage?: {
+        receivedAt: number;
+        data: unknown;
+    } | null;
 };
 
 // @public
@@ -203,6 +233,9 @@ export class ControllerStateStream {
 }
 
 // @public
+export const CurrentPose: FunctionComponent<CurrentPoseProps>;
+
+// @public
 export const CurrentPoseBar: (input: CurrentPoseBarProps) => JSX.Element;
 
 // @public
@@ -219,6 +252,11 @@ export type CurrentPoseBarProps = {
 
 // @public
 export type CurrentPoseBarState = JoggingDetailsState["kind"] | TrajectoryDetailsState["kind"];
+
+// @public
+export type CurrentPoseProps = Partial<CurrentPoseBarProps> & {
+    session: RobotSession;
+};
 
 // @public
 export function deriveSelectedTcpPose(input: {
@@ -405,12 +443,12 @@ export const JoggingJointValueControl: ((input: JoggingJointValueControlProps) =
     displayName: string;
 };
 
-// @public
+// @public @deprecated
 export const JoggingPanel: ((props: JoggingPanelProps) => JSX.Element) & {
     displayName: string;
 };
 
-// @public (undocumented)
+// @public @deprecated (undocumented)
 export type JoggingPanelProps = {
     nova: NovaConnection;
     motionGroupId: string;
@@ -422,7 +460,7 @@ export type JoggingPanelProps = {
     store?: JoggingStore;
 };
 
-// @public (undocumented)
+// @public @deprecated (undocumented)
 export type JoggingPanelTabId = "cartesian" | "joint";
 
 // @public
@@ -440,7 +478,9 @@ export type JoggingRefusedReason = RobotNotMoveableReason | {
 // @public (undocumented)
 export class JoggingStore {
     constructor(jogger: JoggerConnection, coordSystems: CoordinateSystem[], motionGroupDescription: MotionGroupDescription, tcps: RobotTcp[], inverseSolverValue: string | null | undefined, options?: JoggingStoreOptions);
+    // @deprecated
     activate(): Promise<JoggerConnection>;
+    // @deprecated
     get activeCoordSystemId(): string;
     get activeDiscreteIncrement(): {
         id: string;
@@ -520,6 +560,7 @@ export class JoggingStore {
     // (undocumented)
     readonly motionGroupDescription: MotionGroupDescription;
     onBeforeActivate: (() => void | Promise<void>) | null;
+    // @deprecated
     onTabChange(_event: React.SyntheticEvent, newValue: number): void;
     requestTcpChange(tcpId: string): Promise<void>;
     rotationVelocityDegPerSec: number;
@@ -533,7 +574,7 @@ export class JoggingStore {
     // (undocumented)
     selectedTabId: TabType;
     selectedTcpId: string;
-    // (undocumented)
+    // @deprecated (undocumented)
     setCurrentIncrementJog(incrementJog: IncrementJogInProgress | null): void;
     // (undocumented)
     setLastJogError(message: string | null): void;
@@ -550,20 +591,30 @@ export class JoggingStore {
     // @deprecated (undocumented)
     setSelectedTcpId(id: string): void;
     setVelocityFromSlider(velocity: number, useDegree: boolean): void;
+    // @deprecated
     showCoordSystemSelect: boolean;
+    // @deprecated
     showIncrementSelect: boolean;
+    // @deprecated
     showJointsLegend: boolean;
+    // @deprecated
     showOrientationSelect: boolean;
+    // @deprecated
     showTabIcons: boolean;
+    // @deprecated
     showTcpSelect: boolean;
+    // @deprecated
     showVelocityLegend: boolean;
+    // @deprecated
     showVelocitySliderLabel: boolean;
     startCartesianJogging(motion: CartesianMotionType, axis: JoggingAxis, direction: JoggingDirection): Promise<void>;
     startJointJogging(joint: number, direction: JoggingDirection): Promise<void>;
     stopJogging(): Promise<void>;
+    // @deprecated
     get tabIndex(): number;
+    // @deprecated
     get tabs(): [JoggingTab, ...JoggingTab[]];
-    // (undocumented)
+    // @deprecated (undocumented)
     get tabsById(): Record<string, JoggingTab>;
     tcpChangeInProgress: boolean;
     tcpPoseIn(tcpId: string, coordinateSystemId: string): Pose | undefined;
@@ -814,6 +865,34 @@ export class RobotDescription {
 }
 
 // @public
+export const RobotHeader: (input: RobotHeaderProps) => JSX.Element;
+
+// @public
+export type RobotHeaderActivation = {
+    state: RobotHeaderActivationState;
+    disabled?: boolean;
+    onToggle: () => void;
+};
+
+// @public
+export type RobotHeaderActivationState = "inactive" | "activating" | "active" | "deactivating";
+
+// @public
+export type RobotHeaderProps = {
+    appIcon?: ReactNode;
+    appName: string;
+    apps?: AppItem[];
+    onAppSelect?: (app: AppItem) => void;
+    onSearch?: () => void;
+    motionGroup?: RobotControlSelect;
+    session?: RobotSession | null;
+    safety?: Pick<SafetyBarProps, "isVirtual" | "motionGroupId" | "operationMode" | "safetyState">;
+    activation?: RobotHeaderActivation;
+    actions?: ReactNode;
+    sx?: SxProps<Theme>;
+};
+
+// @public
 export class RobotLiveState {
     // (undocumented)
     get connectionQuality(): "good" | "struggling" | "critical";
@@ -1051,7 +1130,7 @@ export class RobotTargetPose {
     get stagedPose(): RobotPose | null;
 }
 
-// @public
+// @public @deprecated
 export type RobotTcpLike = {
     id: string;
     readable_name: string;
@@ -1059,9 +1138,14 @@ export type RobotTcpLike = {
     orientation: Vector3Simple;
 };
 
-// @public (undocumented)
-export const SafetyBar: ((input: SafetyBarProps) => JSX.Element) & {
+// @public
+export const SafetyBar: ((props: SafetyBarProps | SafetyBarOfSessionProps) => JSX.Element | null) & {
     displayName: string;
+};
+
+// @public
+export type SafetyBarOfSessionProps = Partial<SafetyBarProps> & {
+    session: RobotSession | null | undefined;
 };
 
 // @public (undocumented)
@@ -1160,12 +1244,12 @@ export class ValueInterpolator {
 // @public (undocumented)
 export type Vector3Simple = [number, number, number];
 
-// @public
+// @public @deprecated
 export const VelocitySlider: ((props: VelocitySliderProps) => JSX.Element) & {
     displayName: string;
 };
 
-// @public
+// @public @deprecated
 export function VelocitySliderLabel(input: VelocitySliderLabelProps): JSX.Element;
 
 // (No @packageDocumentation comment for this package)

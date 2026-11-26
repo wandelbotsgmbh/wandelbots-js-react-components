@@ -42,7 +42,6 @@ export const REASONS: Record<string, string> = {
     "The model download that `Robot` uses by default, for an app that wraps it",
   useInterpolation:
     "Smooths a stream of joint values for a 3D view of the app's own",
-  JoggingPanelTabId: "The tabs of `JoggingPanel`",
   useSmoothedMotionState:
     "Smooths a motion state for the `*Exact` parts, which draw it as given",
   ROBOT_LOAD_STEP_IDS:

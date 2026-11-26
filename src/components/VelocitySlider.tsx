@@ -23,6 +23,11 @@ type VelocitySliderProps = {
 
 /**
  * A slider for controlling the movement velocity of a robot
+ *
+ * @deprecated It reads a `JoggingStore` for what it shows. Use `RobotControl`
+ * or `RobotControlPanel`, whose jog tabs have a velocity in NOVA's units
+ * (`RobotControl` fills it from a robot session), or a `Slider` of
+ * MUI with `JoggingStore.setVelocityFromSlider`.
  */
 export const VelocitySlider = externalizeComponent(
   observer((props: VelocitySliderProps) => {
@@ -87,6 +92,9 @@ type VelocitySliderLabelProps = {
 
 /**
  * The value next to {@link VelocitySlider}
+ *
+ * @deprecated With `VelocitySlider`. The velocity of `RobotControlPanel`
+ * shows its value.
  */
 export function VelocitySliderLabel({ value, sx }: VelocitySliderLabelProps) {
   const theme = useTheme()

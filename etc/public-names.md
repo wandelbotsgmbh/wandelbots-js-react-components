@@ -4,19 +4,27 @@ Every name that the library exports, the entry points that export it, and why it
 
 | Name | Entry points | Why it is public |
 | --- | --- | --- |
+| `ActivationSwitch` | `.`, `/core`, `/RobotHeader` | A part |
+| `ActivationSwitchOfSessionProps` | `.`, `/core`, `/RobotHeader` | The props of a part |
 | `AppHeader` | `.`, `/core` | A part |
 | `AppHeaderProps` | `.`, `/core` | The props of a part |
-| `AppItem` | `.`, `/core` | A type that a public member needs |
+| `AppItem` | `.`, `/core`, `/RobotHeader` | A type that a public member needs |
 | `AxisControlComponentColors` | `.`, `/core` | Deprecated: kept for apps that use it, removed in the next major version |
 | `CollisionSceneRenderer` | `.`, `/3d` | A part |
-| `ConnectedMotionGroup` | `.`, `/core` | A type that a public member needs |
-| `ConnectedMotionGroupOptions` | `.`, `/core` | A type that a public member needs |
+| `ConnectedMotionGroup` | `.`, `/core` | Deprecated: kept for apps that use it, removed in the next major version |
+| `ConnectedMotionGroupOptions` | `.`, `/core` | Deprecated: kept for apps that use it, removed in the next major version |
 | `ConnectionLogger` | `.`, `/core`, `/session`, `/nats` | A type that a public member needs |
+| `ConnectionQuality` | `.`, `/core`, `/RobotHeader` | A type that a public member needs |
+| `ConnectionWarning` | `.`, `/core`, `/RobotHeader` | A part |
+| `ConnectionWarningProps` | `.`, `/core`, `/RobotHeader` | The props of a part |
+| `ConnectionWarningState` | `.`, `/core`, `/RobotHeader` | A type that a public member needs |
 | `ControllerStateSource` | `.`, `/core`, `/session`, `/nats` | A type that a public member needs |
 | `ControllerStateStream` | `.`, `/core`, `/session` | A type that a public member needs |
+| `CurrentPose` | `.`, `/core`, `/CurrentPose` | A part |
 | `CurrentPoseBar` | `.`, `/core`, `/CurrentPoseBar` | A part |
 | `CurrentPoseBarProps` | `.`, `/core`, `/CurrentPoseBar` | The props of a part |
 | `CurrentPoseBarState` | `.`, `/core`, `/CurrentPoseBar` | A type that a public member needs |
+| `CurrentPoseProps` | `.`, `/core`, `/CurrentPose` | The props of a part |
 | `defaultGetModel` | `.`, `/3d` | The model download that `Robot` uses by default, for an app that wraps it |
 | `deriveSelectedTcpPose` | `.`, `/core`, `/session` | The pose of the selected TCP in a coordinate system, as the pose bar shows it |
 | `DHLinearAxisProps` | `.`, `/3d` | The props of a part |
@@ -30,9 +38,9 @@ Every name that the library exports, the entry points that export it, and why it
 | `IncrementalMotion` | `.`, `/core`, `/session` | A type that a public member needs |
 | `InterpolationOptions` | `.`, `/core`, `/3d` | A type that a public member needs |
 | `isRobotLoadStepError` | `.`, `/core`, `/session` | Tells a failed step of a robot load from other errors, e.g. to offer `load.retry()` |
-| `JogAxis` | `.`, `/core`, `/3d`, `/JoggingButtons`, `/JoggingGizmo` | A type that a public member needs |
+| `JogAxis` | `.`, `/core`, `/3d`, `/JoggingButtons`, `/JoggingGizmo`, `/RobotControlPanel` | A type that a public member needs |
 | `JogControlsProps` | `.`, `/core`, `/3d`, `/JoggingButtons`, `/JoggingGizmo` | The props of a part |
-| `JogDirection` | `.`, `/core`, `/3d`, `/JoggingButtons`, `/JoggingGizmo`, `/JoggingJointSlider` | A type that a public member needs |
+| `JogDirection` | `.`, `/core`, `/3d`, `/JoggingButtons`, `/JoggingGizmo`, `/JoggingJointSlider`, `/RobotControlPanel` | A type that a public member needs |
 | `JoggerConnection` | `.`, `/core`, `/session` | A type that a public member needs |
 | `JoggerConnectionOptions` | `.`, `/core`, `/session` | A type that a public member needs |
 | `JoggerMode` | `.`, `/core`, `/session` | A type that a public member needs |
@@ -47,15 +55,16 @@ Every name that the library exports, the entry points that export it, and why it
 | `JoggingJointSlider` | `.`, `/core`, `/JoggingJointSlider` | A part |
 | `JoggingJointSliderProps` | `.`, `/core`, `/JoggingJointSlider` | The props of a part |
 | `JoggingJointValueControl` | `.`, `/core` | Deprecated: kept for apps that use it, removed in the next major version |
-| `JoggingPanel` | `.`, `/core` | A part |
-| `JoggingPanelProps` | `.`, `/core` | The props of a part |
-| `JoggingPanelTabId` | `.`, `/core` | The tabs of `JoggingPanel` |
+| `JoggingPanel` | `.`, `/core` | Deprecated: kept for apps that use it, removed in the next major version |
+| `JoggingPanelProps` | `.`, `/core` | Deprecated: kept for apps that use it, removed in the next major version |
+| `JoggingPanelTabId` | `.`, `/core` | Deprecated: kept for apps that use it, removed in the next major version |
 | `JoggingRefusedError` | `.`, `/core`, `/session` | An error that a public member throws or rejects with |
 | `JoggingRefusedReason` | `.`, `/core`, `/session` | A type that a public member needs |
 | `JoggingStore` | `.`, `/core`, `/session` | A type that a public member needs |
 | `JoggingStoreOptions` | `.`, `/core`, `/session` | A type that a public member needs |
 | `JoggingStoreStorage` | `.`, `/core`, `/session` | A type that a public member needs |
-| `JogHandle` | `.`, `/core`, `/3d`, `/JoggingButtons`, `/JoggingGizmo` | A type that a public member needs |
+| `JogHandle` | `.`, `/core`, `/3d`, `/JoggingButtons`, `/JoggingGizmo`, `/RobotControlPanel` | A type that a public member needs |
+| `JogMotion` | `.`, `/3d`, `/RobotControlPanel` | A type that a public member needs |
 | `JointLimitGizmo` | `.`, `/3d` | A part |
 | `JointLimitGizmoProps` | `.`, `/3d` | The props of a part |
 | `jointsToText` | `.`, `/core`, `/session` | Joints as the text that Move to reads |
@@ -94,10 +103,29 @@ Every name that the library exports, the entry points that export it, and why it
 | `ROBOT_LOAD_STEP_IDS` | `.`, `/core`, `/session` | The steps of a robot load, for an app that shows the progress its own way |
 | `RobotActivation` | `.`, `/core`, `/session` | A type that a public member needs |
 | `RobotActivationState` | `.`, `/core`, `/session` | A type that a public member needs |
-| `RobotControlOption` | `.`, `/core`, `/CurrentPoseBar` | A type that a public member needs |
-| `RobotControlPose` | `.`, `/core`, `/CurrentPoseBar` | A type that a public member needs |
-| `RobotControlSelect` | `.`, `/core`, `/CurrentPoseBar` | A type that a public member needs |
+| `RobotControl` | `.`, `/3d`, `/RobotControl` | A part |
+| `RobotControlIncrements` | `.`, `/3d`, `/RobotControlPanel` | A type that a public member needs |
+| `RobotControlJogMode` | `.`, `/3d`, `/RobotControlPanel` | A type that a public member needs |
+| `RobotControlJoint` | `.`, `/3d`, `/RobotControlPanel` | A type that a public member needs |
+| `RobotControlJoints` | `.`, `/3d`, `/RobotControlPanel` | A type that a public member needs |
+| `RobotControlJointTarget` | `.`, `/3d`, `/RobotControlPanel` | A type that a public member needs |
+| `RobotControlMoveState` | `.`, `/3d`, `/RobotControlPanel` | A type that a public member needs |
+| `RobotControlMoveTo` | `.`, `/3d`, `/RobotControlPanel` | A type that a public member needs |
+| `RobotControlOption` | `.`, `/core`, `/3d`, `/CurrentPoseBar`, `/RobotControlPanel`, `/RobotHeader` | A type that a public member needs |
+| `RobotControlOptions` | `.`, `/3d`, `/RobotControl` | A type that a public member needs |
+| `RobotControlPanel` | `.`, `/3d`, `/RobotControlPanel` | A part |
+| `RobotControlPanelProps` | `.`, `/3d`, `/RobotControlPanel` | The props of a part |
+| `RobotControlPose` | `.`, `/core`, `/3d`, `/CurrentPoseBar`, `/RobotControlPanel` | A type that a public member needs |
+| `RobotControlProps` | `.`, `/3d`, `/RobotControl` | The props of a part |
+| `RobotControlSelect` | `.`, `/core`, `/3d`, `/CurrentPoseBar`, `/RobotControlPanel`, `/RobotHeader` | A type that a public member needs |
+| `RobotControlTab` | `.`, `/3d`, `/RobotControlPanel` | A type that a public member needs |
+| `RobotControlTarget` | `.`, `/3d`, `/RobotControlPanel` | A type that a public member needs |
+| `RobotControlVelocity` | `.`, `/3d`, `/RobotControlPanel` | A type that a public member needs |
 | `RobotDescription` | `.`, `/core`, `/session` | A type that a public member needs |
+| `RobotHeader` | `.`, `/core`, `/RobotHeader` | A part |
+| `RobotHeaderActivation` | `.`, `/core`, `/RobotHeader` | A type that a public member needs |
+| `RobotHeaderActivationState` | `.`, `/core`, `/RobotHeader` | A type that a public member needs |
+| `RobotHeaderProps` | `.`, `/core`, `/RobotHeader` | The props of a part |
 | `RobotLiveState` | `.`, `/core`, `/session` | A type that a public member needs |
 | `RobotLoadProgress` | `.`, `/core`, `/session` | A type that a public member needs |
 | `RobotLoadStep` | `.`, `/core`, `/session` | A type that a public member needs |
@@ -116,9 +144,10 @@ Every name that the library exports, the entry points that export it, and why it
 | `RobotSessionLoadState` | `.`, `/core`, `/session` | A type that a public member needs |
 | `RobotSessionOptions` | `.`, `/core`, `/session` | A type that a public member needs |
 | `RobotTargetPose` | `.`, `/core`, `/session` | A type that a public member needs |
-| `RobotTcpLike` | `.`, `/core` | A type that a public member needs |
-| `SafetyBar` | `.`, `/core`, `/SafetyBar` | A part |
-| `SafetyBarProps` | `.`, `/core`, `/SafetyBar` | The props of a part |
+| `RobotTcpLike` | `.`, `/core` | Deprecated: kept for apps that use it, removed in the next major version |
+| `SafetyBar` | `.`, `/core`, `/RobotHeader`, `/SafetyBar` | A part |
+| `SafetyBarOfSessionProps` | `.`, `/core`, `/RobotHeader`, `/SafetyBar` | The props of a part |
+| `SafetyBarProps` | `.`, `/core`, `/RobotHeader`, `/SafetyBar` | The props of a part |
 | `SafetyZonesRenderer` | `.`, `/3d` | A part |
 | `SafetyZonesRendererProps` | `.`, `/3d` | The props of a part |
 | `StagedTargetPose` | `.`, `/core`, `/session` | A type that a public member needs |
@@ -141,6 +170,6 @@ Every name that the library exports, the entry points that export it, and why it
 | `useSmoothedMotionState` | `.`, `/core`, `/3d` | Smooths a motion state for the `*Exact` parts, which draw it as given |
 | `ValueInterpolator` | `.`, `/core`, `/3d` | A type that a public member needs |
 | `Vector3Simple` | `.`, `/core`, `/session` | A type that a public member needs |
-| `VelocitySlider` | `.`, `/core` | A part |
-| `VelocitySliderLabel` | `.`, `/core` | A part |
+| `VelocitySlider` | `.`, `/core` | Deprecated: kept for apps that use it, removed in the next major version |
+| `VelocitySliderLabel` | `.`, `/core` | Deprecated: kept for apps that use it, removed in the next major version |
 | `WebGLUnavailableContext` | `.`, `/3d`, `/JoggingGizmo` | A type that a public member needs |
