@@ -9,7 +9,7 @@ export default defineWorkspace([
       setupFiles: ["./src/test/setup.ts"],
       globals: true,
       include: ["src/**/*.{test,spec}.{ts,tsx}"],
-      exclude: ["src/test/consumer.test.ts"],
+      exclude: ["src/test/consumer.test.ts", "src/test/bare.test.tsx"],
     },
     extends: "./vitest.config.ts",
   },
@@ -19,11 +19,14 @@ export default defineWorkspace([
     // no setup files, no Vite-driven source resolution) so that imports of
     // the package name resolve via Node the same way a downstream consumer
     // would.
+    // The bare parts test (bare.test.tsx) renders in jsdom, still without
+    // setup files: an app gives a part nothing either
+    esbuild: { jsx: "automatic" },
     test: {
       name: "consumer",
       environment: "node",
       globals: true,
-      include: ["src/test/consumer.test.ts"],
+      include: ["src/test/consumer.test.ts", "src/test/bare.test.tsx"],
       // The first import of a built entry with three.js and React Three
       // Fiber takes several seconds on a busy machine
       testTimeout: 30_000,

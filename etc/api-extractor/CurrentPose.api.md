@@ -8,7 +8,6 @@ import { AutoReconnectingWebsocket } from '@wandelbots/nova-js';
 import { Collider } from '@wandelbots/nova-js/v2';
 import { CoordinateSystem } from '@wandelbots/nova-js/v2';
 import { DHParameter } from '@wandelbots/nova-js/v2';
-import { Dictionary } from 'lodash';
 import { FunctionComponent } from 'react';
 import { IReactionDisposer } from 'mobx';
 import type { JoggingDetailsState } from '@wandelbots/nova-js/v2';

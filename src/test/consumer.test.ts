@@ -196,6 +196,7 @@ describe("package exports — deep component imports", () => {
     "JoggingGizmo",
     "JoggingButtons",
     "JoggingJointSlider",
+    "CurrentPoseBar",
     "RobotControlPanel",
     "RobotControl",
     "CurrentPose",
@@ -225,6 +226,7 @@ describe("MUI-style default + named exports", () => {
     { sub: "JoggingGizmo", name: "JoggingGizmo" },
     { sub: "JoggingButtons", name: "JoggingButtons" },
     { sub: "JoggingJointSlider", name: "JoggingJointSlider" },
+    { sub: "CurrentPoseBar", name: "CurrentPoseBar" },
     { sub: "RobotControlPanel", name: "RobotControlPanel" },
     { sub: "RobotControl", name: "RobotControl" },
     { sub: "CurrentPose", name: "CurrentPose" },
@@ -575,6 +577,7 @@ describe("component imports bring only what the component needs", () => {
   it.each([
     "JoggingButtons",
     "JoggingJointSlider",
+    "CurrentPoseBar",
   ])("%s pulls in no three.js, no React Three Fiber, no NOVA client", (sub) => {
     const packages = packagesImportedBy(resolveEsm(`${pkgName}/${sub}`))
     for (const heavy of [
@@ -599,6 +602,7 @@ describe("component imports bring only what the component needs", () => {
       aggregate: "core",
       name: "JoggingJointSlider",
     },
+    { sub: "CurrentPoseBar", aggregate: "core", name: "CurrentPoseBar" },
     { sub: "RobotControlPanel", aggregate: "3d", name: "RobotControlPanel" },
     { sub: "RobotControl", aggregate: "3d", name: "RobotControl" },
     { sub: "CurrentPose", aggregate: "core", name: "CurrentPose" },
@@ -643,6 +647,7 @@ describe("CJS interop", () => {
     "JoggingGizmo",
     "JoggingButtons",
     "JoggingJointSlider",
+    "CurrentPoseBar",
     "RobotControlPanel",
     "RobotControl",
     "CurrentPose",
@@ -676,5 +681,79 @@ describe("CJS interop", () => {
       { encoding: "utf8" },
     ).trim()
     expect(output).toBe("function")
+  })
+})
+
+describe("the type declarations", () => {
+  // An app type-checks the library's .d.ts files with its own packages: a
+  // type that comes from a package the library does not declare (such as
+  // lodash, whose types the library has only as a dev dependency) is an
+  // error with skipLibCheck off, and `any` with it on
+  const pkg = JSON.parse(
+    readFileSync(resolve(repoRoot, "package.json"), "utf8"),
+  ) as {
+    dependencies: Record<string, string>
+    peerDependencies: Record<string, string>
+  }
+  const declared = new Set([
+    ...Object.keys(pkg.dependencies),
+    ...Object.keys(pkg.peerDependencies),
+  ])
+
+  /** The packages that a .d.ts file of dist/ imports, with every relative import followed */
+  function typePackagesOf(file: string, seen = new Set<string>()): Set<string> {
+    const packages = new Set<string>()
+    const visit = (current: string) => {
+      if (seen.has(current) || !existsSync(current)) return
+      seen.add(current)
+      // Code only: a doc comment may quote an import
+      const code = readFileSync(current, "utf8")
+        .split("\n")
+        .filter((line) => !/^\s*(\*|\/\*|\/\/)/.test(line))
+        .join("\n")
+      for (const [, a, b] of code.matchAll(
+        /(?:from\s*|import\(\s*)["']([^"']+)["']|^\s*import\s+["']([^"']+)["']/gm,
+      )) {
+        const spec = a ?? b
+        if (!spec) continue
+        if (spec.startsWith(".")) {
+          const base = resolve(dirname(current), spec).replace(/\.js$/, "")
+          visit(
+            existsSync(`${base}.d.ts`) ? `${base}.d.ts` : `${base}/index.d.ts`,
+          )
+        } else {
+          const parts = spec.split("/")
+          packages.add(
+            spec.startsWith("@") ? parts.slice(0, 2).join("/") : parts[0],
+          )
+        }
+      }
+    }
+    visit(file)
+    return packages
+  }
+
+  it.each([
+    "index.d.ts",
+    "core.d.ts",
+    "3d.d.ts",
+    "session.d.ts",
+    "nats.d.ts",
+    "SafetyBar/index.d.ts",
+    "JoggingGizmo/index.d.ts",
+    "JoggingButtons/index.d.ts",
+    "JoggingJointSlider/index.d.ts",
+    "CurrentPoseBar/index.d.ts",
+    "CurrentPose/index.d.ts",
+    "RobotControlPanel/index.d.ts",
+    "RobotControl/index.d.ts",
+    "RobotHeader/index.d.ts",
+    "RobotScene/index.d.ts",
+    "RobotView/index.d.ts",
+  ])("dist/%s imports only declared packages", (file) => {
+    const undeclared = [...typePackagesOf(resolve(distDir, file))].filter(
+      (name) => !declared.has(name) && !name.startsWith("node:"),
+    )
+    expect(undeclared).toEqual([])
   })
 })

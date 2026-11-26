@@ -505,7 +505,9 @@ export class JoggingStore {
     this.jogger.dispose()
   }
 
-  get coordSystemCountByName() {
+  // The types are written out: inferred, they come from lodash, which an app
+  // does not have (see the consumer test of the type declarations)
+  get coordSystemCountByName(): Record<string, number> {
     return countBy(this.coordSystems, (cs) => cs.name)
   }
 
@@ -1055,12 +1057,15 @@ export class JoggingStore {
     return discreteIncrementOptions
   }
 
-  get incrementOptionsById() {
+  get incrementOptionsById(): Record<
+    string,
+    (typeof incrementOptions)[number]
+  > {
     return keyBy(this.incrementOptions, (o) => o.id)
   }
 
   /** @deprecated See {@link JoggingStore.tabs} */
-  get tabsById() {
+  get tabsById(): Record<string, JoggingTab> {
     return keyBy(this.tabs, (t) => t.id)
   }
 
@@ -1082,7 +1087,7 @@ export class JoggingStore {
     return this.tabs.indexOf(this.currentTab)
   }
 
-  get coordSystemsById() {
+  get coordSystemsById(): Record<string, CoordinateSystem> {
     return keyBy(this.coordSystems, (cs) => cs.coordinate_system)
   }
 
@@ -1136,7 +1141,7 @@ export class JoggingStore {
     ).pose
   }
 
-  get tcpsById() {
+  get tcpsById(): Record<string, RobotTcp> {
     return keyBy(this.tcps, (tcp) => tcp.id)
   }
 

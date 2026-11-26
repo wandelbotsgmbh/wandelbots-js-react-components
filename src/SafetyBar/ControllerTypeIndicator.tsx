@@ -37,7 +37,9 @@ export const ControllerTypeIndicator = observer(
           testId="controller-type-indicator"
           accessibleName={named(t("SafetyBar.ControllerType.Virtual.lb"))}
           icon={ControllerTypeVirtualIcon}
-          color={theme.palette.tertiary.main}
+          // tertiary is a colour of the Nova theme; an app without it
+          // gets the secondary colour of its own theme
+          color={theme.palette.tertiary?.main ?? theme.palette.secondary.main}
           name={t("SafetyBar.ControllerType.Virtual.lb")}
           label={compact ? null : t("SafetyBar.ControllerType.Virtual.lb")}
           explanation={

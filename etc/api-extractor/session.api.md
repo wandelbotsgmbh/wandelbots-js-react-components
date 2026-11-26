@@ -8,7 +8,6 @@ import { AutoReconnectingWebsocket } from '@wandelbots/nova-js';
 import { Collider } from '@wandelbots/nova-js/v2';
 import { CoordinateSystem } from '@wandelbots/nova-js/v2';
 import { DHParameter } from '@wandelbots/nova-js/v2';
-import { Dictionary } from 'lodash';
 import { IReactionDisposer } from 'mobx';
 import { JointLimits } from '@wandelbots/nova-js/v2';
 import { JointTypeEnum } from '@wandelbots/nova-js/v2';
@@ -212,11 +211,11 @@ export class JoggingStore {
     blocked: boolean;
     get canJogCartesian(): boolean;
     // (undocumented)
-    get coordSystemCountByName(): Dictionary<number>;
+    get coordSystemCountByName(): Record<string, number>;
     // (undocumented)
     readonly coordSystems: CoordinateSystem[];
     // (undocumented)
-    get coordSystemsById(): Dictionary<CoordinateSystem>;
+    get coordSystemsById(): Record<string, CoordinateSystem>;
     static create(jogger: JoggerConnection, data: {
         coordinateSystems: CoordinateSystem[];
         description: MotionGroupDescription;
@@ -244,13 +243,7 @@ export class JoggingStore {
         degrees: number;
     }[]];
     // (undocumented)
-    get incrementOptionsById(): Dictionary<    {
-    id: string;
-    mm: number;
-    degrees: number;
-    } | {
-    readonly id: "continuous";
-    }>;
+    get incrementOptionsById(): Record<string, (typeof incrementOptions)[number]>;
     inverseSolver: string | null | undefined;
     // (undocumented)
     readonly inverseSolverValue: string | null | undefined;
@@ -341,14 +334,14 @@ export class JoggingStore {
     // @deprecated
     get tabs(): [JoggingTab, ...JoggingTab[]];
     // @deprecated (undocumented)
-    get tabsById(): Dictionary<JoggingTab>;
+    get tabsById(): Record<string, JoggingTab>;
     tcpChangeInProgress: boolean;
     tcpPoseIn(tcpId: string, coordinateSystemId: string): Pose | undefined;
     get tcpPoseInSelectedCoordSystem(): Pose | undefined;
     // (undocumented)
     readonly tcps: RobotTcp[];
     // (undocumented)
-    get tcpsById(): Dictionary<RobotTcp>;
+    get tcpsById(): Record<string, RobotTcp>;
     translationVelocityMmPerSec: number;
     unblock(): void;
     // (undocumented)
