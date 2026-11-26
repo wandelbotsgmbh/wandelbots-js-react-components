@@ -10,11 +10,13 @@ import { CoordinateSystem } from '@wandelbots/nova-js/v2';
 import { Dictionary } from 'lodash';
 import type { i18n as i18n_2 } from 'i18next';
 import { IReactionDisposer } from 'mobx';
+import type { JoggingDetailsState } from '@wandelbots/nova-js/v2';
 import { JointTypeEnum } from '@wandelbots/nova-js/v2';
 import { JSX } from 'react/jsx-runtime';
 import { MotionGroupDescription } from '@wandelbots/nova-js/v2';
 import type { MotionGroupState } from '@wandelbots/nova-js/v2';
 import type { OperationMode } from '@wandelbots/nova-js/v2';
+import type { OrientationType as OrientationType_2 } from '@wandelbots/nova-js/v2';
 import type { PopoverOrigin } from '@mui/material/Popover';
 import { Pose } from '@wandelbots/nova-js/v2';
 import { default as React_2 } from 'react';
@@ -24,7 +26,9 @@ import { RobotTcp } from '@wandelbots/nova-js/v2';
 import type { SafetyStateType } from '@wandelbots/nova-js/v2';
 import Stack from '@mui/material/Stack';
 import { SxProps } from '@mui/material/styles';
+import type { Theme } from '@mui/material/styles';
 import * as THREE from 'three';
+import type { TrajectoryDetailsState } from '@wandelbots/nova-js/v2';
 
 // @public
 export const AppHeader: ((props: AppHeaderProps) => JSX.Element) & {
@@ -154,6 +158,27 @@ export type ConnectedMotionGroupOptions = {
     cellId?: string;
 };
 
+// @public
+export const CurrentPoseBar: (input: CurrentPoseBarProps) => JSX.Element;
+
+// @public
+export type CurrentPoseBarProps = {
+    getCurrentPose: () => RobotControlPose | null;
+    tcp?: RobotControlSelect;
+    frame?: RobotControlSelect;
+    state?: CurrentPoseBarState | null;
+    error?: string | null;
+    orientationFormat?: OrientationFormat;
+    onOrientationFormatChange?: (format: OrientationFormat) => void;
+    sx?: SxProps<Theme>;
+};
+
+// @public
+export type CurrentPoseBarState = JoggingDetailsState["kind"] | TrajectoryDetailsState["kind"];
+
+// @public
+export type EulerConvention = Extract<OrientationType_2, `EULER_ANGLES_${string}`>;
+
 // @public (undocumented)
 export const i18n: i18n_2;
 
@@ -165,6 +190,21 @@ export interface InterpolationOptions {
     tension?: number;
     threshold?: number;
 }
+
+// @public
+export type JogAxis = "x" | "y" | "z";
+
+// @public
+export type JogControlsProps = {
+    motion?: "translate" | "rotate";
+    onJogStart: (axis: JogAxis, direction: JogDirection) => void;
+    onJogStop: () => void;
+    activeHandle?: JogHandle | null;
+    disabled?: boolean;
+};
+
+// @public
+export type JogDirection = "+" | "-";
 
 // @public (undocumented)
 export class JoggerConnection {
@@ -266,8 +306,31 @@ export type JoggerMode = "jogging" | "trajectory" | "off";
 export type JoggerOrientation = "coordsys" | "tool";
 
 // @public
+export const JoggingButtons: (props: JoggingButtonsProps) => JSX.Element;
+
+// @public
+export type JoggingButtonsProps = JogControlsProps;
+
+// @public
 export const JoggingCartesianAxisControl: ((input: JoggingCartesianAxisControlProps) => JSX.Element) & {
     displayName: string;
+};
+
+// @public
+export const JoggingJointSlider: (input: JoggingJointSliderProps) => JSX.Element;
+
+// @public
+export type JoggingJointSliderProps = {
+    label: string;
+    name?: string;
+    value: number;
+    min?: number;
+    max?: number;
+    linear?: boolean;
+    angleUnit?: "deg" | "rad";
+    onJogStart: (direction: JogDirection) => void;
+    onJogStop: () => void;
+    disabled?: boolean;
 };
 
 // @public
@@ -441,6 +504,12 @@ export class JoggingStore {
     withMotionLock(fn: () => Promise<void>): Promise<void>;
 }
 
+// @public
+export type JogHandle = {
+    axis: JogAxis;
+    direction: JogDirection;
+};
+
 // @public (undocumented)
 export function jointValuesEqual(oldJointValues: number[], newJointValues: number[], changeDeltaThreshold: number): boolean;
 
@@ -516,8 +585,34 @@ export type NovaConnection = string | {
     readonly accessToken?: string | null;
 };
 
+// @public
+export type OrientationFormat = {
+    type: "rotationVector" | "eulerAngles" | "quaternion";
+    angleUnit: "rad" | "deg";
+    eulerConvention: EulerConvention;
+};
+
 // @public (undocumented)
 export function poseEqual(oldTcp: Pose | undefined, newTcp: Pose | undefined, changeDeltaThreshold: number): boolean;
+
+// @public
+export type RobotControlOption = {
+    id: string;
+    label: string;
+};
+
+// @public
+export type RobotControlPose = {
+    position: [number, number, number];
+    orientation: [number, number, number];
+};
+
+// @public
+export type RobotControlSelect = {
+    options: RobotControlOption[];
+    value: string;
+    onChange: (id: string) => void;
+};
 
 // @public (undocumented)
 export type RobotTcpLike = {

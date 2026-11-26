@@ -14,7 +14,7 @@ import { render } from "@testing-library/react"
 import { existsSync, readFileSync } from "node:fs"
 import { dirname, resolve } from "node:path"
 import { fileURLToPath } from "node:url"
-import type { ReactElement } from "react"
+import { createRef, type ReactElement } from "react"
 import { describe, expect, it, vi } from "vitest"
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "../..")
@@ -28,6 +28,8 @@ type Part = {
   element: (module: Record<string, never>) => ReactElement
   /** Every package that the entry may load */
   packages: string[]
+  /** Render it as a browser without WebGL does (a canvas gives no context) */
+  withoutWebGL?: boolean
 }
 
 const PARTS: Part[] = [
@@ -46,6 +48,83 @@ const PARTS: Part[] = [
       "@mui/material",
       "mobx-react-lite",
       "axios",
+      "i18next",
+      "i18next-browser-languagedetector",
+      "react-i18next",
+    ],
+  },
+  {
+    entry: "JoggingGizmo",
+    element: ({ JoggingGizmo }) => (
+      <JoggingGizmo
+        orientation={createRef()}
+        onJogStart={() => {}}
+        onJogStop={() => {}}
+      />
+    ),
+    // jsdom draws no WebGL, as a browser without it: the gizmo must still
+    // render, and say so through onWebGLUnavailable instead of an error
+    withoutWebGL: true,
+    packages: [
+      "react",
+      "@mui/material",
+      "@react-three/fiber",
+      "three",
+      "@wandelbots/design-tokens",
+      "i18next",
+      "i18next-browser-languagedetector",
+      "react-i18next",
+    ],
+  },
+  {
+    entry: "JoggingButtons",
+    element: ({ JoggingButtons }) => (
+      <JoggingButtons onJogStart={() => {}} onJogStop={() => {}} />
+    ),
+    packages: [
+      "react",
+      "@mui/material",
+      "@wandelbots/mui",
+      "@wandelbots/icons",
+      "@wandelbots/design-tokens",
+      "i18next",
+      "i18next-browser-languagedetector",
+      "react-i18next",
+    ],
+  },
+  {
+    entry: "JoggingJointSlider",
+    element: ({ JoggingJointSlider }) => (
+      <JoggingJointSlider
+        label="J1"
+        value={0.3}
+        onJogStart={() => {}}
+        onJogStop={() => {}}
+      />
+    ),
+    packages: [
+      "react",
+      "@mui/material",
+      "i18next",
+      "i18next-browser-languagedetector",
+      "react-i18next",
+    ],
+  },
+  {
+    entry: "CurrentPoseBar",
+    element: ({ CurrentPoseBar }) => (
+      <CurrentPoseBar
+        getCurrentPose={() => ({
+          position: [100, 200, 300],
+          orientation: [0, 0, 0.5],
+        })}
+      />
+    ),
+    packages: [
+      "react",
+      "@mui/material",
+      "@wandelbots/mui",
+      "@wandelbots/icons",
       "i18next",
       "i18next-browser-languagedetector",
       "react-i18next",
@@ -92,8 +171,14 @@ describe("a part used bare", () => {
   it.each(PARTS)("$entry renders without a theme and without an error", async ({
     entry,
     element,
+    withoutWebGL,
   }) => {
     const errors = vi.spyOn(console, "error").mockImplementation(() => {})
+    const getContext = withoutWebGL
+      ? vi
+          .spyOn(HTMLCanvasElement.prototype, "getContext")
+          .mockReturnValue(null)
+      : undefined
     try {
       const module = await import(`${pkgName}/${entry}`)
       const { container } = render(element(module))
@@ -101,6 +186,7 @@ describe("a part used bare", () => {
       expect(errors.mock.calls).toEqual([])
     } finally {
       errors.mockRestore()
+      getContext?.mockRestore()
     }
   })
 

@@ -1,6 +1,8 @@
 import Box from "@mui/material/Box"
 import Portal from "@mui/material/Portal"
 import Stack from "@mui/material/Stack"
+import ToggleButton from "@mui/material/ToggleButton"
+import ToggleButtonGroup from "@mui/material/ToggleButtonGroup"
 import Typography from "@mui/material/Typography"
 import {
   ColorsBlue900,
@@ -20,7 +22,13 @@ import { ElevationCard, PrimaryButton, SecondaryButton } from "@wandelbots/mui"
 import { JointTypeEnum } from "@wandelbots/nova-js/v2"
 import {
   type AxisControlComponentColors,
+  CurrentPoseBar,
+  type JogAxis,
+  type JogDirection,
+  JoggingButtons,
   JoggingCartesianAxisControl,
+  JoggingGizmo,
+  JoggingJointSlider,
   JoggingJointValueControl,
   type JoggingStore,
   LoadingCover,
@@ -30,7 +38,8 @@ import {
   VelocitySliderLabel,
 } from "@wandelbots/wandelbots-js-react-components"
 import { observer } from "mobx-react-lite"
-import { type ReactNode, useState } from "react"
+import { type ReactNode, useEffect, useState } from "react"
+import { Quaternion } from "three"
 import { startJogging, stopJogging, useJoggingStore } from "../connections"
 import type { PageProps } from "."
 
@@ -52,6 +61,16 @@ export function BuildingBlocksPage({ instance, motionGroup }: PageProps) {
     )
   }
 
+  const simpleParts = (
+    <Section
+      title="JoggingGizmo, JoggingButtons, JoggingJointSlider and CurrentPoseBar"
+      description="The simple parts: plain props and callbacks, no store. This page moves the robot with its JoggingStore in onJogStart and onJogStop. Hold a control to move; let go, leave it or press a key to stop."
+    >
+      {withStore((store) => (
+        <SimpleParts store={store} />
+      ))}
+    </Section>
+  )
   const cartesian = (
     <Section
       title="JoggingCartesianAxisControl"
@@ -112,6 +131,7 @@ export function BuildingBlocksPage({ instance, motionGroup }: PageProps) {
         }}
       >
         <Stack gap={3}>
+          {simpleParts}
           {cartesian}
           {velocity}
           {modal}
@@ -415,3 +435,105 @@ function NoMotionGroupModalButton({ baseUrl }: { baseUrl: string }) {
     </Box>
   )
 }
+
+/** A value that changes on every frame, as the motion state does */
+function useEveryFrameValue<T>(read: () => T): T {
+  const [value, setValue] = useState(read)
+  useEffect(() => {
+    let frame = 0
+    const update = () => {
+      setValue(read)
+      frame = requestAnimationFrame(update)
+    }
+    frame = requestAnimationFrame(update)
+    return () => cancelAnimationFrame(frame)
+  }, [read])
+  return value
+}
+
+const SimpleParts = observer(({ store }: { store: JoggingStore }) => {
+  const [motion, setMotion] = useState<"translate" | "rotate">("translate")
+  // No 3D view on this page: the gizmo shows the axes as seen from the front
+  const [orientation] = useState(() => ({ current: new Quaternion() }))
+  const [readJoints] = useState(
+    () => () =>
+      store.jogger.motionStream.rapidlyChangingMotionState.joint_position.join(
+        " ",
+      ),
+  )
+  const joints = useEveryFrameValue(readJoints).split(" ").map(Number)
+
+  // Without an inverse solver (a linear axis or a turntable), the TCP cannot
+  // move along an axis
+  const tcpDisabled = store.isLocked || store.inverseSolver === null
+  const linear = store.jointType !== JointTypeEnum.RevoluteJoint
+  const limits =
+    store.motionGroupDescription.operation_limits.auto_limits?.joints
+
+  const jogTcp = (axis: JogAxis, direction: JogDirection) =>
+    startJogging(store, { axis, direction, rotate: motion === "rotate" })
+  const stop = () => stopJogging(store)
+
+  return (
+    <Stack gap={3}>
+      <ToggleButtonGroup
+        exclusive
+        size="small"
+        value={motion}
+        onChange={(_, value) => value && setMotion(value)}
+      >
+        <ToggleButton value="translate">Translate</ToggleButton>
+        <ToggleButton value="rotate">Rotate</ToggleButton>
+      </ToggleButtonGroup>
+      <Stack direction="row" gap={4} flexWrap="wrap" alignItems="center">
+        <DemoBox label="JoggingGizmo">
+          <Box sx={{ width: 220, height: 220 }}>
+            <JoggingGizmo
+              orientation={orientation}
+              motion={motion}
+              onJogStart={jogTcp}
+              onJogStop={stop}
+              disabled={tcpDisabled}
+            />
+          </Box>
+        </DemoBox>
+        <DemoBox label="JoggingButtons">
+          <JoggingButtons
+            motion={motion}
+            onJogStart={jogTcp}
+            onJogStop={stop}
+            disabled={tcpDisabled}
+          />
+        </DemoBox>
+      </Stack>
+      <Stack gap={2} sx={{ maxWidth: 420 }}>
+        {joints.map((value, index) => (
+          <JoggingJointSlider
+            // biome-ignore lint/suspicious/noArrayIndexKey: one slider per joint, in order
+            key={index}
+            label={`J${index + 1}`}
+            value={value}
+            min={limits?.[index]?.position?.lower_limit}
+            max={limits?.[index]?.position?.upper_limit}
+            linear={linear}
+            onJogStart={(direction) =>
+              startJogging(store, { joint: index, direction })
+            }
+            onJogStop={stop}
+            disabled={store.isLocked}
+          />
+        ))}
+      </Stack>
+      <CurrentPoseBar
+        getCurrentPose={() => {
+          const pose =
+            store.jogger.motionStream.rapidlyChangingMotionState.tcp_pose
+          if (!pose) return null
+          const [x = 0, y = 0, z = 0] = pose.position
+          const [rx = 0, ry = 0, rz = 0] = pose.orientation
+          return { position: [x, y, z], orientation: [rx, ry, rz] }
+        }}
+      />
+    </Stack>
+  )
+})
