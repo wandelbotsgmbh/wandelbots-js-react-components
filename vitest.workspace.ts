@@ -8,7 +8,8 @@ export default defineWorkspace([
       environment: "jsdom",
       setupFiles: ["./src/test/setup.ts"],
       globals: true,
-      include: ["src/**/*.{test,spec}.{ts,tsx}"],
+      // The scripts of the release (scripts/releaseGuard.test.ts) too
+      include: ["src/**/*.{test,spec}.{ts,tsx}", "scripts/**/*.test.ts"],
       exclude: ["src/test/consumer.test.ts"],
     },
     extends: "./vitest.config.ts",

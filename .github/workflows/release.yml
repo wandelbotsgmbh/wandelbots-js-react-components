@@ -56,6 +56,13 @@ jobs:
           name: build-artifacts
           path: dist/
       - uses: ./.github/actions/setup-node
+      - name: Stop a release that would hide a break of the public API
+        # The message of the squash merge decides the version. When the API
+        # reports lost or changed lines since the last release, the release
+        # must be a major version, or a message must say that a person
+        # reviewed it. Nothing is published otherwise
+        # (scripts/check-breaking-api.ts --release).
+        run: pnpm run api:release-guard
       - name: Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

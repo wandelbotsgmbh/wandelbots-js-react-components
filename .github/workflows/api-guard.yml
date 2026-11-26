@@ -1,0 +1,54 @@
+name: api-guard
+
+# A pull request that removes or changes lines of the public API reports
+# (etc/api-extractor/*.api.md) must make a major version, or say why it breaks
+# nothing (scripts/check-breaking-api.ts). The line it asks for goes into the
+# PR description, so this runs again when the title or description changes;
+# it has its own workflow so that an edit does not run every check again.
+# release.yml checks the same before it publishes.
+
+on:
+  pull_request:
+    branches:
+      - main
+    types: [opened, synchronize, reopened, edited]
+
+permissions:
+  contents: read
+
+jobs:
+  api-break:
+    name: A break of the public API makes a major version
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      # The sticky comment that says what is missing
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          # To diff against the PR base and read the commits of the PR
+          fetch-depth: 0
+      - uses: ./.github/actions/setup-node
+      - name: Check the API reports against the version
+        id: breaking
+        env:
+          BASE_REF: origin/${{ github.base_ref }}
+          HEAD_REF: ${{ github.event.pull_request.head.sha }}
+          # Through the environment, never into the script: untrusted text
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+          COMMENT_BODY_OUT: ${{ runner.temp }}/api-breaking-comment.md
+        run: pnpm run api:check-breaking
+      - name: Comment on the PR when the API changes
+        if: always() && steps.breaking.outputs.breaking == 'true'
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: api-surface-breaking
+          path: ${{ runner.temp }}/api-breaking-comment.md
+      - name: Remove the comment when the API no longer changes
+        if: always() && steps.breaking.outcome == 'success' && steps.breaking.outputs.breaking != 'true'
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: api-surface-breaking
+          delete: true

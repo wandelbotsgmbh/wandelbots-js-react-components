@@ -187,9 +187,10 @@ if (outOfDate.length > 0) {
       `  2. Review the diff in etc/api-extractor/*.api.md\n` +
       `  3. Commit the updated file(s)\n\n` +
       `If the change removes or alters existing API (not purely additive),\n` +
-      `make sure at least one commit in this PR carries a conventional-commit\n` +
-      `breaking-change marker (e.g. "feat!: ..." or a "BREAKING CHANGE:" footer)\n` +
-      `so that semantic-release produces a major version bump.\n` +
+      `the PR description needs a line that starts with "BREAKING CHANGE:"\n` +
+      `(a "!" after the type does not count), so that semantic-release makes\n` +
+      `a major version. If nothing breaks, a line "API-CHANGE-REVIEWED: <why>".\n` +
+      `The check "api:check-breaking" fails without one of them.\n` +
       `${"─".repeat(72)}`,
   )
 }

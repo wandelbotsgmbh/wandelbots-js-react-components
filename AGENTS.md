@@ -147,6 +147,14 @@ tests pass. Fix all errors and warnings before considering the work complete.
 - A breaking change needs a `BREAKING CHANGE:` footer in the commit message,
   also in the message of a squash merge. A `!` after the type alone does not
   make a major version (angular preset of semantic-release).
+- The release guard enforces it (`scripts/check-breaking-api.ts`, decision in
+  `scripts/releaseGuard.ts`). When a PR removes or changes lines of
+  `etc/api-extractor/*.api.md`, the check `api-guard` fails unless the PR
+  description has a line that starts with `BREAKING CHANGE:`, or, when
+  nothing breaks (for example only an optional prop was added), a line that
+  starts with `API-CHANGE-REVIEWED:` and says why. The release job runs the
+  same check since the last release tag before it publishes, and stops the
+  release when the squash merge lost the line; a commit with the line goes on.
 
 ## Labeling posted comments as AI
 
