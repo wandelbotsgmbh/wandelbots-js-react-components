@@ -38,3 +38,6 @@ export {
   type InterpolationOptions,
 } from "./components/utils/interpolation"
 export * from "./components/utils/useSmoothedMotionState"
+// Pose math on three.js objects; the same numbers as the plain math of /session
+export { Pose3 } from "./lib/Pose3"
+export { parseRotationToQuaternion } from "./lib/rotation"

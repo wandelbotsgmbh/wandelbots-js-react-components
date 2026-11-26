@@ -8,6 +8,10 @@ const aggregateEntries: Record<string, string> = {
   index: resolve(repoRoot, "src/index.ts"),
   core: resolve(repoRoot, "src/core.ts"),
   "3d": resolve(repoRoot, "src/3d.ts"),
+  // Only this entry loads the optional peer nats.ws
+  nats: resolve(repoRoot, "src/nats.ts"),
+  // The library without React: loads no React, no MUI and no three.js
+  session: resolve(repoRoot, "src/session.ts"),
 }
 
 // Explicit allowlist of MUI-style per-component entries. Each entry lives

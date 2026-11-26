@@ -83,5 +83,10 @@
   "Jogging.StreamStateSection.Error.PlanningFailed.lb": "The requested motion could not be planned",
   "Jogging.StreamStateSection.Error.Singularity.lb": "Cannot plan this motion: the path passes through a singularity. Try a different axis or jog the joints directly",
   "CurrentPose.EulerConvention.Intrinsic.lb": "Intrinsic {{axes}}",
-  "CurrentPose.EulerConvention.Extrinsic.lb": "Extrinsic {{axes}}"
+  "CurrentPose.EulerConvention.Extrinsic.lb": "Extrinsic {{axes}}",
+  "Jogging.TargetPose.Error.Collision.lb": "Moving to the current pose would cause a collision. Please change the pose coordinates.",
+  "Jogging.TargetPose.Error.MoveFailed.lb": "The move to this pose failed: {{message}}",
+  "Jogging.TargetPose.Error.NotReachable.lb": "The current pose is not reachable. Please change the pose coordinates.",
+  "Jogging.TargetPose.Error.PlanningFailed.lb": "Planning a motion to this pose failed. Please change the pose coordinates.",
+  "Jogging.TargetPose.Error.Singularity.lb": "The current pose would create a singularity. Please change the pose coordinates."
 }

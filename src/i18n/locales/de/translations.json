@@ -82,5 +82,10 @@
   "Jogging.StreamStateSection.Error.PlanningFailed.lb": "Die angeforderte Bewegung konnte nicht geplant werden",
   "Jogging.StreamStateSection.Error.Singularity.lb": "Bewegung kann nicht geplant werden: der Pfad führt durch eine Singularität. Versuche eine andere Achse oder bewege die Gelenke direkt",
   "CurrentPose.EulerConvention.Intrinsic.lb": "Intrinsisch {{axes}}",
-  "CurrentPose.EulerConvention.Extrinsic.lb": "Extrinsisch {{axes}}"
+  "CurrentPose.EulerConvention.Extrinsic.lb": "Extrinsisch {{axes}}",
+  "Jogging.TargetPose.Error.Collision.lb": "Die Bewegung zur aktuellen Pose würde eine Kollision verursachen. Bitte ändere die Posen-Koordinaten.",
+  "Jogging.TargetPose.Error.MoveFailed.lb": "Die Bewegung zu dieser Pose ist fehlgeschlagen: {{message}}",
+  "Jogging.TargetPose.Error.NotReachable.lb": "Die aktuelle Pose ist nicht erreichbar. Bitte ändere die Posen-Koordinaten.",
+  "Jogging.TargetPose.Error.PlanningFailed.lb": "Die Bewegung zu dieser Pose konnte nicht geplant werden. Bitte ändere die Posen-Koordinaten.",
+  "Jogging.TargetPose.Error.Singularity.lb": "Die aktuelle Pose würde eine Singularität erzeugen. Bitte ändere die Posen-Koordinaten."
 }

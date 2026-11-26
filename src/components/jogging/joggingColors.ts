@@ -10,6 +10,12 @@ import {
 } from "@wandelbots/design-tokens"
 import type { JogAxis } from "./jogHandle"
 
+/**
+ * The `colors` of `JoggingCartesianAxisControl`
+ *
+ * @deprecated With `JoggingCartesianAxisControl`. `JoggingButtons` has the
+ * axis colors of the design system built in.
+ */
 export interface AxisControlComponentColors {
   color?: string
   borderColor?: string
