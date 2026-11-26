@@ -10,8 +10,8 @@ import { parseRotationToQuaternion } from "../../lib/rotation"
 
 /**
  * What {@link Robot} and {@link LinearAxis} draw of a robot, as plain data:
- * from a `RobotSession` with {@link robotModelOf}, a `ConnectedMotionGroup`
- * as it is, or an app's own state.
+ * a `ConnectedMotionGroup` as it is, or an app's own state. A
+ * `RobotSession`'s robot is drawn by `RobotScene`.
  */
 export type RobotModelSource = {
   /** The model's name as the controller reports it, e.g. "UniversalRobots_UR5e" */
@@ -49,11 +49,9 @@ export type RobotModelSource = {
 
 /**
  * The robot of a session as {@link Robot} and {@link LinearAxis} draw it,
- * with its mounting in 3D units. Cheap to call at every render:
+ * with its mounting in 3D units. Cheap to call at every render.
  *
- * ```tsx
- * <Robot motionGroup={robotModelOf(session)} />
- * ```
+ * @internal An app draws a session's robot with `<RobotScene session={session} />`.
  */
 export function robotModelOf(session: RobotSession): RobotModelSource {
   const { description, state } = session

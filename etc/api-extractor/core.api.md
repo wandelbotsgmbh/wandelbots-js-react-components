@@ -256,7 +256,7 @@ export type CurrentPoseBarState = JoggingDetailsState["kind"] | TrajectoryDetail
 
 // @public
 export type CurrentPoseProps = Partial<CurrentPoseBarProps> & {
-    session?: RobotSession;
+    session: RobotSession;
 };
 
 // @public
@@ -1106,12 +1106,6 @@ export type RobotSessionOptions = {
 };
 
 // @public
-export function RobotSessionProvider(input: {
-    session: RobotSession;
-    children: ReactNode;
-}): JSX.Element;
-
-// @public
 export class RobotTargetPose {
     // (undocumented)
     beginEdit(): void;
@@ -1234,13 +1228,7 @@ export function transformPoseToCoordinateSystem<T extends ReferencedPose>(inputP
 export function unwrapRotationVector(newRotationVectorApi: Vector3Simple, currentRotationVectorApi: Vector3Simple): Vector3Simple;
 
 // @public
-export function useCurrentPoseProps(session: RobotSession): CurrentPoseBarProps;
-
-// @public
 export function useInterpolation(initialValues?: number[], options?: InterpolationOptions): [ValueInterpolator];
-
-// @public
-export function useRobotSession(): RobotSession;
 
 // @public
 export function useSmoothedMotionState(motionState: MotionGroupState, options?: InterpolationOptions): MotionGroupState;

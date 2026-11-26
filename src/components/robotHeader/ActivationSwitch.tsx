@@ -7,13 +7,12 @@ import { useId } from "react"
 import { useTranslation } from "react-i18next"
 import { externalizeComponent } from "../../externalizeComponent"
 import type { RobotSession } from "../../lib/robotSession/RobotSession"
-import { useOptionalRobotSessionOf } from "../robotSession/RobotSessionProvider"
 import type { RobotHeaderActivation } from "./RobotHeader"
 import { robotActivationOf } from "./robotActivationOf"
 
 /**
- * The activation switch of a robot session (`session`, else the
- * provider's). Without a robot, e.g. while none is loaded, nothing.
+ * The activation switch of a robot session. Without a robot, e.g. while none
+ * is loaded, nothing.
  */
 export type ActivationSwitchOfSessionProps = {
   session: RobotSession | null | undefined
@@ -31,11 +30,10 @@ export const ActivationSwitch = externalizeComponent(
   observer(function ActivationSwitch(
     props: RobotHeaderActivation | ActivationSwitchOfSessionProps,
   ) {
-    const robot = useOptionalRobotSessionOf(
-      "session" in props ? props.session : undefined,
-    )
     const activation =
-      "session" in props ? robot && robotActivationOf(robot) : props
+      "session" in props
+        ? props.session && robotActivationOf(props.session)
+        : props
     if (!activation) return null
     return <ActivationSwitchView {...activation} />
   }),

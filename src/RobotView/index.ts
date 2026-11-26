@@ -11,7 +11,3 @@ export {
   type RobotViewProps,
 } from "../components/robotView/RobotView"
 export type { WebGLUnavailableContext } from "../components/utils/useWebGLRenderer"
-export {
-  RobotSessionProvider,
-  useRobotSession,
-} from "../components/robotSession/RobotSessionProvider"

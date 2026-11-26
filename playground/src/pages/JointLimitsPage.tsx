@@ -5,11 +5,12 @@ import {
   JoggingJointValueControl,
   JointLimitGizmo,
   type RobotSession,
-  robotModelOf,
   useSmoothedMotionState,
   VelocitySlider,
   VelocitySliderLabel,
 } from "@wandelbots/wandelbots-js-react-components"
+// Internal: the robot's mounting in 3D units
+import { robotModelOf } from "../../../src/components/robots/robotModelSource"
 import { observer } from "mobx-react-lite"
 import { useMemo } from "react"
 import { startJogging, stopJogging } from "../connections"

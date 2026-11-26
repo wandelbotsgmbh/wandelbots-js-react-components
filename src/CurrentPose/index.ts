@@ -5,8 +5,3 @@ export {
   CurrentPose as default,
   type CurrentPoseProps,
 } from "../components/currentPoseBar/CurrentPose"
-export { useCurrentPoseProps } from "../components/currentPoseBar/useCurrentPoseProps"
-export {
-  RobotSessionProvider,
-  useRobotSession,
-} from "../components/robotSession/RobotSessionProvider"

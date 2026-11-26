@@ -1209,8 +1209,8 @@ export class JoggingStore {
    * The `onChange` of the MUI `Tabs` of `JoggingPanel`
    *
    * @deprecated Only `JoggingPanel` (deprecated) calls it. Set
-   * {@link JoggingStore.selectedTabId}; `useRobotControlProps` does that for
-   * the tabs of `RobotControlPanel`.
+   * {@link JoggingStore.selectedTabId}; `RobotControl` does that for the tabs
+   * of its panel.
    */
   onTabChange(_event: React.SyntheticEvent, newValue: number) {
     const tab = this.tabs[newValue] || this.tabs[0]

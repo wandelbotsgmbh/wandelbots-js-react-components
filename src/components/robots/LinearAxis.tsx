@@ -20,7 +20,7 @@ export type LinearAxisProps = RobotMotionGroupProps & {
  * no model.
  *
  * ```tsx
- * <LinearAxis motionGroup={robotModelOf(session)} />
+ * <LinearAxis motionGroup={connectedMotionGroup} />
  * ```
  *
  * @param props.motionGroup - The axis to draw, see {@link RobotModelSource}

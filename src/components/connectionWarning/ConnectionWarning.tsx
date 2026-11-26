@@ -8,7 +8,6 @@ import { useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { externalizeComponent } from "../../externalizeComponent"
 import type { RobotSession } from "../../lib/robotSession/RobotSession"
-import { useOptionalRobotSessionOf } from "../robotSession/RobotSessionProvider"
 import { connectionWarningOf } from "./connectionWarningOf"
 import { timeAgo } from "./timeAgo"
 
@@ -28,12 +27,11 @@ export type ConnectionWarningState = {
 }
 
 /**
- * The robot (`session`, else the provider's), and any of its connection
- * state to replace the session's: all of it for an app without a
- * `RobotSession`
+ * The robot (`session`), and any of its connection state to replace the
+ * session's: all of it for an app without a `RobotSession`
  */
 export type ConnectionWarningProps = Partial<ConnectionWarningState> & {
-  /** The robot; else the one of the nearest `RobotSessionProvider` */
+  /** The robot whose live state the warning watches */
   session?: RobotSession | null
 }
 
@@ -64,9 +62,8 @@ export const ConnectionWarning = externalizeComponent(
     session,
     ...overrides
   }: ConnectionWarningProps) {
-    const robot = useOptionalRobotSessionOf(session)
     const { quality, lastMessageAt, lastInvalidMessage } = {
-      ...(robot && connectionWarningOf(robot)),
+      ...(session && connectionWarningOf(session)),
       ...overrides,
     }
     if (quality === undefined || lastMessageAt === undefined) return null

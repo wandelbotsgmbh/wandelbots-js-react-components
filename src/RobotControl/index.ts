@@ -7,11 +7,4 @@ export {
   RobotControl as default,
   type RobotControlProps,
 } from "../components/robotControl/RobotControl"
-export {
-  type RobotControlOptions,
-  useRobotControlProps,
-} from "../components/robotControl/useRobotControlProps"
-export {
-  RobotSessionProvider,
-  useRobotSession,
-} from "../components/robotSession/RobotSessionProvider"
+export type { RobotControlOptions } from "../components/robotControl/useRobotControlProps"

@@ -48,7 +48,7 @@ export default RobotScene;
 
 // @public
 export type RobotSceneProps = Partial<Omit<RobotSceneViewProps, "robot">> & {
-    session?: RobotSession;
+    session: RobotSession;
     robot?: Partial<RobotModelSource>;
 };
 
@@ -68,18 +68,6 @@ export type RobotSceneViewProps = {
     lighting?: boolean;
     children?: ReactNode;
 };
-
-// @public
-export function RobotSessionProvider(input: {
-    session: RobotSession;
-    children: ReactNode;
-}): JSX.Element;
-
-// @public
-export function useRobotSceneProps(session: RobotSession): RobotSceneViewProps;
-
-// @public
-export function useRobotSession(): RobotSession;
 
 // (No @packageDocumentation comment for this package)
 

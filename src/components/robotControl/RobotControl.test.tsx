@@ -8,7 +8,6 @@ import {
   makeHarness,
   motionGroupState,
 } from "../../lib/robotSession/__fixtures__/robotSessionHarness"
-import { RobotSessionProvider } from "../robotSession/RobotSessionProvider"
 import { RobotControl } from "./RobotControl"
 
 async function loadSession() {
@@ -23,14 +22,10 @@ async function flush() {
 }
 
 describe("RobotControl", () => {
-  it("shows the Robot control of the provider's session", async () => {
+  it("shows the Robot control of its session", async () => {
     const session = await loadSession()
 
-    render(
-      <RobotSessionProvider session={session}>
-        <RobotControl />
-      </RobotSessionProvider>,
-    )
+    render(<RobotControl session={session} />)
 
     expect(screen.getByRole("heading", { name: "Robot control" })).toBeVisible()
     expect(screen.getByRole("tab", { name: "Translate" })).toHaveAttribute(
@@ -39,7 +34,7 @@ describe("RobotControl", () => {
     )
   })
 
-  it("takes a session as a prop too, and a panel prop overrides the session's", async () => {
+  it("lets a panel prop override the session's", async () => {
     const session = await loadSession()
     const onClose = vi.fn()
 
@@ -279,11 +274,5 @@ describe("RobotControl", () => {
 
     expect(stop).toHaveBeenCalledOnce()
     stepOver()
-  })
-
-  it("says what is missing without a session", () => {
-    vi.spyOn(console, "error").mockImplementation(() => {})
-
-    expect(() => render(<RobotControl />)).toThrow(/RobotSessionProvider/)
   })
 })

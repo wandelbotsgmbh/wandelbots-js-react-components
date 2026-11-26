@@ -141,12 +141,8 @@ function useJointValues(store: JoggingStore): number[] {
  * another client's jogging `onJogRetry` lets the user try again. `disabled`
  * is only the app's lock, for which the hook has no reason to give.
  *
- * `<RobotControl />` is the panel with these props. An app that wants to
- * change a part takes the props and overrides it:
- *
- * ```tsx
- * <RobotControlPanel {...useRobotControlProps(session)} onClose={close} />
- * ```
+ * @internal `<RobotControl session={session} />` is the panel with these
+ * props; an app replaces one by giving it to RobotControl.
  */
 export function useRobotControlProps(
   session: RobotSession,

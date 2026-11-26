@@ -14,13 +14,11 @@ import { IReactionDisposer } from 'mobx';
 import type { JoggingDetailsState } from '@wandelbots/nova-js/v2';
 import { JointLimits } from '@wandelbots/nova-js/v2';
 import { JointTypeEnum } from '@wandelbots/nova-js/v2';
-import { JSX } from 'react/jsx-runtime';
 import { KinematicModel } from '@wandelbots/nova-js/v2';
 import { MotionGroupDescription } from '@wandelbots/nova-js/v2';
 import { MotionGroupState } from '@wandelbots/nova-js/v2';
 import type { OrientationType as OrientationType_2 } from '@wandelbots/nova-js/v2';
 import { Pose } from '@wandelbots/nova-js/v2';
-import { ReactNode } from 'react';
 import { RobotControllerConfiguration } from '@wandelbots/nova-js/v2';
 import { RobotControllerState } from '@wandelbots/nova-js/v2';
 import { RobotTcp } from '@wandelbots/nova-js/v2';
@@ -36,20 +34,8 @@ export default CurrentPose;
 
 // @public
 export type CurrentPoseProps = Partial<CurrentPoseBarProps> & {
-    session?: RobotSession;
-};
-
-// @public
-export function RobotSessionProvider(input: {
     session: RobotSession;
-    children: ReactNode;
-}): JSX.Element;
-
-// @public
-export function useCurrentPoseProps(session: RobotSession): CurrentPoseBarProps;
-
-// @public
-export function useRobotSession(): RobotSession;
+};
 
 // (No @packageDocumentation comment for this package)
 

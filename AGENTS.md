@@ -58,13 +58,15 @@ the migration from 6.x are in [README.md](README.md).
   build nothing new on them. `Robot` and `LinearAxis` take the robot as data
   (`RobotModelSource`).
 - A connected component, one that reads a store or session, is only its UI
-  component plus a hook that turns the store into that component's props,
-  and both are exported: e.g. `<RobotControl />` is
-  `<RobotControlPanel {...useRobotControlProps(session)} />`. An app can then
-  take the hook and replace single props, such as its own Move to.
-- No globals: a store or session reaches a component through a prop or a
-  provider, never through module state or `window`, so several robots can be
-  on one page.
+  component plus a hook that turns the session into that component's props:
+  `<RobotControl session={session} />` is
+  `<RobotControlPanel {...useRobotControlProps(session)} />`. The UI
+  component is exported, the hook stays internal: a prop given to the
+  connected component replaces the session's (such as the app's own Move
+  to), so an app never imports a session-to-props helper.
+- No globals and no provider: a session reaches a component through its
+  `session` prop, never through a context, module state or `window`, so
+  several robots can be on one page and an app has one way to pass it.
 - Nothing assumes one app (RobotPad, the teaching app): no `localStorage`,
   no `window` globals, no app's translation keys, routes or framework. What
   to keep comes in as a storage adapter, errors and events go out through

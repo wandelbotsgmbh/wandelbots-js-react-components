@@ -8,7 +8,6 @@ import {
   makeHarness,
 } from "../../lib/robotSession/__fixtures__/robotSessionHarness"
 import type { LoadRobotSessionOptions } from "../../lib/robotSession/loadRobotSession"
-import { RobotSessionProvider } from "../robotSession/RobotSessionProvider"
 import { RobotHeader, type RobotHeaderProps } from "./RobotHeader"
 
 function setup(props: Partial<RobotHeaderProps> = {}) {
@@ -211,18 +210,6 @@ describe("RobotHeader for a robot session", () => {
         url: expect.stringContaining("/controllers/ur5e"),
       }),
     )
-  })
-
-  it("takes the robot of the nearest RobotSessionProvider", async () => {
-    const { session } = await loadSession()
-    inApp(
-      <RobotSessionProvider session={session}>
-        <RobotHeader appName="Robot Pad" />
-      </RobotSessionProvider>,
-    )
-
-    expect(safetyState("Safe")).toBeVisible()
-    expect(activation()).toBeEnabled()
   })
 
   // The header shows before a robot is loaded: the app's name and menu. An

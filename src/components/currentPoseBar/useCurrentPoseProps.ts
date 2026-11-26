@@ -14,12 +14,8 @@ import type { CurrentPoseBarProps, CurrentPoseBarState } from "./CurrentPoseBar"
  * ones of the session's jogging (its TCP and "Values relative to"), the
  * state of the motion stream, and the last jog error.
  *
- * `<CurrentPose />` is the bar with these props. An app that wants to change
- * a part takes the props and overrides it:
- *
- * ```tsx
- * <CurrentPoseBar {...useCurrentPoseProps(session)} sx={{ m: 1 }} />
- * ```
+ * @internal `<CurrentPose session={session} />` is the bar with these props;
+ * an app replaces one by giving it to CurrentPose.
  */
 export function useCurrentPoseProps(
   session: RobotSession,

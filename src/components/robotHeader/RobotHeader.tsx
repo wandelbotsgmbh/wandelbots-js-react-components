@@ -9,7 +9,6 @@ import { SafetyBar, type SafetyBarProps } from "../../SafetyBar/SafetyBar"
 import type { AppItem } from "../AppHeader"
 import type { RobotControlSelect } from "../robotControl/RobotControlPanel"
 import { SmallSelect } from "../robotControl/SmallSelect"
-import { useOptionalRobotSessionOf } from "../robotSession/RobotSessionProvider"
 import { ActivationSwitch } from "./ActivationSwitch"
 import { AppNavigation } from "./AppNavigation"
 
@@ -42,9 +41,8 @@ export type RobotHeaderProps = {
   /** The motion group select */
   motionGroup?: RobotControlSelect
   /**
-   * The robot whose safety state and activation switch the header shows;
-   * else the one of the nearest `RobotSessionProvider`. Without either, e.g.
-   * while no robot is loaded, the header shows neither.
+   * The robot whose safety state and activation switch the header shows.
+   * Without one, e.g. while no robot is loaded, the header shows neither.
    */
   session?: RobotSession | null
   /**
@@ -108,7 +106,7 @@ export const RobotHeader = externalizeComponent(
   }: RobotHeaderProps) => {
     const { t } = useTranslation()
     const motionGroupLabelId = useId()
-    const robot = useOptionalRobotSessionOf(session)
+    const robot = session ?? null
 
     return (
       <Stack

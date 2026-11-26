@@ -47,10 +47,7 @@ export {
   RobotControl,
   type RobotControlProps,
 } from "./components/robotControl/RobotControl"
-export {
-  type RobotControlOptions,
-  useRobotControlProps,
-} from "./components/robotControl/useRobotControlProps"
+export type { RobotControlOptions } from "./components/robotControl/useRobotControlProps"
 // The 3D scene of a robot session, ready to use, its props and its parts
 export {
   JoggingAxes,
@@ -64,7 +61,6 @@ export {
   RobotSceneView,
   type RobotSceneViewProps,
 } from "./components/robotScene/RobotSceneView"
-export { useRobotSceneProps } from "./components/robotScene/useRobotSceneProps"
 // The 3D view of a robot session, ready to use, and its canvas
 export {
   RobotCanvas,
@@ -86,11 +82,8 @@ export {
   JOINT_REST_SUFFIX,
   jointIndexOf,
 } from "./components/robots/robotModelLogic"
-// What Robot and LinearAxis draw, and the robot of a session as they draw it
-export {
-  type RobotModelSource,
-  robotModelOf,
-} from "./components/robots/robotModelSource"
+// What Robot and LinearAxis draw (a session's robot: RobotScene)
+export type { RobotModelSource } from "./components/robots/robotModelSource"
 export * from "./components/robots/SupportedLinearAxis"
 export * from "./components/robots/SupportedRobot"
 // Opt-in joint-stream smoothing to feed the (as-is) robot visualizer.

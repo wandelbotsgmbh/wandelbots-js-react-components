@@ -45,21 +45,12 @@ export type RobotCanvasProps = {
 };
 
 // @public
-export function RobotSessionProvider(input: {
-    session: RobotSession;
-    children: ReactNode;
-}): JSX.Element;
-
-// @public
 const RobotView: FunctionComponent<RobotViewProps>;
 export { RobotView }
 export default RobotView;
 
 // @public
 export type RobotViewProps = RobotSceneProps & Omit<RobotCanvasProps, "orbitTarget">;
-
-// @public
-export function useRobotSession(): RobotSession;
 
 // @public
 export type WebGLUnavailableContext = "preflight" | "renderer";

@@ -19,6 +19,9 @@ import type { RobotSceneViewProps } from "./RobotSceneView"
  * Used in an observer, it draws again when one of these changes, but not
  * while the robot moves: the parts that follow the robot read its motion
  * state themselves.
+ *
+ * @internal `<RobotScene session={session} />` is the scene with these
+ * props; an app replaces one by giving it to RobotScene.
  */
 export function useRobotSceneProps(session: RobotSession): RobotSceneViewProps {
   const { description, jogging } = session

@@ -10,8 +10,9 @@ import {
   PresetEnvironment,
   Robot,
   type RobotSession,
-  robotModelOf,
 } from "@wandelbots/wandelbots-js-react-components"
+// Internal: the deprecated parts drawn from a session (an app uses RobotScene)
+import { robotModelOf } from "../../src/components/robots/robotModelSource"
 import {
   createContext,
   type ReactNode,

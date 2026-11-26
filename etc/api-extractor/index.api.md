@@ -268,7 +268,7 @@ export type CurrentPoseBarState = JoggingDetailsState["kind"] | TrajectoryDetail
 
 // @public
 export type CurrentPoseProps = Partial<CurrentPoseBarProps> & {
-    session?: RobotSession;
+    session: RobotSession;
 };
 
 // @public
@@ -1076,7 +1076,7 @@ export type RobotControlPose = {
 
 // @public
 export type RobotControlProps = RobotControlOptions & Partial<RobotControlPanelProps> & {
-    session?: RobotSession;
+    session: RobotSession;
 };
 
 // @public
@@ -1261,9 +1261,6 @@ export class RobotModeChangeError extends Error {
 }
 
 // @public
-export function robotModelOf(session: RobotSession): RobotModelSource;
-
-// @public
 export type RobotModelSource = {
     modelFromController?: string;
     dhParameters?: DHParameter[];
@@ -1349,7 +1346,7 @@ export const RobotScene: FunctionComponent<RobotSceneProps>;
 
 // @public
 export type RobotSceneProps = Partial<Omit<RobotSceneViewProps, "robot">> & {
-    session?: RobotSession;
+    session: RobotSession;
     robot?: Partial<RobotModelSource>;
 };
 
@@ -1431,12 +1428,6 @@ export type RobotSessionOptions = {
     logger?: ConnectionLogger;
     autoActivateVirtual?: boolean;
 };
-
-// @public
-export function RobotSessionProvider(input: {
-    session: RobotSession;
-    children: ReactNode;
-}): JSX.Element;
 
 // @public
 export class RobotTargetPose {
@@ -1628,19 +1619,7 @@ export function transformPoseToCoordinateSystem<T extends ReferencedPose>(inputP
 export function unwrapRotationVector(newRotationVectorApi: Vector3Simple, currentRotationVectorApi: Vector3Simple): Vector3Simple;
 
 // @public
-export function useCurrentPoseProps(session: RobotSession): CurrentPoseBarProps;
-
-// @public
 export function useInterpolation(initialValues?: number[], options?: InterpolationOptions): [ValueInterpolator];
-
-// @public
-export function useRobotControlProps(session: RobotSession, options?: RobotControlOptions): RobotControlPanelProps;
-
-// @public
-export function useRobotSceneProps(session: RobotSession): RobotSceneViewProps;
-
-// @public
-export function useRobotSession(): RobotSession;
 
 // @public
 export function useSmoothedMotionState(motionState: MotionGroupState, options?: InterpolationOptions): MotionGroupState;

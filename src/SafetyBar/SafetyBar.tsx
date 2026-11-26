@@ -3,7 +3,6 @@ import type { PopoverOrigin } from "@mui/material/Popover"
 import Stack from "@mui/material/Stack"
 import type { OperationMode, SafetyStateType } from "@wandelbots/nova-js/v2"
 import { observer } from "mobx-react-lite"
-import { useOptionalRobotSessionOf } from "../components/robotSession/RobotSessionProvider"
 import { externalizeComponent } from "../externalizeComponent"
 import type { RobotSession } from "../lib/robotSession/RobotSession"
 import { robotSafetyOf } from "./robotSafetyOf"
@@ -22,9 +21,9 @@ export interface SafetyBarProps {
 }
 
 /**
- * SafetyBar for a robot session (`session`, else the provider's): its safety
- * state, operation mode and controller type, which any of SafetyBarProps
- * given here replaces. Without a robot, e.g. while none is loaded, nothing.
+ * SafetyBar for a robot session: its safety state, operation mode and
+ * controller type, which any of SafetyBarProps given here replaces. Without a
+ * robot, e.g. while none is loaded, nothing.
  */
 export type SafetyBarOfSessionProps = Partial<SafetyBarProps> & {
   session: RobotSession | null | undefined
@@ -44,9 +43,8 @@ export const SafetyBar = externalizeComponent(
       compact = true,
       ...overrides
     }: Partial<SafetyBarOfSessionProps> = props
-    const robot = useOptionalRobotSessionOf(session)
     const { isVirtual, motionGroupId, operationMode, safetyState } = {
-      ...(robot && robotSafetyOf(robot)),
+      ...(session && robotSafetyOf(session)),
       ...overrides,
     }
     if (

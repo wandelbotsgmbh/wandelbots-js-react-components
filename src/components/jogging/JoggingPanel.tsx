@@ -54,9 +54,8 @@ export type JoggingPanelProps = {
  *
  * @deprecated Use `RobotControl` with a robot session of `loadRobotSession`:
  * the Robot control panel of the design, with jogging, the joints and Move
- * to. Or `RobotControlPanel` with the props of `useRobotControlProps(session)`,
- * to replace single props. The README's "From JoggingPanel to RobotControl"
- * maps the props.
+ * to; a prop of `RobotControlPanel` given to it replaces the session's. The
+ * README's "From JoggingPanel to RobotControl" maps the props.
  */
 export const JoggingPanel = externalizeComponent(
   observer((props: JoggingPanelProps) => {

@@ -62,8 +62,8 @@ export type ConnectedMotionGroupOptions = {
  * Store representing the current state of a connected motion group.
  *
  * @deprecated Use `loadRobotSession`: its `RobotSession` has the same robot
- * with its jogging and Move to. `Robot` and `LinearAxis` take
- * `robotModelOf(session)`. The README's "From ConnectedMotionGroup to
+ * with its jogging and Move to, and `RobotScene` draws its robot. The
+ * README's "From ConnectedMotionGroup to
  * RobotSession" maps each member.
  */
 export class ConnectedMotionGroup {

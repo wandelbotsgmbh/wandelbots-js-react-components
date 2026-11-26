@@ -13,8 +13,8 @@ import { SupportedRobot } from "./SupportedRobot"
 export type RobotMotionGroupProps =
   | {
       /**
-       * The robot to draw: `robotModelOf(session)`, a `ConnectedMotionGroup`,
-       * or the app's own data
+       * The robot to draw: a `ConnectedMotionGroup`, or the app's own data
+       * (a `RobotSession`'s robot: `RobotScene`)
        */
       motionGroup: RobotModelSource
       connectedMotionGroup?: never
@@ -37,7 +37,7 @@ export type RobotProps = RobotMotionGroupProps & {
  * state does: {@link SupportedRobot} for a {@link RobotModelSource}.
  *
  * ```tsx
- * <Robot motionGroup={robotModelOf(session)} />
+ * <Robot motionGroup={connectedMotionGroup} />
  * ```
  *
  * @param props.motionGroup - The robot to draw, see {@link RobotModelSource}

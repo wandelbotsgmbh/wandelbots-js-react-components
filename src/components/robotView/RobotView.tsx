@@ -1,12 +1,10 @@
 import { observer } from "mobx-react-lite"
 import { RobotScene, type RobotSceneProps } from "../robotScene/RobotScene"
-import { useRobotSessionOf } from "../robotSession/RobotSessionProvider"
 import { RobotCanvas, type RobotCanvasProps } from "./RobotCanvas"
 
 /**
- * The robot (`session`, else the provider's), any prop of `RobotSceneView`
- * to replace the session's, the canvas's options, and the app's own parts of
- * the scene as children
+ * The robot, any prop of `RobotSceneView` to replace the session's, the
+ * canvas's options, and the app's own parts of the scene as children
  */
 export type RobotViewProps = RobotSceneProps &
   Omit<RobotCanvasProps, "orbitTarget">
@@ -34,8 +32,7 @@ export const RobotView = observer(function RobotView({
   children,
   ...scene
 }: RobotViewProps) {
-  const robot = useRobotSessionOf(session)
-  const base = robot.description.mounting?.position
+  const base = session.description.mounting?.position
 
   return (
     <RobotCanvas
@@ -49,7 +46,7 @@ export const RobotView = observer(function RobotView({
       onWebGLUnavailable={onWebGLUnavailable}
       sx={sx}
     >
-      <RobotScene session={robot} {...scene}>
+      <RobotScene session={session} {...scene}>
         {children}
       </RobotScene>
     </RobotCanvas>

@@ -14,8 +14,3 @@ export {
   RobotSceneView,
   type RobotSceneViewProps,
 } from "../components/robotScene/RobotSceneView"
-export { useRobotSceneProps } from "../components/robotScene/useRobotSceneProps"
-export {
-  RobotSessionProvider,
-  useRobotSession,
-} from "../components/robotSession/RobotSessionProvider"

@@ -1,35 +1,29 @@
 import { observer } from "mobx-react-lite"
 import type { RobotSession } from "../../lib/robotSession/RobotSession"
-import { useRobotSessionOf } from "../robotSession/RobotSessionProvider"
 import { CurrentPoseBar, type CurrentPoseBarProps } from "./CurrentPoseBar"
 import { useCurrentPoseProps } from "./useCurrentPoseProps"
 
-/**
- * The robot (`session`, else the provider's), and any prop of
- * `CurrentPoseBar` to replace the session's
- */
+/** The robot, and any prop of `CurrentPoseBar` to replace the session's */
 export type CurrentPoseProps = Partial<CurrentPoseBarProps> & {
-  /** The robot; else the one of the nearest `RobotSessionProvider` */
-  session?: RobotSession
+  /** The robot whose current pose the bar shows */
+  session: RobotSession
 }
 
 /**
- * The current pose bar of a robot session, ready to use: the TCP's pose,
- * the state of the motion stream and the last jog error, wired as
- * {@link useCurrentPoseProps} describes. Any prop of `CurrentPoseBar` given
- * here replaces the session's.
+ * The current pose bar of a robot session, ready to use: the TCP's current
+ * pose in a TCP and a coordinate system of the bar's own, which start as the
+ * ones of the session's jogging (its TCP and "Values relative to"), the
+ * state of the motion stream, and the last jog error. Any prop of
+ * `CurrentPoseBar` given here replaces the session's.
  *
  * ```tsx
- * <RobotSessionProvider session={session}>
- *   <CurrentPose />
- * </RobotSessionProvider>
+ * <CurrentPose session={session} sx={{ m: 1 }} />
  * ```
  */
 export const CurrentPose = observer(function CurrentPose({
   session,
   ...overrides
 }: CurrentPoseProps) {
-  const robot = useRobotSessionOf(session)
-  const props = useCurrentPoseProps(robot)
+  const props = useCurrentPoseProps(session)
   return <CurrentPoseBar {...props} {...overrides} />
 })

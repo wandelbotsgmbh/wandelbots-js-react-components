@@ -354,7 +354,7 @@ describe("Robot and LinearAxis with a plain motionGroup", () => {
     })
   })
 
-  // An app writes `motionGroup={robotModelOf(session)}`: a new object at
+  // RobotScene passes `robotModelOf(session)`, as an app may its own data: a new object at
   // every render, of the same robot. A failed download leaves the cache, so
   // asking again at every render would download again at every render.
   test.each([

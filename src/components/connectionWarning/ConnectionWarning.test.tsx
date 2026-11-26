@@ -9,7 +9,6 @@ import {
   vi,
 } from "vitest"
 import { makeHarness } from "../../lib/robotSession/__fixtures__/robotSessionHarness"
-import { RobotSessionProvider } from "../robotSession/RobotSessionProvider"
 import { ConnectionWarning } from "./ConnectionWarning"
 
 const NOW = Date.parse("2026-11-23T12:00:00Z")
@@ -98,19 +97,6 @@ describe("ConnectionWarning for a robot session", () => {
     expect(screen.queryByLabelText("Connection interrupted")).toBeNull()
 
     // No state comes from a disposed session any more
-    act(() => session.dispose())
-
-    expect(screen.getByLabelText("Connection interrupted")).toBeVisible()
-  })
-
-  it("takes the robot of the nearest RobotSessionProvider", async () => {
-    const session = await loadSession()
-    render(
-      <RobotSessionProvider session={session}>
-        <ConnectionWarning />
-      </RobotSessionProvider>,
-    )
-
     act(() => session.dispose())
 
     expect(screen.getByLabelText("Connection interrupted")).toBeVisible()

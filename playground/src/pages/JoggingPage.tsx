@@ -10,9 +10,10 @@ import {
   MotionGroupVisualizerExact,
   poseEqual,
   type RobotSession,
-  robotModelOf,
   TrajectoryRenderer,
 } from "@wandelbots/wandelbots-js-react-components"
+// Internal: the robot's mounting in 3D units
+import { robotModelOf } from "../../../src/components/robots/robotModelSource"
 import { observable, reaction, toJS } from "mobx"
 import { observer, useLocalObservable } from "mobx-react-lite"
 import { useEffect, useState } from "react"

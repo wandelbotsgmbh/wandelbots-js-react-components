@@ -24,7 +24,6 @@ export {
   type EulerConvention,
   type OrientationFormat,
 } from "./components/currentPoseBar/CurrentPoseBar"
-export { useCurrentPoseProps } from "./components/currentPoseBar/useCurrentPoseProps"
 export {
   JoggingButtons,
   type JoggingButtonsProps,
@@ -152,9 +151,4 @@ export {
   type TrajectoryState,
   type TrajectoryTarget,
 } from "./lib/TrajectoryExecutionStore"
-// Gives connected components (e.g. RobotControl of /3d) their session
-export {
-  RobotSessionProvider,
-  useRobotSession,
-} from "./components/robotSession/RobotSessionProvider"
 export * from "./SafetyBar"
