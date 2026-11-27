@@ -27,6 +27,16 @@
       "import": "./dist/3d.js",
       "require": "./dist/3d.cjs"
     },
+    "./nats": {
+      "types": "./dist/nats.d.ts",
+      "import": "./dist/nats.js",
+      "require": "./dist/nats.cjs"
+    },
+    "./session": {
+      "types": "./dist/session.d.ts",
+      "import": "./dist/session.js",
+      "require": "./dist/session.cjs"
+    },
     "./package.json": "./package.json",
     "./*": {
       "types": "./dist/*/index.d.ts",
@@ -52,6 +62,7 @@
     "api:update": "pnpm run build && tsx scripts/api-extractor.ts --local",
     "api:check": "tsx scripts/api-extractor.ts",
     "api:check-breaking": "tsx scripts/check-breaking-api.ts",
+    "api:names": "tsx scripts/publicNames.ts",
     "lint": "biome check --error-on-warnings .",
     "format": "biome format . --write",
     "prepare": "husky || true",
@@ -96,6 +107,7 @@
     "jsdom": "^27.4.0",
     "mobx": "^6.13.6",
     "mobx-react-lite": "^4.1.0",
+    "nats.ws": "^1.30.3",
     "nodemon": "^3.1.9",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
@@ -120,12 +132,34 @@
     "@wandelbots/mui": "^2.0.0",
     "mobx": "^6.13.6",
     "mobx-react-lite": "^4.1.0",
+    "nats.ws": "^1.30.3",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "three": ">=0.182",
     "three-stdlib": ">=2"
   },
   "peerDependenciesMeta": {
+    "@emotion/react": {
+      "optional": true
+    },
+    "@emotion/styled": {
+      "optional": true
+    },
+    "@mui/icons-material": {
+      "optional": true
+    },
+    "@mui/material": {
+      "optional": true
+    },
+    "@wandelbots/mui": {
+      "optional": true
+    },
+    "mobx-react-lite": {
+      "optional": true
+    },
+    "react": {
+      "optional": true
+    },
     "react-dom": {
       "optional": true
     },
@@ -139,6 +173,9 @@
       "optional": true
     },
     "three-stdlib": {
+      "optional": true
+    },
+    "nats.ws": {
       "optional": true
     }
   },

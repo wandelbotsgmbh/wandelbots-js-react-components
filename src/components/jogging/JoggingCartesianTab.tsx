@@ -36,6 +36,12 @@ type JoggingCartesianOpts = {
   direction: JoggingDirection
 }
 
+/**
+ * The cartesian tab of `JoggingPanel`
+ *
+ * @deprecated With `JoggingPanel`. `RobotControlPanel` has the tabs
+ * Translate and Rotate.
+ */
 export const JoggingCartesianTab = observer(
   ({
     store,
@@ -139,8 +145,8 @@ export const JoggingCartesianTab = observer(
     }
 
     async function stopJogging() {
-      if (store.isLocked) return
-
+      // Also while the store is locked: a lock that comes during a hold
+      // disables the button, and this is then the only stop the jog gets
       if (store.activeDiscreteIncrement) {
         return
       }

@@ -1,12 +1,36 @@
 import { useGLTF } from "@react-three/drei"
 import type { ThreeElements } from "@react-three/fiber"
+import type { DHParameter, Pose } from "@wandelbots/nova-js/v2"
 import type React from "react"
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import type { Group, Mesh, Object3D } from "three"
-import { isFlange, parseRobotModel } from "./robotModelLogic"
+import { MODEL_MESH } from "./ghostStyle"
+import {
+  chainOffsetRestFrame,
+  isFlange,
+  isRootPrismaticJoint,
+  JOINT_REST_SUFFIX,
+  parseRobotModel,
+  prismaticJointRestFrame,
+  revoluteJointRestFrame,
+} from "./robotModelLogic"
 
 export type RobotModelProps = {
   modelURL: string | Promise<string>
+  /**
+   * The motion group's DH chain, used to hoist each joint node's rest pose
+   * into a static parent (see `revoluteJointRestFrame`,
+   * `isRootPrismaticJoint` and `prismaticJointRestFrame`), so the animators
+   * turn or slide a joint about its own axis. Without it the model's
+   * hierarchy is drawn as it is.
+   */
+  dhParameters?: DHParameter[]
+  /**
+   * The transform between the motion group's base frame and the start of
+   * its DH chain (the kinematic model's `kinematic_chain_offset`), hoisted
+   * onto the root joint
+   */
+  kinematicChainOffset?: Pose | null
   /**
    * Called after a robot model has been loaded and
    * rendered into the threejs scene, when the components above it
@@ -25,15 +49,24 @@ function LoadedRobotModel({
   url,
   flangeRef,
   postModelRender,
+  dhParameters = [],
+  kinematicChainOffset,
   ...props
 }: {
   url: string
   flangeRef?: React.Ref<Group>
   postModelRender?: () => void
+  dhParameters?: DHParameter[]
+  kinematicChainOffset?: Pose | null
 } & ThreeElements["group"]) {
   const gltfResult = useGLTF(url)
   const parsed = parseRobotModel(gltfResult, "robot.glb")
   const gltf = parsed.gltf
+
+  const chainOffset = useMemo(
+    () => chainOffsetRestFrame(kinematicChainOffset),
+    [kinematicChainOffset],
+  )
 
   // After the commit, not in a ref callback: the refs of the components
   // above (such as the animator, which poses the joints of the new model)
@@ -56,6 +89,9 @@ function LoadedRobotModel({
               material={(node as Mesh).material}
               position={node.position}
               rotation={node.rotation}
+              // A ghost style turns these into a ghost, not the app's parts
+              // at the flange
+              userData={{ [MODEL_MESH]: true }}
             />
           )
         }
@@ -68,19 +104,80 @@ function LoadedRobotModel({
             rotation={node.rotation}
           />
         )
-      } else {
+      }
+
+      if (isRootPrismaticJoint(node, dhParameters)) {
+        // LinearAxisAnimator drives a prismatic joint by writing
+        // `position.y = +/- q`, which replaces the node's authored translation
+        // and slides it along the *parent's* Y. So the rest pose lives in a
+        // static parent and the joint node starts at the identity, where that
+        // write means "slide q along the rail". For the root joint that rest
+        // pose is the authoritative `kinematic_chain_offset`, whatever the
+        // export baked into the node (see `isRootPrismaticJoint`).
         return (
           <group
-            name={node.name}
+            name={`${node.name}${JOINT_REST_SUFFIX}`}
             key={node.uuid}
-            position={node.position}
-            rotation={node.rotation}
-            ref={isFlange(node) ? flangeRef : undefined}
+            position={chainOffset.position}
+            quaternion={chainOffset.quaternion}
           >
-            {node.children.map(renderNode)}
+            <group name={node.name}>{node.children.map(renderNode)}</group>
           </group>
         )
       }
+
+      const prismaticRest = prismaticJointRestFrame(node, dhParameters)
+      if (prismaticRest) {
+        // Any further prismatic row of the chain: the same hoist, but its rest
+        // pose is the authored one; only the root joint carries the chain
+        // offset
+        return (
+          <group
+            name={`${node.name}${JOINT_REST_SUFFIX}`}
+            key={node.uuid}
+            position={prismaticRest.position}
+            quaternion={prismaticRest.quaternion}
+          >
+            <group name={node.name}>{node.children.map(renderNode)}</group>
+          </group>
+        )
+      }
+
+      const restFrame = revoluteJointRestFrame(
+        node,
+        dhParameters,
+        kinematicChainOffset ? chainOffset : undefined,
+      )
+      if (restFrame) {
+        // The animators drive a joint by writing `rotation.y = theta +/- q`,
+        // which replaces the node's Euler-Y instead of composing onto it. So
+        // the static rest rotation lives in a parent and the joint node keeps
+        // a pure Ry(theta) the write can safely replace.
+        return (
+          <group
+            name={`${node.name}${JOINT_REST_SUFFIX}`}
+            key={node.uuid}
+            position={restFrame.position}
+            quaternion={restFrame.frame}
+          >
+            <group name={node.name} rotation={[0, restFrame.theta, 0]}>
+              {node.children.map(renderNode)}
+            </group>
+          </group>
+        )
+      }
+
+      return (
+        <group
+          name={node.name}
+          key={node.uuid}
+          position={node.position}
+          rotation={node.rotation}
+          ref={isFlange(node) ? flangeRef : undefined}
+        >
+          {node.children.map(renderNode)}
+        </group>
+      )
     } catch (e) {
       console.warn("Error rendering node", node.name, e)
       return null
@@ -98,6 +195,8 @@ export function GenericRobot({
   modelURL,
   flangeRef,
   postModelRender,
+  dhParameters,
+  kinematicChainOffset,
   ...props
 }: RobotModelProps) {
   const [resolvedURL, setResolvedURL] = useState<string | null>(null)
@@ -131,6 +230,8 @@ export function GenericRobot({
       url={resolvedURL}
       flangeRef={flangeRef}
       postModelRender={postModelRender}
+      dhParameters={dhParameters}
+      kinematicChainOffset={kinematicChainOffset}
       {...props}
     />
   )

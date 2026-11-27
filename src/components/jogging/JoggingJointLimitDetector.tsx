@@ -1,6 +1,6 @@
 import Typography from "@mui/material/Typography"
 import Box from "@mui/material/Box"
-import isEqual from "lodash-es/isEqual.js"
+import { isEqual } from "lodash-es"
 import { observer } from "mobx-react-lite"
 import { useRef, useState } from "react"
 import { useTranslation } from "react-i18next"

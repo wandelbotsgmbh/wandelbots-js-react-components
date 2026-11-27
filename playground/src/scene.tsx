@@ -6,11 +6,13 @@ import { Canvas } from "@react-three/fiber"
 import { ElevationCard } from "@wandelbots/mui"
 import { JointTypeEnum } from "@wandelbots/nova-js/v2"
 import {
-  type ConnectedMotionGroup,
   LinearAxis,
   PresetEnvironment,
   Robot,
+  type RobotSession,
 } from "@wandelbots/wandelbots-js-react-components"
+// Internal: the deprecated parts drawn from a session (an app uses RobotScene)
+import { robotModelOf } from "../../src/components/robots/robotModelSource"
 import {
   createContext,
   type ReactNode,
@@ -86,36 +88,39 @@ function Refit({ children }: { children: (refit: () => void) => ReactNode }) {
  * Turns NOVA coordinates (Z up) into the coordinates of the 3D view and the
  * robot models (Y up), for parts that draw NOVA poses as they are:
  * SafetyZonesRenderer, CollisionSceneRenderer and JointLimitGizmo.
- * TrajectoryRenderer turns the poses itself.
+ * TrajectoryRenderer and JoggingGizmoOrientation turn them themselves.
  */
 export function NovaCoordinates({ children }: { children: ReactNode }) {
   return <group rotation={[-Math.PI / 2, 0, 0]}>{children}</group>
 }
 
 /** Whether the motion group is a linear axis, as JoggingStore decides it */
-export function isLinearAxis(motionGroup: ConnectedMotionGroup) {
-  return motionGroup.dhParameters?.[0]?.type === JointTypeEnum.PrismaticJoint
+export function isLinearAxis(session: RobotSession) {
+  return session.description.jointType === JointTypeEnum.PrismaticJoint
 }
 
 /**
- * The robot (Robot) or linear axis (LinearAxis) of a connected motion group.
- * They load their model from the instance of the motion group, with the
- * access token of its connection.
+ * The robot (Robot) or linear axis (LinearAxis) of a session. They load
+ * their model from the instance of the session, with the access token of its
+ * connection.
  */
 export function MotionGroupModel({
-  motionGroup,
+  session,
   onModelLoaded,
 }: {
-  motionGroup: ConnectedMotionGroup
+  session: RobotSession
   onModelLoaded?: () => void
 }) {
-  return isLinearAxis(motionGroup) ? (
+  return isLinearAxis(session) ? (
     <LinearAxis
-      connectedMotionGroup={motionGroup}
+      motionGroup={robotModelOf(session)}
       postModelRender={onModelLoaded}
     />
   ) : (
-    <Robot connectedMotionGroup={motionGroup} postModelRender={onModelLoaded} />
+    <Robot
+      motionGroup={robotModelOf(session)}
+      postModelRender={onModelLoaded}
+    />
   )
 }
 

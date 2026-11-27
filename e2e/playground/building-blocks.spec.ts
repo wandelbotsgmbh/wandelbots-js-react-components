@@ -1,15 +1,23 @@
-import { expect, type Page, test } from "@playwright/test"
+import { expect, type Locator, type Page, test } from "@playwright/test"
 import {
+  activateRobot,
+  controllerState,
+  deactivateRobot,
+  expectModelDrawn,
   jogPress,
+  jointPositions,
   millimeters,
   openPage,
   screenshot,
   screenshotOnFailure,
 } from "./helpers"
 
-// The page Building blocks: the small parts alone
+// The page Building blocks: the small parts alone. The parts that jog use
+// the session's JoggingStore, which moves only an activated robot: the tests
+// that jog activate it first with the switch of the top bar.
 
 test.afterEach(screenshotOnFailure("building-blocks"))
+test.afterEach(deactivateRobot)
 
 /** A section of the page, by its heading */
 function section(page: Page, title: string) {
@@ -18,12 +26,22 @@ function section(page: Page, title: string) {
     .filter({ has: page.getByRole("heading", { name: title, exact: true }) })
 }
 
+/** The center of an element on the page, in px */
+async function centerOf(locator: Locator) {
+  const box = await locator.boundingBox()
+  if (!box) throw new Error("The element is not on the page")
+  return { x: box.x + box.width / 2, y: box.y + box.height / 2 }
+}
+
 test("shows the sections and the states of LoadingCover", async ({ page }) => {
   await openPage(page, "building-blocks")
   for (const title of [
     "JoggingCartesianAxisControl",
     "JoggingJointValueControl",
     "VelocitySlider and VelocitySliderLabel",
+    "JoggingGizmo and JoggingGizmoOrientation",
+    "JoggingButtons",
+    "JoggingJointSlider",
     "LoadingCover and LoadingErrorMessage",
     "NoMotionGroupModal",
   ]) {
@@ -57,8 +75,35 @@ test("shows the sections and the states of LoadingCover", async ({ page }) => {
   await screenshot(page, "building-blocks-sections")
 })
 
+test("shows the jog controls as off until the robot is activated, and leaves its controller in monitor mode", async ({
+  page,
+}) => {
+  await openPage(page, "building-blocks")
+  // The buttons of the controls of X, Y and Z come first: X-, X+, Y-, ...
+  const xPlus = section(page, "JoggingCartesianAxisControl")
+    .getByRole("button")
+    .nth(1)
+  const zPlus = section(page, "JoggingButtons")
+    .getByRole("button", { name: "Jog Z+" })
+    .first()
+  const j1 = section(page, "JoggingJointSlider").getByRole("slider", {
+    name: "J1 Base",
+  })
+  await expect(xPlus).toBeDisabled()
+  await expect(zPlus).toBeDisabled()
+  await expect(j1).toHaveAttribute("aria-disabled", "true")
+  // NOVA switches a controller to control mode by itself for a jog
+  expect((await controllerState()).mode).toBe("MODE_MONITOR")
+
+  await activateRobot(page)
+  await expect(xPlus).toBeEnabled()
+  await expect(zPlus).toBeEnabled()
+  await expect(j1).not.toHaveAttribute("aria-disabled", "true")
+})
+
 test("jogs the TCP with JoggingCartesianAxisControl", async ({ page }) => {
   await openPage(page, "building-blocks")
+  await activateRobot(page)
   // The buttons of the controls of X, Y and Z come first: X-, X+, Y-, ...
   const xPlus = section(page, "JoggingCartesianAxisControl")
     .getByRole("button")
@@ -75,6 +120,281 @@ test("jogs the TCP with JoggingCartesianAxisControl", async ({ page }) => {
     async () => millimeters(await x.innerText()) > before + 3,
   )
   await screenshot(page, "building-blocks-tcp-x")
+})
+
+test("jogs the TCP up along Z with JoggingGizmo", async ({ page }) => {
+  await openPage(page, "building-blocks")
+  await activateRobot(page)
+  // The gizmo section's 3D view: the RobotControlPanel section has one too
+  await expectModelDrawn(
+    section(page, "JoggingGizmo and JoggingGizmoOrientation"),
+  )
+  // The first gizmo jogs; the two small ones show the disabled and the
+  // active state
+  const zPlus = section(page, "JoggingGizmo and JoggingGizmoOrientation")
+    .getByRole("button", { name: "Jog Z+" })
+    .first()
+  await expect(zPlus).toBeEnabled()
+  // The TCP position in the control of Z (buttons X-, X+, Y-, Y+, Z-, Z+),
+  // which uses the same JoggingStore
+  const z = section(page, "JoggingCartesianAxisControl")
+    .getByRole("button")
+    .nth(4)
+    .locator("..")
+  await expect(z).toContainText(/\d mm/)
+  const before = millimeters(await z.innerText())
+
+  await jogPress(
+    page,
+    zPlus,
+    async () => millimeters(await z.innerText()) > before + 3,
+  )
+  await screenshot(page, "building-blocks-gizmo-z")
+})
+
+test("jogs a joint toward the pressed point with JoggingJointSlider, turns it around when the goal passes it, and stops it on release", async ({
+  page,
+}) => {
+  await openPage(page, "building-blocks")
+  await activateRobot(page)
+  const j1 = section(page, "JoggingJointSlider").getByRole("slider", {
+    name: "J1 Base",
+  })
+  await expect(j1).not.toHaveAttribute("aria-disabled", "true")
+  const before = (await jointPositions())[0]
+
+  // A goal 20° above the joint, along a track from aria-valuemin to
+  // aria-valuemax (in degrees) that spans the slider's width
+  const min = Number(await j1.getAttribute("aria-valuemin"))
+  const max = Number(await j1.getAttribute("aria-valuemax"))
+  const beforeDegrees = (before * 180) / Math.PI
+  // The mouse goes by the viewport: the slider must be in it
+  await j1.scrollIntoViewIfNeeded()
+  const box = await j1.boundingBox()
+  if (!box) throw new Error("No slider J1")
+  const pointAt = (degrees: number) =>
+    page.mouse.move(
+      box.x + (box.width * (degrees - min)) / (max - min),
+      box.y + box.height / 2,
+    )
+  await pointAt(beforeDegrees + 20)
+  await page.mouse.down()
+  try {
+    await expect
+      .poll(async () => (await jointPositions())[0], {
+        message: "Joint 1 turns toward the goal while the track is pressed",
+        // On a CI runner, the jogging connection can need more than 10 s
+        timeout: 30_000,
+      })
+      .toBeGreaterThan(before + 0.01)
+
+    // Still pressed, the goal moves below the joint: it turns around, with
+    // the stop and the start of the other way in one event
+    const turnedAt = (await jointPositions())[0]
+    await pointAt(beforeDegrees - 20)
+    await expect
+      .poll(async () => (await jointPositions())[0], {
+        message: "Joint 1 turns around when the goal passes it",
+        timeout: 30_000,
+      })
+      .toBeLessThan(turnedAt - 0.01)
+  } finally {
+    await page.mouse.up()
+  }
+
+  // Released: joint 1 stands still, two readings in a row the same
+  let last = Number.NaN
+  await expect
+    .poll(
+      async () => {
+        const now = (await jointPositions())[0]
+        const still = Math.abs(now - last) < 1e-5
+        last = now
+        return still
+      },
+      {
+        message: "Joint 1 stops on release",
+        intervals: [500],
+        timeout: 15_000,
+      },
+    )
+    .toBe(true)
+  await screenshot(page, "building-blocks-joint-sliders")
+})
+
+test("jogs the TCP up along Z with JoggingButtons", async ({ page }) => {
+  await openPage(page, "building-blocks")
+  await activateRobot(page)
+  // The first buttons jog; the two sets below show the disabled and the
+  // active state
+  const zPlus = section(page, "JoggingButtons")
+    .getByRole("button", { name: "Jog Z+" })
+    .first()
+  await expect(zPlus).toBeEnabled()
+  // The TCP position in the control of Z, which uses the same JoggingStore
+  const z = section(page, "JoggingCartesianAxisControl")
+    .getByRole("button")
+    .nth(4)
+    .locator("..")
+  await expect(z).toContainText(/\d mm/)
+  const before = millimeters(await z.innerText())
+
+  await jogPress(
+    page,
+    zPlus,
+    async () => millimeters(await z.innerText()) > before + 3,
+  )
+  await expect(zPlus).toHaveAttribute("aria-pressed", "false")
+  await screenshot(page, "building-blocks-buttons-z")
+})
+
+/** The numbers of a text, e.g. of the TCP orientation in degrees */
+function numbersOf(text: string) {
+  return (text.match(/-?\d+(\.\d+)?/g) ?? []).map(Number)
+}
+
+test("turns the TCP about Z with JoggingGizmo in rotate mode", async ({
+  page,
+}) => {
+  await openPage(page, "building-blocks")
+  await activateRobot(page)
+  // The gizmo section's 3D view: the RobotControlPanel section has one too
+  await expectModelDrawn(
+    section(page, "JoggingGizmo and JoggingGizmoOrientation"),
+  )
+  const gizmos = section(page, "JoggingGizmo and JoggingGizmoOrientation")
+  await gizmos.getByRole("button", { name: "Rotate" }).click()
+  // The first gizmo jogs, as in translate mode. Its handle is the round
+  // button on the arrowhead.
+  const rzPlus = gizmos.getByRole("button", { name: "Jog Rz+" }).first()
+  await expect(rzPlus).toBeEnabled()
+  const orientation = gizmos.getByTestId("tcp-orientation")
+  await expect(orientation).toContainText(/\d°/)
+  const before = numbersOf(await orientation.innerText())
+
+  await jogPress(page, rzPlus, async () => {
+    // A turn about Z changes the rotation vector in more than one number
+    const now = numbersOf(await orientation.innerText())
+    const change = now.reduce(
+      (sum, value, i) => sum + Math.abs(value - before[i]),
+      0,
+    )
+    return change > 1
+  })
+  await screenshot(page, "building-blocks-gizmo-rz")
+})
+
+test("turns JoggingGizmo like the tool when it jogs along the tool's axes", async ({
+  page,
+}) => {
+  await openPage(page, "building-blocks")
+  await activateRobot(page)
+  // The gizmo section's 3D view: the RobotControlPanel section has one too
+  await expectModelDrawn(
+    section(page, "JoggingGizmo and JoggingGizmoOrientation"),
+  )
+  const gizmos = section(page, "JoggingGizmo and JoggingGizmoOrientation")
+  const handles = ["Jog X+", "Jog Y+", "Jog Z+"].map((name) =>
+    gizmos.getByRole("button", { name }).first(),
+  )
+  await expect(handles[0]).toBeEnabled()
+  const alongWorld = await Promise.all(handles.map(centerOf))
+
+  // The tool of the start pose is turned against the world frame, so its
+  // axes show elsewhere on screen
+  await gizmos.getByRole("button", { name: "Tool" }).click()
+  await expect
+    .poll(
+      async () => {
+        const alongTool = await Promise.all(handles.map(centerOf))
+        return Math.max(
+          ...alongTool.map((p, i) =>
+            Math.hypot(p.x - alongWorld[i].x, p.y - alongWorld[i].y),
+          ),
+        )
+      },
+      { message: "The handles turned like the tool", timeout: 15_000 },
+    )
+    .toBeGreaterThan(20)
+
+  // Holding a handle moves the TCP along the tool's axes. In a turned frame
+  // an axis can point at the viewer, and no press reaches its handle then:
+  // hold the first handle that the pointer reaches.
+  const axisControls = section(page, "JoggingCartesianAxisControl")
+  const position = async () =>
+    Promise.all(
+      [0, 2, 4].map(async (i) =>
+        millimeters(
+          await axisControls
+            .getByRole("button")
+            .nth(i)
+            .locator("..")
+            .innerText(),
+        ),
+      ),
+    )
+  const before = await position()
+  let reached: Locator | undefined
+  for (const handle of handles) {
+    await handle.scrollIntoViewIfNeeded()
+    const underThePointer = await handle.evaluate((element) => {
+      const box = element.getBoundingClientRect()
+      const hit = document.elementFromPoint(
+        box.x + box.width / 2,
+        box.y + box.height / 2,
+      )
+      return hit !== null && element.contains(hit)
+    })
+    if (underThePointer) {
+      reached = handle
+      break
+    }
+  }
+  if (!reached) {
+    throw new Error("No handle of the tool's axes is under the pointer")
+  }
+  await jogPress(page, reached, async () => {
+    const now = await position()
+    return now.reduce((sum, v, i) => sum + Math.abs(v - before[i]), 0) > 3
+  })
+  await screenshot(page, "building-blocks-gizmo-tool")
+})
+
+test("turns JoggingGizmo with the camera of the 3D view", async ({ page }) => {
+  await openPage(page, "building-blocks")
+  // The gizmo section's 3D view: the RobotControlPanel section has one too
+  await expectModelDrawn(
+    section(page, "JoggingGizmo and JoggingGizmoOrientation"),
+  )
+  const xPlus = section(page, "JoggingGizmo and JoggingGizmoOrientation")
+    .getByRole("button", { name: "Jog X+" })
+    .first()
+  const viewport = section(
+    page,
+    "JoggingGizmo and JoggingGizmoOrientation",
+  ).getByTestId("viewport")
+  await viewport.scrollIntoViewIfNeeded()
+  const before = await centerOf(xPlus)
+
+  // Orbit: drag across the 3D view
+  const view = await viewport.boundingBox()
+  if (!view) throw new Error("No 3D view")
+  const y = view.y + view.height / 2
+  await page.mouse.move(view.x + view.width * 0.8, y)
+  await page.mouse.down()
+  await page.mouse.move(view.x + view.width * 0.2, y, { steps: 12 })
+  await page.mouse.up()
+
+  await expect
+    .poll(
+      async () => {
+        const after = await centerOf(xPlus)
+        return Math.hypot(after.x - before.x, after.y - before.y)
+      },
+      { message: "The X+ handle turned with the camera", timeout: 15_000 },
+    )
+    .toBeGreaterThan(20)
+  await screenshot(page, "building-blocks-gizmo-orbited")
 })
 
 test("opens and closes NoMotionGroupModal", async ({ page }) => {

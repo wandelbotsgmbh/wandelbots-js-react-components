@@ -29,6 +29,9 @@ export const SafetyStateIndicator = observer(
     const { t } = useTranslation()
     const theme = useTheme()
     const componentId = useId()
+    /** The indicator's name: what it shows, and the state it shows */
+    const named = (state: string) =>
+      `${t("SafetyBar.SafetyState.ti")}: ${state}`
 
     switch (safetyState) {
       // Normal state, robot can move
@@ -36,6 +39,8 @@ export const SafetyStateIndicator = observer(
         return (
           <IndicatorWithExplanation
             id={`safety-state-normal-${componentId}`}
+            testId="safety-state-indicator"
+            accessibleName={named(t("SafetyBar.SafetyState.Normal.lb"))}
             title={t("SafetyBar.SafetyState.ti")}
             name={t("SafetyBar.SafetyState.Normal.lb")}
             label={compact ? null : t("SafetyBar.SafetyState.Normal.lb")}
@@ -58,6 +63,8 @@ export const SafetyStateIndicator = observer(
         return (
           <IndicatorWithExplanation
             id={`safety-state-estop-${componentId}`}
+            testId="safety-state-indicator"
+            accessibleName={named(t("SafetyBar.SafetyState.Estop.lb"))}
             title={t("SafetyBar.SafetyState.ti")}
             name={t("SafetyBar.SafetyState.Estop.lb")}
             label={compact ? null : t("SafetyBar.SafetyState.Estop.lb")}
@@ -85,6 +92,8 @@ export const SafetyStateIndicator = observer(
         return (
           <IndicatorWithExplanation
             id={`safety-state-stop-${componentId}`}
+            testId="safety-state-indicator"
+            accessibleName={named(t("SafetyBar.SafetyState.Stop.lb"))}
             icon={SafetyStateStopIcon}
             title={t("SafetyBar.SafetyState.ti")}
             name={t("SafetyBar.SafetyState.Stop.lb")}
@@ -112,6 +121,10 @@ export const SafetyStateIndicator = observer(
         return (
           <IndicatorWithExplanation
             id={`safety-state-manual-action-required-${componentId}`}
+            testId="safety-state-indicator"
+            accessibleName={named(
+              t("SafetyBar.SafetyState.ManualActionRequired.lb"),
+            )}
             icon={SafetyStateManualActionRequiredIcon}
             color={theme.palette.warning.main}
             title={t("SafetyBar.SafetyState.ti")}
@@ -139,6 +152,8 @@ export const SafetyStateIndicator = observer(
         return (
           <IndicatorWithExplanation
             id={`safety-state-error-${componentId}`}
+            testId="safety-state-indicator"
+            accessibleName={named(t("SafetyBar.SafetyState.Error.lb"))}
             icon={SafetyStateErrorIcon}
             color={theme.palette.error.main}
             title={t("SafetyBar.SafetyState.ti")}
