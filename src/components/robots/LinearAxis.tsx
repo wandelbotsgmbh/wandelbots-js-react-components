@@ -1,54 +1,63 @@
 import type { ThreeElements } from "@react-three/fiber"
 import { useCallback } from "react"
 import type { Group } from "three"
-import type { ConnectedMotionGroup } from "../../lib/ConnectedMotionGroup"
 import { DHLinearAxis } from "./DHLinearAxis"
+import type { RobotMotionGroupProps } from "./Robot"
 import { defaultGetModel } from "./robotModelLogic"
+import type { RobotModelSource } from "./robotModelSource"
 import { SupportedLinearAxis } from "./SupportedLinearAxis"
 
-export type LinearAxisProps = {
-  connectedMotionGroup: ConnectedMotionGroup
+export type LinearAxisProps = RobotMotionGroupProps & {
   getModel?: (modelFromController: string) => Promise<string>
   flangeRef?: React.Ref<Group>
+  /** See `transparentColor` of `SupportedRobot` */
   transparentColor?: string
+  /** See `transparentOpacity` of `SupportedRobot` */
+  transparentOpacity?: number
   postModelRender?: () => void
 } & ThreeElements["group"]
 
 /**
- * The LinearAxis component is a wrapper that renders SupportedLinearAxis if a model is available,
- * otherwise falls back to DHLinearAxis for usage with @wandelbots/nova-js ConnectedMotionGroup object.
+ * A linear axis of a NOVA cell: {@link SupportedLinearAxis} with its model,
+ * or `DHLinearAxis` from its DH parameters when the controller reports
+ * no model.
  *
- * @param {LinearAxisProps} props - The properties for the LinearAxis component.
- * @param {ConnectedMotionGroup} props.connectedMotionGroup - The connected motion group containing motion state and parameters.
- * @param {Function} [props.getModel] - Optional function to get the model URL. Defaults to defaultGetModel with the connection of the connected motion group (its URL and access token).
- * @param {Object} props - Additional properties passed to the underlying component.
+ * ```tsx
+ * <LinearAxis motionGroup={connectedMotionGroup} />
+ * ```
  *
- * @returns {JSX.Element} The rendered SupportedLinearAxis or DHLinearAxis component.
+ * @param props.motionGroup - The axis to draw, see {@link RobotModelSource}
+ * @param props.getModel - Gives the URL of the model file. Defaults to {@link defaultGetModel}, downloading from the axis's `nova` connection (its URL and access token).
+ * @param props - Further properties go to the underlying component.
  */
 export function LinearAxis({
+  motionGroup,
   connectedMotionGroup,
   getModel,
   flangeRef,
   transparentColor,
+  transparentOpacity,
   postModelRender,
   ...props
 }: LinearAxisProps) {
-  // The model from the instance of the motion group, with the access token
-  // of its connection
+  const axis: RobotModelSource | undefined = motionGroup ?? connectedMotionGroup
+
+  // The model from the instance of the axis, with the access token of its
+  // connection. Made again only for another connection: an app may give a
+  // new motionGroup object at every render.
+  const nova = axis?.nova
   const getModelOfConnection = useCallback(
-    (model: string) => defaultGetModel(model, connectedMotionGroup.nova),
-    [connectedMotionGroup],
+    (model: string, _instanceUrl?: string, serialNumber?: string) =>
+      defaultGetModel(model, nova, serialNumber),
+    [nova],
   )
   const loadModel = getModel ?? getModelOfConnection
 
-  if (!connectedMotionGroup.dhParameters) {
+  if (!axis?.dhParameters) {
     return null
   }
 
-  const mountingPosition = connectedMotionGroup.mountingPosition
-  const mountingQuaternion = connectedMotionGroup.mountingQuaternion
-
-  const modelFromController = connectedMotionGroup.modelFromController || ""
+  const modelFromController = axis.modelFromController || ""
   // getModel always returns a promise: a call here would start a download at
   // every render, also after a failed download. SupportedLinearAxis loads it.
   const hasModel = !!modelFromController
@@ -57,17 +66,18 @@ export function LinearAxis({
   if (hasModel) {
     return (
       <SupportedLinearAxis
-        rapidlyChangingMotionState={
-          connectedMotionGroup.rapidlyChangingMotionState
-        }
+        rapidlyChangingMotionState={axis.rapidlyChangingMotionState}
         modelFromController={modelFromController}
-        dhParameters={connectedMotionGroup.dhParameters}
+        dhParameters={axis.dhParameters}
+        serialNumber={axis.serialNumber}
+        kinematicChainOffset={axis.kinematicChainOffset}
         getModel={loadModel}
         flangeRef={flangeRef}
         transparentColor={transparentColor}
+        transparentOpacity={transparentOpacity}
         postModelRender={postModelRender}
-        chainOffsetPosition={mountingPosition}
-        chainOffsetQuaternion={mountingQuaternion}
+        chainOffsetPosition={axis.mountingPosition}
+        chainOffsetQuaternion={axis.mountingQuaternion}
         {...props}
       />
     )
@@ -75,12 +85,10 @@ export function LinearAxis({
 
   return (
     <DHLinearAxis
-      rapidlyChangingMotionState={
-        connectedMotionGroup.rapidlyChangingMotionState
-      }
-      dhParameters={connectedMotionGroup.dhParameters}
-      chainOffsetPosition={mountingPosition}
-      chainOffsetQuaternion={mountingQuaternion}
+      rapidlyChangingMotionState={axis.rapidlyChangingMotionState}
+      dhParameters={axis.dhParameters}
+      chainOffsetPosition={axis.mountingPosition}
+      chainOffsetQuaternion={axis.mountingQuaternion}
       {...props}
     />
   )

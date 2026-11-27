@@ -78,8 +78,8 @@ test("jogs the TCP along X and records its path", async ({ page }) => {
 })
 
 test("switches the pages with the app menu of AppHeader", async ({ page }) => {
-  // 6 page loads: on a CI runner about 1.6 min
-  test.setTimeout(240_000)
+  // 8 page loads: on a CI runner about 2.2 min
+  test.setTimeout(300_000)
   await openPage(page, "jogging")
   await expect(page).toHaveTitle("Jogging · Playground")
 
@@ -101,6 +101,16 @@ test("switches the pages with the app menu of AppHeader", async ({ page }) => {
       id: "models",
       name: "Robot models",
       content: page.getByRole("textbox", { name: "Filter" }),
+    },
+    {
+      id: "ghosts",
+      name: "Ghosts",
+      content: page.getByText("Grey: a stored pose."),
+    },
+    {
+      id: "layouts",
+      name: "Layouts",
+      content: page.getByTestId("robot-header"),
     },
     {
       id: "building-blocks",

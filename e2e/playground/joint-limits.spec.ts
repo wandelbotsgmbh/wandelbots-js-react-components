@@ -1,5 +1,7 @@
 import { expect, test } from "@playwright/test"
 import {
+  activateRobot,
+  deactivateRobot,
   expectModelDrawn,
   jogPress,
   jointPositions,
@@ -14,11 +16,15 @@ import {
 // joint, and VelocitySlider
 
 test.afterEach(screenshotOnFailure("joint-limits"))
+// The test activates the robot
+test.afterEach(deactivateRobot)
 
 test("shows 6 joints, changes the velocity and jogs joint 2", async ({
   page,
 }) => {
   await openPage(page, "joint-limits")
+  // The session's JoggingStore jogs only an activated robot
+  await activateRobot(page)
   await expectModelDrawn(page)
 
   // A row per joint: J1 to J6

@@ -22,7 +22,13 @@ type JoggingCartesianAxisControlProps = {
   activeJoggingDirection?: JoggingDirection
 } & React.ComponentProps<typeof Stack>
 
-/** A input widget to control an individual cartesian axis */
+/**
+ * A input widget to control an individual cartesian axis
+ *
+ * @deprecated Use `JoggingButtons`: a minus and a plus button per axis, held
+ * to jog, taking props only (`motion`, `onJogStart`, `onJogStop`), with the
+ * colors of the design system. `JoggingGizmo` jogs by the same props.
+ */
 export const JoggingCartesianAxisControl = externalizeComponent(
   observer(
     ({

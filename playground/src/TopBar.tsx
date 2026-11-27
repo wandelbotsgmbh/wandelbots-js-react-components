@@ -1,10 +1,12 @@
+import Box from "@mui/material/Box"
 import MenuItem from "@mui/material/MenuItem"
 import Stack from "@mui/material/Stack"
 import Typography from "@mui/material/Typography"
 import { AdornedSelect } from "@wandelbots/mui"
 import {
+  ActivationSwitch,
   AppHeader,
-  type ConnectedMotionGroup,
+  type RobotSession,
   SafetyBar,
 } from "@wandelbots/wandelbots-js-react-components"
 import { observer } from "mobx-react-lite"
@@ -20,13 +22,14 @@ type TopBarProps = {
   /** The selected motion group, undefined when the cell has none */
   motionGroupId: string | undefined
   onMotionGroupChange: (motionGroupId: string) => void
-  /** The selected motion group, undefined while it connects */
-  motionGroup: ConnectedMotionGroup | undefined
+  /** The selected motion group's session, undefined while it loads */
+  session: RobotSession | undefined
 }
 
 /**
  * The top bar of every page: AppHeader (its app menu switches the pages), the
- * motion group select and the SafetyBar of the selected motion group.
+ * motion group select, and the activation switch and the SafetyBar of the
+ * selected motion group.
  */
 export const TopBar = observer(function TopBar({
   instance,
@@ -35,7 +38,7 @@ export const TopBar = observer(function TopBar({
   motionGroupIds = [],
   motionGroupId,
   onMotionGroupChange,
-  motionGroup,
+  session,
 }: TopBarProps) {
   const current = pageById(page)
   // A motion group of the URL that is not in the cell stays visible
@@ -86,14 +89,12 @@ export const TopBar = observer(function TopBar({
         ))}
       </AdornedSelect>
 
-      {motionGroup && (
-        <SafetyBar
-          isVirtual={motionGroup.isVirtual}
-          motionGroupId={motionGroup.motionGroupId}
-          operationMode={motionGroup.controllerState.operation_mode}
-          safetyState={motionGroup.controllerState.safety_state}
-        />
-      )}
+      {/* On every page: what jogs with the session's JoggingStore moves only
+          an activated robot, and only the Layouts page has RobotHeader */}
+      <Box data-testid="playground-activation">
+        <ActivationSwitch session={session} />
+      </Box>
+      <SafetyBar session={session} />
     </Stack>
   )
 })

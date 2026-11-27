@@ -11,6 +11,11 @@ import type { JoggingStore } from "./JoggingStore"
 import { JoggingVelocitySlider } from "./JoggingVelocitySlider"
 import { StreamStateSection } from "./StreamStateSection"
 
+/**
+ * The joint tab of `JoggingPanel`
+ *
+ * @deprecated With `JoggingPanel`. `RobotControlPanel` has the tab Joint.
+ */
 export const JoggingJointTab = observer(
   ({ store, children }: { store: JoggingStore; children?: ReactNode }) => {
     const theme = useTheme()

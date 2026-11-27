@@ -8,28 +8,49 @@ import { AutoReconnectingWebsocket } from '@wandelbots/nova-js';
 import { Collider } from '@wandelbots/nova-js/v2';
 import type { CollisionSetup } from '@wandelbots/nova-js/v2';
 import { CoordinateSystem } from '@wandelbots/nova-js/v2';
-import type { DHParameter } from '@wandelbots/nova-js/v2';
-import { Dictionary } from 'lodash';
+import { DHParameter } from '@wandelbots/nova-js/v2';
+import { FunctionComponent } from 'react';
 import type { Group } from 'three';
 import type { i18n as i18n_2 } from 'i18next';
 import { IReactionDisposer } from 'mobx';
+import type { JoggingDetailsState } from '@wandelbots/nova-js/v2';
+import { JointLimits } from '@wandelbots/nova-js/v2';
 import { JointTypeEnum } from '@wandelbots/nova-js/v2';
 import { JSX } from 'react/jsx-runtime';
+import { KinematicModel } from '@wandelbots/nova-js/v2';
 import type { LimitRange } from '@wandelbots/nova-js/v2';
 import { MotionGroupDescription } from '@wandelbots/nova-js/v2';
-import type { MotionGroupState } from '@wandelbots/nova-js/v2';
+import { MotionGroupState } from '@wandelbots/nova-js/v2';
+import { Object3D } from 'three';
 import type { OperationMode } from '@wandelbots/nova-js/v2';
+import type { OrientationType as OrientationType_2 } from '@wandelbots/nova-js/v2';
 import type { PopoverOrigin } from '@mui/material/Popover';
 import { Pose } from '@wandelbots/nova-js/v2';
+import { Quaternion } from 'three';
 import { default as React_2 } from 'react';
 import { ReactNode } from 'react';
-import type { RobotControllerState } from '@wandelbots/nova-js/v2';
+import { Ref } from 'react';
+import { RefObject } from 'react';
+import { RobotControllerConfiguration } from '@wandelbots/nova-js/v2';
+import { RobotControllerState } from '@wandelbots/nova-js/v2';
 import { RobotTcp } from '@wandelbots/nova-js/v2';
 import type { SafetyStateType } from '@wandelbots/nova-js/v2';
 import Stack from '@mui/material/Stack';
 import { SxProps } from '@mui/material/styles';
+import { TcpOffset } from '@wandelbots/nova-js/v2';
+import { Theme } from '@mui/material/styles';
 import * as THREE from 'three';
 import type { ThreeElements } from '@react-three/fiber';
+import type { TrajectoryDetailsState } from '@wandelbots/nova-js/v2';
+import { Vector3 } from 'three';
+
+// @public
+export const ActivationSwitch: FunctionComponent<RobotHeaderActivation | ActivationSwitchOfSessionProps>;
+
+// @public
+export type ActivationSwitchOfSessionProps = {
+    session: RobotSession | null | undefined;
+};
 
 // @public
 export const AppHeader: ((props: AppHeaderProps) => JSX.Element) & {
@@ -55,7 +76,7 @@ export type AppItem = {
     onClick?: () => void;
 };
 
-// @public (undocumented)
+// @public @deprecated
 export interface AxisControlComponentColors {
     // (undocumented)
     backgroundColor?: string;
@@ -77,7 +98,7 @@ export interface AxisControlComponentColors {
 // @public (undocumented)
 export function CollisionSceneRenderer(input: CollisionSceneRendererProps): JSX.Element;
 
-// @public
+// @public @deprecated
 export class ConnectedMotionGroup {
     constructor(connection: NovaConnection, controller: RobotControllerState, motionGroup: MotionGroupState, initialMotionState: MotionGroupState, motionStateSocket: AutoReconnectingWebsocket, isVirtual: boolean, tcps: RobotTcpLike[], description: MotionGroupDescription, initialControllerState: RobotControllerState, controllerStateSocket: AutoReconnectingWebsocket, cellId?: string);
     // (undocumented)
@@ -157,13 +178,109 @@ export class ConnectedMotionGroup {
     toggleActivation(): void;
 }
 
-// @public (undocumented)
+// @public @deprecated (undocumented)
 export type ConnectedMotionGroupOptions = {
     cellId?: string;
 };
 
 // @public
-export function defaultGetModel(modelFromController: string, connection?: NovaConnection): Promise<string>;
+export type ConnectionLogger = {
+    info: (message: string, data?: unknown) => void;
+    debug: (message: string, data?: unknown) => void;
+    warn: (message: string, data?: unknown) => void;
+};
+
+// @public
+export type ConnectionQuality = "good" | "struggling" | "critical";
+
+// @public
+export const ConnectionWarning: FunctionComponent<ConnectionWarningProps>;
+
+// @public
+export type ConnectionWarningProps = Partial<ConnectionWarningState> & {
+    session?: RobotSession | null;
+};
+
+// @public
+export type ConnectionWarningState = {
+    quality: ConnectionQuality;
+    lastMessageAt: number;
+    lastInvalidMessage?: {
+        receivedAt: number;
+        data: unknown;
+    } | null;
+};
+
+// @public
+export type ControllerStateSource = {
+    readonly url: string;
+    readonly readyState: number;
+    addEventListener(type: "message", listener: (event: MessageEvent) => void): void;
+    removeEventListener(type: "message", listener: (event: MessageEvent) => void): void;
+    firstMessage(): Promise<MessageEvent>;
+    nextMessage(): Promise<MessageEvent>;
+    reconnect(): void;
+    close(): void;
+    parse(data: unknown): RobotControllerState | undefined;
+};
+
+// @public
+export class ControllerStateStream {
+    connectionQuality: "good" | "struggling" | "critical";
+    get controllerState(): RobotControllerState;
+    dispose(): void;
+    lastInvalidStateMessage: {
+        receivedAt: number;
+        data: unknown;
+    } | null;
+    lastValidStateMessage: {
+        receivedAt: number;
+        data: RobotControllerState;
+    };
+    readonly motionGroupId: string;
+    nextMotionState(): Promise<MotionGroupState>;
+    rapidlyChangingMotionState: MotionGroupState;
+    get readoutState(): MotionStateReadout;
+    readonly source: ControllerStateSource;
+}
+
+// @public
+export const CurrentPose: FunctionComponent<CurrentPoseProps>;
+
+// @public
+export const CurrentPoseBar: (input: CurrentPoseBarProps) => JSX.Element;
+
+// @public
+export type CurrentPoseBarProps = {
+    getCurrentPose: () => RobotControlPose | null;
+    tcp?: RobotControlSelect;
+    frame?: RobotControlSelect;
+    state?: CurrentPoseBarState | null;
+    error?: string | null;
+    orientationFormat?: OrientationFormat;
+    onOrientationFormatChange?: (format: OrientationFormat) => void;
+    sx?: SxProps<Theme>;
+};
+
+// @public
+export type CurrentPoseBarState = JoggingDetailsState["kind"] | TrajectoryDetailsState["kind"];
+
+// @public
+export type CurrentPoseProps = Partial<CurrentPoseBarProps> & {
+    session: RobotSession;
+};
+
+// @public
+export function defaultGetModel(modelFromController: string, connection?: NovaConnection, serialNumber?: string): Promise<string>;
+
+// @public
+export function deriveSelectedTcpPose(input: {
+    inputPose: TcpReferencedPose;
+    selectedTcpId?: string;
+    selectedCoordinateSystemId?: string;
+    tcpOffsetsById: MotionGroupDescription["tcps"];
+    coordinateSystems: CoordinateSystem[];
+}): TcpReferencedPose;
 
 // @public (undocumented)
 export type DHLinearAxisProps = {
@@ -177,7 +294,14 @@ export type DHLinearAxisProps = {
 export type DHRobotProps = {
     rapidlyChangingMotionState: MotionGroupState;
     dhParameters: Array<DHParameter>;
+    kinematicChainOffset?: Pose | null;
 } & ThreeElements["group"];
+
+// @public
+export type EulerConvention = Extract<OrientationType_2, `EULER_ANGLES_${string}`>;
+
+// @public (undocumented)
+export const FLANGE_NODE_SUFFIX = "_FLG";
 
 // @public (undocumented)
 export type GizmoChainOffset = Pose;
@@ -192,6 +316,27 @@ export type GizmoJointLimit = LimitRange;
 export const i18n: i18n_2;
 
 // @public
+export type IncrementalCartesianMotionRequest = {
+    currentTcpPose: Pose;
+    currentJoints: Vector3Simple;
+    coordSystemId?: string;
+    velocityInRelevantUnits: number;
+    axis: "x" | "y" | "z";
+    direction: "-" | "+";
+    motion: IncrementalMotion;
+    refusedReason?: () => JoggingRefusedReason | null;
+};
+
+// @public
+export type IncrementalMotion = {
+    type: "rotate";
+    distanceRads: number;
+} | {
+    type: "translate";
+    distanceMm: number;
+};
+
+// @public
 export interface InterpolationOptions {
     friction?: number;
     onChange?: (values: number[]) => void;
@@ -201,10 +346,29 @@ export interface InterpolationOptions {
 }
 
 // @public (undocumented)
+export function isRobotLoadStepError(err: unknown): err is RobotLoadStepError;
+
+// @public
+export type JogAxis = "x" | "y" | "z";
+
+// @public
+export type JogControlsProps = {
+    motion?: "translate" | "rotate";
+    onJogStart: (axis: JogAxis, direction: JogDirection) => void;
+    onJogStop: () => void;
+    activeHandle?: JogHandle | null;
+    disabled?: boolean;
+};
+
+// @public
+export type JogDirection = "+" | "-";
+
+// @public (undocumented)
 export class JoggerConnection {
     constructor(motionStream: MotionStreamConnection, options?: JoggerConnectionOptions | undefined);
     // (undocumented)
     get cellId(): string;
+    coordinateSystem: CoordinateSystem | undefined;
     // (undocumented)
     DEFAULT_INIT_TIMEOUT: number;
     // (undocumented)
@@ -249,21 +413,7 @@ export class JoggerConnection {
         direction: "-" | "+";
         velocityRadsPerSec: number;
     }): Promise<void>;
-    runIncrementalCartesianMotion(input: {
-        currentTcpPose: Pose;
-        currentJoints: Vector3Simple;
-        coordSystemId: string;
-        velocityInRelevantUnits: number;
-        axis: "x" | "y" | "z";
-        direction: "-" | "+";
-        motion: {
-            type: "rotate";
-            distanceRads: number;
-        } | {
-            type: "translate";
-            distanceMm: number;
-        };
-    }): Promise<void>;
+    runIncrementalCartesianMotion(request: IncrementalCartesianMotionRequest): Promise<void>;
     // (undocumented)
     setJoggingMode(mode: JoggerMode, skipReinitializeIfSameMode?: boolean): Promise<void>;
     // (undocumented)
@@ -289,8 +439,11 @@ export type JoggerConnectionOptions = {
     timeout?: number;
     onError?: (err: unknown) => void;
     tcp?: string;
+    coordinateSystem?: CoordinateSystem;
     orientation?: JoggerOrientation;
     cellId?: string;
+    motionGroupModel?: string;
+    logger?: ConnectionLogger;
 };
 
 // @public (undocumented)
@@ -300,21 +453,75 @@ export type JoggerMode = "jogging" | "trajectory" | "off";
 export type JoggerOrientation = "coordsys" | "tool";
 
 // @public
+export function JoggingAxes(input: JoggingAxesProps): JSX.Element;
+
+// @public
+export type JoggingAxesProps = {
+    base?: CoordinateSystem;
+    tcpOffset?: Pose;
+    rapidlyChangingMotionState: MotionGroupState;
+    orientation: OrientationId;
+    rotate?: boolean;
+};
+
+// @public
+export const JoggingButtons: (props: JoggingButtonsProps) => JSX.Element;
+
+// @public
+export type JoggingButtonsProps = JogControlsProps;
+
+// @public @deprecated
 export const JoggingCartesianAxisControl: ((input: JoggingCartesianAxisControlProps) => JSX.Element) & {
     displayName: string;
 };
 
 // @public
+export const JoggingGizmo: (input: JoggingGizmoProps) => JSX.Element;
+
+// @public
+export function JoggingGizmoOrientation(input: JoggingGizmoOrientationProps): null;
+
+// @public
+export type JoggingGizmoOrientationProps = {
+    target: RefObject<Quaternion | null>;
+};
+
+// @public
+export type JoggingGizmoProps = JogControlsProps & {
+    orientation: RefObject<Quaternion | null>;
+    frameQuaternion?: Quaternion | (() => Quaternion);
+    size?: number;
+    onWebGLUnavailable?: (context: WebGLUnavailableContext) => void;
+};
+
+// @public
+export const JoggingJointSlider: (input: JoggingJointSliderProps) => JSX.Element;
+
+// @public
+export type JoggingJointSliderProps = {
+    label: string;
+    name?: string;
+    value: number;
+    min?: number;
+    max?: number;
+    linear?: boolean;
+    angleUnit?: "deg" | "rad";
+    onJogStart: (direction: JogDirection) => void;
+    onJogStop: () => void;
+    disabled?: boolean;
+};
+
+// @public @deprecated
 export const JoggingJointValueControl: ((input: JoggingJointValueControlProps) => JSX.Element) & {
     displayName: string;
 };
 
-// @public
+// @public @deprecated
 export const JoggingPanel: ((props: JoggingPanelProps) => JSX.Element) & {
     displayName: string;
 };
 
-// @public (undocumented)
+// @public @deprecated (undocumented)
 export type JoggingPanelProps = {
     nova: NovaConnection;
     motionGroupId: string;
@@ -326,15 +533,28 @@ export type JoggingPanelProps = {
     store?: JoggingStore;
 };
 
-// @public (undocumented)
+// @public @deprecated (undocumented)
 export type JoggingPanelTabId = "cartesian" | "joint";
+
+// @public
+export class JoggingRefusedError extends Error {
+    readonly reason: JoggingRefusedReason;
+}
+
+// @public
+export type JoggingRefusedReason = RobotNotMoveableReason | {
+    code: "blocked";
+} | {
+    code: "locked";
+};
 
 // @public (undocumented)
 export class JoggingStore {
-    constructor(jogger: JoggerConnection, coordSystems: CoordinateSystem[], motionGroupDescription: MotionGroupDescription, tcps: RobotTcp[], inverseSolverValue: string | null | undefined);
+    constructor(jogger: JoggerConnection, coordSystems: CoordinateSystem[], motionGroupDescription: MotionGroupDescription, tcps: RobotTcp[], inverseSolverValue: string | null | undefined, options?: JoggingStoreOptions);
+    // @deprecated
     activate(): Promise<JoggerConnection>;
+    // @deprecated
     get activeCoordSystemId(): string;
-    // (undocumented)
     get activeDiscreteIncrement(): {
         id: string;
         mm: number;
@@ -343,17 +563,19 @@ export class JoggingStore {
     // (undocumented)
     block(): void;
     blocked: boolean;
+    get canJogCartesian(): boolean;
     // (undocumented)
-    get coordSystemCountByName(): Dictionary<number>;
+    get coordSystemCountByName(): Record<string, number>;
     // (undocumented)
     readonly coordSystems: CoordinateSystem[];
     // (undocumented)
-    get coordSystemsById(): Dictionary<CoordinateSystem>;
-    // (undocumented)
-    get currentTab(): {
-        id: TabType;
-        label: string;
-    };
+    get coordSystemsById(): Record<string, CoordinateSystem>;
+    static create(jogger: JoggerConnection, data: {
+        coordinateSystems: CoordinateSystem[];
+        description: MotionGroupDescription;
+        kinematicModel: KinematicModel;
+    }, options?: JoggingStoreOptions): JoggingStore;
+    get currentTab(): JoggingTab;
     // (undocumented)
     deactivate(): Promise<void>;
     // (undocumented)
@@ -362,7 +584,6 @@ export class JoggingStore {
         mm: number;
         degrees: number;
     }[];
-    // (undocumented)
     dispose(): void;
     // (undocumented)
     disposers: IReactionDisposer[];
@@ -376,28 +597,26 @@ export class JoggingStore {
         degrees: number;
     }[]];
     // (undocumented)
-    get incrementOptionsById(): Dictionary<    {
-    id: string;
-    mm: number;
-    degrees: number;
-    } | {
-    readonly id: "continuous";
-    }>;
+    get incrementOptionsById(): Record<string, (typeof incrementOptions)[number]>;
     inverseSolver: string | null | undefined;
     // (undocumented)
     readonly inverseSolverValue: string | null | undefined;
     // (undocumented)
     get isLocked(): boolean;
+    get jogCoordSystem(): CoordinateSystem;
+    jogCoordSystemId: string;
     // (undocumented)
     readonly jogger: JoggerConnection;
     jointType: JointTypeEnum;
-    static loadFor(jogger: JoggerConnection): Promise<JoggingStore>;
-    // (undocumented)
+    lastJogError: string | null;
+    get lastJogErrorTranslationKey(): string | null;
+    static loadFor(jogger: JoggerConnection, options?: JoggingStoreOptions): Promise<JoggingStore>;
     loadFromLocalStorage(): void;
     // (undocumented)
     get localStorageSave(): {
         selectedTabId: TabType;
         selectedCoordSystemId: string;
+        jogCoordSystemId: string;
         selectedOrientation: string;
         selectedIncrementId: string;
         selectedCartesianMotionType: CartesianMotionType;
@@ -413,12 +632,13 @@ export class JoggingStore {
     minVelocityInDisplayUnits(useDegree: boolean): number;
     // (undocumented)
     readonly motionGroupDescription: MotionGroupDescription;
-    // (undocumented)
+    onBeforeActivate: (() => void | Promise<void>) | null;
+    // @deprecated
     onTabChange(_event: React.SyntheticEvent, newValue: number): void;
     requestTcpChange(tcpId: string): Promise<void>;
     rotationVelocityDegPerSec: number;
     get rotationVelocityRadsPerSec(): number;
-    // (undocumented)
+    runIncrementalCartesianJog(motion: CartesianMotionType, axis: JoggingAxis, direction: JoggingDirection, increment: DiscreteIncrementOption): Promise<void>;
     saveToLocalStorage(): void;
     selectedCartesianMotionType: CartesianMotionType;
     selectedCoordSystemId: string;
@@ -427,8 +647,12 @@ export class JoggingStore {
     // (undocumented)
     selectedTabId: TabType;
     selectedTcpId: string;
-    // (undocumented)
+    // @deprecated (undocumented)
     setCurrentIncrementJog(incrementJog: IncrementJogInProgress | null): void;
+    // (undocumented)
+    setLastJogError(message: string | null): void;
+    setMoveRelativeToCoordSystem(coordSystemId: string): void;
+    setMoveRelativeToSelectedTcp(): void;
     // (undocumented)
     setSelectedCartesianMotionType(type: CartesianMotionType): void;
     // (undocumented)
@@ -439,41 +663,70 @@ export class JoggingStore {
     setSelectedOrientation(orientation: OrientationId): void;
     // @deprecated (undocumented)
     setSelectedTcpId(id: string): void;
-    // (undocumented)
     setVelocityFromSlider(velocity: number, useDegree: boolean): void;
+    // @deprecated
     showCoordSystemSelect: boolean;
+    // @deprecated
     showIncrementSelect: boolean;
+    // @deprecated
     showJointsLegend: boolean;
+    // @deprecated
     showOrientationSelect: boolean;
+    // @deprecated
     showTabIcons: boolean;
+    // @deprecated
     showTcpSelect: boolean;
+    // @deprecated
     showVelocityLegend: boolean;
+    // @deprecated
     showVelocitySliderLabel: boolean;
-    // (undocumented)
+    startCartesianJogging(motion: CartesianMotionType, axis: JoggingAxis, direction: JoggingDirection): Promise<void>;
+    startJointJogging(joint: number, direction: JoggingDirection): Promise<void>;
+    stopJogging(): Promise<void>;
+    // @deprecated
     get tabIndex(): number;
-    // (undocumented)
-    get tabs(): {
-        id: TabType;
-        label: string;
-    }[];
-    // (undocumented)
-    get tabsById(): Dictionary<    {
-    id: TabType;
-    label: string;
-    }>;
+    // @deprecated
+    get tabs(): [JoggingTab, ...JoggingTab[]];
+    // @deprecated (undocumented)
+    get tabsById(): Record<string, JoggingTab>;
     tcpChangeInProgress: boolean;
+    tcpPoseIn(tcpId: string, coordinateSystemId: string): Pose | undefined;
+    get tcpPoseInSelectedCoordSystem(): Pose | undefined;
     // (undocumented)
     readonly tcps: RobotTcp[];
     // (undocumented)
-    get tcpsById(): Dictionary<RobotTcp>;
+    get tcpsById(): Record<string, RobotTcp>;
     translationVelocityMmPerSec: number;
-    // (undocumented)
     unblock(): void;
     // (undocumented)
     unlock(id: string): void;
     velocityInDisplayUnits(useDegree: boolean): number;
     withMotionLock(fn: () => Promise<void>): Promise<void>;
 }
+
+// @public
+export type JoggingStoreOptions = {
+    storage?: JoggingStoreStorage;
+    notMoveableReason?: () => RobotNotMoveableReason | null;
+};
+
+// @public
+export type JoggingStoreStorage = Pick<Storage, "getItem" | "setItem">;
+
+// @public
+export type JogHandle = {
+    axis: JogAxis;
+    direction: JogDirection;
+};
+
+// @public
+export type JogMotion = "translate" | "rotate";
+
+// @public (undocumented)
+export const JOINT_REST_SUFFIX = "_REST";
+
+// @public
+export function jointIndexOf(node: Object3D): number | null;
 
 // @public
 export function JointLimitGizmo(input: JointLimitGizmoProps): JSX.Element;
@@ -488,18 +741,21 @@ export type JointLimitGizmoProps = {
     highlightedJoint?: number | null;
 };
 
-// @public (undocumented)
+// @public
+export function jointsToText(joints: readonly number[]): string;
+
+// @public @deprecated
 export function jointValuesEqual(oldJointValues: number[], newJointValues: number[], changeDeltaThreshold: number): boolean;
 
 // @public
 export function LinearAxis(input: LinearAxisProps): JSX.Element | null;
 
 // @public (undocumented)
-export type LinearAxisProps = {
-    connectedMotionGroup: ConnectedMotionGroup;
+export type LinearAxisProps = RobotMotionGroupProps & {
     getModel?: (modelFromController: string) => Promise<string>;
     flangeRef?: React.Ref<Group>;
     transparentColor?: string;
+    transparentOpacity?: number;
     postModelRender?: () => void;
 } & ThreeElements["group"];
 
@@ -516,7 +772,23 @@ export const LoadingErrorMessage: (props: {
     error: unknown;
 }) => JSX.Element;
 
-// @public (undocumented)
+// @public
+export function loadRobotSession(connection: NovaConnection, motionGroupId: string, options?: LoadRobotSessionOptions): RobotSessionLoad;
+
+// @public
+export type LoadRobotSessionOptions = RobotSessionOptions & {
+    cellId?: string;
+    controllerId?: string;
+    stateSource?: (options: {
+        cellId: string;
+        controllerId: string;
+    }) => ControllerStateSource;
+    onEvent?: (event: RobotSessionEvent) => void;
+    retryDelaysMs?: number[];
+    socketTimeoutMs?: number;
+};
+
+// @public @deprecated (undocumented)
 export type MotionGroupOption = {
     selectionId: string;
 };
@@ -533,9 +805,12 @@ export type MotionGroupVisualizerProps = {
     inverseSolver?: string | null;
 } & (SupportedRobotProps | SupportedLinearAxisProps);
 
+// @public
+export type MotionStateReadout = Pick<MotionGroupState, "joint_position" | "tcp_pose" | "tcp" | "coordinate_system">;
+
 // @public (undocumented)
 export class MotionStreamConnection {
-    constructor(connection: NovaConnection, controller: RobotControllerState, motionGroup: MotionGroupState, description: MotionGroupDescription, initialMotionState: MotionGroupState, motionStateSocket: AutoReconnectingWebsocket, cellId?: string);
+    constructor(connection: NovaConnection, controller: RobotControllerState, motionGroup: MotionGroupState, description: MotionGroupDescription, initialMotionState: MotionGroupState, motionStateSocket: AutoReconnectingWebsocket, cellId?: string, options?: Pick<MotionStreamConnectionOptions, "logger">);
     // (undocumented)
     readonly cellId: string;
     // (undocumented)
@@ -562,11 +837,13 @@ export class MotionStreamConnection {
     static open(connection: NovaConnection, motionGroupId: string, options?: MotionStreamConnectionOptions): Promise<MotionStreamConnection>;
     // (undocumented)
     rapidlyChangingMotionState: MotionGroupState;
+    get readoutState(): MotionStateReadout;
 }
 
 // @public
 export type MotionStreamConnectionOptions = {
     cellId?: string;
+    logger?: ConnectionLogger;
 };
 
 // @public (undocumented)
@@ -587,25 +864,620 @@ export type NovaConnection = string | {
     readonly accessToken?: string | null;
 };
 
-// @public (undocumented)
+// @public
+export type OrientationFormat = {
+    type: "rotationVector" | "eulerAngles" | "quaternion";
+    angleUnit: "rad" | "deg";
+    eulerConvention: EulerConvention;
+};
+
+// @public
+export function parseRotationToQuaternion(orientation?: Array<number>, orientationType?: OrientationType_2): Quaternion;
+
+// @public
+export function planErrorTranslationKey(errorFeedbackName: string): string;
+
+// @public
+export type PlannedTrajectory = {
+    startJoints: number[];
+    endJoints: number[];
+};
+
+// @public
+export type PlanTrajectoryResult = {
+    ok: true;
+} | {
+    ok: false;
+    errorFeedbackName: string;
+};
+
+// @public
+export class Pose3 {
+    constructor(position: Vector3, quaternion: Quaternion);
+    // (undocumented)
+    static fromCoordinateSystem(coordinateSystem: CoordinateSystem): Pose3;
+    // (undocumented)
+    static fromPose(apiPose: Pose): Pose3;
+    static fromRobotTcp(robotTcp: Pick<RobotTcp, "position" | "orientation" | "orientation_type">): Pose3;
+    // (undocumented)
+    inverse(): Pose3;
+    // (undocumented)
+    multiply(other: Pose3): Pose3;
+    // (undocumented)
+    get orientation(): Vector3;
+    // (undocumented)
+    readonly position: Vector3;
+    // (undocumented)
+    readonly quaternion: Quaternion;
+}
+
+// @public @deprecated (undocumented)
 export function poseEqual(oldTcp: Pose | undefined, newTcp: Pose | undefined, changeDeltaThreshold: number): boolean;
+
+// @public
+export function poseToText(pose: {
+    position?: readonly number[];
+    orientation?: readonly number[];
+}, precision?: {
+    positionPrecision?: number;
+    rotationPrecision?: number;
+}): string;
 
 // @public
 export function PresetEnvironment(): JSX.Element;
 
 // @public
+export type ReferencedPose = {
+    pose: Required<Pose>;
+    coordinateSystemId: string;
+};
+
+// @public
+export function resolveCoordinateSystemInWorld(coordinateSystemId: string, coordinateSystems: CoordinateSystem[]): CoordinateSystem;
+
+// @public
 export function Robot(input: RobotProps): JSX.Element | null;
 
+// @public
+export const ROBOT_LOAD_STEP_IDS: readonly ["motionGroupDescription", "controllerConfiguration", "kinematicModel", "motionGroupModel", "coordinateSystems", "controllerState", "motionStateStream", "controllerStateStream"];
+
+// @public
+export class RobotActivation {
+    activate(): Promise<void>;
+    deactivate(): Promise<void>;
+    dispose(): void;
+    get state(): RobotActivationState;
+    toggle(): Promise<void>;
+}
+
+// @public
+export type RobotActivationState = "inactive" | "activating" | "deactivating" | "active";
+
+// @public
+export const RobotCanvas: (input: RobotCanvasProps) => JSX.Element;
+
+// @public
+export type RobotCanvasProps = {
+    orbitTarget?: [number, number, number];
+    antialias?: boolean;
+    onContextLost?: () => void;
+    onWebGLUnavailable?: (context: WebGLUnavailableContext) => void;
+    children?: ReactNode;
+    sx?: SxProps<Theme>;
+};
+
+// @public
+export const RobotControl: FunctionComponent<RobotControlProps>;
+
+// @public
+export type RobotControlIncrements = {
+    steps: Record<JogMotion, number[]>;
+    onStep: (motion: JogMotion, axis: JogAxis, direction: JogDirection, distance: number) => void;
+    running?: JogHandle | null;
+    onStepStop?: () => void;
+    step?: Partial<Record<JogMotion, number>>;
+    onStepChange?: (motion: JogMotion, distance: number) => void;
+};
+
+// @public
+export type RobotControlJogMode = "continuous" | "increment";
+
+// @public
+export type RobotControlJoint = {
+    value: number;
+    min?: number;
+    max?: number;
+    name?: string;
+};
+
+// @public
+export type RobotControlJoints = {
+    joints: RobotControlJoint[];
+    linear?: boolean;
+    velocity: RobotControlVelocity;
+    onVelocityChange: (value: number) => void;
+    onJogStart: (index: number, direction: JogDirection) => void;
+    onJogStop: () => void;
+};
+
+// @public
+export type RobotControlJointTarget = {
+    joints: number[];
+};
+
+// @public
+export type RobotControlMoveState = "idle" | "planning" | "planned" | "moving" | "stopping";
+
+// @public
+export type RobotControlMoveTo = {
+    getCurrentPose: () => RobotControlPose | null;
+    getCurrentJoints?: () => number[] | null;
+    frame?: RobotControlSelect;
+    onTargetChange: (target: RobotControlTarget | null) => void;
+    state: RobotControlMoveState;
+    error?: string | null;
+    notMoveableReason?: string | null;
+    onMoveStart: (target: RobotControlTarget) => void;
+    onMoveStop: () => void;
+};
+
+// @public
+export type RobotControlOption = {
+    id: string;
+    label: string;
+};
+
+// @public
+export type RobotControlOptions = {
+    disabled?: boolean;
+    gizmoOrientation?: RobotControlPanelProps["gizmoOrientation"];
+};
+
+// @public
+export const RobotControlPanel: (input: RobotControlPanelProps) => JSX.Element;
+
+// @public
+export type RobotControlPanelProps = {
+    onClose?: () => void;
+    disabled?: boolean;
+    jogDisabled?: boolean;
+    jogDisabledReason?: string;
+    onJogRetry?: () => void;
+    cartesian?: boolean;
+    tab?: RobotControlTab;
+    onTabChange?: (tab: RobotControlTab) => void;
+    jogMode?: RobotControlJogMode;
+    onJogModeChange?: (mode: RobotControlJogMode) => void;
+    tcp?: RobotControlSelect;
+    jogFrame?: RobotControlSelect;
+    velocity: Record<JogMotion, RobotControlVelocity>;
+    onVelocityChange: (motion: JogMotion, value: number) => void;
+    onJogStart: (motion: JogMotion, axis: JogAxis, direction: JogDirection) => void;
+    onJogStop: () => void;
+    increments?: RobotControlIncrements;
+    gizmoOrientation?: RefObject<Quaternion | null>;
+    gizmoFrameQuaternion?: Quaternion | (() => Quaternion);
+    joints?: RobotControlJoints;
+    moveTo?: RobotControlMoveTo;
+    sx?: SxProps<Theme>;
+};
+
+// @public
+export type RobotControlPose = {
+    position: [number, number, number];
+    orientation: [number, number, number];
+};
+
+// @public
+export type RobotControlProps = RobotControlOptions & Partial<RobotControlPanelProps> & {
+    session: RobotSession;
+};
+
+// @public
+export type RobotControlSelect = {
+    options: RobotControlOption[];
+    value: string;
+    onChange: (id: string) => void;
+};
+
+// @public
+export type RobotControlTab = JogMotion | "joint" | "moveTo";
+
+// @public
+export type RobotControlTarget = RobotControlPose | RobotControlJointTarget;
+
+// @public
+export type RobotControlVelocity = {
+    value: number;
+    min: number;
+    max: number;
+};
+
+// @public
+export class RobotDescription {
+    // (undocumented)
+    readonly controllerConfiguration: RobotControllerConfiguration;
+    readonly coordinateSystems: CoordinateSystem[];
+    readonly dhParameters: DHParameter[];
+    get flangeOffset(): Pose | null;
+    get inverseSolver(): string | undefined;
+    get isVirtual(): boolean;
+    get jointLimits(): JointLimits[];
+    get jointType(): JointTypeEnum;
+    get kinematicChainOffset(): Pose | null;
+    readonly kinematicModel: KinematicModel;
+    readonly motionGroupDescription: MotionGroupDescription;
+    get motionGroupModel(): string;
+    get mounting(): Pose | null;
+    readonly resolvedMotionGroupModel: string;
+    get safetyLinkColliders(): {
+        [key: string]: Collider;
+    }[] | undefined;
+    get safetyToolColliders(): {
+        [key: string]: {
+            [key: string]: Collider;
+        };
+    } | undefined;
+    // (undocumented)
+    get safetyZones(): {
+        [key: string]: Collider;
+    } | undefined;
+    // (undocumented)
+    get serialNumber(): string | undefined;
+    get tcpOffsetsById(): {
+        [key: string]: TcpOffset;
+    };
+    get tcps(): {
+        id: string;
+        name: string;
+    }[];
+}
+
+// @public
+export const RobotGhost: FunctionComponent<RobotGhostProps>;
+
+// @public
+export type RobotGhostProps = RobotGhostRobot & {
+    joints: number[];
+    color: string;
+    opacity?: number;
+    flangeRef?: Ref<Group>;
+    getModel?: SupportedRobotProps["getModel"];
+};
+
+// @public
+export type RobotGhostRobot = {
+    session: RobotSession;
+    robot?: never;
+} | {
+    robot: RobotModelSource;
+    session?: never;
+};
+
+// @public
+export const RobotHeader: (input: RobotHeaderProps) => JSX.Element;
+
+// @public
+export type RobotHeaderActivation = {
+    state: RobotHeaderActivationState;
+    disabled?: boolean;
+    onToggle: () => void;
+};
+
+// @public
+export type RobotHeaderActivationState = "inactive" | "activating" | "active" | "deactivating";
+
+// @public
+export type RobotHeaderProps = {
+    appIcon?: ReactNode;
+    appName: string;
+    apps?: AppItem[];
+    onAppSelect?: (app: AppItem) => void;
+    onSearch?: () => void;
+    motionGroup?: RobotControlSelect;
+    session?: RobotSession | null;
+    safety?: Pick<SafetyBarProps, "isVirtual" | "motionGroupId" | "operationMode" | "safetyState">;
+    activation?: RobotHeaderActivation;
+    actions?: ReactNode;
+    sx?: SxProps<Theme>;
+};
+
+// @public
+export class RobotLiveState {
+    // (undocumented)
+    get connectionQuality(): "good" | "struggling" | "critical";
+    get controllerState(): RobotControllerState;
+    get displayedTcpPose(): TcpReferencedPose["pose"] | null;
+    get displayedTcpPoseReference(): TcpReferencedPose;
+    isAt(pose: RobotPose): boolean;
+    get jointPose(): number[];
+    // (undocumented)
+    get lastInvalidStateMessage(): {
+        receivedAt: number;
+        data: unknown;
+    } | null;
+    // (undocumented)
+    get lastValidStateMessage(): {
+        receivedAt: number;
+        data: RobotControllerState;
+    };
+    get measuredTcpPoseReference(): TcpReferencedPose;
+    nextMotionState(): Promise<MotionGroupState>;
+    get rapidlyChangingMotionState(): MotionGroupState;
+    get readoutState(): MotionStateReadout;
+    readonly stream: ControllerStateStream;
+    waitUntilStopped(): Promise<void>;
+}
+
+// @public
+export class RobotLoadProgress {
+    constructor(motionGroupId?: string | null, controllerId?: string | null);
+    beginRetry(attempt: number): void;
+    // (undocumented)
+    controllerId: string | null;
+    currentStepStartedAt: number | null;
+    // (undocumented)
+    get failedStep(): RobotLoadStep | undefined;
+    // (undocumented)
+    failStep(id: RobotLoadStepId, error: unknown): void;
+    failWith(error: unknown): void;
+    fatalError: unknown;
+    // (undocumented)
+    get isComplete(): boolean;
+    // (undocumented)
+    get isFailed(): boolean;
+    motionGroupId: string | null;
+    retryAttempt: number;
+    // (undocumented)
+    get runningStep(): RobotLoadStep | undefined;
+    // (undocumented)
+    startStep(id: RobotLoadStepId, url: string | null): void;
+    // (undocumented)
+    steps: RobotLoadStep[];
+    // (undocumented)
+    get succeededCount(): number;
+    // (undocumented)
+    succeedStep(id: RobotLoadStepId): void;
+    // (undocumented)
+    get totalCount(): number;
+    // (undocumented)
+    updateStepUrl(id: RobotLoadStepId, url: string): void;
+}
+
 // @public (undocumented)
-export type RobotProps = {
+export type RobotLoadStep = {
+    id: RobotLoadStepId;
+    status: RobotLoadStepStatus;
+    url: string | null;
+    error: unknown;
+};
+
+// @public
+export class RobotLoadStepError extends Error {
+    constructor(stepId: RobotLoadStepId, cause: unknown, message: string);
+    // (undocumented)
+    readonly cause: unknown;
+    // (undocumented)
+    readonly stepId: RobotLoadStepId;
+}
+
+// @public (undocumented)
+export type RobotLoadStepId = (typeof ROBOT_LOAD_STEP_IDS)[number];
+
+// @public (undocumented)
+export type RobotLoadStepStatus = "pending" | "running" | "succeeded" | "failed";
+
+// @public
+export class RobotModeChangeError extends Error {
+    // (undocumented)
+    readonly cause: unknown;
+    // (undocumented)
+    readonly url: string;
+}
+
+// @public
+export type RobotModelSource = {
+    modelFromController?: string;
+    dhParameters?: DHParameter[];
+    inverseSolver?: string | null;
+    serialNumber?: string;
+    kinematicChainOffset?: Pose | null;
+    rapidlyChangingMotionState: MotionGroupState;
+    mountingPosition?: [number, number, number];
+    mountingQuaternion?: Quaternion;
+    nova?: NovaConnection;
+};
+
+// @public
+export type RobotMotionGroupProps = {
+    motionGroup: RobotModelSource;
+    connectedMotionGroup?: never;
+} | {
     connectedMotionGroup: ConnectedMotionGroup;
+    motionGroup?: never;
+};
+
+// @public
+export type RobotNotMoveableReason =
+/** The live state stopped coming */
+    {
+    code: "disconnected";
+}
+/** The safety state does not allow movement, e.g. an emergency stop */
+| {
+    code: "safety_state";
+    value: string;
+}
+/** The operation mode does not allow movement */
+| {
+    code: "operation_mode";
+    value: string;
+}
+/** The robot is not activated (the controller is not in control mode) */
+| {
+    code: "deactivated";
+};
+
+// @public
+export type RobotPose = {
+    type: "joint";
+    motionGroupId: string;
+    joints: number[];
+} | {
+    type: "cartesian";
+    motionGroupId: string;
+    tcpPose: {
+        pose: {
+            position: number[];
+            orientation?: number[];
+        };
+        coordSystemId: string;
+        tcpId: string;
+    };
+};
+
+// @public (undocumented)
+export type RobotProps = RobotMotionGroupProps & {
     getModel?: (modelFromController: string) => Promise<string>;
     flangeRef?: React.Ref<Group>;
     transparentColor?: string;
+    transparentOpacity?: number;
     postModelRender?: () => void;
 } & ThreeElements["group"];
 
+// @public
+export class RobotSafety {
+    get activationBlockedReason(): string | null;
+    get canBeActive(): boolean;
+    get canBeMoved(): boolean;
+    get isActivatableSafetyState(): boolean;
+    get isEstopActive(): boolean;
+    get isMoveableOperationMode(): boolean;
+    get isMoveableSafetyState(): boolean;
+    get notMoveableReason(): RobotNotMoveableReason | null;
+}
+
+// @public
+export const RobotScene: FunctionComponent<RobotSceneProps>;
+
+// @public
+export type RobotSceneProps = Partial<Omit<RobotSceneViewProps, "robot">> & {
+    session: RobotSession;
+    robot?: Partial<RobotModelSource>;
+};
+
+// @public
+export function RobotSceneView(input: RobotSceneViewProps): JSX.Element | null;
+
+// @public
+export type RobotSceneViewProps = {
+    robot: RobotModelSource;
+    getModel?: SupportedRobotProps["getModel"];
+    safetyZones?: MotionGroupDescription["safety_zones"];
+    plannedJoints?: number[] | null;
+    jogAxes?: JoggingAxesProps;
+    robotVisible?: boolean;
+    robotRef?: Ref<Group>;
+    onModelDrawn?: () => void;
+    lighting?: boolean;
+    children?: ReactNode;
+};
+
+// @public
+export class RobotSession {
+    readonly activation: RobotActivation;
+    // (undocumented)
+    readonly cellId: string;
+    // (undocumented)
+    readonly controllerId: string;
+    readonly description: RobotDescription;
+    dispose(): void;
+    ensureMovementOwnership(target: Exclude<JoggerMode, "off">): Promise<void>;
+    readonly jogging: JoggingStore;
+    // (undocumented)
+    readonly motionGroupId: string;
+    get movementOwner(): JoggerMode;
+    readonly safety: RobotSafety;
+    readonly state: RobotLiveState;
+    readonly targetPose: RobotTargetPose;
+    readonly trajectory: TrajectoryExecutionStore;
+}
+
+// @public
+export type RobotSessionError = {
+    kind: "mode" | "jog" | "stream";
+    message: string;
+    url?: string;
+    cause?: unknown;
+};
+
+// @public
+export type RobotSessionEvent = {
+    type: "loadFailed";
+    motionGroupId: string;
+    step: RobotLoadStepId | "unknown";
+    message: string;
+    attempts: number;
+};
+
+// @public
+export class RobotSessionLoad {
+    dispose(): void;
+    error: unknown;
+    // (undocumented)
+    readonly motionGroupId: string;
+    readonly progress: RobotLoadProgress;
+    get ready(): Promise<RobotSession>;
+    retry(): void;
+    session: RobotSession | null;
+    state: RobotSessionLoadState;
+}
+
 // @public (undocumented)
+export type RobotSessionLoadState = "loading" | "ready" | "failed";
+
+// @public
+export type RobotSessionOptions = {
+    isLocked?: () => boolean;
+    onError?: (error: RobotSessionError) => void;
+    storage?: JoggingStoreStorage;
+    logger?: ConnectionLogger;
+    autoActivateVirtual?: boolean;
+};
+
+// @public
+export class RobotTargetPose {
+    // (undocumented)
+    beginEdit(): void;
+    // (undocumented)
+    cancelEdit(): void;
+    clear(): void;
+    confirmEdit(): Promise<void>;
+    confirming: boolean;
+    get displayString(): string;
+    // (undocumented)
+    dispose(): void;
+    draft: string;
+    // (undocumented)
+    get draftValid(): boolean;
+    editing: boolean;
+    holdMove(pose: RobotPose): boolean;
+    get isRobotAtStagedPose(): boolean;
+    get liveDisplayString(): string;
+    onBeforePlan?: () => Promise<void>;
+    // (undocumented)
+    get phase(): "view" | "editing" | "staged" | "error";
+    plan(pose: RobotPose): Promise<void>;
+    releaseMove(): Promise<void>;
+    resetToLive(): Promise<void>;
+    // (undocumented)
+    setDraft(text: string): void;
+    // (undocumented)
+    staged: StagedTargetPose | null;
+    get stagedPose(): RobotPose | null;
+}
+
+// @public @deprecated
 export type RobotTcpLike = {
     id: string;
     readable_name: string;
@@ -613,9 +1485,20 @@ export type RobotTcpLike = {
     orientation: Vector3Simple;
 };
 
-// @public (undocumented)
-export const SafetyBar: ((input: SafetyBarProps) => JSX.Element) & {
+// @public
+export const RobotView: FunctionComponent<RobotViewProps>;
+
+// @public
+export type RobotViewProps = RobotSceneProps & Omit<RobotCanvasProps, "orbitTarget">;
+
+// @public
+export const SafetyBar: ((props: SafetyBarProps | SafetyBarOfSessionProps) => JSX.Element | null) & {
     displayName: string;
+};
+
+// @public
+export type SafetyBarOfSessionProps = Partial<SafetyBarProps> & {
+    session: RobotSession | null | undefined;
 };
 
 // @public (undocumented)
@@ -646,6 +1529,14 @@ export type SafetyZonesRendererProps = {
 } & ThreeElements["group"];
 
 // @public
+export type StagedTargetPose = {
+    pose: RobotPose;
+    displayString: string;
+    errorKey: string | null;
+    errorMessage?: string;
+};
+
+// @public
 export const SupportedLinearAxis: (input: SupportedLinearAxisProps) => JSX.Element;
 
 // @public
@@ -656,13 +1547,16 @@ export type SupportedLinearAxisProps = {
     rapidlyChangingMotionState: MotionGroupState;
     modelFromController: string;
     dhParameters: DHParameter[];
+    serialNumber?: string;
+    kinematicChainOffset?: Pose | null;
     chainOffsetPosition?: [number, number, number];
     chainOffsetQuaternion?: THREE.Quaternion;
     flangeRef?: React.Ref<THREE.Group>;
     instanceUrl?: string;
-    getModel?: (modelFromController: string, instanceUrl?: string) => Promise<string> | undefined;
+    getModel?: (modelFromController: string, instanceUrl?: string, serialNumber?: string) => Promise<string> | undefined;
     postModelRender?: () => void;
     transparentColor?: string;
+    transparentOpacity?: number;
 } & ThreeElements["group"];
 
 // @public
@@ -676,17 +1570,44 @@ export type SupportedRobotProps = {
     rapidlyChangingMotionState: MotionGroupState;
     modelFromController: string;
     dhParameters: DHParameter[];
+    serialNumber?: string;
+    kinematicChainOffset?: Pose | null;
     chainOffsetPosition?: [number, number, number];
     chainOffsetQuaternion?: THREE.Quaternion;
     flangeRef?: React.Ref<THREE.Group>;
     instanceUrl?: string;
-    getModel?: (modelFromController: string, instanceUrl?: string) => Promise<string> | undefined;
+    getModel?: (modelFromController: string, instanceUrl?: string, serialNumber?: string) => Promise<string> | undefined;
     postModelRender?: () => void;
     transparentColor?: string;
+    transparentOpacity?: number;
 } & ThreeElements["group"];
 
-// @public (undocumented)
+// @public @deprecated
 export function tcpMotionEqual(oldMotionState: MotionGroupState, newMotionState: MotionGroupState, changeDeltaThreshold: number): boolean;
+
+// @public
+export type TcpReferencedPose = ReferencedPose & {
+    tcpId: string;
+};
+
+// @public
+export class TrajectoryExecutionStore {
+    clearError(): void;
+    dispose(): void;
+    get executionState(): "PAUSED_BY_USER" | "PAUSED_NEAR_COLLISION" | "PAUSED_NEAR_JOINT_LIMIT" | "PAUSED_NEAR_SINGULARITY" | "PAUSED_ON_IO" | "RUNNING" | "END_OF_TRAJECTORY" | "WAIT_FOR_IO" | undefined;
+    hold(to?: TrajectoryTarget | RobotPose): boolean;
+    get holdsExecutionSession(): boolean;
+    get isPlanOutdated(): boolean;
+    lastError: string | null;
+    pause(): Promise<void>;
+    plannedTrajectory: PlannedTrajectory | null;
+    planTrajectory(to: TrajectoryTarget | RobotPose): Promise<PlanTrajectoryResult>;
+    release(): Promise<void>;
+    reset(): void;
+    start(): void;
+    stopAndReset(): Promise<void>;
+    trajectoryState: TrajectoryState;
+}
 
 // @public (undocumented)
 export function TrajectoryRenderer(input: TrajectoryRendererProps): JSX.Element;
@@ -696,7 +1617,23 @@ export type TrajectoryRendererProps = {
     trajectory: Pose[];
 } & React.JSX.IntrinsicElements["group"];
 
-// @public (undocumented)
+// @public
+export type TrajectoryState = "idle" | "planning" | "planned" | "moving" | "stopping";
+
+// @public
+export type TrajectoryTarget = {
+    type: "cartesian";
+    pose: Pose;
+    coordinateSystemId?: string;
+} | {
+    type: "joint";
+    joints: number[];
+};
+
+// @public
+export function transformPoseToCoordinateSystem<T extends ReferencedPose>(inputPose: T, targetCoordinateSystemId: string, coordinateSystems: CoordinateSystem[]): T;
+
+// @public @deprecated (undocumented)
 export function unwrapRotationVector(newRotationVectorApi: Vector3Simple, currentRotationVectorApi: Vector3Simple): Vector3Simple;
 
 // @public
@@ -723,13 +1660,16 @@ export class ValueInterpolator {
 // @public (undocumented)
 export type Vector3Simple = [number, number, number];
 
-// @public
+// @public @deprecated
 export const VelocitySlider: ((props: VelocitySliderProps) => JSX.Element) & {
     displayName: string;
 };
 
-// @public (undocumented)
+// @public @deprecated
 export function VelocitySliderLabel(input: VelocitySliderLabelProps): JSX.Element;
+
+// @public
+export type WebGLUnavailableContext = "preflight" | "renderer";
 
 // (No @packageDocumentation comment for this package)
 
