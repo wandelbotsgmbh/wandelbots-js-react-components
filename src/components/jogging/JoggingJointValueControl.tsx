@@ -6,7 +6,7 @@ import Stack from "@mui/material/Stack"
 import { useTheme } from "@mui/material/styles"
 import Typography from "@mui/material/Typography"
 import { radiansToDegrees } from "@wandelbots/nova-js"
-import throttle from "lodash-es/throttle.js"
+import { throttle } from "lodash-es"
 import { observer, useLocalObservable } from "mobx-react-lite"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -24,7 +24,13 @@ type JoggingJointValueControlProps = {
   disabled?: boolean
 } & React.ComponentProps<typeof Stack>
 
-/** A input widget to control an individual joint */
+/**
+ * A input widget to control an individual joint
+ *
+ * @deprecated Use `JoggingJointSlider`: one joint as a slider across its
+ * limits, pressed where the joint is to go (`value`, `min`, `max`,
+ * `onJogStart`, `onJogStop`).
+ */
 export const JoggingJointValueControl = externalizeComponent(
   observer(
     ({

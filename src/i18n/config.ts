@@ -20,6 +20,9 @@ i18n.use(LanguageDetector).init({
   defaultNS: "translations",
   detection: {
     order: ["navigator", "htmlTag"],
+    // Keep nothing in the app's storage: an app's own language detector
+    // uses the same localStorage key
+    caches: [],
   },
 })
 
