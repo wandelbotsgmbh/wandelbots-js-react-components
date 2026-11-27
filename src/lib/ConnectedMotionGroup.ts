@@ -14,7 +14,7 @@ import type {
 import { makeAutoObservable, runInAction } from "mobx"
 import * as THREE from "three"
 import type { Vector3Simple } from "./JoggerConnection"
-import { jointValuesEqual, tcpMotionEqual } from "./motionStateUpdate"
+import { jointValuesUnchanged, tcpMotionEqual } from "./motionStateUpdate"
 import {
   cellIdOf,
   createNovaClient,
@@ -23,6 +23,9 @@ import {
 
 const MOTION_DELTA_THRESHOLD = 0.0001
 
+/**
+ * A TCP of {@link ConnectedMotionGroup}
+ */
 export type RobotTcpLike = {
   id: string
   readable_name: string
@@ -30,6 +33,7 @@ export type RobotTcpLike = {
   orientation: Vector3Simple
 }
 
+/** @deprecated Nothing uses it; no replacement */
 export type MotionGroupOption = {
   selectionId: string
 }
@@ -49,7 +53,6 @@ export type ConnectedMotionGroupOptions = {
 
 /**
  * Store representing the current state of a connected motion group.
- * API v2 version, not used yet in the components.
  */
 export class ConnectedMotionGroup {
   static async connectMultiple(
@@ -247,7 +250,7 @@ export class ConnectedMotionGroup {
 
       // handle joint position changes
       if (
-        !jointValuesEqual(
+        !jointValuesUnchanged(
           this.rapidlyChangingMotionState.joint_position,
           latestMotionState.joint_position,
           MOTION_DELTA_THRESHOLD,

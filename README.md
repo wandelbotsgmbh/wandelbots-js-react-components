@@ -41,7 +41,7 @@ pnpm add three three-stdlib @react-three/fiber @react-three/drei
 
 You can also import from the top-level package, but then you'll need to provide all optional dependencies.
 
-The parts use the theme of your app. Create it with `createNovaMuiTheme` of `@wandelbots/mui`:
+The parts use the theme of your app. Without the Nova theme the simple parts still work, in the default colours of MUI; only `SafetyBar` still needs it. For the Nova look, create the theme with `createNovaMuiTheme` of `@wandelbots/mui`:
 
 ```tsx
 import { ThemeProvider } from "@mui/material/styles"
@@ -66,24 +66,89 @@ Browse the full icon set at https://wandelbotsgmbh.github.io/nova-design-system/
 **Available Entry Points:**
 
 - **`.`** (Main) — All components. Requires the peer dependencies of `/core` and `/3d`.
-- **`/core`** — The parts without 3D (jogging, `SafetyBar`, `AppHeader`, `LoadingCover`, `NoMotionGroupModal`), the NOVA connections and `JoggingStore`, the motion state helpers and `i18n`.
+- **`/core`** — The parts without 3D (jogging, `SafetyBar`, `AppHeader`, `LoadingCover`, `NoMotionGroupModal`), the NOVA connections and `JoggingStore`, the motion state helpers and `i18n`. It also exports everything of `/session`.
 - **`/3d`** — The 3D parts (`Robot`, `MotionGroupVisualizer`, `SafetyZonesRenderer`, …). Requires in addition three, three-stdlib, @react-three/fiber and @react-three/drei.
+- **`/session`** (beta) — The library without React: a robot of a NOVA cell, loaded and connected (`loadRobotSession`, `RobotSession` with its description, live state, safety, activation, jogging and Move to), `JoggingStore`, the NOVA connections and the pose math on plain numbers. It loads no React, no MUI and no three.js, and needs only `mobx`.
+- **`/nats`** — A robot's live controller state over NOVA's NATS server (`natsControllerStateSource`, `natsUrlOf`): the `stateSource` of `loadRobotSession` instead of NOVA's websocket. Requires in addition nats.ws; no other entry point loads it.
 - **`/SafetyBar`** — Only `SafetyBar` (also as the default export).
+- **`/JoggingGizmo`** — Only `JoggingGizmo` (also as the default export) and `JoggingGizmoOrientation`. Requires in addition three and @react-three/fiber.
+- **`/JoggingButtons`** — Only `JoggingButtons` (also as the default export). No 3D packages needed.
+- **`/JoggingJointSlider`** — Only `JoggingJointSlider` (also as the default export). No 3D packages needed.
+- **`/CurrentPoseBar`** — Only `CurrentPoseBar` (also as the default export). No 3D packages needed.
+
+A component's own entry point brings only what that component needs, e.g. `/JoggingButtons` no three.js and no NOVA client, unlike `/core`. The entry points share their common code, so an app that imports a component from both `/core` and its own entry point gets one copy of it:
+
+```tsx
+import JoggingJointSlider from "@wandelbots/wandelbots-js-react-components/JoggingJointSlider"
+```
+
+### The simple parts on their own
+
+`JoggingGizmo`, `JoggingButtons`, `JoggingJointSlider`, `CurrentPoseBar` and `SafetyBar` take plain props and report through callbacks: no store, no provider and no i18n setup of the app. The app keeps its own connection to the robot and moves it in `onJogStart` and `onJogStop`. While a control is held the robot moves; it stops when the control is let go, when the pointer leaves it, when the window loses focus or the tab is hidden, on any key, and when the part becomes disabled or unmounts. The keyboard starts no motion.
+
+What each one loads, besides `react` and `@mui/material` (checked by `src/test/bare.test.tsx`):
+
+| Entry point | Also needs |
+| --- | --- |
+| `/JoggingGizmo` | `three`, `@react-three/fiber`, `@wandelbots/design-tokens` |
+| `/JoggingButtons` | `@wandelbots/mui`, `@wandelbots/icons`, `@wandelbots/design-tokens` |
+| `/JoggingJointSlider` | nothing else |
+| `/CurrentPoseBar` | `@wandelbots/mui`, `@wandelbots/icons` |
+| `/SafetyBar` | `mobx-react-lite`, `axios` |
+
+All of them load i18next and react-i18next, which come with the library.
+
+### The robot session (beta)
+
+`loadRobotSession` loads one robot of a cell and keeps it connected: its description, its live state, its safety, its activation, jogging and Move to, as MobX stores. It is **beta**: the props and callbacks of the parts are the stable promise, while the classes of `/session` may still change in a minor version. An app that builds on them pins the minor version. An app that owns its robot connection does not need a session: the simple parts take plain props.
+
+### Without three.js or without React
+
+- **An app without a 3D view** needs no three.js. It takes the robot from `/session` and its parts from the component entry points that draw nothing in 3D: `/CurrentPoseBar`, `/SafetyBar`, `/JoggingButtons` and `/JoggingJointSlider`.
+- **`/core` needs three.js installed**, although it draws nothing in 3D: `ConnectedMotionGroup`, which it exports, gives a three.js quaternion (`mountingQuaternion`).
+- **An app without React**, or with a UI of its own, uses `/session` alone (and `/nats`). Of the peer dependencies it needs only `mobx` (see [Peer dependencies](#peer-dependencies)). The parts of a session are MobX stores: such an app follows them with `autorun` or `reaction` of MobX. What it calls returns a promise that rejects when it fails (a jog that may not start rejects with a `JoggingRefusedError`), and what fails in the background goes to `onError`.
+
+```typescript
+import { autorun } from "mobx"
+import { loadRobotSession } from "@wandelbots/wandelbots-js-react-components/session"
+
+const load = loadRobotSession("https://my-instance.wandelbots.io", "0@ur5e", {
+  onError: (error) => console.warn(error.kind, error.message),
+})
+// Rejects when the load fails; load.retry() loads again
+const session = await load.ready
+
+const stopFollowing = autorun(() => {
+  console.log(session.safety.canBeMoved, session.state.displayedTcpPose)
+})
+
+// Jog along X while a key of the app's own UI is held
+await session.activation.activate()
+await session.jogging.startCartesianJogging("translate", "x", "+")
+// … and when it is let go
+await session.jogging.stopJogging()
+
+stopFollowing()
+load.dispose()
+```
 
 ### Peer dependencies
 
-| Package | Version |
-| --- | --- |
-| `react`, `react-dom` | ^19 |
-| `@mui/material`, `@mui/icons-material` | ^7 |
-| `@emotion/react`, `@emotion/styled` | ^11 |
-| `@wandelbots/mui` | ^2 |
-| `mobx` | ^6.13.6 |
-| `mobx-react-lite` | ^4.1.0 |
-| `three` (only `/3d`) | >=0.182 |
-| `three-stdlib` (only `/3d`) | >=2 |
-| `@react-three/fiber` (only `/3d`) | ^9 |
-| `@react-three/drei` (only `/3d`) | ^10 |
+| Package | Version | Needed by |
+| --- | --- | --- |
+| `mobx` | ^6.13.6 | Every entry point |
+| `react`, `react-dom` | ^19 | Every entry point with UI: all but `/session` and `/nats` |
+| `@mui/material`, `@mui/icons-material` | ^7 | Every entry point with UI |
+| `@emotion/react`, `@emotion/styled` | ^11 | Every entry point with UI |
+| `@wandelbots/mui` | ^2 | Every entry point with UI (each simple part's needs are in [The simple parts on their own](#the-simple-parts-on-their-own)) |
+| `mobx-react-lite` | ^4.1.0 | Every entry point with UI |
+| `three` | >=0.182 | `.`, `/3d`, `/JoggingGizmo`, and `/core` (`ConnectedMotionGroup`) |
+| `@react-three/fiber` | ^9 | `.`, `/3d`, `/JoggingGizmo` |
+| `three-stdlib` | >=2 | `.`, `/3d` |
+| `@react-three/drei` | ^10 | `.`, `/3d` |
+| `nats.ws` | ^1.30.3 | `/nats` |
+
+Only `mobx` is a required peer. The others are optional in `package.json`, so an app installs those of the entry points it imports: an app that takes only `/session` (and `/nats`) installs `mobx` (and `nats.ws`), and no React, MUI or three.js.
 
 These packages are peer dependencies because the app and the library must use the same copy: React, the MUI theme of the app, the MobX stores that the app reads with its own `observer`, and the `<Canvas>` of React Three Fiber.
 
@@ -157,6 +222,13 @@ Manual robot control interfaces.
 - Dual-mode operation (Cartesian & Joint space)
 - Real-time velocity control
 - Multiple coordinate systems support (Robot base or Tool)
+
+**Simple jogging parts** (plain props and callbacks, see [The simple parts on their own](#the-simple-parts-on-their-own))
+
+- **JoggingGizmo** - Handles in 3D to move the TCP along or turn it about the X, Y and Z axes
+- **JoggingButtons** - A minus and a plus button per axis
+- **JoggingJointSlider** - A joint on its range between its limits: hold a point to move the joint toward it
+- **CurrentPoseBar** - The current pose of the TCP, its TCP and coordinate system, and the orientation format
 
 **Individual Jogging Controls**
 

@@ -2,7 +2,7 @@ import Slider from "@mui/material/Slider"
 import Stack from "@mui/material/Stack"
 import { useTheme, type SxProps } from "@mui/material/styles"
 import Typography from "@mui/material/Typography"
-import isNumber from "lodash-es/isNumber.js"
+import { isNumber } from "lodash-es"
 import { observer } from "mobx-react-lite"
 import type { ReactNode } from "react"
 import { useTranslation } from "react-i18next"
@@ -21,7 +21,9 @@ type VelocitySliderProps = {
   store: JoggingStore
 }
 
-/** A slider for controlling the movement velocity of a robot */
+/**
+ * A slider for controlling the movement velocity of a robot
+ */
 export const VelocitySlider = externalizeComponent(
   observer((props: VelocitySliderProps) => {
     const { store } = props
@@ -83,6 +85,9 @@ type VelocitySliderLabelProps = {
   sx?: SxProps
 }
 
+/**
+ * The value next to {@link VelocitySlider}
+ */
 export function VelocitySliderLabel({ value, sx }: VelocitySliderLabelProps) {
   const theme = useTheme()
   return (
