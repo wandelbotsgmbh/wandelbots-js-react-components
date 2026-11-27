@@ -8,6 +8,10 @@ const aggregateEntries: Record<string, string> = {
   index: resolve(repoRoot, "src/index.ts"),
   core: resolve(repoRoot, "src/core.ts"),
   "3d": resolve(repoRoot, "src/3d.ts"),
+  // Only this entry loads the optional peer nats.ws
+  nats: resolve(repoRoot, "src/nats.ts"),
+  // The library without React: loads no React, no MUI and no three.js
+  session: resolve(repoRoot, "src/session.ts"),
 }
 
 // Explicit allowlist of MUI-style per-component entries. Each entry lives
@@ -16,7 +20,17 @@ const aggregateEntries: Record<string, string> = {
 // (matching e.g. `@mui/material/Button`). New components should migrate
 // into this list one at a time rather than being auto-globbed, so the
 // public API surface stays deliberate.
-export const componentNames = ["SafetyBar"] as const
+export const componentNames = [
+  "SafetyBar",
+  "JoggingGizmo",
+  "JoggingButtons",
+  "JoggingJointSlider",
+  "RobotControlPanel",
+  "RobotControl",
+  "CurrentPoseBar",
+  "CurrentPose",
+  "RobotHeader",
+] as const
 
 // Public API entry names (used by api-extractor, consumer tests, and the
 // generated package.json exports wildcard).

@@ -1,6 +1,7 @@
 import { Jog } from "@wandelbots/icons/Jog"
 import { JointKinematics } from "@wandelbots/icons/JointKinematics"
 import { RobotArm } from "@wandelbots/icons/RobotArm"
+import { Robot } from "@wandelbots/icons/Robot"
 import { SafetyStateNormal } from "@wandelbots/icons/SafetyStateNormal"
 import { ViewModuleFilled } from "@wandelbots/icons/ViewModuleFilled"
 import type { ConnectedMotionGroup } from "@wandelbots/wandelbots-js-react-components"
@@ -11,6 +12,7 @@ import { JoggingPage } from "./JoggingPage"
 import { JointLimitsPage } from "./JointLimitsPage"
 import { ModelsPage } from "./ModelsPage"
 import { SafetyPage } from "./SafetyPage"
+import { SessionPartsPage } from "./SessionPartsPage"
 
 /** Every page gets the instance and the motion group of the top bar */
 export type PageProps = {
@@ -52,6 +54,12 @@ export const PAGES = [
     name: "Building blocks",
     icon: <ViewModuleFilled />,
     Component: BuildingBlocksPage,
+  },
+  {
+    id: "session-parts",
+    name: "Session parts",
+    icon: <Robot />,
+    Component: SessionPartsPage,
   },
 ] as const satisfies readonly Page[]
 

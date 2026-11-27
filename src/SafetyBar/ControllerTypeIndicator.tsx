@@ -26,11 +26,16 @@ export const ControllerTypeIndicator = observer(
     const theme = useTheme()
     const componentId = useId()
     const { t } = useTranslation()
+    /** The indicator's name: what it shows, and the type it shows */
+    const named = (type: string) =>
+      `${t("SafetyBar.ControllerType.ti")}: ${type}`
 
     if (isVirtual) {
       return (
         <IndicatorWithExplanation
           id={`motion-group-virtual-${componentId}`}
+          testId="controller-type-indicator"
+          accessibleName={named(t("SafetyBar.ControllerType.Virtual.lb"))}
           icon={ControllerTypeVirtualIcon}
           color={theme.palette.tertiary.main}
           name={t("SafetyBar.ControllerType.Virtual.lb")}
@@ -56,6 +61,8 @@ export const ControllerTypeIndicator = observer(
     return (
       <IndicatorWithExplanation
         id={`motion-group-physical-${componentId}`}
+        testId="controller-type-indicator"
+        accessibleName={named(t("SafetyBar.ControllerType.Physical.lb"))}
         icon={ControllerTypePhysicalIcon}
         color={theme.palette.primary.main}
         name={t("SafetyBar.ControllerType.Physical.lb")}

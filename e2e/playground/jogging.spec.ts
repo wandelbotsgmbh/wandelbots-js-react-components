@@ -78,8 +78,8 @@ test("jogs the TCP along X and records its path", async ({ page }) => {
 })
 
 test("switches the pages with the app menu of AppHeader", async ({ page }) => {
-  // 6 page loads: on a CI runner about 1.6 min
-  test.setTimeout(240_000)
+  // 7 page loads: on a CI runner about 2 min
+  test.setTimeout(300_000)
   await openPage(page, "jogging")
   await expect(page).toHaveTitle("Jogging · Playground")
 
@@ -108,6 +108,14 @@ test("switches the pages with the app menu of AppHeader", async ({ page }) => {
       content: page.getByRole("heading", {
         name: "JoggingCartesianAxisControl",
       }),
+    },
+    {
+      id: "session-parts",
+      name: "Session parts",
+      // The spinner while the session loads, then the page's text
+      content: page
+        .getByRole("progressbar", { name: "Loading the robot session" })
+        .or(page.getByText("Each part takes the session:")),
     },
     {
       id: "jogging",

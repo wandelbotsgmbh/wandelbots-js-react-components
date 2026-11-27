@@ -14,22 +14,6 @@ export function degreesToRadians(degrees: number): number {
   return degrees * (Math.PI / 180)
 }
 
-export function tryParseJson(json: unknown): unknown {
-  try {
-    return JSON.parse(json as string)
-  } catch {
-    return undefined
-  }
-}
-
-export function tryStringifyJson(json: unknown): string | undefined {
-  try {
-    return JSON.stringify(json)
-  } catch {
-    return undefined
-  }
-}
-
 export function orientationToQuaternion(
   orientation: THREE.Vector3,
 ): THREE.Quaternion {

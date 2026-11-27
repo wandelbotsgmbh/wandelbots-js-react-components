@@ -20,6 +20,14 @@ export const StreamStateSection = observer(({ store }: Props) => {
     store.jogger.motionStream.rapidlyChangingMotionState.execute?.details?.state
       ?.kind ?? "KIND_UNKNOWN"
 
+  // A latched jog error (e.g. a collision that stopped an incremental jog)
+  // takes precedence over the live state, since the live state resets to
+  // normal as soon as the motion stops -- which would otherwise hide the
+  // problem from the user almost immediately. Prefer a friendlier
+  // translation over the raw backend message where one is known.
+  const jogError = store.lastJogError
+  const jogErrorTranslationKey = store.lastJogErrorTranslationKey
+
   return (
     <Box
       sx={{
@@ -40,13 +48,19 @@ export const StreamStateSection = observer(({ store }: Props) => {
       </Typography>
       <Typography
         variant="body2"
+        color={jogError ? "error" : undefined}
         sx={{
           fontSize: "0.75rem", // Smaller than body2
           lineHeight: 1.2,
+          textAlign: "right",
         }}
-        data-testid={statusStream}
+        data-testid={jogError ? "JOG_ERROR" : statusStream}
       >
-        {t(`Jogging.StreamStateSection.${statusStream}.lb`)}
+        {jogError
+          ? jogErrorTranslationKey
+            ? t(jogErrorTranslationKey)
+            : jogError
+          : t(`Jogging.StreamStateSection.${statusStream}.lb`)}
       </Typography>
     </Box>
   )

@@ -3,6 +3,8 @@ import {
   ConnectedMotionGroup,
   JoggerConnection,
   JoggingStore,
+  loadRobotSession,
+  type RobotSession,
 } from "@wandelbots/wandelbots-js-react-components"
 import { useEffect, useState } from "react"
 import type { PlaygroundInstance } from "./instance"
@@ -89,6 +91,37 @@ export function useConnectedMotionGroup(
 }
 
 /**
+ * The RobotSession of a motion group, as an app loads it: its jogging
+ * settings kept in localStorage, a virtual robot not activated on its own
+ */
+export function useLoadedSession(
+  instance: PlaygroundInstance,
+  motionGroupId: string | undefined,
+): Loading<RobotSession> {
+  return useAsync(
+    motionGroupId,
+    async (id) => {
+      const load = loadRobotSession(instance.nova, id, {
+        cellId: instance.cellId,
+        storage: localStorage,
+        // What fails in the background or in a connected component, e.g. a
+        // refused activation: an app shows it, the playground logs it
+        onError: (error) => console.error(`${id}: ${error.message}`, error),
+      })
+      try {
+        return await load.ready
+      } catch (error) {
+        // Closes what the load opened before it failed
+        load.dispose()
+        throw error
+      }
+    },
+    // Closes the session's connections
+    (session) => session.dispose(),
+  )
+}
+
+/**
  * A JoggingStore of a motion group, opened as JoggingPanel does it:
  * `JoggerConnection.open`, then `JoggingStore.loadFor`.
  */
@@ -118,7 +151,7 @@ export function useJoggingStore(
 /** What a jog button moves: a joint, or the TCP along an axis */
 export type JogCommand =
   | { joint: number; direction: "-" | "+" }
-  | { axis: "x" | "y" | "z"; direction: "-" | "+" }
+  | { axis: "x" | "y" | "z"; direction: "-" | "+"; rotate?: boolean }
 
 /** The number of the last press per store (see startJogging) */
 const jogPresses = new WeakMap<JoggingStore, number>()
@@ -157,6 +190,12 @@ export async function startJogging(store: JoggingStore, command: JogCommand) {
         velocityValue: revolute
           ? store.rotationVelocityRadsPerSec
           : store.translationVelocityMmPerSec,
+      })
+    } else if (command.rotate) {
+      await store.jogger.rotateTCP({
+        axis: command.axis,
+        direction: command.direction,
+        velocityRadsPerSec: store.rotationVelocityRadsPerSec,
       })
     } else {
       await store.jogger.translateTCP({

@@ -1,6 +1,21 @@
-// Default colors of the jogging components. These are the same values as the
-// `componentsExt` jogging colors of the removed `createNovaTheme`.
+// Colors of the jogging components. jogAxisColors are the axis colors of the
+// design system, for new parts. The others keep the values of the
+// `componentsExt` jogging colors of the removed `createNovaTheme`, for the
+// older controls (and, for now, the axes of JoggingGizmo).
 
+import {
+  ColorsBlue400,
+  ColorsGreen400,
+  ColorsRed400,
+} from "@wandelbots/design-tokens"
+import type { JogAxis } from "./jogHandle"
+
+/**
+ * The `colors` of `JoggingCartesianAxisControl`
+ *
+ * @deprecated With `JoggingCartesianAxisControl`. `JoggingButtons` has the
+ * axis colors of the design system built in.
+ */
 export interface AxisControlComponentColors {
   color?: string
   borderColor?: string
@@ -65,3 +80,13 @@ export const jointArrowColor = onDark
 
 /** Color of the velocity legend of the velocity slider */
 export const velocitySliderLegendColor = onDark
+
+/**
+ * The color of each axis in the design system: red, green and blue 400, as
+ * the axis labels of JoggingButtons show them. New jogging parts use these.
+ */
+export const jogAxisColors: Record<JogAxis, string> = {
+  x: ColorsRed400,
+  y: ColorsGreen400,
+  z: ColorsBlue400,
+}
