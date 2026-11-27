@@ -45,7 +45,7 @@ You can also import from the top-level package, but then you'll need to provide 
 
 An app that installs no three.js imports from `/session` and from the entry points of single components instead of `/core`, see [Without three.js or without React](#without-threejs-or-without-react).
 
-The parts use the theme of your app. Without the Nova theme they still work, in the default colours of MUI. For the Nova look, create the theme with `createNovaMuiTheme` of `@wandelbots/mui`:
+The parts use the theme of your app. Without the Nova theme the simple parts still work, in the default colours of MUI; only `SafetyBar`, and `RobotHeader`, which shows it, still need it. For the Nova look, create the theme with `createNovaMuiTheme` of `@wandelbots/mui`:
 
 ```tsx
 import { ThemeProvider } from "@mui/material/styles"
