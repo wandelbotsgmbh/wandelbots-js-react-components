@@ -107,7 +107,7 @@ All of them load i18next and react-i18next, which come with the library.
 
 ### The robot session (beta)
 
-`loadRobotSession` loads one robot of a cell and keeps it connected: its description, its live state, its safety, its activation, jogging and Move to, as MobX stores. It is **beta** in 7.x: the props and callbacks of the parts are the stable promise, while the classes of `/session` may still change in a minor version. An app that builds on them pins the minor version. An app that owns its robot connection does not need a session: the simple parts take plain props.
+`loadRobotSession` loads one robot of a cell and keeps it connected: its description, its live state, its safety, its activation, jogging and Move to, as MobX stores. It is **beta**: the props and callbacks of the parts are the stable promise, while the classes of `/session` may still change in a minor version. An app that builds on them pins the minor version. An app that owns its robot connection does not need a session: the simple parts take plain props.
 
 ### Without three.js or without React
 
