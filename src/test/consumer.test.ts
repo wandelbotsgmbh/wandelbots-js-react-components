@@ -147,7 +147,13 @@ describe("package exports — deep component imports", () => {
   // directory under `src/` with an `index.ts` barrel and is exposed at
   // `@wandelbots/.../<Name>` (matching `@mui/material/Button`). The set
   // is deliberately small — see scripts/entry-points.ts.
-  const specs = ["SafetyBar"]
+  const specs = [
+    "SafetyBar",
+    "JoggingGizmo",
+    "JoggingButtons",
+    "JoggingJointSlider",
+    "CurrentPoseBar",
+  ]
 
   it.each(specs)("%s resolves ESM, CJS, and types", (sub) => {
     const spec = `${pkgName}/${sub}`
@@ -166,7 +172,13 @@ describe("MUI-style default + named exports", () => {
   // that downstream apps will import directly. Each must expose both a
   // named export (preserving the existing API) and a matching `default`
   // export (the MUI-style convention).
-  const cases = [{ sub: "SafetyBar", name: "SafetyBar" }]
+  const cases = [
+    { sub: "SafetyBar", name: "SafetyBar" },
+    { sub: "JoggingGizmo", name: "JoggingGizmo" },
+    { sub: "JoggingButtons", name: "JoggingButtons" },
+    { sub: "JoggingJointSlider", name: "JoggingJointSlider" },
+    { sub: "CurrentPoseBar", name: "CurrentPoseBar" },
+  ]
 
   it.each(cases)("$sub exposes $name as both named and default", async ({
     sub,
@@ -193,6 +205,32 @@ describe("aggregate barrel preserves named exports", () => {
     const deep = await import(`${pkgName}/SafetyBar`)
     expect(core.SafetyBar).toBe(deep.SafetyBar)
   }, 30_000)
+
+  // One copy: a part and its aggregate entry share the same module, so an
+  // app that imports both gets one part and one i18n instance
+  it.each([
+    { sub: "JoggingGizmo", aggregate: "3d", name: "JoggingGizmo" },
+    { sub: "JoggingGizmo", aggregate: "3d", name: "JoggingGizmoOrientation" },
+    { sub: "JoggingButtons", aggregate: "core", name: "JoggingButtons" },
+    {
+      sub: "JoggingJointSlider",
+      aggregate: "core",
+      name: "JoggingJointSlider",
+    },
+    { sub: "CurrentPoseBar", aggregate: "core", name: "CurrentPoseBar" },
+  ])("$sub and /$aggregate share one $name", async ({
+    sub,
+    aggregate,
+    name,
+  }) => {
+    const deep = (await import(`${pkgName}/${sub}`)) as Record<string, unknown>
+    const all = (await import(`${pkgName}/${aggregate}`)) as Record<
+      string,
+      unknown
+    >
+    expect(deep[name], `missing ${name}`).toBeDefined()
+    expect(deep[name]).toBe(all[name])
+  }, 30_000)
 })
 
 describe("CJS interop", () => {
@@ -216,6 +254,10 @@ describe("CJS interop", () => {
   // under strict resolution.
   it.each([
     "SafetyBar",
+    "JoggingGizmo",
+    "JoggingButtons",
+    "JoggingJointSlider",
+    "CurrentPoseBar",
   ])("Node strict ESM can import %s and its transitive deps", (sub) => {
     // Redirect stderr to stdout so the assertion message surfaces any
     // "Cannot find module" errors from the child process.

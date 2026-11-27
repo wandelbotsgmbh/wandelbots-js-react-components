@@ -41,7 +41,7 @@ pnpm add three three-stdlib @react-three/fiber @react-three/drei
 
 You can also import from the top-level package, but then you'll need to provide all optional dependencies.
 
-The parts use the theme of your app. Create it with `createNovaMuiTheme` of `@wandelbots/mui`:
+The parts use the theme of your app. Without the Nova theme the simple parts still work, in the default colours of MUI; only `SafetyBar` still needs it. For the Nova look, create the theme with `createNovaMuiTheme` of `@wandelbots/mui`:
 
 ```tsx
 import { ThemeProvider } from "@mui/material/styles"
@@ -69,6 +69,32 @@ Browse the full icon set at https://wandelbotsgmbh.github.io/nova-design-system/
 - **`/core`** — The parts without 3D (jogging, `SafetyBar`, `AppHeader`, `LoadingCover`, `NoMotionGroupModal`), the NOVA connections and `JoggingStore`, the motion state helpers and `i18n`.
 - **`/3d`** — The 3D parts (`Robot`, `MotionGroupVisualizer`, `SafetyZonesRenderer`, …). Requires in addition three, three-stdlib, @react-three/fiber and @react-three/drei.
 - **`/SafetyBar`** — Only `SafetyBar` (also as the default export).
+- **`/JoggingGizmo`** — Only `JoggingGizmo` (also as the default export) and `JoggingGizmoOrientation`. Requires in addition three and @react-three/fiber.
+- **`/JoggingButtons`** — Only `JoggingButtons` (also as the default export). No 3D packages needed.
+- **`/JoggingJointSlider`** — Only `JoggingJointSlider` (also as the default export). No 3D packages needed.
+- **`/CurrentPoseBar`** — Only `CurrentPoseBar` (also as the default export). No 3D packages needed.
+
+A component's own entry point brings only what that component needs, e.g. `/JoggingButtons` no three.js and no NOVA client, unlike `/core`. The entry points share their common code, so an app that imports a component from both `/core` and its own entry point gets one copy of it:
+
+```tsx
+import JoggingJointSlider from "@wandelbots/wandelbots-js-react-components/JoggingJointSlider"
+```
+
+### The simple parts on their own
+
+`JoggingGizmo`, `JoggingButtons`, `JoggingJointSlider`, `CurrentPoseBar` and `SafetyBar` take plain props and report through callbacks: no store, no provider and no i18n setup of the app. The app keeps its own connection to the robot and moves it in `onJogStart` and `onJogStop`. While a control is held the robot moves; it stops when the control is let go, when the pointer leaves it, when the window loses focus or the tab is hidden, on any key, and when the part becomes disabled or unmounts. The keyboard starts no motion.
+
+What each one loads, besides `react` and `@mui/material` (checked by `src/test/bare.test.tsx`):
+
+| Entry point | Also needs |
+| --- | --- |
+| `/JoggingGizmo` | `three`, `@react-three/fiber`, `@wandelbots/design-tokens` |
+| `/JoggingButtons` | `@wandelbots/mui`, `@wandelbots/icons`, `@wandelbots/design-tokens` |
+| `/JoggingJointSlider` | nothing else |
+| `/CurrentPoseBar` | `@wandelbots/mui`, `@wandelbots/icons` |
+| `/SafetyBar` | `mobx-react-lite`, `axios` |
+
+All of them load i18next and react-i18next, which come with the library.
 
 ### Peer dependencies
 
@@ -80,9 +106,9 @@ Browse the full icon set at https://wandelbotsgmbh.github.io/nova-design-system/
 | `@wandelbots/mui` | ^2 |
 | `mobx` | ^6.13.6 |
 | `mobx-react-lite` | ^4.1.0 |
-| `three` (only `/3d`) | >=0.182 |
+| `three` (only `/3d`, `/JoggingGizmo`) | >=0.182 |
 | `three-stdlib` (only `/3d`) | >=2 |
-| `@react-three/fiber` (only `/3d`) | ^9 |
+| `@react-three/fiber` (only `/3d`, `/JoggingGizmo`) | ^9 |
 | `@react-three/drei` (only `/3d`) | ^10 |
 
 These packages are peer dependencies because the app and the library must use the same copy: React, the MUI theme of the app, the MobX stores that the app reads with its own `observer`, and the `<Canvas>` of React Three Fiber.
@@ -157,6 +183,13 @@ Manual robot control interfaces.
 - Dual-mode operation (Cartesian & Joint space)
 - Real-time velocity control
 - Multiple coordinate systems support (Robot base or Tool)
+
+**Simple jogging parts** (plain props and callbacks, see [The simple parts on their own](#the-simple-parts-on-their-own))
+
+- **JoggingGizmo** - Handles in 3D to move the TCP along or turn it about the X, Y and Z axes
+- **JoggingButtons** - A minus and a plus button per axis
+- **JoggingJointSlider** - A joint on its range between its limits: hold a point to move the joint toward it
+- **CurrentPoseBar** - The current pose of the TCP, its TCP and coordinate system, and the orientation format
 
 **Individual Jogging Controls**
 

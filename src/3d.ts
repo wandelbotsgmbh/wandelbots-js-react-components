@@ -10,6 +10,22 @@ export {
 export * from "./components/3d-viewport/PresetEnvironment"
 export * from "./components/3d-viewport/SafetyZonesRenderer"
 export * from "./components/3d-viewport/TrajectoryRenderer"
+export {
+  JoggingGizmo,
+  type JoggingGizmoProps,
+} from "./components/jogging/gizmo/JoggingGizmo"
+export {
+  JoggingGizmoOrientation,
+  type JoggingGizmoOrientationProps,
+} from "./components/jogging/gizmo/JoggingGizmoOrientation"
+export type {
+  JogAxis,
+  JogDirection,
+  JogHandle,
+} from "./components/jogging/jogHandle"
+export type { JogControlsProps } from "./components/jogging/useJogControls"
+// Where the 3D views found that the browser cannot draw 3D
+export type { WebGLUnavailableContext } from "./components/utils/useWebGLRenderer"
 export * from "./components/robots/LinearAxis"
 export * from "./components/robots/MotionGroupVisualizer"
 export * from "./components/robots/Robot"
